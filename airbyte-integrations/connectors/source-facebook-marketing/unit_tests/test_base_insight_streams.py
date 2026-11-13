@@ -308,10 +308,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -354,7 +351,13 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {
@@ -400,6 +403,76 @@ class TestBaseInsightsStream:
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
+
+    @pytest.mark.parametrize("custom", [False, True], ids=["standard", "custom"])
+    @pytest.mark.parametrize("completion_order", [(0, 1, 2, 3, 4), (1, 4, 0, 3, 2)], ids=["in_order", "out_of_order"])
+    @pytest.mark.parametrize("empty_result", [False, True], ids=["records", "empty"])
+    @freeze_time("2026-11-12")
+    def test_lookback_cursor_is_monotonic(self, api, mocker, async_manager_mock, account_id, custom, completion_order, empty_result):
+        cursor = date(2026, 11, 10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 11, 1),
+            end_date=datetime(2026, 11, 12),
+            insights_lookback_window=2,
+            **({"name": "custom_insights", "fields": ["impressions"], "breakdowns": ["country"]} if custom else {}),
+        )
+        generated_jobs = []
+
+        def create_job(**kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = kwargs["interval"]
+            record = mocker.Mock()
+            record.export_all_data.side_effect = lambda: {
+                "date_start": job.interval.start.isoformat(),
+                "impressions": "1",
+                **({"country": "US"} if custom else {}),
+            }
+            job.get_result.return_value = [] if empty_result else [record]
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=create_job)
+
+        def completed_jobs():
+            generated_jobs.extend(list(async_manager_mock.call_args.kwargs["jobs"]))
+            return (generated_jobs[index] for index in completion_order)
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+        completed = set()
+        previous_cursor = cursor.isoformat()
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
+            job_date = stream_slice["insight_job"].interval.start
+            records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            assert records == (
+                []
+                if empty_result
+                else [
+                    {
+                        "date_start": job_date.isoformat(),
+                        "impressions": "1",
+                        "account_id": account_id,
+                        **({"country": "US"} if custom else {}),
+                    }
+                ]
+            )
+            completed.add(job_date)
+            account_state = stream.state[account_id]
+            assert account_state["date_start"] >= previous_cursor
+            previous_cursor = account_state["date_start"]
+            contiguous_cursor = cursor
+            for job in generated_jobs:
+                if job.interval.start not in completed:
+                    break
+                contiguous_cursor = max(contiguous_cursor, job.interval.start)
+            assert account_state["date_start"] == contiguous_cursor.isoformat()
+            assert account_state["slices"] == sorted(d.isoformat() for d in completed if d > contiguous_cursor)
+
+        assert [job.interval.start for job in generated_jobs] == [
+            cursor - timedelta(days=2) + timedelta(days=offset) for offset in range(5)
+        ]
+        assert stream.state[account_id] == {"date_start": "2026-11-12", "slices": []}
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""
