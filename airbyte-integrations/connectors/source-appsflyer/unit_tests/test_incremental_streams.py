@@ -155,6 +155,34 @@ def test_stream_slices(patch_incremental_base_class, mocker):
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
+@pytest.mark.parametrize(
+    ("class_", "lookback_window_in_hours", "stream_state", "expected_start"),
+    [
+        (InAppEvents, 0, dict(event_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 9, 12)),
+        (InAppEvents, 6, dict(event_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 9, 6)),
+        (RetargetingInAppEvents, 6, dict(event_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 9, 6)),
+        (UninstallEvents, 6, dict(event_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 9, 6)),
+        (Installs, 6, dict(install_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 9, 6)),
+        (InAppEvents, 48, dict(event_time="2021-09-09 12:00:00"), pendulum.datetime(2021, 9, 8)),
+        (InAppEvents, 6, {}, pendulum.datetime(2021, 9, 8)),
+        (PartnersReport, 6, dict(date="2021-09-09"), pendulum.datetime(2021, 9, 9)),
+        (DailyReport, 6, dict(date="2021-09-09"), pendulum.datetime(2021, 9, 9)),
+    ],
+)
+def test_stream_slices_lookback_window(mocker, class_, lookback_window_in_hours, stream_state, expected_start):
+    def __init__(self):
+        self.timezone = pendulum.timezone("UTC")
+        self.start_date = pendulum.datetime(2021, 9, 8)
+        self.end_date = pendulum.datetime(2021, 9, 10)
+        self.raw_data_lookback_window_in_hours = lookback_window_in_hours
+
+    mocker.patch.object(class_, "__init__", __init__)
+    stream = class_()
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": stream_state}
+    expected_stream_slice = [{stream.cursor_field: expected_start, stream.cursor_field + "_end": pendulum.datetime(2021, 9, 10)}]
+    assert stream.stream_slices(**inputs) == expected_stream_slice
+
+
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", lambda x: None)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "dummy_field")
