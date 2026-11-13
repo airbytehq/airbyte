@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Muta
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -23,7 +24,6 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpReques
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
