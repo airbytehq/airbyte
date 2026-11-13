@@ -12,6 +12,7 @@ import jinja2
 import jsonschema
 import pytest
 import yaml
+from source_salesforce import SourceSalesforce
 
 
 SPEC_PATH = Path(__file__).resolve().parents[1] / "source_salesforce" / "spec.yaml"
@@ -202,3 +203,76 @@ def test_consent_url_renders_unpadded_base64url_code_challenge():
     assert not any(character in code_challenge for character in "+/=")
     assert code_challenge == expected_code_challenge
     assert query["code_challenge_method"][0] == "S256"
+
+
+def test_spec_declares_groups_and_sections():
+    """The stepped setup form: two sections, "Connect account" (checked) and "Review & set up" (covered by the full check)."""
+    schema = _load_connection_spec()
+
+    assert [group["id"] for group in schema["groups"]] == ["account", "filters", "advanced"]
+    assert schema["sections"] == [
+        {
+            "id": "account",
+            "title": "Connect account",
+            "order": 0,
+            "description": "Choose the environment and sign in to Salesforce.",
+            "groups": ["account", "filters"],
+            "check": True,
+        },
+        {
+            "id": "review",
+            "title": "Review & set up",
+            "order": 1,
+            "description": "Name your source and check the optional settings.",
+            "groups": ["advanced"],
+        },
+    ]
+    # Every section group is declared, and every visible property belongs to a group of some section.
+    declared_groups = {group["id"] for group in schema["groups"]}
+    section_groups = {group for section in schema["sections"] for group in section["groups"]}
+    assert section_groups <= declared_groups
+    grouped = {name: prop["group"] for name, prop in schema["properties"].items() if "group" in prop}
+    assert grouped == {
+        "auth_type": "account",
+        "domain_url": "account",
+        "is_sandbox": "account",
+        "client_id": "account",
+        "client_secret": "account",
+        "refresh_token": "account",
+        "start_date": "filters",
+        "end_date": "filters",
+        "streams_criteria": "filters",
+        "preserve_na_values": "filters",
+        "force_use_bulk_api": "advanced",
+        "stream_slice_step": "advanced",
+        "lookback_window": "advanced",
+    }
+    assert set(grouped.values()) <= section_groups
+    # Every property, the authentication method selector included, belongs to a group.
+    assert set(grouped) == set(schema["properties"])
+    # The required fields all belong to the first section, so its check can validate them.
+    assert {grouped[name] for name in schema["required"]} == {"account"}
+
+
+def test_spec_orders_properties_as_the_form_shows_them():
+    """The form shows the groups in their declared order and, within a group, the properties by `order`."""
+    properties = _load_connection_spec()["properties"]
+
+    orders = {name: prop["order"] for name, prop in properties.items() if "order" in prop}
+    assert len(set(orders.values())) == len(orders)
+    by_group = {}
+    for name in sorted(orders, key=orders.get):
+        by_group.setdefault(properties[name]["group"], []).append(name)
+    assert by_group == {
+        "account": ["auth_type", "domain_url", "is_sandbox", "client_id", "client_secret", "refresh_token"],
+        "filters": ["start_date", "end_date", "streams_criteria", "preserve_na_values"],
+        "advanced": ["force_use_bulk_api", "stream_slice_step", "lookback_window"],
+    }
+
+
+def test_source_spec_carries_the_sections():
+    """The CDK serves spec.yaml as is, so the sections reach the platform."""
+    schema = SourceSalesforce(None, None, None).spec(None).connectionSpecification
+
+    assert [section["id"] for section in schema["sections"]] == ["account", "review"]
+    assert [section.get("check") for section in schema["sections"]] == [True, None]
