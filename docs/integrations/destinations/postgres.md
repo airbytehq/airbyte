@@ -70,7 +70,8 @@ GRANT CREATE ON DATABASE <database> TO airbyte_user;
 
 `CREATE` on the database only allows the user to create new schemas. If you keep the connector's
 default schema, `public`, or point it at any other schema that already exists, grant access to that
-schema too. Postgres 15 and later don't give ordinary users `CREATE` on `public`.
+schema too. By default, new databases created with Postgres 15 and later don't give ordinary users
+`CREATE` on `public`.
 
 ```sql
 GRANT USAGE, CREATE ON SCHEMA public TO airbyte_user;
