@@ -34,7 +34,7 @@ class HubSpotOperationRepositoryTest {
         // custom objects
         every {
             httpClient.send(
-                Request(method = RequestMethod.GET, url = "https://api.hubapi.com/crm/v3/schemas")
+                Request(method = RequestMethod.GET, url = "https://api.hubapi.com/crm/v3/schemas"),
             )
         } answers
             {
@@ -42,7 +42,7 @@ class HubSpotOperationRepositoryTest {
                     200,
                     HubSpotCustomObjectSchemaResponseBuilder()
                         .withResult(anUnavailableObject())
-                        .build()
+                        .build(),
                 )
             }
 
@@ -51,24 +51,24 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/COMPANY"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/COMPANY",
+                ),
             )
         } returns (aResponse(200, anUnavailableObject().build()))
         every {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/DEAL"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/DEAL",
+                ),
             )
         } returns (aResponse(200, anUnavailableObject().build()))
         every {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/PRODUCT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/PRODUCT",
+                ),
             )
         } returns (aResponse(200, anUnavailableObject().build()))
     }
@@ -79,8 +79,8 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT",
+                ),
             )
         } returns aResponse(200, aResponseBodyWithEmailProperty().build())
 
@@ -100,15 +100,15 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT",
+                ),
             )
         } returns
             aResponse(
                 200,
                 aResponseBodyWithEmailProperty()
                     .withProperty(anAvailableProperty("available"))
-                    .build()
+                    .build(),
             )
 
         val operations = repo.fetchAll()
@@ -123,15 +123,15 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT",
+                ),
             )
         } returns
             aResponse(
                 200,
                 aResponseBodyWithEmailProperty()
                     .withProperty(aProperty("notAvailable").withCalculated(true))
-                    .build()
+                    .build(),
             )
 
         val operations = repo.fetchAll()
@@ -146,15 +146,15 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT",
+                ),
             )
         } returns
             aResponse(
                 200,
                 aResponseBodyWithEmailProperty()
                     .withProperty(aProperty("notAvailable").withReadOnlyValue(true))
-                    .build()
+                    .build(),
             )
 
         val operations = repo.fetchAll()
@@ -169,15 +169,15 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
-                )
+                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT",
+                ),
             )
         } returns
             aResponse(
                 200,
                 aResponseBodyWithEmailProperty()
                     .withProperty(aProperty("notAvailable").withType("object_coordinates"))
-                    .build()
+                    .build(),
             )
 
         val operations = repo.fetchAll()

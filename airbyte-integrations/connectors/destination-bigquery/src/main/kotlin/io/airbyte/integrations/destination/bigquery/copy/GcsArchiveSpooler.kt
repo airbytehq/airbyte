@@ -102,8 +102,7 @@ class GcsArchiveSpooler(
                     withTimeoutOrNull(cleanupTimeoutMillis) {
                         while (!download.drained()) delay(10)
                         true
-                    }
-                        ?: false
+                    } ?: false
                 }
             if (!drained) {
                 val unsafe = GcsArchiveReaderStillActiveException(path, failure)
@@ -196,7 +195,6 @@ class GcsArchiveSpooler(
                 // invoke
                 // their callback on a different thread: runBlocking can exit on interruption first.
                 outcome.fold(result::complete, result::completeExceptionally)
-                Unit
             }
 
         fun drained(): Boolean =

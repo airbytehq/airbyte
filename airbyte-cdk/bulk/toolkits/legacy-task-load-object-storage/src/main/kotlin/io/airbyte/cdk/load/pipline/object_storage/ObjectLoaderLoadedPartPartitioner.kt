@@ -18,7 +18,7 @@ class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> 
 
     override fun getOutputKey(
         inputKey: K,
-        output: ObjectLoaderPartLoader.PartResult<U>
+        output: ObjectLoaderPartLoader.PartResult<U>,
     ): ObjectKey {
         return ObjectKey(inputKey.stream, output.objectKey)
     }

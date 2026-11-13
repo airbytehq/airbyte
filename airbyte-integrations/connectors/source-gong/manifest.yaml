@@ -306,6 +306,16 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
+          # Gong's POST /stats/activity/scorecards only returns manually
+          # reviewed scorecards unless `filter.reviewMethod` is sent. Scorecards
+          # scored by Gong's AI (AUTOMATIC) are therefore silently dropped, and
+          # since they now make up the vast majority of scorecards, the stream
+          # looks almost empty. `scorecards_review_method` lets the user pick
+          # MANUAL, AUTOMATIC or BOTH; it defaults to MANUAL, which is the
+          # historical behaviour, so existing connections are unaffected.
+          request_body_json:
+            filter:
+              reviewMethod: "{{ config.get('scorecards_review_method', 'MANUAL') }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -637,6 +647,7 @@ spec:
           its actual start time.
         title: Start date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        format: date-time
         examples:
           - "2018-02-18T08:00:00Z"
         order: 1
@@ -663,6 +674,19 @@ spec:
         default: 0
         minimum: 0
         order: 3
+      scorecards_review_method:
+        type: string
+        title: Scorecards Review Method
+        description: >-
+          Which answered scorecards to fetch. Gong only returns manually
+          reviewed scorecards by default; scorecards scored by Gong's AI must
+          be requested explicitly. MANUAL keeps the historical behaviour.
+        enum:
+          - MANUAL
+          - AUTOMATIC
+          - BOTH
+        default: MANUAL
+        order: 4
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -863,6 +887,24 @@ schemas:
           - "null"
           - array
         description: Additional email addresses that can be used to reach the user
+      conferencingProviders:
+        type:
+          - "null"
+          - array
+        description: Web conferencing providers configured for the user
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            provider:
+              type:
+                - "null"
+                - string
+            isDefault:
+              type:
+                - "null"
+                - boolean
       extension:
         type:
           - "null"
@@ -1414,6 +1456,9 @@ schemas:
                     - string
                     - "null"
       media:
+        type:
+          - "null"
+          - object
         description: The media urls of the call.
         properties:
           audioUrl:
@@ -1557,7 +1602,7 @@ schemas:
                 Internal, External, Unknown
             context:
               type:
-                - object
+                - array
                 - "null"
               description: >-
                 A list of links to external systems such as CRM, Dialer, Case
@@ -1686,6 +1731,11 @@ schemas:
           - "null"
           - string
         description: The name of the scorecard
+      reviewMethod:
+        type:
+          - "null"
+          - string
+        description: The review method of the scorecard
       updated:
         type:
           - "null"
@@ -1797,6 +1847,11 @@ schemas:
           - "null"
           - string
         description: Name or title of the scorecard template used.
+      reviewMethod:
+        type:
+          - "null"
+          - string
+        description: The review method used for the answered scorecard.
       visibilityType:
         type:
           - "null"

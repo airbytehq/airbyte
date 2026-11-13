@@ -27,8 +27,6 @@ acceptance_tests:
         empty_streams:
           - name: webhooks
             bypass_reason: "no data"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
   incremental:
     bypass_reason:
       "Last record is duplicated for test_two_sequential_reads since

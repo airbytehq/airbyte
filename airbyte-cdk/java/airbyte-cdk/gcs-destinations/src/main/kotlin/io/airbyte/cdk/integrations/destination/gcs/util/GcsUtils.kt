@@ -25,7 +25,7 @@ object GcsUtils {
         name: String,
         namespace: String,
         appendAirbyteFields: Boolean,
-        useDestinationsV2Columns: Boolean
+        useDestinationsV2Columns: Boolean,
     ): Schema? {
         LOGGER.info { "Default schema." }
         val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name)

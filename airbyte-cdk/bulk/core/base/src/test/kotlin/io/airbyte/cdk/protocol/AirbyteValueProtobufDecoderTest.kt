@@ -390,7 +390,7 @@ class AirbyteValueProtobufDecoderTest {
                 ZoneOffset.ofHours(-12),
                 ZoneOffset.ofHoursMinutes(5, 30),
                 ZoneOffset.ofHoursMinutes(-5, -45),
-                ZoneOffset.ofHoursMinutesSeconds(1, 30, 30)
+                ZoneOffset.ofHoursMinutesSeconds(1, 30, 30),
             )
 
         timezones.forEach { offset ->
@@ -414,7 +414,7 @@ class AirbyteValueProtobufDecoderTest {
                 ZoneOffset.ofHours(5),
                 ZoneOffset.ofHours(-8),
                 ZoneOffset.ofHoursMinutes(9, 30),
-                ZoneOffset.ofHoursMinutes(-3, -30)
+                ZoneOffset.ofHoursMinutes(-3, -30),
             )
 
         timezones.forEach { offset ->
@@ -534,24 +534,24 @@ class AirbyteValueProtobufDecoderTest {
                 Triple(
                     LocalDateTime.of(2025, 3, 9, 2, 30),
                     ZoneOffset.ofHours(-8),
-                    "PST before spring forward"
+                    "PST before spring forward",
                 ),
                 Triple(
                     LocalDateTime.of(2025, 3, 9, 3, 30),
                     ZoneOffset.ofHours(-7),
-                    "PDT after spring forward"
+                    "PDT after spring forward",
                 ),
                 // Fall back scenarios
                 Triple(
                     LocalDateTime.of(2025, 11, 2, 1, 30),
                     ZoneOffset.ofHours(-7),
-                    "PDT before fall back"
+                    "PDT before fall back",
                 ),
                 Triple(
                     LocalDateTime.of(2025, 11, 2, 1, 30),
                     ZoneOffset.ofHours(-8),
-                    "PST after fall back"
-                )
+                    "PST after fall back",
+                ),
             )
 
         testCases.forEach { (localDateTime, offset, description) ->
@@ -577,7 +577,7 @@ class AirbyteValueProtobufDecoderTest {
             listOf(
                 LocalDate.of(2024, 2, 29), // Leap day 2024
                 LocalDate.of(2000, 2, 29), // Leap day 2000 (divisible by 400)
-                LocalDate.of(2020, 2, 29) // Leap day 2020
+                LocalDate.of(2020, 2, 29), // Leap day 2020
             )
 
         leapYearDates.forEach { date ->
@@ -597,7 +597,7 @@ class AirbyteValueProtobufDecoderTest {
                 LocalDate.of(9999, 12, 31), // Max date
                 LocalDate.of(2000, 1, 1), // Y2K
                 LocalDate.of(1900, 2, 28), // Not a leap year (divisible by 100 but not 400)
-                LocalDate.of(2100, 2, 28) // Not a leap year
+                LocalDate.of(2100, 2, 28), // Not a leap year
             )
 
         boundaryDates.forEach { date ->

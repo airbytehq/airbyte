@@ -5,9 +5,17 @@
 
 from unittest.mock import Mock
 
+import pendulum
 import pytest
 from pendulum.tz.timezone import Timezone
 from source_google_ads.models import CustomerModel
+
+
+def test_time_zone_from_account():
+    customer = CustomerModel.from_accounts([{"customer_client.id": "8765", "customer_client.time_zone": "America/Los_Angeles"}])[0]
+
+    assert customer.time_zone.name == "America/Los_Angeles"
+    assert pendulum.now(tz=customer.time_zone).utcoffset() is not None
 
 
 def test_time_zone(mocker):
@@ -17,6 +25,7 @@ def test_time_zone(mocker):
     customers = CustomerModel.from_accounts(mock_account_info)
     for customer in customers:
         assert customer.time_zone.name == Timezone("Europe/Riga").name
+        assert pendulum.now(tz=customer.time_zone).utcoffset() is not None
 
 
 @pytest.mark.parametrize("is_manager_account", (True, False))

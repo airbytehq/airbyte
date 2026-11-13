@@ -45,7 +45,7 @@ class S3FilenameTemplateManager {
 
     private fun fillTheMapWithDefaultPlaceHolders(
         stringToReplaceWithPlaceholder: String?,
-        parameterObject: S3FilenameTemplateParameterObject
+        parameterObject: S3FilenameTemplateParameterObject,
     ): Map<String, String> {
         val currentTimeMillis = Instant.now().toEpochMilli()
 
@@ -80,11 +80,12 @@ class S3FilenameTemplateManager {
      *
      * @param stringToReplaceWithPlaceholder
      * - string where the method will search for extended placeholders
+     *
      * @return map with prepared placeholders.
      */
     private fun processExtendedPlaceholder(
         currentTimeMillis: Long,
-        stringToReplaceWithPlaceholder: String?
+        stringToReplaceWithPlaceholder: String?,
     ): MutableMap<String, String> {
         val valuesMap: MutableMap<String, String> = HashMap()
 

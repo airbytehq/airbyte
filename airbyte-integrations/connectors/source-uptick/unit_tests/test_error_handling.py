@@ -20,6 +20,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _STREAM_NAME = "task_profitability"
@@ -65,3 +66,30 @@ def test_successful_read_emits_records() -> None:
 
     assert errors == []
     assert record_count == 1
+
+
+def test_task_profitability_accepts_date_only_state_cursor() -> None:
+    state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2025-09-03"}).build()
+    config = base_config()
+    catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+    token_request = HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY)
+    stream_request = HttpRequest(
+        f"{_BASE_URL}/api/v2/intelligencereports/profitability_by_task/",
+        query_params={"updatedsince": "2025-09-03T00:00:00.000000+0000"},
+    )
+    with HttpMocker() as http_mocker:
+        http_mocker.post(token_request, HttpResponse('{"access_token": "token", "expires_in": 3600}', 200))
+        http_mocker.get(
+            stream_request,
+            HttpResponse(
+                '{"results": [{"task_id": 1, "updated": "2025-09-04T00:00:00.000000+0000"}], "links": {"next": null}}',
+                200,
+            ),
+        )
+
+        output = read(get_source(config, state=state), config, catalog, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["task_id"] for message in output.records] == ["1"]
+        assert output.most_recent_state.stream_state.updated == "2025-09-04T00:00:00.000000+0000"
+        http_mocker.assert_number_of_calls(stream_request, 1)
