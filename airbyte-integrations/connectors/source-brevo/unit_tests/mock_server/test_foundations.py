@@ -293,6 +293,42 @@ NEW_STREAMS = [
 ]
 
 
+@freeze_time(NOW)
+def test_inbound_event_windows_preserve_last_millisecond() -> None:
+    name = "inbound_email_events"
+    config = ConfigBuilder().with_start_date("2023-10-01T00:00:00Z").build()
+    catalog = CatalogBuilder().with_stream(name, SyncMode.incremental).build()
+    with HttpMocker() as mocker:
+        requests = [
+            mock_page(
+                mocker,
+                "inbound/events",
+                "events",
+                [{"uuid": "boundary-event", "date": "2023-10-30T23:59:59.999Z"}],
+                limit=500,
+                offset=0,
+                sort="asc",
+                startDate="2023-10-01T00:00:00.000000Z",
+                endDate="2023-10-30T23:59:59.999000Z",
+            ),
+            mock_page(
+                mocker,
+                "inbound/events",
+                "events",
+                [],
+                limit=500,
+                offset=0,
+                sort="asc",
+                startDate="2023-10-31T00:00:00.000000Z",
+                endDate="2023-11-14T23:59:59.000000Z",
+            ),
+        ]
+        output = read(get_source(config), config=config, catalog=catalog, state=[])
+        assert output.errors == []
+        assert [r.record.data["uuid"] for r in output.records] == ["boundary-event"]
+        assert_calls(mocker, requests)
+
+
 def event_query(name: str, start: str = "2023-11-14T00:00:00.000000Z") -> dict[str, str]:
     if name == "transactional_email_events":
         return {"startDate": "2023-11-14", "endDate": "2023-11-14"}

@@ -1211,7 +1211,7 @@ definitions:
           field_name: endDate
           inject_into: request_parameter
         step: P30D
-        cursor_granularity: PT1S
+        cursor_granularity: PT0.001S
     transactional_email_events:
       type: DeclarativeStream
       name: transactional_email_events
