@@ -36,6 +36,7 @@ Outreach returns errors as `{"errors": [{"id", "title", "detail"}]}`
 
 | Status | Action | Source |
 | :----- | :----- | :----- |
+| 401 | Refresh the access token once and retry with the new token. A second 401 on the refreshed token fails as a configuration error | `expiredAccessToken`, from the failed sync in [#19886](https://github.com/airbytehq/airbyte-internal-issues/issues/19886). Access tokens live two hours ([OAuth](https://developers.outreach.io/api/oauth/)), and a request can go out with a token that expired while it waited. Manifest filter |
 | 403 | Fail as a configuration error. The message quotes `errors[0].detail`, which names the missing OAuth scope | `unauthorizedOauthScope`, seen on a live request with a token that lacks the scope. Manifest filter |
 | 404 | Fail as a system error | `resourceNotFound`. No list endpoint documents a benign 404. CDK default |
 | 422 | Fail as a system error | CDK default for an unmapped status |

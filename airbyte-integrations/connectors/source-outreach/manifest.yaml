@@ -886,6 +886,16 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Access tokens live two hours. A request sent with a token that has just expired gets a 401
+        # `expiredAccessToken`: refresh the token once and retry. A second 401 on the new token fails the sync.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
+          error_message: >-
+            Outreach rejected the access token: {{ ((response if response is mapping else {}).get('detail') or 'Unauthorized')[:300] }}
+            If this persists after the token is refreshed, re-authenticate the source.
         - type: HttpResponseFilter
           http_codes:
             - 403
