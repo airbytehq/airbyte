@@ -14,14 +14,14 @@ definitions:
       name: audit_logs
       primary_key:
         - id
+      $parameters:
+        required_permission: audit_logs_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/audit/events
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -55,14 +55,14 @@ definitions:
       name: dashboards
       primary_key:
         - id
+      $parameters:
+        required_permission: dashboards_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/dashboard
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -108,14 +108,14 @@ definitions:
       name: downtimes
       primary_key:
         - id
+      $parameters:
+        required_permission: monitors_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/downtime
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -136,8 +136,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/teams
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -160,14 +158,14 @@ definitions:
       name: incidents
       primary_key:
         - id
+      $parameters:
+        required_permission: incident_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/incidents
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,6 +194,8 @@ definitions:
       name: logs
       primary_key:
         - id
+      $parameters:
+        required_permission: logs_read_data
       retriever:
         type: SimpleRetriever
         requester:
@@ -204,21 +204,22 @@ definitions:
           http_method: GET
           request_parameters:
             filter[query]: "{{ config['query'] }}"
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Too many requests, retrying...
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 400
+                error_message: >-
+                  {%- set errors = response.get('errors') if response is mapping else none -%}
+                  {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+                  if errors is sequence and errors is not mapping else ''))[:300] -%}
+                  Datadog rejected the log search query{{ ': ' ~ details if details
+                  else '' }}. Check the Query field.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -288,6 +289,8 @@ definitions:
       name: metrics
       primary_key:
         - id
+      $parameters:
+        required_permission: metrics_read
       retriever:
         type: SimpleRetriever
         requester:
@@ -296,8 +299,19 @@ definitions:
           http_method: GET
           request_parameters:
             window[seconds]: "5184000"
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: transient_error
+                http_codes:
+                  - 410
+                error_message: >-
+                  The page cursor of the Datadog metrics list is expired. The
+                  next sync reads the list from the first page.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -332,14 +346,14 @@ definitions:
       name: monitors
       primary_key:
         - id
+      $parameters:
+        required_permission: monitors_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/monitor
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -354,14 +368,14 @@ definitions:
       name: service_level_objectives
       primary_key:
         - id
+      $parameters:
+        required_permission: slos_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/slo
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -405,14 +419,28 @@ definitions:
     synthetic_tests:
       type: DeclarativeStream
       name: synthetic_tests
+      $parameters:
+        required_permission: synthetics_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/synthetics/tests
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Synthetic Monitoring is not active for this Datadog account.
+                  Deselect the synthetic_tests stream or activate Synthetic
+                  Monitoring in Datadog.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -443,14 +471,14 @@ definitions:
       name: users
       primary_key:
         - id
+      $parameters:
+        required_permission: user_access_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/users
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -477,6 +505,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.{{ config['site'] }}/api/
+    request_headers:
+      DD-APPLICATION-KEY: "{{ config['application_key'] }}"
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -484,6 +514,51 @@ definitions:
         type: RequestOption
         field_name: DD-API-KEY
         inject_into: header
+    error_handler:
+      $ref: "#/definitions/error_handler"
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: X-RateLimit-Reset
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/missing_permission_filter"
+      - $ref: "#/definitions/rejected_keys_filter"
+  missing_permission_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    predicate: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else '') -%}
+      {{ 'Failed permission authorization checks' in details }}
+    error_message: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else ''))[:300] -%}
+      {%- set permission = parameters.get('required_permission') -%}
+      The Application Key lacks {{ 'the ' ~ permission ~ ' permission' if permission
+      else 'a permission that this stream requires' }}{{ ': ' ~ details if details
+      else '' }}. Grant {{ permission if permission else 'the missing permission' }}
+      to the Application Key in Datadog.
+  rejected_keys_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes:
+      - 401
+      - 403
+    error_message: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else ''))[:300] -%}
+      Datadog rejected the API Key or the Application Key{{ ': ' ~ details if details
+      else '' }}. Check that both keys are complete and valid and belong to the
+      selected Site.
 
 streams:
   - $ref: "#/definitions/streams/audit_logs"
@@ -497,6 +572,72 @@ streams:
   - $ref: "#/definitions/streams/service_level_objectives"
   - $ref: "#/definitions/streams/synthetic_tests"
   - $ref: "#/definitions/streams/users"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/dashboard$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/downtime$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/incidents$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 300
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/logs/events$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/metrics$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/monitor$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/slo$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 12000
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/synthetics/tests$
 
 spec:
   type: Spec
@@ -607,6 +748,16 @@ spec:
         order: 7
         title: Queries
         default: []
+      num_workers:
+        type: integer
+        description: >-
+          How many streams and slices are read at the same time. Lower it if
+          syncs hit Datadog rate limits.
+        order: 8
+        title: Number of concurrent workers
+        default: 3
+        maximum: 10
+        minimum: 2
     additionalProperties: true
 
 metadata:

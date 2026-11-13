@@ -4,10 +4,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.models.outcome import ExpectedOutcome
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -32,9 +33,17 @@ def read_stream(
     sync_mode: SyncMode = SyncMode.full_refresh,
     config: Mapping[str, Any] | None = None,
     state: list[AirbyteStateMessage] | None = None,
+    expecting_error: bool = False,
 ) -> EntrypointOutput:
     """Read one stream. The caller mocks the HTTP responses."""
     config = CONFIG if config is None else config
     stream = ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(sync_mode)
     catalog = CatalogBuilder().with_stream(stream).build()
-    return read(get_source(config, state, catalog), config, catalog, state)
+    expected_outcome = ExpectedOutcome.EXPECT_EXCEPTION if expecting_error else ExpectedOutcome.EXPECT_SUCCESS
+    return read(get_source(config, state, catalog), config, catalog, state, expected_outcome=expected_outcome)
+
+
+def stream_errors(output: EntrypointOutput, stream_name: str) -> list[AirbyteErrorTraceMessage]:
+    """The errors a read reported for one stream, without the summary error that closes a failed sync."""
+    errors = [message.trace.error for message in output.errors]
+    return [error for error in errors if error.stream_descriptor and error.stream_descriptor.name == stream_name]

@@ -1,9 +1,20 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
+from collections.abc import Mapping
 from typing import Any
 
 from airbyte_cdk.test.mock_http import HttpResponse
+
+
+# Error bodies that are not in the shape of Datadog's `APIErrorResponse`, by test id.
+UNEXPECTED_ERROR_BODIES = {
+    "not-json": "<html>Forbidden</html>",
+    "json-not-an-object": json.dumps(["Forbidden"]),
+    "no-errors": json.dumps({"message": "Forbidden"}),
+    "errors-not-strings": json.dumps({"errors": [{"detail": "Forbidden"}, 403, None]}),
+    "errors-not-a-list": json.dumps({"errors": 403}),
+}
 
 
 class DatadogPaginatedResponseBuilder:
@@ -23,3 +34,8 @@ class DatadogPaginatedResponseBuilder:
 
     def build(self) -> HttpResponse:
         return HttpResponse(body=json.dumps(self._body), status_code=200)
+
+
+def datadog_error(status_code: int, errors: list[str], headers: Mapping[str, str] | None = None) -> HttpResponse:
+    """Builds an error answer in the shape of Datadog's `APIErrorResponse`."""
+    return HttpResponse(body=json.dumps({"errors": errors}), status_code=status_code, headers=headers or {})

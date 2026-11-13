@@ -1,11 +1,12 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-from unittest import TestCase
+from unittest import TestCase, mock
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.test.mock_http import HttpMocker
-from unit_tests.conftest import read_stream
+from unit_tests.conftest import read_stream, stream_errors
 from unit_tests.mock_server.request_builder import DatadogRequestBuilder
-from unit_tests.mock_server.response_builder import DatadogPaginatedResponseBuilder
+from unit_tests.mock_server.response_builder import DatadogPaginatedResponseBuilder, datadog_error
 
 
 def _request() -> DatadogRequestBuilder:
@@ -64,3 +65,28 @@ class TestMetricsStream(TestCase):
         assert output.errors == []
         assert output.records == []
         http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_fails_as_transient_on_an_expired_page_cursor(self, http_mocker: HttpMocker) -> None:
+        expired_page = _request().with_query_param("page[cursor]", "expired-cursor").build()
+        http_mocker.get(
+            _request().build(),
+            DatadogPaginatedResponseBuilder("data")
+            .with_records([{"id": "metric.one"}])
+            .with_meta({"pagination": {"next_cursor": "expired-cursor"}})
+            .build(),
+        )
+        http_mocker.get(expired_page, datadog_error(410, ["Gone"]))
+
+        # Without its filter the CDK retries a 410, and the retries would sleep for real.
+        with mock.patch("time.sleep"):
+            output = read_stream("metrics", expecting_error=True)
+
+        errors = stream_errors(output, "metrics")
+        assert [(error.failure_type, error.message) for error in errors] == [
+            (
+                FailureType.transient_error,
+                "The page cursor of the Datadog metrics list is expired. The next sync reads the list from the first page.",
+            )
+        ]
+        http_mocker.assert_number_of_calls(expired_page, 1)

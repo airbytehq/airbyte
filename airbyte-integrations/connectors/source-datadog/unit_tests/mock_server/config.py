@@ -17,5 +17,9 @@ class ConfigBuilder:
         self._config["end_date"] = end_date
         return self
 
+    def with_num_workers(self, num_workers: int) -> "ConfigBuilder":
+        self._config["num_workers"] = num_workers
+        return self
+
     def build(self) -> dict[str, Any]:
         return dict(self._config)
