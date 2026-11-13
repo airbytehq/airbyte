@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,10 +12,12 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str, order_updated_at: Optional[str] = None
+) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}","order_updated_at":{json.dumps(order_updated_at)},"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
@@ -70,6 +72,43 @@ def _order_jsonl_without_order_created_at(order_jsonl: str, keep_key_as_null: bo
     else:
         order.pop("order_created_at")
     return json.dumps(order)
+
+
+@pytest.mark.parametrize("order_updated_at", ["2026-09-11T05:49:43Z", "2026-09-11T06:00:00Z"])
+def test_transactions_graphql_emits_updated_transactions(requests_mock, bulk_job_completed_response, auth_config, order_updated_at) -> None:
+    stream, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [
+            _order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", order_updated_at),
+            _order_jsonl(2, "2026-09-11T04:00:00Z", 1002, "2026-09-11T05:07:00Z", "2026-09-11T05:00:00Z"),
+        ],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert [(record["id"], record["status"]) for record in records] == [(1001, "SUCCESS")]
+    assert all("order_updated_at" not in record for record in records)
+    assert stream.get_updated_state({"created_at": "2026-09-11T05:49:43+00:00"}, records[0]) == {"created_at": "2026-09-11T05:49:43+00:00"}
+
+
+@pytest.mark.parametrize("keep_key_as_null", [False, True])
+def test_transactions_graphql_missing_order_updated_at_is_dropped(
+    requests_mock, bulk_job_completed_response, auth_config, keep_key_as_null
+) -> None:
+    order = json.loads(_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z"))
+    if not keep_key_as_null:
+        order.pop("order_updated_at")
+
+    _, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [json.dumps(order)],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert records == []
 
 
 def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines: List[str], state_value: str):
