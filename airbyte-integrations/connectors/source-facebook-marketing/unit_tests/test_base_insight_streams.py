@@ -260,6 +260,54 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-10-01")
+    @pytest.mark.parametrize("out_of_order", [False, True])
+    @pytest.mark.parametrize("empty_results", [False, True])
+    @pytest.mark.parametrize("invariant", ["cursor", "slices"])
+    def test_saved_cursor_lookback_state(self, mocker, api, async_manager_mock, out_of_order, empty_results, invariant):
+        account_id = "unknown_account"
+        cursor = date(2026, 9, 24)
+        first_date = cursor - timedelta(days=28)
+        end_date = cursor + timedelta(days=2)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 8, 1),
+            end_date=datetime.combine(end_date, datetime.min.time()),
+            insights_lookback_window=28,
+        )
+        saved_state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": ["2026-08-01", "2026-09-05", "2026-09-12", cursor.isoformat()]},
+            "time_increment": 1,
+        }
+        requested_dates = []
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            requested_dates.extend(job.interval.start for job in jobs)
+            if out_of_order:
+                jobs = jobs[1:3] + jobs[:1] + jobs[3:]
+            for job in jobs:
+                record = mocker.Mock()
+                record.export_all_data.return_value = {"date_start": job.interval.start.isoformat()}
+                job.get_result = mocker.Mock(return_value=[] if empty_results else [record])
+                yield job
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        previous_cursor = cursor.isoformat()
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            assert len(records) == (0 if empty_results else 1)
+            emitted_state = stream.state[account_id]
+            if invariant == "cursor":
+                assert emitted_state["date_start"] >= previous_cursor
+                previous_cursor = emitted_state["date_start"]
+            else:
+                assert all(slice_start > emitted_state["date_start"] for slice_start in emitted_state["slices"])
+
+        assert requested_dates == [first_date + timedelta(days=i) for i in range((end_date - first_date).days + 1)]
+        assert stream.state[account_id] == {"date_start": end_date.isoformat(), "slices": []}
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -397,6 +445,9 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get("date_start"):
+            account_state["slices"] = [slice_start for slice_start in account_state["slices"] if slice_start > account_state["date_start"]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
