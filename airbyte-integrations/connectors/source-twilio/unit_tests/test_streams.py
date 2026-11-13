@@ -1003,3 +1003,105 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+_MESSAGES_URI = "/2010-04-01/Accounts/AC123/Messages.json"
+_MEDIA_URI = "/2010-04-01/Accounts/AC123/Messages/SM1/Media.json"
+_MESSAGE_WITH_MEDIA = {
+    "sid": "SM1",
+    "date_sent": "2022-11-15T09:00:00Z",
+    "num_media": "1",
+    "subresource_uris": {"media": _MEDIA_URI},
+}
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize("stale_entry_position", ["first", "last"])
+@pytest.mark.parametrize(
+    "stream_name,path,body_key,lower_key,upper_key,cursor_field,legacy_partition,current_partition,stale,fresh,window,emitted_cursor",
+    [
+        pytest.param(
+            "messages",
+            "/Accounts/AC123/Messages.json",
+            "messages",
+            "DateSent>",
+            "DateSent<",
+            "date_sent",
+            {"subresource_uri": _MESSAGES_URI},
+            {"subresource_uri": _MESSAGES_URI, "parent_slice": {}},
+            "2022-02-01T00:00:00Z",
+            "2022-11-15 10:00:00Z",
+            ("2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z"),
+            "2022-11-15 10:00:00Z",
+            id="messages",
+        ),
+        pytest.param(
+            "usage_records",
+            "/Accounts/AC123/Usage/Records/Daily.json",
+            "usage_records",
+            "StartDate",
+            "EndDate",
+            "start_date",
+            {"account_sid": "AC123", "date_created": "Tue, 17 Nov 2020 04:08:53 +0000"},
+            {"account_sid": "AC123", "parent_slice": {}},
+            "2022-02-01",
+            "2022-11-15",
+            ("2022-11-15", "2022-11-16"),
+            "2022-11-15",
+            id="usage_records",
+        ),
+        pytest.param(
+            "message_media",
+            "/Accounts/AC123/Messages/SM1/Media.json",
+            "media_list",
+            "DateCreated>",
+            "DateCreated<",
+            "date_created",
+            {"subresource_uri": _MEDIA_URI},
+            {"subresource_uri": _MEDIA_URI, "parent_slice": {"subresource_uri": _MESSAGES_URI, "parent_slice": {}}},
+            "2022-02-01T00:00:00Z",
+            "2022-11-15",
+            ("2022-11-15", "2022-11-16"),
+            "2022-11-15",
+            id="message_media",
+        ),
+    ],
+)
+def test_stale_legacy_partition_state_does_not_rewind_the_current_partition_cursor(
+    stream_name,
+    path,
+    body_key,
+    lower_key,
+    upper_key,
+    cursor_field,
+    legacy_partition,
+    current_partition,
+    stale,
+    fresh,
+    window,
+    emitted_cursor,
+    stale_entry_position,
+    requests_mock,
+):
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+    if stream_name == "message_media":
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": [_MESSAGE_WITH_MEDIA]})
+    child_matcher = requests_mock.get(f"{BASE}{path}", json={body_key: []})
+
+    stale_entry = {"partition": legacy_partition, "cursor": {cursor_field: stale}}
+    fresh_entry = {"partition": current_partition, "cursor": {cursor_field: fresh}}
+    states = [stale_entry, fresh_entry] if stale_entry_position == "first" else [fresh_entry, stale_entry]
+    stream_state = {"use_global_cursor": False, "states": states, "state": {cursor_field: fresh}, "lookback_window": 0}
+    state = StateBuilder().with_stream_state(stream_name, stream_state).build()
+
+    # start_date sits in the same month as the fresh cursor so the message_media parent (messages) is read in one window
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2022-11-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+    requested_windows = []
+    for request in child_matcher.request_history:
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        requested_windows.append((query[lower_key][0], query[upper_key][0]))
+    assert requested_windows == [window]
+
+    final_states = output.most_recent_state.stream_state.__dict__["states"]
+    assert final_states == [{"partition": current_partition, "cursor": {cursor_field: emitted_cursor}}]

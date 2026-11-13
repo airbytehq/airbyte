@@ -3,12 +3,13 @@
 #
 
 import copy
+import json
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -44,9 +45,33 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
         return custom_transform_function
 
 
+def _cursor_datetime(state: Mapping[str, Any]) -> datetime | None:
+    cursor_values = [value for value in (state.get("cursor") or {}).values() if isinstance(value, str)]
+    return ab_datetime_try_parse(cursor_values[0]) if len(cursor_values) == 1 else None
+
+
+def _keep_most_advanced_state_per_partition(states: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    A state can hold a legacy entry and a current entry for the same resource. Once migrated they share one
+    partition, and the CDK keeps whichever comes last, so a stale entry listed last would rewind the stream.
+    Keep the entry with the latest cursor instead. An entry whose cursor can't be read never replaces one that can;
+    if neither can be read, the last one wins as before.
+    """
+    latest_by_partition: dict[str, dict[str, Any]] = {}
+    for state in states:
+        key = json.dumps(state["partition"], sort_keys=True)
+        kept, candidate = latest_by_partition.get(key), _cursor_datetime(state)
+        kept_datetime = _cursor_datetime(kept) if kept else None
+        if kept and kept_datetime and (candidate is None or candidate < kept_datetime):
+            continue
+        latest_by_partition[key] = state
+    return list(latest_by_partition.values())
+
+
 class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
+    If that makes several entries share a partition, only the one with the latest cursor is kept.
 
     Initial:
       {
@@ -75,6 +100,8 @@ class TwilioStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
+        if "states" in stream_state:
+            stream_state["states"] = _keep_most_advanced_state_per_partition(stream_state["states"])
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
@@ -174,6 +201,7 @@ class TwilioUsageRecordsStateMigration(StateMigration):
             partition_state["cursor"] = state.get("cursor", {})
 
             new_state["states"].append(partition_state)
+        new_state["states"] = _keep_most_advanced_state_per_partition(new_state["states"])
         return new_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
@@ -234,6 +262,7 @@ class TwilioMessageMediaStateMigration(StateMigration):
             partition_state["cursor"] = state.get("cursor", {})
             new_state["states"].append(partition_state)
 
+        new_state["states"] = _keep_most_advanced_state_per_partition(new_state["states"])
         return new_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
