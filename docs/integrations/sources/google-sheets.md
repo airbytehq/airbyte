@@ -71,11 +71,7 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 4. Click **ENABLE**.
 5. Repeat these steps for the **Google Drive API**.
 
-#### Grant spreadsheet access
-
-1. Open the spreadsheet and click **Share**.
-2. Add the service account's email address from the `client_email` field in the JSON key file.
-3. Select **Viewer** and share the spreadsheet. You don't need to make the spreadsheet public. See Google's [file-sharing permissions](https://developers.google.com/workspace/drive/api/guides/manage-sharing) for details.
+If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, give your service account access to your spreadsheet by selecting it in Google Drive, clicking **Share**, and adding the service account's email address (the `client_email` value in your JSON key) with **Viewer** permission. See [Google's sharing instructions](https://support.google.com/drive/answer/7166529) for details.
 
 <!-- /env:oss -->
 
@@ -112,7 +108,7 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 <FieldAnchor field="names_conversion">
 7. (Optional) Enable **Convert Column Names to SQL-Compliant Format** to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` becomes `cafe_earnings_2022`. We recommend enabling this option if your destination is SQL-based, such as Postgres or MySQL. This option is off by default.
 </FieldAnchor>
-8. (Optional) Expand **Advanced** to configure the remaining settings. The column name sanitization options, **Read Empty Header Columns**, and **Stream Name Overrides** are described in [Configuration options](#configuration-options).
+8. (Optional) Configure the remaining settings. The column name sanitization options, **Read Empty Header Columns**, and **Stream Name Overrides** are described in [Configuration options](#configuration-options).
 <FieldAnchor field="batch_size">
    - For **Row Batch Size**, enter an integer to control how many rows the connector requests at a time. The default is `1000000`, which requests rows `2` through `1000002`, then `1000003` through `2000003`, and so on. Each request must finish within Google's [180-second processing limit](https://developers.google.com/workspace/sheets/api/limits). Lower this setting if requests time out, especially for sheets with many columns.
 </FieldAnchor>
@@ -320,6 +316,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.13.1 | 2026-11-10 | [91589](https://github.com/airbytehq/airbyte/pull/91589) | Update dependencies |
 | 0.13.0 | 2026-11-10 | [90237](https://github.com/airbytehq/airbyte/pull/90237) | Declare the sections of the stepped setup form (Connect spreadsheet, Review & set up) in the spec; the CDK's section-aware CHECK runs the declared check for the first section |
 | 0.12.47 | 2026-11-03 | [90255](https://github.com/airbytehq/airbyte/pull/90255) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.46 | 2026-11-03 | [90596](https://github.com/airbytehq/airbyte/pull/90596) | Update dependencies |

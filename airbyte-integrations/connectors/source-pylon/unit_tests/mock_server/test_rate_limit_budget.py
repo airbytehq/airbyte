@@ -89,6 +89,10 @@ def test_http_response_updates_the_live_budget(region: str, base: str) -> None:
 
 
 ENDPOINTS = [
+    ("GET", "/audit-logs", 300),
+    ("GET", "/macro-groups", 300),
+    ("GET", "/surveys", 300),
+    ("GET", "/training-data", 300),
     ("GET", "/activity-types", 30),
     ("GET", "/issue-statuses", 30),
     ("POST", "/issues/search", 120),
@@ -105,6 +109,15 @@ ENDPOINTS = [
     ("GET", "/ticket-forms", 300),
     ("GET", "/user-roles", 300),
 ]
+
+
+@pytest.mark.parametrize("base", [BASE, "https://api.eu.usepylon.com"])
+def test_training_data_get_policy_does_not_match_post(budget: HttpAPIBudget, base: str) -> None:
+    policy = budget.get_matching_policy(requests.Request("GET", base + "/training-data"))
+    assert policy is not None
+    request = requests.Request("POST", base + "/training-data")
+    assert not policy.matches(request)
+    assert budget.get_matching_policy(request) is None
 
 
 @pytest.fixture

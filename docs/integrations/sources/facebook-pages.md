@@ -110,7 +110,7 @@ For programmatic configuration, use these parameter names:
 | :--- | :---: | :--- |
 | `access_token` | Yes | Long-lived Page access token for the Facebook Page. The connector also accepts a long-lived User access token that can generate a Page access token for the configured Page. |
 | `page_id` | Yes | Facebook Page ID. |
-| `page_size` | No | Number of records to request per page for the `post` and `post_insights` streams. Defaults to `100`. Valid values are `1` through `100`. |
+| `page_size` | No | Number of records to request per page for the paginated streams: `post`, `post_insights`, `video_insights`, `reel_insights`, `comment`, and `rating`. Defaults to `100`. Valid values are `1` through `100`. |
 | `page_insights_metrics` | No | Array of metrics for the `page_insights` stream. Replaces the defaults. |
 | `post_insights_metrics` | No | Array of metrics for the `post_insights` stream. Replaces the defaults. |
 | `video_insights_metrics` | No | Array of lifetime metrics for the `video_insights` stream. Replaces the defaults. |
@@ -151,7 +151,7 @@ The Graph API returns this error (error code 1, often with HTTP 500) when a resp
 If the error keeps recurring, reduce the size of each response:
 
 - **Deselect fields in the Schema tab.** Open your connection's **Schema** tab and deselect fields you don't need for the affected stream. The connector requests only the selected fields. Applies to the `page` and `post` streams.
-- **Reduce the page size.** Set **Page Size** in the source settings to a lower value, such as 25 or 50. Applies to the `post` and `post_insights` streams.
+- **Reduce the page size.** Set **Page Size** in the source settings to a lower value, such as 25 or 50. Applies to the `post`, `post_insights`, `video_insights`, `reel_insights`, `comment`, and `rating` streams.
 
 ### `page` stream fails for New Pages Experience Pages
 
@@ -223,7 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.0   | 2026-11-09 | [90129](https://github.com/airbytehq/airbyte/pull/90129)       | Move from Graph API v24.0 to v26.0.                                                                                                                                    |
+| 3.3.0   | 2026-11-10 | [90129](https://github.com/airbytehq/airbyte/pull/90129)       | Move from Graph API v24.0 to v26.0.                                                                                                                                    |
 | 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
 | 3.1.0   | 2026-11-09 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
 | 3.0.2   | 2026-11-09 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |
