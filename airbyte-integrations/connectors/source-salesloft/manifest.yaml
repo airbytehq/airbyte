@@ -848,11 +848,12 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: FAIL
+                    failure_type: config_error
                     error_message_contains: required scope access not included
                     error_message: >-
-                      Scoped Fields require a Premier Salesloft Plan - Requested
-                      scoped field(s) could not be returned, required scope
-                      access not included
+                      Salesloft email content access is required for the
+                      emails_scoped_fields stream. Disable this stream or grant
+                      the token access to email_contents:read scoped fields.
         record_selector:
           type: RecordSelector
           extractor:
