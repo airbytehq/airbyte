@@ -22,7 +22,7 @@ class StaticOperationProvider(
                 syncMode,
                 schema,
                 matchingKeys,
-            )
+            ),
         )
     }
 }

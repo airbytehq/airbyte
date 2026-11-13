@@ -16,10 +16,10 @@ import io.airbyte.cdk.load.model.retriever.Retriever
 @JsonSubTypes(
     JsonSubTypes.Type(
         value = CompositeCatalogOperations::class,
-        name = "CompositeCatalogOperations"
+        name = "CompositeCatalogOperations",
     ),
     JsonSubTypes.Type(value = DynamicCatalogOperation::class, name = "DynamicCatalogOperation"),
-    JsonSubTypes.Type(value = StaticCatalogOperation::class, name = "StaticCatalogOperation")
+    JsonSubTypes.Type(value = StaticCatalogOperation::class, name = "StaticCatalogOperation"),
 )
 sealed interface CatalogOperation
 
@@ -28,7 +28,7 @@ sealed interface CatalogOperation
  * check if the configuration is valid.
  */
 data class CompositeCatalogOperations(
-    @JsonProperty("operations") val operations: List<CatalogOperation>
+    @JsonProperty("operations") val operations: List<CatalogOperation>,
 ) : CatalogOperation
 
 /**

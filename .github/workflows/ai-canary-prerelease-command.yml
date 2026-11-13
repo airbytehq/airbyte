@@ -35,7 +35,7 @@ jobs:
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v3.0.0
@@ -60,7 +60,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Canary Prerelease
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}

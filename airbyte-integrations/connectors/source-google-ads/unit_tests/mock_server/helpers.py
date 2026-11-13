@@ -10,7 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 MANIFEST_PATH = Path(__file__).parent.parent.parent / "source_google_ads" / "manifest.yaml"
-API_BASE = "https://googleads.googleapis.com/v20"
+API_BASE = "https://googleads.googleapis.com/v23"
 OAUTH_URL = "https://www.googleapis.com/oauth2/v3/token"
 
 REPORT_MAPPING = {
@@ -96,6 +96,24 @@ def build_error_response(status_code: int, error_message: str = "error") -> Http
     )
 
 
+def build_google_ads_query_error_response(query_error: str, message: str, wrap_in_list: bool = True) -> HttpResponse:
+    body = {
+        "error": {
+            "code": 400,
+            "message": "Request contains an invalid argument.",
+            "status": "INVALID_ARGUMENT",
+            "details": [
+                {
+                    "@type": "type.googleapis.com/google.ads.googleads.v23.errors.GoogleAdsFailure",
+                    "errors": [{"errorCode": {"queryError": query_error}, "message": message}],
+                    "requestId": "test-request-id",
+                }
+            ],
+        }
+    }
+    return HttpResponse(body=json.dumps([body] if wrap_in_list else body), status_code=400)
+
+
 def build_accessible_accounts_response(customer_ids: List[str]) -> HttpResponse:
     return HttpResponse(
         body=json.dumps({"resourceNames": [f"customers/{cid}" for cid in customer_ids]}),
@@ -137,7 +155,7 @@ def mock_oauth(
     client_secret: str = "test_client_secret",
     refresh_token: str = "test_refresh_token",
 ) -> None:
-    body = f"grant_type=refresh_token" f"&client_id={client_id}" f"&client_secret={client_secret}" f"&refresh_token={refresh_token}"
+    body = f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
     http_mocker.post(
         HttpRequest(url=OAUTH_URL, body=body),
         HttpResponse(

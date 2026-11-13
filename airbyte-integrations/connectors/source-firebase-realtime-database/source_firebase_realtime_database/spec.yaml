@@ -11,7 +11,11 @@ connectionSpecification:
     database_name:
       title: Database Name
       type: string
-      description: Database name (This will be part of the url pointing to the database, https://<database_name>.firebaseio.com/)
+      description: Database name (This will be part of the url pointing to the database, https://<database_name>.firebaseio.com/). For databases outside us-central1, enter the full database URL or hostname instead, e.g. https://<database_name>.europe-west1.firebasedatabase.app (see https://firebase.google.com/docs/database/locations)
+      examples:
+        - my-database
+        - my-database.europe-west1.firebasedatabase.app
+        - https://my-database.asia-southeast1.firebasedatabase.app
     google_application_credentials:
       title: Service Account Key JSON
       type: string

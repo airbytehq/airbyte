@@ -64,7 +64,7 @@ object TestFixtures {
                     """"primary_key":""" + if (pk == null) "{}" else """{"${id.id}":$pk }""",
                     """"cursors":""" + if (cursor == null) "{}" else """{"${ts.id}":"$cursor"} """,
                 )
-                .joinToString(",", "{", "}")
+                .joinToString(",", "{", "}"),
         )
 
     fun record(
@@ -74,7 +74,7 @@ object TestFixtures {
         JdbcSelectQuerier.ResultRow(
             mutableMapOf(
                 "id" to FieldValueEncoder(pk, IntCodec),
-                "ts" to FieldValueEncoder(cursor, LocalDateCodec)
+                "ts" to FieldValueEncoder(cursor, LocalDateCodec),
             ),
             mutableMapOf(),
             mutableMapOf(),
@@ -94,7 +94,7 @@ object TestFixtures {
                 global,
                 checkpointTargetInterval,
                 maxConcurrency,
-                maxSnapshotReadTime
+                maxSnapshotReadTime,
             )
 
         val concurrencyResource = ConcurrencyResource(configuration)
@@ -103,7 +103,7 @@ object TestFixtures {
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
             concurrencyResource,
-            ResourceAcquirer(listOf(concurrencyResource))
+            ResourceAcquirer(listOf(concurrencyResource)),
         )
     }
 
@@ -111,7 +111,7 @@ object TestFixtures {
         DefaultJdbcPartitionFactory(
             this,
             BufferingCatalogValidationFailureHandler(),
-            MockSelectQueryGenerator
+            MockSelectQueryGenerator,
         )
 
     fun DefaultJdbcPartitionFactory.assertFailures(vararg failures: CatalogValidationFailure) {
@@ -141,20 +141,28 @@ object TestFixtures {
     ) : JdbcSourceConfiguration {
         override val realHost: String
             get() = TODO("Not yet implemented")
+
         override val jdbcUrlFmt: String
             get() = TODO("Not yet implemented")
+
         override val jdbcProperties: Map<String, String>
             get() = TODO("Not yet implemented")
+
         override val namespaces: Set<String>
             get() = TODO("Not yet implemented")
+
         override val tableFilters: List<TableFilter>
             get() = TODO("Not yet implemented")
+
         override val realPort: Int
             get() = TODO("Not yet implemented")
+
         override val sshTunnel: SshTunnelMethodConfiguration
             get() = TODO("Not yet implemented")
+
         override val sshConnectionOptions: SshConnectionOptions
             get() = TODO("Not yet implemented")
+
         override val resourceAcquisitionHeartbeat: Duration
             get() = TODO("Not yet implemented")
     }
@@ -163,7 +171,7 @@ object TestFixtures {
 
         override fun executeQuery(
             q: SelectQuery,
-            parameters: SelectQuerier.Parameters
+            parameters: SelectQuerier.Parameters,
         ): SelectQuerier.Result {
             val mockedQuery: MockedQuery? = mockedQueries.removeFirstOrNull()
             Assertions.assertNotNull(mockedQuery, q.sql)
@@ -171,13 +179,16 @@ object TestFixtures {
             Assertions.assertEquals(parameters, mockedQuery.expectedParameters, q.sql)
             return object : SelectQuerier.Result {
                 val wrapped: Iterator<NativeRecordPayload> = mockedQuery.results.iterator()
+
                 override fun hasNext(): Boolean = wrapped.hasNext()
+
                 override fun next(): SelectQuerier.ResultRow =
                     object : SelectQuerier.ResultRow {
                         override val data: NativeRecordPayload = wrapped.next()
                         override val changes: Map<EmittedField, FieldValueChange> = emptyMap()
                         override val nonEmittedData: NativeRecordPayload = mutableMapOf()
                     }
+
                 override fun close() {}
             }
         }
@@ -186,7 +197,7 @@ object TestFixtures {
     data class MockedQuery(
         val expectedQuerySpec: SelectQuerySpec,
         val expectedParameters: SelectQuerier.Parameters,
-        val results: List<NativeRecordPayload>
+        val results: List<NativeRecordPayload>,
     ) {
         constructor(
             expectedQuerySpec: SelectQuerySpec,
@@ -208,14 +219,14 @@ object TestFixtures {
             timestamp: OffsetDateTime,
             globalStateValue: OpaqueStateValue?,
             stream: Stream,
-            recordData: ObjectNode
+            recordData: ObjectNode,
         ) {}
 
         override fun decorateRecordData(
             timestamp: OffsetDateTime,
             globalStateValue: OpaqueStateValue?,
             stream: Stream,
-            recordData: NativeRecordPayload
+            recordData: NativeRecordPayload,
         ) {}
     }
 
@@ -228,6 +239,6 @@ object TestFixtures {
             DataChannelFormat.JSONL,
             DataChannelMedium.STDIO,
             8192,
-            ClockFactory().fixed()
+            ClockFactory().fixed(),
         )
 }

@@ -59,7 +59,7 @@ interface ObjectStorageCompressionSpecificationProvider {
     JsonSubTypes.Type(value = GZIPCompressionSpecification::class, name = "GZIP"),
 )
 sealed class ObjectStorageCompressionSpecification(
-    @JsonProperty("compression_type") open val compressionType: Type
+    @JsonProperty("compression_type") open val compressionType: Type,
 ) {
     enum class Type(@get:JsonValue val typeName: String) {
         NoCompression("No Compression"),
@@ -69,16 +69,16 @@ sealed class ObjectStorageCompressionSpecification(
 
 @JsonSchemaTitle("No Compression")
 class NoCompressionSpecification(
-    @JsonProperty("compression_type") override val compressionType: Type = Type.NoCompression
+    @JsonProperty("compression_type") override val compressionType: Type = Type.NoCompression,
 ) : ObjectStorageCompressionSpecification(compressionType)
 
 @JsonSchemaTitle("GZIP")
 class GZIPCompressionSpecification(
-    @JsonProperty("compression_type") override val compressionType: Type = Type.GZIP
+    @JsonProperty("compression_type") override val compressionType: Type = Type.GZIP,
 ) : ObjectStorageCompressionSpecification(compressionType)
 
 data class ObjectStorageCompressionConfiguration<T : OutputStream>(
-    val compressor: StreamProcessor<T>
+    val compressor: StreamProcessor<T>,
 )
 
 interface ObjectStorageCompressionConfigurationProvider<T : OutputStream> {

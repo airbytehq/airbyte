@@ -110,7 +110,7 @@ jobs:
 
       - name: Checkout PR code
         if: steps.validate.outputs.valid == 'true'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           # Use refs/pull/N/head which works for both fork and non-fork PRs
@@ -176,7 +176,7 @@ jobs:
 
       - name: Start AI documentation recommendation session
         if: steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}

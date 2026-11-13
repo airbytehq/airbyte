@@ -15,12 +15,12 @@ class HubSpotCheckTest :
             listOf(
                 CheckTestConfig(
                     configContents = Files.readString(Path.of("secrets/config.json")),
-                )
+                ),
             ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(
-                    configContents = Files.readString(Path.of("secrets/invalid-config.json"))
+                    configContents = Files.readString(Path.of("secrets/invalid-config.json")),
                 ) to Pattern.compile("Response from server is.*"),
             ),
     )
