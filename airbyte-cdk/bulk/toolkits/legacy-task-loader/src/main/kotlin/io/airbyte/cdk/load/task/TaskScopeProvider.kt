@@ -29,12 +29,11 @@ class TaskScopeProvider(config: DestinationConfiguration) {
     private val cancelAtEndOfSync = ConcurrentHashSet<Job>()
 
     suspend fun launch(task: Task) {
-        val job =
-            ioScope.launch {
-                log.info { "Launching $task" }
-                task.execute()
-                log.info { "Task $task completed" }
-            }
+        val job = ioScope.launch {
+            log.info { "Launching $task" }
+            task.execute()
+            log.info { "Task $task completed" }
+        }
         when (task.terminalCondition) {
             is OnEndOfSync -> cancelAtEndOfSync.add(job)
             is OnSyncFailureOnly -> killOnSyncFailure.add(AnnotatedJob(job, task))
@@ -70,7 +69,6 @@ class TaskScopeProvider(config: DestinationConfiguration) {
                 it.job.join()
                 log.info { "Task completed" }
             }
-        }
-            ?: log.error { "Timed out waiting for tasks to complete" }
+        } ?: log.error { "Timed out waiting for tasks to complete" }
     }
 }

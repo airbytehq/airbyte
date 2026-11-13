@@ -36,7 +36,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseConnectorTest(
     val testDbExecutor: TestDbExecutor,
-    private val testAssetResourceNamer: TestAssetResourceNamer
+    private val testAssetResourceNamer: TestAssetResourceNamer,
 ) {
 
     private val log = KotlinLogging.logger {}

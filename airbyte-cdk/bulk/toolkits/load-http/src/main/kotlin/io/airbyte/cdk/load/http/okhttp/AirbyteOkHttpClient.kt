@@ -16,12 +16,12 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 class AirbyteOkHttpClient(
     private val client: OkHttpClient,
-    private val retryPolicies: List<RetryPolicy<okhttp3.Response>>
+    private val retryPolicies: List<RetryPolicy<okhttp3.Response>>,
 ) : HttpClient {
 
     constructor(
         client: OkHttpClient,
-        retryPolicy: RetryPolicy<okhttp3.Response>
+        retryPolicy: RetryPolicy<okhttp3.Response>,
     ) : this(client, listOf(retryPolicy))
 
     constructor(

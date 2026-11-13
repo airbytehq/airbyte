@@ -1,108 +1,88 @@
 # Basecamp
 
-<HideInUI>
-
-This page contains the setup guide and reference information for the [Basecamp](https://basecamp.com/) source connector.
-
-</HideInUI>
+This page guides you through configuring the Basecamp source connector to sync project, schedule, to-do, and message data from [Basecamp 3](https://basecamp.com/) into your destination. The connector uses the [Basecamp 3 REST API](https://github.com/basecamp/bc3-api) and authenticates with OAuth 2.0 through [37signals Launchpad](https://launchpad.37signals.com/).
 
 ## Prerequisites
 
-- A Basecamp account with access to at least one project
-- A registered OAuth application on the [37signals Launchpad](https://launchpad.37signals.com/integrations)
-- Your Basecamp Account ID
+- A Basecamp account on Basecamp 3 (accounts on Basecamp 2 and Basecamp Classic use a different API and aren't supported).
+- Your Basecamp **Account ID**.
+- A registered OAuth integration on 37signals Launchpad, which provides a **Client ID** and **Client secret**.
+- A long-lived OAuth 2.0 **Refresh token** issued for that integration.
+
+### Find your Account ID
+
+Sign in to Basecamp and open any page in your account. The numeric segment immediately after the host in the URL is your account ID. For example, if the URL is `https://3.basecamp.com/1234567/projects`, your account ID is `1234567`. All API requests to Basecamp are scoped to this ID.
+
+### Register an OAuth integration
+
+1. Go to [37signals Launchpad integrations](https://launchpad.37signals.com/integrations) and click **New integration**.
+2. Enter a name, your company, and a website or contact address. 37signals uses this information to contact integration owners, so provide values you can receive mail at.
+3. For **Redirect URI**, enter any URL you control. The connector doesn't use this URL, but 37signals requires one. If you don't have one handy, use a placeholder like `https://example.com/oauth`.
+4. Save the integration. Launchpad displays a **Client ID** and **Client secret**. Keep both values safe; you need them for the connector and to complete the OAuth flow.
+
+### Obtain a refresh token
+
+The connector refreshes its own access tokens at runtime, but you must supply a refresh token the first time you set up the source. To get one, complete a full OAuth 2.0 authorization code flow against 37signals Launchpad once, using the client ID and secret you just created.
+
+Follow the steps in the [Basecamp authentication guide](https://github.com/basecamp/api/blob/master/sections/authentication.md) to exchange an authorization code for an access token and refresh token. The relevant endpoints are:
+
+- Authorization: `https://launchpad.37signals.com/authorization/new`
+- Token exchange: `https://launchpad.37signals.com/authorization/token`
+
+According to the [37signals authentication documentation](https://github.com/basecamp/api/blob/master/sections/authentication.md), access tokens currently expire after two weeks. The connector uses your refresh token to request new access tokens.
+
+Any OAuth 2.0 client library can perform this flow. If you'd prefer a ready-made tool, the community-maintained [basecampy3](https://github.com/phistrom/basecampy3) CLI walks you through the flow and prints the resulting tokens. Record the `refresh_token` value; that's what Airbyte needs.
+
+Refresh tokens issued by 37signals do not expire unless you revoke the integration, so you can reuse the same value across syncs.
 
 ## Setup guide
 
-### Step 1: Register an OAuth application
-
-1. Go to [37signals Launchpad](https://launchpad.37signals.com/integrations) and sign in with your Basecamp credentials.
-2. Register a new application. You will receive a **Client ID** and **Client Secret**.
-3. Provide a **Redirect URI** during registration. If you don't have one ready, you can use a placeholder like `http://localhost`.
-
-### Step 2: Obtain a refresh token
-
-This connector authenticates using OAuth 2.0 with a refresh token. To obtain one, you must complete the OAuth authorization flow:
-
-1. Direct a browser to the following URL, replacing the placeholders with your Client ID and Redirect URI:
-
-   ```text
-   https://launchpad.37signals.com/authorization/new?type=web_server&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI
-   ```
-
-2. Authorize the application when prompted. Basecamp redirects you to your Redirect URI with a `code` parameter.
-3. Exchange the authorization code for tokens by making a POST request:
-
-   ```text
-   POST https://launchpad.37signals.com/authorization/token
-   ```
-
-   Include `type=web_server`, your `client_id`, `redirect_uri`, `client_secret`, and the `code` from the previous step.
-
-4. The response contains an `access_token` and a `refresh_token`. Copy the **refresh_token** for use in the connector configuration.
-
-Alternatively, the [`basecampy3`](https://github.com/phistrom/basecampy3) Python library provides a CLI tool that automates this flow.
-
-### Step 3: Find your Account ID
-
-1. After obtaining your access token, make a GET request to `https://launchpad.37signals.com/authorization.json` with the `Authorization: Bearer YOUR_ACCESS_TOKEN` header.
-2. In the response, find the account with `"product": "bc3"`. The `id` field is your **Account ID**.
-
-Alternatively, your Account ID is the number in your Basecamp URL: `https://3.basecamp.com/YOUR_ACCOUNT_ID/...`.
-
-### Step 4: Configure the connector in Airbyte
-
-1. Enter your **Account ID**.
-2. Set a **Start date** for incremental streams. Records updated before this date are not synced.
-3. Enter the **Client ID** and **Client Secret** from your OAuth application.
-4. Enter the **Refresh token** obtained in Step 2.
-
-## Supported sync modes
-
-The Basecamp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
-
-- Full Refresh
-- Incremental
-
-## Supported streams
-
-| Stream | Primary Key | Sync Modes | Description |
-|---|---|---|---|
-| [projects](https://github.com/basecamp/bc3-api/blob/master/sections/projects.md) | `id` | Full Refresh | Lists all active projects in the account. |
-| [schedules](https://github.com/basecamp/bc3-api/blob/master/sections/schedules.md) | `id` | Full Refresh | Schedule tools attached to each project. Child of `projects`. |
-| [schedule_entries](https://github.com/basecamp/bc3-api/blob/master/sections/schedule_entries.md) | `id` | Full Refresh | Individual entries within each schedule. Child of `schedules`. |
-| [todos](https://github.com/basecamp/bc3-api/blob/master/sections/todos.md) | `id` | Full Refresh, Incremental | To-do items across all projects. Uses `updated_at` as the cursor field. |
-| [messages](https://github.com/basecamp/bc3-api/blob/master/sections/messages.md) | `id` | Full Refresh, Incremental | Message board posts across all projects. Uses `updated_at` as the cursor field. |
-
-### Stream relationships
-
-The `schedules` stream is a child of `projects`, and `schedule_entries` is a child of `schedules`. During a sync, the connector first fetches all projects, then retrieves schedules for each project, and finally fetches entries for each schedule.
-
-## Limitations and troubleshooting
-
-### Rate limiting
-
-The Basecamp API enforces a rate limit of 50 requests per 10-second window per IP address. The API returns a `429 Too Many Requests` response with a `Retry-After` header when this limit is exceeded.
-
-### Token expiration
-
-Basecamp access tokens expire after two weeks. The connector uses the refresh token to obtain new access tokens automatically. If the refresh token itself becomes invalid, you need to re-authorize the application by repeating the OAuth flow.
-
-### Connector maturity
-
-This connector is in **Alpha** status and has **Community** support. It is a manifest-only (low-code) connector built with the Connector Builder.
-
-<HideInUI>
+1. In the Airbyte UI, create a new **Basecamp** source.
+2. Enter your **Account ID**.
+3. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. Incremental streams only emit records updated on or after this date.
+4. Paste the **Client ID**, **Client secret**, and **Refresh token** you obtained above into the matching fields.
+5. Click **Set up source**. Airbyte runs a connection check against the `projects` endpoint to validate your credentials.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `account_id` | `number` | Your Basecamp Account ID. Find it in your Basecamp URL or via the authorization endpoint. | |
-| `start_date` | `string` | Start date for incremental syncs in `YYYY-MM-DDTHH:MM:SSZ` format. Records updated before this date are not synced. | |
-| `client_id` | `string` | OAuth Client ID from your [37signals Launchpad](https://launchpad.37signals.com/integrations) application. | |
-| `client_secret` | `string` | OAuth Client Secret from your 37signals Launchpad application. | |
-| `client_refresh_token_2` | `string` | OAuth refresh token obtained through the authorization flow. | |
+| `account_id` | `number` | Your Basecamp Account ID. |  |
+| `start_date` | `string` | Start date used for incremental streams. Records updated before this date aren't synced. |  |
+| `client_id` | `string` | OAuth application Client ID from [37signals Launchpad](https://launchpad.37signals.com/integrations). |  |
+| `client_secret` | `string` | OAuth application Client secret. |  |
+| `client_refresh_token_2` | `string` | OAuth 2.0 refresh token obtained by completing the Launchpad authorization flow once. |  |
+
+## Supported sync modes
+
+The Basecamp source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes):
+
+- Full Refresh | Overwrite
+- Full Refresh | Append
+- Incremental | Append (for streams that expose an `updated_at` cursor)
+- Incremental | Append + Deduped (for streams that expose an `updated_at` cursor)
+
+## Supported streams
+
+| Stream | Primary key | Incremental | Notes |
+|--------|-------------|-------------|-------|
+| [`projects`](https://github.com/basecamp/bc3-api/blob/master/sections/projects.md) | `id` | ❌ | Active projects (buckets) in the account. Used as the parent stream for schedules. |
+| [`schedules`](https://github.com/basecamp/bc3-api/blob/master/sections/schedules.md) | `id` | ❌ | Schedule tools attached to each project. |
+| [`schedule_entries`](https://github.com/basecamp/bc3-api/blob/master/sections/schedule_entries.md) | `id` | ❌ | Events listed in each project's schedule. |
+| [`todos`](https://github.com/basecamp/bc3-api/blob/master/sections/todos.md) | `id` | ✅ (cursor: `updated_at`) | To-do recordings across all projects. |
+| [`messages`](https://github.com/basecamp/bc3-api/blob/master/sections/messages.md) | `id` | ✅ (cursor: `updated_at`) | Message board posts across all projects. |
+
+The `todos` and `messages` streams use Basecamp's `projects/recordings.json` endpoint, which returns records sorted by `updated_at` in descending order. The connector walks the result set until it reaches the configured start date, then stops — Basecamp doesn't offer a server-side `updated_since` filter for this endpoint.
+
+## Performance considerations
+
+- Basecamp applies dynamic, multi-dimensional rate limits. The first limit you typically encounter is around **50 requests per 10-second window per IP**. The connector retries `429 Too Many Requests` responses using the `Retry-After` header.
+- All requests are scoped to a single account (the connector's `url_base` is `https://3.basecampapi.com/{account_id}/`).
+- To sync multiple Basecamp accounts, create one Airbyte source per account.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -111,7 +91,31 @@ This connector is in **Alpha** status and has **Community** support. It is a man
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.35 | 2026-04-01 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.0.59 | 2026-11-10 | [91359](https://github.com/airbytehq/airbyte/pull/91359) | Update dependencies |
+| 0.0.58 | 2026-11-03 | [90471](https://github.com/airbytehq/airbyte/pull/90471) | Update dependencies |
+| 0.0.57 | 2026-10-27 | [89806](https://github.com/airbytehq/airbyte/pull/89806) | Update dependencies |
+| 0.0.56 | 2026-10-20 | [89110](https://github.com/airbytehq/airbyte/pull/89110) | Update dependencies |
+| 0.0.55 | 2026-10-13 | [88511](https://github.com/airbytehq/airbyte/pull/88511) | Update dependencies |
+| 0.0.54 | 2026-10-08 | [88363](https://github.com/airbytehq/airbyte/pull/88363) | Replace the default Airbyte icon with the Basecamp logo |
+| 0.0.53 | 2026-10-06 | [87773](https://github.com/airbytehq/airbyte/pull/87773) | Update dependencies |
+| 0.0.52 | 2026-09-29 | [87071](https://github.com/airbytehq/airbyte/pull/87071) | Update dependencies |
+| 0.0.51 | 2026-09-22 | [86516](https://github.com/airbytehq/airbyte/pull/86516) | Update dependencies |
+| 0.0.50 | 2026-09-15 | [85972](https://github.com/airbytehq/airbyte/pull/85972) | Update dependencies |
+| 0.0.49 | 2026-09-08 | [85390](https://github.com/airbytehq/airbyte/pull/85390) | Update dependencies |
+| 0.0.48 | 2026-08-18 | [84494](https://github.com/airbytehq/airbyte/pull/84494) | Update dependencies |
+| 0.0.47 | 2026-08-11 | [83829](https://github.com/airbytehq/airbyte/pull/83829) | Update dependencies |
+| 0.0.46 | 2026-08-04 | [83358](https://github.com/airbytehq/airbyte/pull/83358) | Update dependencies |
+| 0.0.45 | 2026-07-28 | [82830](https://github.com/airbytehq/airbyte/pull/82830) | Update dependencies |
+| 0.0.44 | 2026-07-21 | [82310](https://github.com/airbytehq/airbyte/pull/82310) | Update dependencies |
+| 0.0.43 | 2026-07-14 | [81736](https://github.com/airbytehq/airbyte/pull/81736) | Update dependencies |
+| 0.0.42 | 2026-06-30 | [80974](https://github.com/airbytehq/airbyte/pull/80974) | Update dependencies |
+| 0.0.41 | 2026-06-23 | [80375](https://github.com/airbytehq/airbyte/pull/80375) | Update dependencies |
+| 0.0.40 | 2026-06-16 | [79765](https://github.com/airbytehq/airbyte/pull/79765) | Update dependencies |
+| 0.0.39 | 2026-06-09 | [79215](https://github.com/airbytehq/airbyte/pull/79215) | Update dependencies |
+| 0.0.38 | 2026-06-02 | [78583](https://github.com/airbytehq/airbyte/pull/78583) | Update dependencies |
+| 0.0.37 | 2026-04-28 | [77177](https://github.com/airbytehq/airbyte/pull/77177) | Update dependencies |
+| 0.0.36 | 2026-04-21 | [76843](https://github.com/airbytehq/airbyte/pull/76843) | Bump SDM base image to stable 7.17.2 |
+| 0.0.35 | 2026-04-02 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
 | 0.0.33 | 2026-03-17 | [75000](https://github.com/airbytehq/airbyte/pull/75000) | Update dependencies |
 | 0.0.32 | 2026-02-24 | [73800](https://github.com/airbytehq/airbyte/pull/73800) | Update dependencies |
@@ -148,5 +152,3 @@ This connector is in **Alpha** status and has **Community** support. It is a man
 | 0.0.1 | 2024-08-12 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>
-
-</HideInUI>

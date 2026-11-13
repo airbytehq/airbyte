@@ -18,3 +18,7 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 The Spree Commerce schema is described in the [Spree Internals](https://dev-docs.spreecommerce.org/internals/) section of the Spree docs. Otherwise, the schema will follow the rules of the MySQL or Postgres connectors.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

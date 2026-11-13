@@ -62,7 +62,7 @@ internal class S3CsvWriterTest {
                 // _PowerMockito_ does, but I didn't want to set up that additional dependency.
                 val arguments = context.arguments()
                 streamTransferManagerConstructorArguments.add(
-                    StreamTransferManagerArguments(arguments[0] as String, arguments[1] as String)
+                    StreamTransferManagerArguments(arguments[0] as String, arguments[1] as String),
                 )
 
                 Mockito.doReturn(mock).`when`(mock).numUploadThreads(ArgumentMatchers.anyInt())
@@ -94,7 +94,7 @@ internal class S3CsvWriterTest {
                         capturer.write(
                             invocation.getArgument(0),
                             invocation.getArgument(1),
-                            invocation.getArgument(2)
+                            invocation.getArgument(2),
                         )
                         null
                     }
@@ -102,7 +102,7 @@ internal class S3CsvWriterTest {
                     .write(
                         ArgumentMatchers.any<ByteArray>(ByteArray::class.java),
                         ArgumentMatchers.anyInt(),
-                        ArgumentMatchers.anyInt()
+                        ArgumentMatchers.anyInt(),
                     )
             }
 
@@ -179,27 +179,27 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
         // carriage returns are required b/c RFC4180 requires it :(
         Assertions.assertEquals(
             """
-        "_airbyte_ab_id","_airbyte_emitted_at","_airbyte_data"
-        "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"
-        "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"
-        
-        """
+            "_airbyte_ab_id","_airbyte_emitted_at","_airbyte_data"
+            "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"
+            "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"
+
+            """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -212,26 +212,26 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
         // carriage returns are required b/c RFC4180 requires it :(
         Assertions.assertEquals(
             """
-        "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"
-        "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"
-        
-        """
+            "f6767f7d-ce1e-45cc-92db-2ad3dfdd088e","1234","{""foo"":73}"
+            "2b95a13f-d54f-4370-a712-1c7bf2716190","2345","{""bar"":84}"
+
+            """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -263,13 +263,13 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
@@ -277,13 +277,13 @@ internal class S3CsvWriterTest {
         // Dynamically generate the timestamp because we generate in local time.
         Assertions.assertEquals(
             """
-        f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1970-01-01T00:00:01.234Z
-        2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1970-01-01T00:00:02.345Z
-        
-        """
+            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1970-01-01T00:00:01.234Z
+            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1970-01-01T00:00:02.345Z
+
+            """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -322,9 +322,9 @@ internal class S3CsvWriterTest {
          * This test really just wants to validate that:
          *
          * * we're dumping into the correct directory (fake-bucketPath/fake_namespace/fake_stream)
-         * and that the filename contains the upload time
+         *   and that the filename contains the upload time
          * * each S3CsvWriter generates a unique filename suffix (the UUID) so that they don't
-         * overwrite each other
+         *   overwrite each other
          * * we generate a .csv extension
          *
          * So the UUID check isn't strictly necessary.
@@ -343,7 +343,7 @@ internal class S3CsvWriterTest {
                 objectName // "^" == start of string
                     .replaceFirst(
                         ("^" + EXPECTED_OBJECT_BEGINNING).toRegex(),
-                        ""
+                        "",
                     ) // "$" == end of string
                     .replaceFirst((EXPECTED_OBJECT_ENDING + "$").toRegex(), "")
             Assertions.assertDoesNotThrow<UUID>({ UUID.fromString(uuidMaybe) }, errorMessage)

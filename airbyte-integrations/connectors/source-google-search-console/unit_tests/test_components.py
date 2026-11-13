@@ -1,8 +1,75 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
+from pathlib import Path
 
 import pytest
+import requests
+import yaml
+from conftest import find_stream
+
+from airbyte_cdk.sources.declarative.models import AddFields
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        "search_analytics_all_fields",
+        "search_analytics_by_query",
+        "search_analytics_keyword_page_report",
+        "search_analytics_keyword_site_report_by_page",
+    ],
+)
+@pytest.mark.parametrize(
+    "query",
+    ['"failed to fetch"', '"a" "b"', "'quoted'", r'"c:\new"', "2024", "1,000", "1.20", "🍕 near me", ""],
+)
+def test_key_dimensions_remain_strings(stream_name: str, query: str, config: dict) -> None:
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+    dimensions = manifest["definitions"][f"{stream_name}_stream"]["$parameters"]["dimensions"]
+    dimension_values = {"date": "2025-05-28", "country": "usa", "device": "desktop", "page": "https://example.com/", "query": query}
+    record = {"keys": [dimension_values[dimension] for dimension in dimensions], "clicks": 1}
+    stream = find_stream(stream_name, config)
+    stream_slice = {
+        "site_url": "https://example.com/",
+        "search_type": "web",
+        "search_appearance": "AMP_BLUE_LINK",
+        "parent_slice": {"site_url": "https://example.com/", "search_type": "web"},
+    }
+    for transformation in stream.retriever.record_selector.transformations:
+        transformation.transform(record, config=config, stream_slice=stream_slice)
+    assert record["query"] == query
+    assert isinstance(record["query"], str)
+    assert "keys" not in record
+    assert record["clicks"] == 1
+    for dimension in dimensions:
+        assert record[dimension] == dimension_values[dimension]
+
+
+@pytest.mark.parametrize("dimension_value", ["2024", "0", "1.20", "00123", "True", "None", "normal query", ""])
+def test_other_key_dimensions_remain_strings(dimension_value: str) -> None:
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+    factory = ModelToComponentFactory()
+    checked_streams = set()
+    for name, definition in manifest["definitions"].items():
+        for transformation in definition.get("transformations", []):
+            if transformation["type"] != "AddFields":
+                continue
+            fields = transformation["fields"]
+            if not all("record['keys']" in field["value"] for field in fields):
+                continue
+            record = {"keys": [dimension_value] * len(fields)}
+            component_definition = {**transformation, "fields": [{"type": "AddedFieldDefinition", **field} for field in fields]}
+            component = factory.create_component(AddFields, component_definition, config={})
+            component.transform(record)
+            for field in fields:
+                assert record[field["path"][0]] == dimension_value, (name, field["path"])
+                assert isinstance(record[field["path"][0]], str)
+            checked_streams.add(name)
+    assert "search_appearances_stream" in checked_streams
+    assert "search_analytics_keyword_site_report_by_site_stream" in checked_streams
 
 
 @pytest.mark.parametrize(
@@ -59,7 +126,8 @@ def test_nested_substream(stream_state, expected_should_migrate, expected_migrat
         assert migrated_state == expected_migrated_state
 
 
-def test_custom_report_extract_dimensions_from_keys(components_module):
+@pytest.mark.parametrize("parameters", [{}, {"dimensions": ["query"]}])
+def test_custom_report_extract_dimensions_from_keys(components_module, parameters):
     expected_record = {
         "clicks": 0,
         "impressions": 1,
@@ -72,7 +140,7 @@ def test_custom_report_extract_dimensions_from_keys(components_module):
         "device": "desktop",
     }
 
-    component = components_module.CustomReportExtractDimensionsFromKeys(dimensions=["date", "country", "device"])
+    component = components_module.CustomReportExtractDimensionsFromKeys(dimensions=["date", "country", "device"], parameters=parameters)
 
     record = {
         "clicks": 0,
@@ -205,3 +273,94 @@ class TestSanitizeNumericFields:
             component.transform(record=record)
 
         assert any("Complex value encountered for field 'clicks'" in msg for msg in caplog.messages)
+
+
+def test_complete_oauth_output_specification_contains_refresh_and_access_token():
+    """Verify that complete_oauth_output_specification declares both refresh_token and access_token,
+    and that extract_output matches.
+
+    Both tokens must be listed so the platform correctly merges the OAuth response into the
+    connector config when users create sources via the public API with secretId.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11935
+    """
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    oauth_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+
+    # extract_output should list both refresh_token and access_token
+    extract_output = oauth_spec["oauth_connector_input_specification"]["extract_output"]
+    assert "refresh_token" in extract_output, "refresh_token must be in extract_output"
+    assert "access_token" in extract_output, "access_token must be in extract_output"
+
+    # complete_oauth_output_specification must match extract_output
+    output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
+    assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
+    assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+def _make_response(body: str, status_code: int = 403) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    response._content = body.encode("utf-8")
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+@pytest.mark.parametrize(
+    "response_or_exception,expected_backoff",
+    [
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics load quota exceeded. Learn about usage limits: https://developers.google.com/webmaster-tools/limits.",
+                        }
+                    }
+                )
+            ),
+            900.0,
+            id="load_quota_exceeded_returns_900",
+        ),
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics QPS quota exceeded.",
+                        }
+                    }
+                )
+            ),
+            None,
+            id="qps_quota_exceeded_returns_none",
+        ),
+        pytest.param(
+            _make_response("not json at all", status_code=403),
+            None,
+            id="malformed_non_json_response_returns_none",
+        ),
+        pytest.param(
+            _make_response(json.dumps({"unexpected": "shape"}), status_code=500),
+            None,
+            id="unexpected_json_shape_returns_none",
+        ),
+        pytest.param(
+            requests.RequestException("connection error"),
+            None,
+            id="request_exception_returns_none",
+        ),
+        pytest.param(
+            None,
+            None,
+            id="none_returns_none",
+        ),
+    ],
+)
+def test_load_quota_backoff_strategy(components_module, response_or_exception, expected_backoff):
+    strategy = components_module.LoadQuotaBackoffStrategy()
+    assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=0) == expected_backoff
