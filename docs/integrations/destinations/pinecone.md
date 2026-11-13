@@ -79,9 +79,9 @@ The connector can use one of the following embedding methods:
 
 2. **Cohere** - Uses the [Cohere API](https://docs.cohere.com/reference/embed) to produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
 
-3. **Azure OpenAI** - Uses an Azure-hosted OpenAI deployment. Requires your Azure endpoint URL and API key.
+3. **Azure OpenAI** - Uses an Azure OpenAI deployment of the `text-embedding-ada-002` model with **1536 dimensions**. Provide the API key, the resource base URL (for example, `https://your-resource-name.openai.azure.com`), and the deployment name, all of which you can find on your Azure OpenAI resource in the Azure portal.
 
-4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface. Configure a custom base URL to point to your preferred provider.
+4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface. Set **Base URL** to your provider's endpoint, **Model name** to the embedding model, and **Embedding dimensions** to the number of dimensions that model produces. The connector uses the **Embedding dimensions** value, not the model's actual output, when it checks your index.
 
 For testing purposes, you can use the **Fake embeddings** integration, which generates random embeddings with **1536 dimensions**. This is suitable for testing a data pipeline without incurring embedding costs.
 
@@ -93,15 +93,18 @@ Before running the destination, use the [Pinecone console or API](https://docs.p
 | :--- | :--- |
 | OpenAI (`text-embedding-ada-002`) | 1536 |
 | Cohere (`embed-english-light-v2.0`) | 1024 |
-| Azure OpenAI | Depends on the deployed model |
-| OpenAI-compatible | Depends on the model |
+| Azure OpenAI | 1536 |
+| OpenAI-compatible | The value of **Embedding dimensions** |
 | Fake | 1536 |
 
 All streams are indexed into the same index. The `_ab_stream` metadata field distinguishes between streams. The connector supports both serverless and pod-based indexes.
 
 `check` fails if the index doesn't exist or if its dimension doesn't match the dimension your embedding configuration produces, so a mismatch surfaces when you set up the connection rather than mid-sync.
 
-A full refresh overwrite sync clears the stream's existing vectors before writing new ones. On a serverless index, the connector deletes by the `{stream_name}#` ID prefix. On a pod-based index, it deletes by a metadata filter on `_ab_stream`.
+A full refresh overwrite sync clears the stream's existing vectors before writing new ones. On a pod-based index, the connector deletes vectors whose `_ab_stream` metadata matches the stream. On a serverless index, the connector deletes vectors whose ID starts with the stream identifier. This has two side effects on serverless indexes:
+
+- The prefix doesn't include the `#` separator, so overwriting a stream named `users` also deletes vectors from a stream named `users_archive` in the same Pinecone namespace.
+- For streams with a namespace, the prefix is `{namespace}_{stream_name}`, which doesn't match vector IDs of the form `{stream_name}#{uuid}`. Existing vectors for these streams aren't deleted, so each overwrite sync adds a new copy of the data.
 
 ## Namespace support
 
@@ -114,7 +117,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.52 | 2026-10-13 | [88612](https://github.com/airbytehq/airbyte/pull/88612) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
+| 0.1.52 | 2026-10-14 | [88612](https://github.com/airbytehq/airbyte/pull/88612) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
 | 0.1.51 | 2026-08-13 | [84344](https://github.com/airbytehq/airbyte/pull/84344) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.1.49 | 2026-07-02 | [81396](https://github.com/airbytehq/airbyte/pull/81396) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
