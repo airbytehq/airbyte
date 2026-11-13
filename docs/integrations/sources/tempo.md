@@ -1,46 +1,67 @@
 # Tempo
 
-This page contains the setup guide and reference information for the Tempo source connector.
+The Tempo source connector reads accounts, customers, worklogs, and workload schemes from the [Tempo Cloud REST API v4](https://apidocs.tempo.io/).
 
 ## Prerequisites
 
-- API Token
+- A Tempo Cloud account with access to the data you want to sync. The connector uses `https://api.tempo.io/4/`; it doesn't support Tempo Data Center.
+- A Tempo API token with **View** access to the scopes for your selected streams, as listed under [Supported streams](#supported-streams).
+
+The token acts as the user who created it. [Jira and Tempo permissions](https://help.tempo.io/kb/latest/api-access) still apply, even when the token has the required scopes.
 
 ## Setup guide
 
 ### Step 1: Set up Tempo
 
-Source Tempo is designed to interact with the data your permissions give you access to. To do so, you will need to generate a Tempo OAuth 2.0 token for an individual user.
+1. In Tempo, open **Settings**. Under **Data Access**, select **API Integration**.
+2. Click **New Token** and enter a name and expiration date.
+3. Choose custom access and grant **View** access to the **Accounts**, **Worklogs**, and **Schemes** scopes to sync all four streams. If you only need some streams, grant their scopes from the table below.
+4. Click **Confirm** and copy the token. Tempo only displays it when you create it.
 
-Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API integration**.
+For details, see [Tempo's API token instructions](https://help.tempo.io/timesheets/latest/using-rest-api-integrations). The connector accepts a bearer token and doesn't refresh it automatically. When the token expires or you regenerate it, update the token in your Airbyte source.
 
-## Step 2: Set up the Tempo connector in Airbyte
+### Step 2: Set up the Tempo connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Tempo connector and select **Tempo** from the Source type dropdown.
-4. Enter your API token that you obtained from Tempo.
-5. Click **Set up source**.
+1. Open your Airbyte workspace and go to **Sources**.
+2. Add a source and select **Tempo**.
+3. Enter a name for your source and paste the token into **API token**.
+4. Click **Set up source**.
 
 ## Supported sync modes
 
-The Tempo source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+All four streams support Full Refresh. Only `worklogs` supports Incremental sync. Available destination modes depend on your destination:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-This connector outputs the following streams:
+| Stream | Data | Tempo token scope (View access) | Sync modes |
+| :----- | :--- | :----------------------------- | :--------- |
+| [`accounts`](https://apidocs.tempo.io/#tag/Accounts) | Open and closed accounts | Accounts | Full Refresh |
+| [`customers`](https://apidocs.tempo.io/#tag/Customers) | Customers associated with accounts | Accounts | Full Refresh |
+| [`worklogs`](https://apidocs.tempo.io/#tag/Worklogs) | Time entries, including author, issue, date, and time spent | Worklogs | Full Refresh, Incremental |
+| [`workload-schemes`](https://apidocs.tempo.io/#tag/Workload-Schemes) | Working hours per day and scheme membership counts | Schemes | Full Refresh |
 
-- [Accounts](https://apidocs.tempo.io/#tag/Accounts)
-- [Customers](https://apidocs.tempo.io/#tag/Customers)
-- [Worklogs](https://apidocs.tempo.io/#tag/Worklogs)
-- [Workload Schemes](https://apidocs.tempo.io/#tag/Workload-Schemes)
+### Incremental worklogs
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+The initial incremental sync reads worklogs from January 1, 2020 through the current UTC date in one-week intervals. The start date isn't configurable.
+
+The cursor is `startDate`, the date the work was performed, not `updatedAt`. Edits to older worklogs and newly created worklogs dated before the saved cursor might not be picked up by incremental syncs. Run a Full Refresh sync to reread historical worklogs.
+
+## Permissions and missing data
+
+The connector ignores HTTP `403 Forbidden` responses for all four streams. A sync can finish without returning data from endpoints the token can't access. If expected data is missing, check the token's scopes and the token owner's Jira and Tempo permissions. Tempo doesn't let you change an existing token's scopes: create a new token with the required access and update your Airbyte source.
+
+## Rate limits
+
+Tempo's API gateway allows [5 requests per second per IP address](https://help.tempo.io/kb/latest/tempo-api-rate-limits-and-429-errors). Integrations using the same IP address share this limit. If you encounter HTTP `429 Too Many Requests` responses, reduce overlapping Tempo API activity.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -49,6 +70,27 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.69-rc.1 | 2026-11-11 | [90343](https://github.com/airbytehq/airbyte/pull/90343) | Simplified error handling while preserving skipped permission errors and default retries. |
+| 0.4.68 | 2026-11-10 | [91731](https://github.com/airbytehq/airbyte/pull/91731) | Update dependencies |
+| 0.4.67 | 2026-11-03 | [90786](https://github.com/airbytehq/airbyte/pull/90786) | Update dependencies |
+| 0.4.66 | 2026-10-20 | [89423](https://github.com/airbytehq/airbyte/pull/89423) | Update dependencies |
+| 0.4.65 | 2026-10-13 | [88844](https://github.com/airbytehq/airbyte/pull/88844) | Update dependencies |
+| 0.4.64 | 2026-10-06 | [88049](https://github.com/airbytehq/airbyte/pull/88049) | Update dependencies |
+| 0.4.63 | 2026-09-29 | [87376](https://github.com/airbytehq/airbyte/pull/87376) | Update dependencies |
+| 0.4.62 | 2026-09-22 | [86842](https://github.com/airbytehq/airbyte/pull/86842) | Update dependencies |
+| 0.4.61 | 2026-09-15 | [86266](https://github.com/airbytehq/airbyte/pull/86266) | Update dependencies |
+| 0.4.60 | 2026-09-08 | [85697](https://github.com/airbytehq/airbyte/pull/85697) | Update dependencies |
+| 0.4.59 | 2026-08-18 | [84795](https://github.com/airbytehq/airbyte/pull/84795) | Update dependencies |
+| 0.4.58 | 2026-08-11 | [84091](https://github.com/airbytehq/airbyte/pull/84091) | Update dependencies |
+| 0.4.57 | 2026-08-04 | [83655](https://github.com/airbytehq/airbyte/pull/83655) | Update dependencies |
+| 0.4.56 | 2026-07-28 | [83114](https://github.com/airbytehq/airbyte/pull/83114) | Update dependencies |
+| 0.4.55 | 2026-07-21 | [82638](https://github.com/airbytehq/airbyte/pull/82638) | Update dependencies |
+| 0.4.54 | 2026-07-14 | [82058](https://github.com/airbytehq/airbyte/pull/82058) | Update dependencies |
+| 0.4.53 | 2026-06-30 | [81266](https://github.com/airbytehq/airbyte/pull/81266) | Update dependencies |
+| 0.4.52 | 2026-06-23 | [80676](https://github.com/airbytehq/airbyte/pull/80676) | Update dependencies |
+| 0.4.51 | 2026-06-16 | [80081](https://github.com/airbytehq/airbyte/pull/80081) | Update dependencies |
+| 0.4.50 | 2026-06-09 | [79555](https://github.com/airbytehq/airbyte/pull/79555) | Update dependencies |
+| 0.4.49 | 2026-06-02 | [78991](https://github.com/airbytehq/airbyte/pull/78991) | Update dependencies |
 | 0.4.48 | 2026-04-28 | [77432](https://github.com/airbytehq/airbyte/pull/77432) | Update dependencies |
 | 0.4.47 | 2026-04-21 | [76795](https://github.com/airbytehq/airbyte/pull/76795) | Update dependencies |
 | 0.4.46 | 2026-03-31 | [75748](https://github.com/airbytehq/airbyte/pull/75748) | Update dependencies |

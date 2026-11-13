@@ -28,7 +28,7 @@ class FlattenQueueAdapter<K : WithStream>(
 
     override fun consume(partition: Int): Flow<PipelineEvent<K, DlqStepOutput>> {
         throw IllegalStateException(
-            "Trying to consume from the adapter instead of the underlying queue"
+            "Trying to consume from the adapter instead of the underlying queue",
         )
     }
 
@@ -71,13 +71,12 @@ class FlattenQueueAdapter<K : WithStream>(
                         context = context,
                     )
                 } else {
-                    val updatedCounts =
-                        checkpointCounts.mapValues { (_, v) ->
-                            v.copy(
-                                records = v.records - failedRecords.size,
-                                rejectedRecords = v.rejectedRecords + failedRecords.size,
-                            )
-                        }
+                    val updatedCounts = checkpointCounts.mapValues { (_, v) ->
+                        v.copy(
+                            records = v.records - failedRecords.size,
+                            rejectedRecords = v.rejectedRecords + failedRecords.size,
+                        )
+                    }
 
                     PipelineMessage(
                         checkpointCounts = updatedCounts,
@@ -88,6 +87,5 @@ class FlattenQueueAdapter<K : WithStream>(
                     )
                 }
             }
-        }
-            ?: emptyList()
+        } ?: emptyList()
 }

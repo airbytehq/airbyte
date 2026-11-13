@@ -265,16 +265,14 @@ definitions:
           request_parameters:
             from: "{{ config['from'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 400
-                    error_message: Please enter " FROM "
-                    error_message_contains: Missing required parameter - from
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                error_message: Please enter " FROM "
+                error_message_contains: Missing required parameter - from
         record_selector:
           type: RecordSelector
           extractor:
@@ -310,16 +308,14 @@ definitions:
           request_parameters:
             scopeType: "{{ config['scope_type'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 400
-                    error_message: Please enter scope type
-                    error_message_contains: Missing required parameter - scopeType
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                error_message: Please enter scope type
+                error_message_contains: Missing required parameter - scopeType
         record_selector:
           type: RecordSelector
           extractor:

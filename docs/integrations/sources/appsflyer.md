@@ -1,107 +1,84 @@
 # AppsFlyer
 
-<HideInUI>
-
-This page contains the setup guide and reference information for the [AppsFlyer](https://www.appsflyer.com/) source connector.
-
-</HideInUI>
+The Airbyte Source for [AppsFlyer](https://www.appsflyer.com/) lets you extract raw and aggregate attribution data from AppsFlyer's Pull API into your destination of choice.
 
 ## Prerequisites
 
-- An AppsFlyer account
-- An AppsFlyer [API V2 token](https://support.appsflyer.com/hc/en-us/articles/360004562377-Managing-AppsFlyer-tokens). Only account admins can view and manage API tokens.
-- Your AppsFlyer App ID
+- An AppsFlyer account with access to the app you want to sync.
+- An AppsFlyer **API token (V2.0)**. Only an account admin can create or view this token, and it is tied to that admin. If the account admin changes, AppsFlyer issues a new token and you must update the connector's configuration with it.
+- The **app ID** of the app you want to sync, as it appears in AppsFlyer. This is the platform-specific store identifier: the package name for Android apps (for example, `com.example.app`) and the App Store ID prefixed with `id` for iOS apps (for example, `id123456789`).
 
 ## Setup guide
 
-### Step 1: Obtain your API token
+### Step 1: Get your AppsFlyer API token
 
-1. In the AppsFlyer dashboard, open the account menu and go to **Security center**.
-2. In the **AppsFlyer API tokens** section, click **Manage your AppsFlyer API tokens**.
-3. Copy an existing API V2 token, or click **+ New token** to create one.
+1. Sign in to AppsFlyer as an account admin.
+2. Generate or copy your **API token (V2.0)**. See [AppsFlyer's documentation on API tokens](https://support.appsflyer.com/hc/en-us/articles/360004562377) for the current location in the dashboard.
 
-For more details, see AppsFlyer's [token management documentation](https://support.appsflyer.com/hc/en-us/articles/360004562377-Managing-AppsFlyer-tokens).
+The connector authenticates to AppsFlyer's Pull API using this token as a bearer token, so no other credentials are required.
 
-### Step 2: Find your App ID
+### Step 2: Set up the source in Airbyte
 
-Your App ID is the app identifier as registered in AppsFlyer. You can find it in the AppsFlyer dashboard URL or in your app's settings page.
+Provide the following configuration:
 
-### Step 3: Set up the connector in Airbyte
-
-1. Enter your **App ID**.
-2. Enter your **API Token**.
-3. Enter a **Start Date** in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format. Raw data reports are limited to the last 90 days; if your start date is more than 90 days ago, the connector automatically adjusts it to 90 days before the current date.
-4. Optionally, set the **Timezone**. This controls the timezone for date parameters in API requests. Defaults to `UTC`. Use the timezone configured in your AppsFlyer app settings to align data with the AppsFlyer dashboard.
+| Field | Required | Description |
+| :--- | :--- | :--- |
+| `app_id` | Yes | The app identifier as it appears in AppsFlyer (Android package name or iOS `id`-prefixed App Store ID). |
+| `api_token` | Yes | Your AppsFlyer API token (V2.0). |
+| `start_date` | Yes | The date to start syncing from when no previous state exists. Accepts `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss`. Raw data reports are limited to the most recent 90 days; if the start date is more than 90 days in the past, the connector automatically uses a date 90 days ago. |
+| `timezone` | No | The time zone in which your app's data is stored, found in the app settings in the AppsFlyer console. Defaults to `UTC`. Provide a valid [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) name such as `US/Pacific`. |
 
 ## Supported sync modes
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
+The AppsFlyer source supports both **Full Refresh** and **Incremental** syncs for all streams. Incremental syncs use each stream's timestamp field (`install_time`, `event_time`, or `date`) as the cursor.
 
 ## Supported streams
 
-All streams support incremental sync based on a date cursor.
+### Raw data reports
 
-### Raw data streams (non-organic)
+| Stream | Category | Cursor |
+| :--- | :--- | :--- |
+| `installs` | Non-organic | `install_time` |
+| `in_app_events` | Non-organic | `event_time` |
+| `uninstall_events` | Non-organic | `event_time` |
+| `organic_installs` | Organic | `install_time` |
+| `organic_in_app_events` | Organic | `event_time` |
+| `organic_uninstall_events` | Organic | `event_time` |
+| `retargeting_installs` | Retargeting | `install_time` |
+| `retargeting_in_app_events` | Retargeting | `event_time` |
 
-| Stream              | Cursor Field   | Description |
-| :------------------ | :------------- | :---------- |
-| Installs            | `install_time` | Non-organic installs. Updated in real time. |
-| In-App Events       | `event_time`   | In-app events performed by users. Updated in real time. |
-| Uninstall Events    | `event_time`   | App uninstalls. Updated daily. |
+### Aggregate reports
 
-### Raw data streams (organic)
+| Stream | Category | Cursor |
+| :--- | :--- | :--- |
+| `daily_report` | User acquisition | `date` |
+| `partners_report` | User acquisition | `date` |
+| `partners_events_report` | User acquisition | `date` |
+| `geo_report` | User acquisition | `date` |
+| `geo_events_report` | User acquisition | `date` |
+| `retargeting_daily_report` | Retargeting | `date` |
+| `retargeting_partners_report` | Retargeting | `date` |
+| `retargeting_partners_events_report` | Retargeting | `date` |
+| `retargeting_geo_report` | Retargeting | `date` |
+| `retargeting_geo_events_report` | Retargeting | `date` |
 
-| Stream                    | Cursor Field   | Description |
-| :------------------------ | :------------- | :---------- |
-| Organic Installs          | `install_time` | Organic installs. Updated continuously. |
-| Organic In-App Events     | `event_time`   | Organic in-app events. Updated continuously. |
-| Organic Uninstall Events  | `event_time`   | Organic app uninstalls. Updated daily. |
+### Unsupported reports
 
-### Raw data streams (retargeting)
+The following AppsFlyer report types are not currently synced by this connector:
 
-| Stream                     | Cursor Field   | Description |
-| :------------------------- | :------------- | :---------- |
-| Retargeting In-App Events  | `event_time`   | In-app events from retargeting campaigns. Updated in real time. |
-| Retargeting Installs       | `install_time` | Conversions from retargeting campaigns. Updated in real time. |
+- Reinstall raw data reports
+- Ad revenue raw data
+- Postbacks
+- Protect360 fraud
 
-### Aggregate report streams
+## Performance considerations
 
-| Stream                              | Cursor Field | Description |
-| :---------------------------------- | :----------- | :---------- |
-| Daily Report                        | `date`       | Daily performance metrics. |
-| Partners Report                     | `date`       | Performance metrics by media source. |
-| Geo Report                          | `date`       | Performance metrics by geography. |
-| Geo Events Report                   | `date`       | In-app event metrics by geography. |
-| Partners Events Report              | `date`       | In-app event metrics by media source. |
+- **90-day raw data window**: AppsFlyer only serves raw data reports for the most recent 90 days. The connector caps the effective start date at 90 days ago, so historical raw data older than 90 days cannot be retrieved.
+- **Rate limits and quotas**: AppsFlyer enforces daily quotas on the Pull API. When the raw data quota is exhausted, the connector waits until quota resets at midnight (UTC) before retrying. When an aggregate report limit is reached, the connector waits and retries. The connector also honors the `Retry-After` header and retries on HTTP 429 and 5xx responses.
 
-### Aggregate retargeting report streams
+## IP allow list
 
-| Stream                                | Cursor Field | Description |
-| :------------------------------------ | :----------- | :---------- |
-| Retargeting Daily Report              | `date`       | Retargeting daily performance metrics. |
-| Retargeting Partners Report           | `date`       | Retargeting metrics by media source. |
-| Retargeting Geo Report                | `date`       | Retargeting metrics by geography. |
-| Retargeting Geo Events Report         | `date`       | Retargeting event metrics by geography. |
-| Retargeting Partners Events Report    | `date`       | Retargeting event metrics by media source. |
-
-### Unsupported report categories
-
-The following AppsFlyer Pull API report categories aren't supported by this connector:
-
-- Raw data reinstall reports (organic and non-organic)
-- Ad revenue reports
-- Postback reports
-- Protect360 fraud reports
-
-## Limitations and troubleshooting
-
-- **90-day limit for raw data**: The AppsFlyer Pull API limits raw data report requests to the last 90 days. The connector enforces this automatically.
-- **1,000,000 row maximum per request**: Each API request returns a maximum of 1,000,000 rows. If a report exceeds this limit, the response is truncated.
-- **Rate limits**: AppsFlyer applies daily rate limits per report type, per app, and per account. For aggregate reports with a date range of 2 days or fewer, the limit is 1 request per minute per app. For raw data reports, limits vary by subscription plan. See [AppsFlyer's rate limit documentation](https://support.appsflyer.com/hc/en-us/articles/207034366-Report-generation-quotas-rate-limitations) for details.
-- **Currency**: Raw data streams use the currency configured in your AppsFlyer app settings (`preferred` currency mode).
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -110,6 +87,9 @@ The following AppsFlyer Pull API report categories aren't supported by this conn
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.3.3 | 2026-08-04 | [83360](https://github.com/airbytehq/airbyte/pull/83360) | Update dependencies |
+| 0.3.2 | 2026-07-28 | [78563](https://github.com/airbytehq/airbyte/pull/78563) | Update dependencies |
+| 0.3.1 | 2026-07-23 | [82242](https://github.com/airbytehq/airbyte/pull/82242) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
 | 0.3.0 | 2026-04-29 | [77123](https://github.com/airbytehq/airbyte/pull/77123) | Migrate to airbyte-cdk 7.x and update base image |
 | 0.2.40 | 2025-05-17 | [60656](https://github.com/airbytehq/airbyte/pull/60656) | Update dependencies |
 | 0.2.39 | 2025-05-10 | [59774](https://github.com/airbytehq/airbyte/pull/59774) | Update dependencies |

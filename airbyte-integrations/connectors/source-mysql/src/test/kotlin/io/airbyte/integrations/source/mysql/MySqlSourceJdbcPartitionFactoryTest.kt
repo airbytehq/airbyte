@@ -9,9 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -32,6 +33,7 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.Base64
 import kotlin.test.assertNull
@@ -53,25 +55,25 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val mysqlCdcJdbcPartitionFactory =
             MySqlSourceJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
-        val fieldId = Field("id", IntFieldType)
+        val fieldId = EmittedField("id", IntFieldType)
         val stream =
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream1")
+                        StreamDescriptor().withNamespace("test").withName("stream1"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
-        val timestampFieldId = Field("id2", OffsetDateTimeFieldType)
+        val timestampFieldId = EmittedField("id2", OffsetDateTimeFieldType)
 
         val timestampStream =
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream2")
+                        StreamDescriptor().withNamespace("test").withName("stream2"),
                     ),
                 schema = setOf(timestampFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -79,13 +81,15 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = timestampFieldId,
             )
 
-        val binaryFieldId = Field("id3", BinaryStreamFieldType)
+        val bigintUnsignedFieldId = EmittedField("id5", BigIntegerFieldType)
+
+        val binaryFieldId = EmittedField("id3", BinaryStreamFieldType)
 
         val binaryStream =
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream3")
+                        StreamDescriptor().withNamespace("test").withName("stream3"),
                     ),
                 schema = setOf(binaryFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -93,13 +97,13 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = Field("id4", LocalDateTimeFieldType)
+        val datetimeFieldId = EmittedField("id4", LocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream4")
+                        StreamDescriptor().withNamespace("test").withName("stream4"),
                     ),
                 schema = setOf(datetimeFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -134,13 +138,13 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
-                ResourceAcquirer(emptyList())
+                ResourceAcquirer(emptyList()),
             )
         }
 
         private fun streamFeedBootstrap(
             stream: Stream,
-            incumbentStateValue: OpaqueStateValue? = null
+            incumbentStateValue: OpaqueStateValue? = null,
         ) =
             StreamFeedBootstrap(
                 outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
@@ -153,14 +157,14 @@ class MySqlSourceJdbcPartitionFactoryTest {
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: ObjectNode
+                            recordData: ObjectNode,
                         ) {}
 
                         override fun decorateRecordData(
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: NativeRecordPayload
+                            recordData: NativeRecordPayload,
                         ) {
                             // no-op
                         }
@@ -193,7 +197,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream7")
+                        StreamDescriptor().withNamespace("test").withName("stream7"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -210,18 +214,19 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-              "cursor": "2",
-              "version": 2,
-              "state_type": "cursor_based",
-              "stream_name": "stream1",
-              "cursor_field": [
-                "id"
-              ],
-              "stream_namespace": "test",
-              "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                "cursor": "2",
+                "version": 2,
+                "state_type": "cursor_based",
+                "stream_name": "stream1",
+                "cursor_field": [
+                  "id"
+                ],
+                "stream_namespace": "test",
+                "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -244,7 +249,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
     )
     fun testResumeFromCompletedCursorBasedReadTimestamp(
         cursorVal: String,
-        expectedLowerBound: String
+        expectedLowerBound: String,
     ) {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
@@ -260,18 +265,19 @@ class MySqlSourceJdbcPartitionFactoryTest {
                   "stream_namespace": "test",
                   "cursor_record_count": 1 
               } 
-        """.trimIndent()
+        """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             mySqlSourceJdbcPartitionFactory.create(
-                streamFeedBootstrap(timestampStream, incomingStateValue)
+                streamFeedBootstrap(timestampStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree(expectedLowerBound),
-            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound,
         )
     }
 
@@ -280,30 +286,63 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-                  "cursor": "2024-11-21T11:59:57.123",
-                  "version": 2,
-                  "state_type": "cursor_based",
-                  "stream_name": "stream4",
-                  "cursor_field": [
-                    "id4"
-                  ],
-                  "stream_namespace": "test",
-                  "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                    "cursor": "2024-11-21T11:59:57.123",
+                    "version": 2,
+                    "state_type": "cursor_based",
+                    "stream_name": "stream4",
+                    "cursor_field": [
+                      "id4"
+                    ],
+                    "stream_namespace": "test",
+                    "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             mySqlSourceJdbcPartitionFactory.create(
-                streamFeedBootstrap(datetimeStream, incomingStateValue)
+                streamFeedBootstrap(datetimeStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree("2024-11-21T11:59:57.123000"),
-            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound,
         )
+    }
+
+    @Test
+    fun testBigintUnsignedBoundaries() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": 10}"""),
+                Jsons.readTree("""{"pk_val": 20}"""),
+                Jsons.readTree("""{"pk_val": 30}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.calculateBoundaries(
+                opaqueStateValues,
+                BigDecimal("0"),
+                BigDecimal("18446744073709551615"),
+            )!!
+
+        assertEquals(opaqueStateValues.size, result.size)
+        assertEquals(BigDecimal("0"), result.keys.first())
+        assertEquals(null, result.values.last())
+    }
+
+    @Test
+    fun testBigintUnsignedStateValue() {
+        val result =
+            mySqlSourceJdbcPartitionFactory.stateValueToJsonNode(
+                bigintUnsignedFieldId,
+                "18446744073709551615",
+            )
+
+        assertEquals(BigDecimal("18446744073709551615"), result.decimalValue())
     }
 
     @Test
@@ -311,14 +350,15 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-                      {
-                      "pk_val": "9063170",
-                      "pk_name": "id",
-                      "version": 2,
-                      "state_type": "primary_key",
-                      "incremental_state": {}  
-                      }
-        """.trimIndent()
+                {
+                "pk_val": "9063170",
+                "pk_name": "id",
+                "version": 2,
+                "state_type": "primary_key",
+                "incremental_state": {}  
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -332,14 +372,15 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-            {
-            "pk_val": "29999",
-            "pk_name": "id",
-            "version": 2,
-            "state_type": "primary_key",
-            "incremental_state": {}
-            }
-        """.trimIndent()
+                {
+                "pk_val": "29999",
+                "pk_name": "id",
+                "version": 2,
+                "state_type": "primary_key",
+                "incremental_state": {}
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -352,12 +393,13 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-        {
-        "stream_name": "stream1",
-        "cursor_field": [],
-        "stream_namespace": "test"
-        }
-        """.trimIndent()
+                {
+                "stream_name": "stream1",
+                "cursor_field": [],
+                "stream_namespace": "test"
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -370,29 +412,30 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-                  "cursor": "OQAAAAAAAAAAAAAAAAAAAA==",
-                  "version": 2,
-                  "state_type": "cursor_based",
-                  "stream_name": "stream3",
-                  "cursor_field": [
-                    "id3"
-                  ],
-                  "stream_namespace": "test",
-                  "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                    "cursor": "OQAAAAAAAAAAAAAAAAAAAA==",
+                    "version": 2,
+                    "state_type": "cursor_based",
+                    "stream_name": "stream3",
+                    "cursor_field": [
+                      "id3"
+                    ],
+                    "stream_namespace": "test",
+                    "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             mySqlSourceJdbcPartitionFactory.create(
-                streamFeedBootstrap(binaryStream, incomingStateValue)
+                streamFeedBootstrap(binaryStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree<BinaryNode>(Base64.getDecoder().decode("OQAAAAAAAAAAAAAAAAAAAA==")),
-            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound,
         )
     }
 
