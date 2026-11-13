@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,62 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    def test_given_sync_interrupted_inside_lookback_window_when_read_again_then_cursor_does_not_move_backwards(self) -> None:
+        """A sync that fails while re-reading the lookback window must not checkpoint a cursor older than the one it started with.
+
+        Otherwise every interrupted sync moves the cursor back by up to `insights_lookback_window` days and the next sync
+        starts from an even older date, so the re-read window grows with each failure (airbytehq/airbyte-internal-issues#19839).
+        """
+        lookback_window = 3
+        start_date = NOW - timedelta(days=9)
+        end_date = NOW
+        saved_cursor = NOW - timedelta(days=2)
+        # Both syncs must request exactly the saved cursor's lookback window up to the end date, nothing older.
+        days = [saved_cursor - timedelta(days=lookback_window) + timedelta(days=i) for i in range(6)]
+        report_run_ids = [f"157186006001950{i}" for i in range(len(days))]
+        job_ids = [f"104993737960160{i}" for i in range(len(days))]
+        failing_job_id = job_ids[1]
+        successful_download = _insights_response().with_record(_ads_insights_action_product_id_record()).build()
+        failed_download = build_response(
+            body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+        job_start_requests = [_job_start_request(since=day, until=day).build() for day in days]
+
+        def mock_sync(http_mocker: HttpMocker, downloads: Dict[str, HttpResponse]) -> None:
+            http_mocker.get(get_account_request().build(), get_account_response())
+            http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+            for job_start_request, report_run_id in zip(job_start_requests, report_run_ids):
+                http_mocker.post(job_start_request, _job_start_response(report_run_id))
+            http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+            for job_id in job_ids:
+                http_mocker.get(_get_insights_request(job_id).build(), downloads.get(job_id, successful_download))
+
+        config_ = config().with_start_date(start_date).with_end_date(end_date)
+        config_.build()["insights_lookback_window"] = lookback_window
+        saved_state = {ACCOUNT_ID: {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT)}}
+
+        with HttpMocker() as http_mocker:
+            mock_sync(http_mocker, downloads={failing_job_id: failed_download})
+            interrupted_output = self._read(
+                config_, state=StateBuilder().with_stream_state(_STREAM_NAME, saved_state).build(), expecting_exception=True
+            )
+
+        assert interrupted_output.errors[0].trace.error.message == "Error code 100: Invalid parameter."
+        assert len(interrupted_output.records) == 1
+        interrupted_state = AirbyteStreamStateSerializer.dump(interrupted_output.most_recent_state)["stream_state"]
+        assert interrupted_state[ACCOUNT_ID] == {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT), "slices": []}
+
+        with HttpMocker() as http_mocker:
+            # Any job start request that is not registered is rejected, so a sync starting from an older date cannot succeed.
+            mock_sync(http_mocker, downloads={})
+            resumed_output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, interrupted_state).build())
+            for job_start_request in job_start_requests:
+                http_mocker.assert_number_of_calls(job_start_request, 1)
+
+        assert len(resumed_output.errors) == 0
+        assert len(resumed_output.records) == len(days)
+        resumed_state = AirbyteStreamStateSerializer.dump(resumed_output.most_recent_state)["stream_state"]
+        assert resumed_state[ACCOUNT_ID] == {_CURSOR_FIELD: end_date.strftime(DATE_FORMAT), "slices": []}
