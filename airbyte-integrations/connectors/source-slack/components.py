@@ -183,17 +183,53 @@ class ThreadsStateMigration(StateMigration):
             return {}
 
         start_date_state = ab_datetime_parse(self._config["start_date"]).timestamp()  # start date is required
+        has_threads_cursor = False
         # for migrated state
         if stream_state.get("states"):
             for state in stream_state["states"]:
-                start_date_state = max(start_date_state, float(state.get("cursor", {}).get("float_ts", start_date_state)))
+                if state.get("cursor", {}).get("float_ts") is not None:
+                    has_threads_cursor = True
+                    start_date_state = max(start_date_state, float(state["cursor"]["float_ts"]))
         # for old-stype state
         if stream_state.get("float_ts"):
+            has_threads_cursor = True
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
 
         lookback_window = timedelta(days=self._config.get("lookback_window", 0))  # lookback window in days
         final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}
-        stream_state["parent_state"] = {"channel_messages": final_state}
+
+        channel_messages_state = (stream_state.get("parent_state") or {}).get("channel_messages") or {}
+        channel_cursors = [partition_state.get("cursor") or {} for partition_state in channel_messages_state.get("states") or []]
+        channel_cursors = [cursor for cursor in channel_cursors if cursor.get("float_ts") is not None]
+        # Cursors that apply to every channel without an entry of its own: the one channel_messages saves when it
+        # has read all channels, and the bare one this migration writes.
+        shared_cursors = [
+            cursor for cursor in (channel_messages_state, channel_messages_state.get("state") or {}) if cursor.get("float_ts") is not None
+        ]
+        if not channel_cursors and not shared_cursors:
+            # State saved before threads recorded where channel_messages was: start every channel from the threads cursor.
+            stream_state["parent_state"] = {"channel_messages": final_state}
+            return stream_state
+
+        # Each channel resumes from the position it had reached, within two bounds:
+        # - not before the point up to which all channels were last read completely, so a channel with no new
+        #   messages is not read again from its last message on every sync;
+        # - not after the newest thread cursor minus the lookback, so threads keep being re-read as far back as
+        #   before. Without a thread cursor (interrupted first sync, or state that switched to a global cursor)
+        #   there is no such bound and the saved positions are all there is to go by.
+        read_completely_until = max((float(cursor["float_ts"]) for cursor in shared_cursors), default=None)
+        for cursor in channel_cursors:
+            position = float(cursor["float_ts"])
+            if read_completely_until is not None:
+                position = max(position, read_completely_until)
+            if has_threads_cursor:
+                position = min(position, final_state["float_ts"])
+            if position != float(cursor["float_ts"]):
+                cursor["float_ts"] = position
+        if has_threads_cursor:
+            for cursor in shared_cursors:
+                if float(cursor["float_ts"]) > final_state["float_ts"]:
+                    cursor["float_ts"] = final_state["float_ts"]
 
         return stream_state
 
