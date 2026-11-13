@@ -1,61 +1,91 @@
 # Microsoft Dataverse
 
-## Sync overview
+This source syncs data from [Microsoft Dataverse](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/overview) using the [Dataverse Web API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/overview) (v9.2).
 
-This source can sync data for the [Microsoft Dataverse API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/overview) to work with [Microsoft Dataverse](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/overview).
+## Prerequisites
 
-This connector currently uses version v9.2 of the API
+- A Microsoft Dataverse environment (included with Dynamics 365 or Power Apps)
+- An [app registration](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory) in Microsoft Entra ID (formerly Azure Active Directory) with a client secret
+- The app registration must be added as an [application user](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth) in your Dataverse environment with at least read access to the tables you want to sync
 
-### Output schema
+## Setup guide
 
-This source will automatically discover the schema of the Entities of your Dataverse instance using the API
-`https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes`
+### Step 1: Register an application in Microsoft Entra ID
+
+1. Sign in to the [Azure portal](https://portal.azure.com).
+2. Navigate to **Microsoft Entra ID** > **App registrations** > **New registration**.
+3. Enter a name for the application and select **Register**.
+4. Note the **Application (client) ID** and **Directory (tenant) ID** from the Overview page.
+5. Under **Certificates & secrets**, select **New client secret**, add a description and expiry, then select **Add**. Copy the secret **Value** immediately — it won't be shown again.
+
+### Step 2: Add the application user to Dataverse
+
+1. Sign in to the [Power Platform admin center](https://admin.powerplatform.microsoft.com).
+2. Select your environment, then select **Settings** > **Users + permissions** > **Application users**.
+3. Select **New app user**, find your app registration, assign it a business unit, and grant it a security role with read privileges on the tables you want to sync.
+
+### Step 3: Configure the connector in Airbyte
+
+Provide the following fields:
+
+| Field | Description |
+| :---- | :---------- |
+| **URL** | Your Dataverse environment URL, for example `https://yourorg.crm.dynamics.com`. Do not include a trailing slash or path. |
+| **Tenant ID** | The Directory (tenant) ID from your app registration. |
+| **Client ID** | The Application (client) ID from your app registration. |
+| **Client Secret** | The client secret value you created in Step 1. |
+| **Max page size** | Maximum number of records per API response page (default: 5000). Reduce this value if you encounter timeout errors on tables with wide rows. |
+
+## Supported streams
+
+The connector automatically discovers all tables (entities) in your Dataverse environment using the [EntityDefinitions](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/entitymetadata) API. Each table becomes an available stream.
+
+### Sync modes
+
+| Feature | Supported | Notes |
+| :------ | :-------- | :---- |
+| Full Refresh | Yes | Available for all tables. |
+| Incremental Sync | Yes | Available for tables with [change tracking](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-change-tracking-synchronize-data-external-systems) enabled. Uses OData delta tokens to fetch only modified and deleted records. |
+| Replicate Incremental Deletes | Yes | Deleted records are emitted with only the primary key, the cursor field, and `_ab_cdc_deleted_at` populated. The cursor field and `_ab_cdc_deleted_at` are set to the time the sync processed the deletion, not the time the record was deleted. |
+| Namespaces | No | |
+
+For incremental sync, the connector uses Dataverse's change tracking feature (`Prefer: odata.track-changes` header). The API returns a `@odata.deltaLink` on the last page of results, which the connector stores as state and uses on subsequent syncs to retrieve only changes since the last sync. The first incremental sync of a table reads all of its records.
+
+If the table has a `modifiedon` column, the connector uses it as the cursor field. Each updated record also includes an `_ab_cdc_updated_at` column set to the cursor field's value.
 
 ### Data type mapping
 
-| Integration Type   | Airbyte Type              | Notes                 |
-| :----------------- | :------------------------ | :-------------------- |
-| `String`           | `string`                  |                       |
-| `UniqueIdentifier` | `string`                  |                       |
-| `DateTime`         | `timestamp with timezone` |                       |
-| `Integer`          | `integer`                 |                       |
-| `BigInt`           | `integer`                 |                       |
-| `Money`            | `number`                  |                       |
-| `Boolean`          | `boolean`                 |                       |
-| `Double`           | `number`                  |                       |
-| `Decimal`          | `number`                  |                       |
-| `Status`           | `integer`                 |                       |
-| `State`            | `integer`                 |                       |
-| `Virtual`          | None                      | We skip virtual types |
+| Dataverse Type | Airbyte Type | Notes |
+| :------------- | :----------- | :---- |
+| `String` | `string` | |
+| `Uniqueidentifier` | `string` | |
+| `DateTime` (DateOnly behavior) | `date` | Fields with `DateTimeBehavior=DateOnly` |
+| `DateTime` (other behaviors) | `timestamp_with_timezone` | `UserLocal` and `TimeZoneIndependent` behaviors |
+| `Integer` | `integer` | |
+| `BigInt` | `integer` | |
+| `Money` | `number` | |
+| `Boolean` | `boolean` | |
+| `Double` | `number` | |
+| `Decimal` | `number` | |
+| `Picklist` | `integer` | |
+| `Status` | `integer` | |
+| `State` | `integer` | |
+| `Lookup` | `string` | Field name is prefixed with `_` and suffixed with `_value` (for example, `_parentaccountid_value`). |
+| `Virtual` | — | Skipped; not synced. |
 
-Other types are defined as `string`.
+All other types default to `string`.
 
-### Features
+## Limitations and known issues
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                      |
-| :---------------------------- | :------------------- | :--------------------------------------------------------- |
-| Full Refresh Sync             | Yes                  |                                                            |
-| Incremental Sync              | Yes                  |                                                            |
-| CDC                           | Yes                  | Not all entities support it. Deleted data only have the ID |
-| Replicate Incremental Deletes | Yes                  |                                                            |
-| SSL connection                | Yes                  |                                                            |
-| Namespaces                    | No                   |                                                            |
+- **Change tracking must be enabled** on a table for incremental sync to be available. Tables without change tracking support only full refresh. You can [enable change tracking](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/data-platform-create-entity#enable-change-tracking) in the Power Apps table settings.
+- **Virtual fields** are excluded from the schema and not synced.
+- **Owner and Customer columns aren't renamed.** Only columns with the `Lookup` type get the `_<name>_value` naming in the schema. `Owner` and `Customer` columns, such as `ownerid`, appear in the schema under their logical name as strings, while the Web API returns their values in properties named like `_ownerid_value`.
+- **State is saved only at the end of an incremental sync.** The delta token is returned on the last page of results, so if an incremental sync fails partway through, the next sync starts again from the previous delta token.
+- **Service protection limits**: Dataverse enforces [API service protection limits](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits) that return HTTP 429 when exceeded. The connector handles back-off automatically. If you run into persistent throttling, reduce the **Max page size** or schedule syncs during off-peak hours.
 
-## Getting started
+## IP allow list
 
-### Requirements
-
-- Application \(client\) ID
-- Directory \(tenant\) ID
-- Client secrets
-
-### Setup guide
-
-The Microsoft Dataverse API uses OAuth2 for authentication. We need a 'client_credentials' type, that we usually get by using an App Registration.
-https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth
-
-The procedure to generate the credentials and setup the necessary permissions is well described in this post from Magnetism blog:
-https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -64,6 +94,9 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 1.0.2 | 2026-06-07 | [79143](https://github.com/airbytehq/airbyte/pull/79143) | Revert connector base image to 4.0.0 (4.1.0 ships Python 3.13, incompatible with the connector's pinned CDK). |
+| 1.0.1 | 2026-06-02 | [78805](https://github.com/airbytehq/airbyte/pull/78805) | Update dependencies |
+| 1.0.0 | 2026-05-13 | [77565](https://github.com/airbytehq/airbyte/pull/77565) | Map DateOnly fields to `date` format instead of `date-time`. Add `$select` projection to discovery to reduce metadata payload size. Streams with DateOnly fields require a schema refresh and data reset. |
 | 0.1.32 | 2025-05-10 | [60052](https://github.com/airbytehq/airbyte/pull/60052) | Update dependencies |
 | 0.1.31 | 2025-05-03 | [59292](https://github.com/airbytehq/airbyte/pull/59292) | Update dependencies |
 | 0.1.30 | 2025-04-26 | [58830](https://github.com/airbytehq/airbyte/pull/58830) | Update dependencies |
@@ -75,7 +108,7 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 | 0.1.24 | 2025-03-01 | [54768](https://github.com/airbytehq/airbyte/pull/54768) | Update dependencies |
 | 0.1.23 | 2025-02-22 | [54356](https://github.com/airbytehq/airbyte/pull/54356) | Update dependencies |
 | 0.1.22 | 2025-02-15 | [46493](https://github.com/airbytehq/airbyte/pull/46493) | Update dependencies |
-| 0.1.21 | 2024-09-26 | [ ](https://github.com/airbytehq/airbyte/pull/ ) | Make Dataverse available on Airbyte Cloud |
+| 0.1.21 | 2024-09-26 | [45938](https://github.com/airbytehq/airbyte/pull/45938) | Make Dataverse available on Airbyte Cloud |
 | 0.1.20 | 2024-09-21 | [45777](https://github.com/airbytehq/airbyte/pull/45777) | Update dependencies |
 | 0.1.19 | 2024-09-14 | [45482](https://github.com/airbytehq/airbyte/pull/45482) | Update dependencies |
 | 0.1.18 | 2024-09-07 | [45224](https://github.com/airbytehq/airbyte/pull/45224) | Update dependencies |
@@ -94,8 +127,8 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 | 0.1.5 | 2024-06-21 | [39931](https://github.com/airbytehq/airbyte/pull/39931) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39265](https://github.com/airbytehq/airbyte/pull/39265) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-05-20 | [38397](https://github.com/airbytehq/airbyte/pull/38397) | [autopull] base image + poetry + up_to_date |
-| 0.1.2 | 2023-08-24 | [29732](https://github.com/airbytehq/airbyte/pull/29732) | 🐛 Source Microsoft Dataverse: Adjust source_default_cursor when modifiedon not exists |
+| 0.1.2 | 2023-08-24 | [29732](https://github.com/airbytehq/airbyte/pull/29732) | Adjust source_default_cursor when modifiedon not exists |
 | 0.1.1 | 2023-03-16 | [22805](https://github.com/airbytehq/airbyte/pull/22805) | Fixed deduped cursor field value update |
-| 0.1.0 | 2022-11-14 | [18646](https://github.com/airbytehq/airbyte/pull/18646) | 🎉 New Source: Microsoft Dataverse [python cdk] |
+| 0.1.0 | 2022-11-14 | [18646](https://github.com/airbytehq/airbyte/pull/18646) | New Source: Microsoft Dataverse |
 
 </details>

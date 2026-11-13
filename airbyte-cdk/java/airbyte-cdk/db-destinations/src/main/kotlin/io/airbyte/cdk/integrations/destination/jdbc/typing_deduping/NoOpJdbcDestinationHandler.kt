@@ -34,7 +34,7 @@ class NoOpJdbcDestinationHandler<DestinationState>(
     }
 
     override fun gatherInitialState(
-        streamConfigs: List<StreamConfig>
+        streamConfigs: List<StreamConfig>,
     ): List<DestinationInitialStatus<DestinationState>> {
         throw NotImplementedError("This JDBC Destination Handler does not support typing deduping")
     }

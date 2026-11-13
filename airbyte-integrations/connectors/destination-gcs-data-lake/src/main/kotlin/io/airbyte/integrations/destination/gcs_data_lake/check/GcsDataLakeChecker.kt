@@ -52,14 +52,14 @@ class GcsDataLakeChecker(
      * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
      * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
-     * permissions)
+     *   permissions)
      */
     private fun catalogValidation() {
         val catalogProperties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
         val catalog =
             icebergUtil.createCatalog(
                 io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
-                catalogProperties
+                catalogProperties,
             )
 
         // Get the default namespace from the configuration
@@ -92,7 +92,7 @@ class GcsDataLakeChecker(
                     catalog,
                     tableIdGenerator.toTableIdentifier(testTableIdentifier),
                     it.io(),
-                    it.location()
+                    it.location(),
                 )
             }
         }

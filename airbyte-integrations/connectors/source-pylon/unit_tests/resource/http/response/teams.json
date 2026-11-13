@@ -1,0 +1,17 @@
+{
+  "assignment_configuration": {
+    "assignable_user_statuses": [],
+    "assignment_method": "synthetic-assignment_method",
+    "only_assign_if_user_active": false,
+    "override_existing_assignee": false,
+    "team_schedule_id": "synthetic-team_schedule_id"
+  },
+  "id": "synthetic-id",
+  "name": "synthetic-name",
+  "schedule": {
+    "blocks": [],
+    "id": "synthetic-id",
+    "timezone": "synthetic-timezone"
+  },
+  "users": []
+}
