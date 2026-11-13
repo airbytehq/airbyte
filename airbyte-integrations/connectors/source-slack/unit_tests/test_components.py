@@ -30,8 +30,7 @@ def test_join_channels(token_config, requests_mock, joined_channel, components_m
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": joined_channel})
     token = token_config["credentials"]["api_token"]
     authenticator = TokenAuthenticator(token)
-    channel_filter = token_config["channel_filter"]
-    stream = components_module.JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
+    stream = components_module.JoinChannelsStream(authenticator=authenticator)
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C061EG9SL", "channel_name": "general"})
     assert not list(records)
     assert mocked_request.called
@@ -68,6 +67,12 @@ def test_should_join_to_channel(token_config, components_module, join_channels, 
     config = {**token_config, "join_channels": join_channels}
     retriever = get_channels_retriever_instance(config, components_module)
     assert retriever.should_join_to_channel(config, record) is expected
+
+
+def test_should_not_join_to_channel_when_join_channels_is_absent(token_config, components_module):
+    config = {key: value for key, value in token_config.items() if key != "join_channels"}
+    retriever = get_channels_retriever_instance(config, components_module)
+    assert retriever.should_join_to_channel(config, {"is_member": False, "is_archived": False}) is False
 
 
 def test_join_channels_make_join_channel_slice(token_config, components_module):
@@ -196,6 +201,23 @@ def test_read_records_yields_all_channels_when_join_enabled(token_config, reques
     retriever = get_channels_retriever_instance(token_config, components_module)
     records = list(retriever.read_records(records_schema={}))
     assert len(records) == 2
+
+
+def test_read_records_joins_channels_when_channel_filter_is_absent(token_config, requests_mock, components_module):
+    config = {key: value for key, value in token_config.items() if key != "channel_filter"}
+    join_request = requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [{"id": "C002", "name": "non-member-channel", "is_member": False, "is_archived": False}]},
+    )
+
+    retriever = get_channels_retriever_instance(config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+
+    assert len(records) == 1
+    assert records[0]["id"] == "C002"
+    assert records[0]["name"] == "non-member-channel"
+    assert join_request.called
 
 
 @pytest.mark.parametrize(
@@ -374,3 +396,25 @@ def test_api_budget_auth_path(token_config, oauth_config, config_fixture, expect
         assert isinstance(api_budget._policies[0], UnlimitedCallRatePolicy)
     else:
         assert api_budget is None or len(api_budget._policies) == 0
+
+
+@pytest.mark.parametrize("use_global_cursor", [False, True])
+def test_threads_restart_preserves_parent_checkpoint(token_config, use_global_cursor):
+    parent_checkpoint = {
+        "states": [
+            {"partition": {"channel": "airbyte-for-beginners"}, "cursor": {"float_ts": 1753263869.0}},
+            {"partition": {"channel": "good-reads"}, "cursor": {"float_ts": 1753177470.0}},
+        ],
+        "state": {"float_ts": 1753177470.0},
+        "use_global_cursor": False,
+    }
+    state = {
+        "states": [],
+        "state": {"float_ts": "1753263870"},
+        "use_global_cursor": use_global_cursor,
+        "parent_state": {"channel_messages": parent_checkpoint},
+    }
+    if use_global_cursor:
+        del state["states"]
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", state).build())
+    assert stream.cursor.state["parent_state"]["channel_messages"] == parent_checkpoint

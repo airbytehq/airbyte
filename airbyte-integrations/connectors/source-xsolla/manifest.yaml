@@ -248,9 +248,14 @@ spec:
     properties:
       api_key:
         type: string
-        description: Go to Xsolla Dashboard and from company setting get the api_key
+        description: >-
+          Xsolla user JWT for this project, obtained through Xsolla Login or when
+          creating a payment UI token. Enter the token without the Bearer prefix.
+          A Publisher Account API key is not a user JWT and cannot be used here.
+          Replace the token when it expires. See
+          https://developers.xsolla.com/api/catalog/authentication-using-users-jwt
         order: 0
-        title: API Key
+        title: User JWT
         airbyte_secret: true
       project_id:
         type: number

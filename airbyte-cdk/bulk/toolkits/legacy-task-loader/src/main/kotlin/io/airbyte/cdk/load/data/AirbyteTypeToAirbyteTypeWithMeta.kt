@@ -27,7 +27,7 @@ class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
                 // Do nothing: no fields to add
             } else {
                 throw IllegalStateException(
-                    "Cannot flatten without an object schema (schema type: $schema)"
+                    "Cannot flatten without an object schema (schema type: $schema)",
                 )
             }
         } else {

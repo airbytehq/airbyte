@@ -1,5 +1,5 @@
 ---
-products: oss-enterprise, cloud-teams
+products: cloud-teams
 ---
 
 # Rejected records

@@ -15,12 +15,24 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Detect non-Markdown changes
+        if: github.event_name == 'pull_request'
+        id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          predicate-quantifier: every
+          filters: |
+            non_markdown:
+              - '**'
+              - '!**/*.md'
       - name: Setup Java
+        if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Setup Python
+        if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.11"
@@ -28,6 +40,7 @@ jobs:
           check-latest: true
           update-environment: true
       - name: Run Pre-Commit
+        if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         id: format-check
         with:
