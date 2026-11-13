@@ -18,9 +18,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 def test_check_succeeds_when_annotations_reports_are_empty(tmp_path) -> None:
     config = ConfigBuilder().build()
     annotations_request = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("job-annotations")
-        .with_created_after("1990-01-01T00:00:00.000000Z")
-        .build()
+        YoutubeAnalyticsRequestBuilder.reports_endpoint("job-annotations").with_created_after("1990-01-01T00:00:00.000000Z").build()
     )
     report_id = "report-basic"
 
@@ -44,9 +42,7 @@ def test_check_succeeds_when_annotations_reports_are_empty(tmp_path) -> None:
         )
         http_mocker.get(annotations_request, HttpResponse(body="{}"))
         http_mocker.get(
-            YoutubeAnalyticsRequestBuilder.reports_endpoint("job-basic")
-            .with_created_after("1990-01-01T00:00:00.000000Z")
-            .build(),
+            YoutubeAnalyticsRequestBuilder.reports_endpoint("job-basic").with_created_after("1990-01-01T00:00:00.000000Z").build(),
             HttpResponse(
                 body=json.dumps(
                     {
