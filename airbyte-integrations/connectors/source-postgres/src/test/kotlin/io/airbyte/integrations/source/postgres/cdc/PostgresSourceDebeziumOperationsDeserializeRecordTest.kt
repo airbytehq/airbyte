@@ -131,6 +131,32 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
     }
 
     @Test
+    fun `an array emitted as text holding a JSON array is recovered`() {
+        val record = deserialize("""{"id": 1, "tags": "[\"x\",\"y\"]"}""")
+
+        assertEquals(listOf("x", "y"), assertNotNull(record.data["tags"]).fieldValue)
+        assertTrue(record.changes.isEmpty(), "unexpected changes: ${record.changes}")
+    }
+
+    @Test
+    fun `an array emitted as non-JSON text is written as an explicit null and flagged`() {
+        val record = deserialize("""{"id": 1, "tags": "{hello,world}"}""")
+
+        assertExplicitNull(record, "tags")
+        assertEquals(FieldValueChange.DESERIALIZATION_FAILURE_TOTAL, record.changes[TAGS])
+        assertAllSchemaFieldsPresent(record)
+    }
+
+    @Test
+    fun `an array emitted as scalar text is written as an explicit null and flagged`() {
+        val record = deserialize("""{"id": 1, "tags": "42"}""")
+
+        assertExplicitNull(record, "tags")
+        assertEquals(FieldValueChange.DESERIALIZATION_FAILURE_TOTAL, record.changes[TAGS])
+        assertAllSchemaFieldsPresent(record)
+    }
+
+    @Test
     fun `a NULL scalar is written as an explicit null`() {
         val record = deserialize("""{"id": 1, "name": null}""")
 
