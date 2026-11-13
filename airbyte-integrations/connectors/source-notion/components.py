@@ -34,9 +34,7 @@ class BlocksRetriever(SimpleRetriever):
         record_filter = self.record_selector.record_filter
         if isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator):
             self._sync_cursor = self._sync_cursor or record_filter._cursor
-            self.record_selector.record_filter = RecordFilter(
-                config=self.config, parameters=parameters, condition=record_filter.condition
-            )
+            self.record_selector.record_filter = RecordFilter(config=self.config, parameters=parameters, condition=record_filter.condition)
 
     def read_records(
         self,

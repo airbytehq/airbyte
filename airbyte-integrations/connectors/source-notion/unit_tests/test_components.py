@@ -85,15 +85,23 @@ def test_blocks_incremental_read_roundtrips_emitted_state_with_children(requests
     children_request = requests_mock.get(
         "https://api.notion.com/v1/blocks/parent-block/children?page_size=100",
         [
-            {"json": response([
-                block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
-                block("cursor-child", cursor_value, "parent-block"),
-            ])},
-            {"json": response([
-                block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
-                block("cursor-child", cursor_value, "parent-block"),
-                block("new-child", "2024-01-05T00:00:00.000Z", "parent-block"),
-            ])},
+            {
+                "json": response(
+                    [
+                        block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
+                        block("cursor-child", cursor_value, "parent-block"),
+                    ]
+                )
+            },
+            {
+                "json": response(
+                    [
+                        block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
+                        block("cursor-child", cursor_value, "parent-block"),
+                        block("new-child", "2024-01-05T00:00:00.000Z", "parent-block"),
+                    ]
+                )
+            },
         ],
     )
     catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
