@@ -99,15 +99,13 @@ definitions:
             stream_partition.advertiser_campaign_id.split("-")[1] }}/metrics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign metrics
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 401
+                error_message: Advertiser has no access to campaign metrics
         record_selector:
           type: RecordSelector
           extractor:
@@ -211,15 +209,13 @@ definitions:
             stream_partition.advertiser_campaign_id.split("-")[1] }}/items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign items
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 401
+                error_message: Advertiser has no access to campaign items
         record_selector:
           type: RecordSelector
           extractor:
@@ -265,15 +261,13 @@ definitions:
             stream_partition.advertiser_campaign_id.split("-")[1] }}/keywords
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign keyword
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 401
+                error_message: Advertiser has no access to campaign keyword
         record_selector:
           type: RecordSelector
           extractor:
@@ -319,15 +313,13 @@ definitions:
             }}/keywords/metrics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign keyword metrics
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 401
+                error_message: Advertiser has no access to campaign keyword metrics
         record_selector:
           type: RecordSelector
           extractor:
@@ -457,15 +449,13 @@ definitions:
           request_headers:
             Api-Version: "1"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No campaigns found for advertiser
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No campaigns found for advertiser
         record_selector:
           type: RecordSelector
           extractor:
@@ -612,15 +602,13 @@ definitions:
           request_headers:
             Api-Version: "1"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No line items found for campaign
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No line items found for campaign
         record_selector:
           type: RecordSelector
           extractor:
@@ -798,15 +786,13 @@ definitions:
           request_headers:
             Api-Version: "1"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No creatives found for line_item
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No creatives found for line_item
         record_selector:
           type: RecordSelector
           extractor:
@@ -891,15 +877,13 @@ definitions:
           request_headers:
             api-version: "2"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No campaigns found for advertiser
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No campaigns found for advertiser
         record_selector:
           type: RecordSelector
           extractor:
@@ -1066,15 +1050,13 @@ definitions:
           request_headers:
             api-version: "2"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No items found for campaign
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No items found for campaign
         record_selector:
           type: RecordSelector
           extractor:
