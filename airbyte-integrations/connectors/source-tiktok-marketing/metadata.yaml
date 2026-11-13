@@ -38,23 +38,13 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
-      6.0.0:
-        message: >-
-          Sandbox Access Token authentication is no longer supported because TikTok is retiring
-          sandbox accounts by December 1, 2026. This affects all streams for sources using sandbox
-          authentication. Authorize a production advertiser using OAuth2.0 before upgrading;
-          sandbox tokens and data cannot be converted automatically. Existing production OAuth2.0
-          sources require no changes or data clearing. See
-          https://docs.airbyte.com/integrations/sources/tiktok-marketing-migrations#upgrading-to-600
-        upgradeDeadline: "2026-11-30"
-        deadlineAction: auto_upgrade
       5.0.0:
         message:
           The `currency` field in the `pixels` stream's `events` array has been corrected

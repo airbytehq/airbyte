@@ -20,7 +20,7 @@ If you upgrade a sandbox source without migrating, its connection checks and syn
 
 ### Migration steps
 
-Complete these steps before November 30, 2026:
+If you use sandbox authentication, complete these steps before upgrading to 6.0.0 and ahead of TikTok's December 1, 2026 sandbox deprecation:
 
 #### Step 1: Identify affected sources and connections
 
