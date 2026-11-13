@@ -1628,7 +1628,7 @@ def collection_products_response_expected_result():
 def transactions_response_expected_result():
     # the REFUND predates the `start_date`, it is emitted with its order (sorted by `created_at`)
     return [
-    {
+        {
             "id": 5721170968765,
             "error_code": None,
             "test": True,
@@ -1667,7 +1667,7 @@ def transactions_response_expected_result():
             "parent_id": 5721110872253,
             "shop_url": "test-shop",
         },
-    {
+        {
             "id": 5721110872253,
             "error_code": None,
             "test": True,
