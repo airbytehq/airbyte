@@ -173,7 +173,7 @@ Each successful refresh-token exchange resets the inactivity window. Normal sync
 If authentication expires:
 
 <!-- env:cloud -->
-- **Airbyte Cloud**: open the Salesforce source settings, select **Client** (Airbyte Connected App), and click **Authenticate your account** to authorize Salesforce again. Save the source settings, test the connection, and retry the sync.
+- **Airbyte Cloud**: open the Salesforce source settings and, under **Client** (Airbyte Connected App), click **Re-authenticate**. Sign in to the same Salesforce organization, click **Save changes**, wait for the connection test to pass, and retry the sync.
 <!-- /env:cloud -->
 <!-- env:oss -->
 - **Airbyte Open Source**: repeat the OAuth authorization flow for your app to obtain a new refresh token. Replace **Refresh Token** in the Salesforce source settings, save the settings, test the connection, and retry the sync.
