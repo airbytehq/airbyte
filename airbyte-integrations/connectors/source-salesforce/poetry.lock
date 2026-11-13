@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.37.1"
+version = "7.48.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = "<3.15,>=3.10"
+python-versions = "<3.15,>=3.11"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.37.1-py3-none-any.whl", hash = "sha256:f7506541a6c4ee3f25b72394e5d90ec5cf272097417983e878cbf39f81c81120"},
-    {file = "airbyte_cdk-7.37.1.tar.gz", hash = "sha256:e77d1ed9250660bac34fc79b4f92aa8a846c3eb73e5441afd08b7bf31602dca3"},
+    {file = "airbyte_cdk-7.48.0-py3-none-any.whl", hash = "sha256:825e5536e54b08de71c665f2985b651dae5de41a40aed2adc9ab297026ea551e"},
+    {file = "airbyte_cdk-7.48.0.tar.gz", hash = "sha256:29d1ff6afe4f1541448adac932687606c40dcd23f1a0c11ca40406de03f0c15e"},
 ]
 
 [package.dependencies]
@@ -18,6 +18,7 @@ anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
 boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
+certifi = ">=2026.10.23"
 click = ">=8.1.8,<9.0.0"
 cryptography = ">=44.0.0,<45.0.0 || >45.0.0,<45.0.1 || >45.0.1"
 dateparser = ">=1.2.2,<2.0.0"
@@ -58,10 +59,10 @@ xmltodict = ">=0.13,<0.15"
 
 [package.extras]
 dev = ["pytest (>=7,<8)"]
-file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<24.0.0)", "pytesseract (==0.3.10)", "python-calamine (>=0.2.3,<0.9.0)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pillow (>=13.0.0)", "pyarrow (>=19.0.0,<24.0.0)", "pytesseract (==0.3.10)", "python-calamine (>=0.2.3,<0.9.0)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
-vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (>=0.8.0,<0.15.0)"]
+vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "pillow (>=13.0.0)", "tiktoken (>=0.8.0,<0.15.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -200,14 +201,14 @@ ujson = ["ujson (>=5.10.0)"]
 
 [[package]]
 name = "certifi"
-version = "2026.10.19"
+version = "2026.10.23"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
 files = [
-    {file = "certifi-2026.10.19-py3-none-any.whl", hash = "sha256:42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b"},
-    {file = "certifi-2026.10.19.tar.gz", hash = "sha256:035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae"},
+    {file = "certifi-2026.10.23-py3-none-any.whl", hash = "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"},
+    {file = "certifi-2026.10.23.tar.gz", hash = "sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd"},
 ]
 
 [[package]]
@@ -3201,4 +3202,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11,<3.14"
-content-hash = "0aa127d3d11396f385a7f775ac50c00105df9f410fe3d1b0f9eba1f01f4e14a7"
+content-hash = "4d3451b96e362059177a90908f349a8cda80d3caea805f229ecbc812dcef3386"

@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from pytest import fixture
+from pytest import MonkeyPatch, fixture
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -41,6 +41,18 @@ def clear_cache_before_each_test():
     """Clear the HTTP request cache so cached responses do not leak between tests."""
     cache_dir = Path(os.environ["REQUEST_CACHE_PATH"])
     if cache_dir.is_dir():
-        for file_path in cache_dir.glob("*.sqlite"):
+        for file_path in cache_dir.glob("*.sqlite*"):
             file_path.unlink()
     yield
+
+
+def sleep_moves_clock(clock, monkeypatch: MonkeyPatch) -> list[float]:
+    """Make time.sleep move the frozen clock (at least 1 ms, as real time would) and record each wait."""
+    sleeps = []
+
+    def _sleep(seconds=0, *_args, **_kwargs):
+        sleeps.append(seconds)
+        clock.tick(max(seconds, 0.001))
+
+    monkeypatch.setattr("time.sleep", _sleep)
+    return sleeps

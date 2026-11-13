@@ -119,6 +119,7 @@ The Shiftbase API has rate limiting in place. The connector handles rate limits 
 
 | Version | Date | Pull Request | Subject |
 |:---|:---|:---|:---|
+| 0.0.10 | 2026-11-10 | [91721](https://github.com/airbytehq/airbyte/pull/91721) | Update dependencies |
 | 0.0.9 | 2026-11-03 | [90745](https://github.com/airbytehq/airbyte/pull/90745) | Update dependencies |
 | 0.0.8 | 2026-10-20 | [89396](https://github.com/airbytehq/airbyte/pull/89396) | Update dependencies |
 | 0.0.7 | 2026-10-13 | [88794](https://github.com/airbytehq/airbyte/pull/88794) | Update dependencies |

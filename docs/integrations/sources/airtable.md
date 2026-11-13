@@ -76,7 +76,7 @@ The Airtable connector provides the following optional configuration settings:
 
 ### Note on changed table names and deleted tables
 
-Stream names include the table name. If you rename a table in Airtable after you start syncing it, the connector stops syncing the old stream. Refresh the source schema and select the stream with the new name to resume syncing that table to a destination table with the new name. Similarly, if you delete a table that was previously syncing, the connector stops syncing it.
+Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed. Similarly, if you delete a table that was previously syncing, the connector will stop syncing it.
 
 ## Supported sync modes
 
@@ -88,33 +88,13 @@ All streams support the following [sync modes](https://docs.airbyte.com/platform
 Table streams also support:
 
 - [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select `_airtable_id` as the primary key; table streams don't have a source-defined primary key)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key for table streams)
 
-### Incremental sync
-
-Incremental sync is available for all table streams, but not for `base_collaborators`. The first incremental sync reads all records with non-empty fields. Later syncs request records whose [`LAST_MODIFIED_TIME()`](https://support.airtable.com/docs/formula-field-reference) is after the saved cursor, minus a 15-minute lookback. For records that were never edited, Airtable leaves `LAST_MODIFIED_TIME()` blank, so the connector compares `CREATED_TIME()` instead.
-
-Keep the following behavior in mind:
-
-- **Cursor field**: The connector adds `_airtable_extracted_at` as the cursor. It contains the end time of the sync window, not the time the record changed. All records emitted in one incremental sync share the same value.
-- **Duplicates**: The 15-minute lookback re-reads recently changed records, so Incremental - Append can emit the same record more than once. Use Incremental - Append + Deduped with `_airtable_id` as the primary key to keep one row per record.
-- **Computed fields**: `LAST_MODIFIED_TIME()` only tracks changes to non-computed fields. If only a formula, rollup, lookup, or count value changes, the record isn't re-synced.
-- **Deleted records**: Incremental syncs don't capture deleted records. To remove deleted records from the destination, use Full Refresh - Overwrite.
+Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
 
 ## Supported Streams
 
-### Table streams
-
-This source discovers tables from the bases you authorize using Airtable's Metadata API and reads their records using the Web API. Each table is a separate stream named `{base_name}/{table_name}/{table_id}`. If you enable **Add Base ID to Stream Name**, the format is `{base_name}/{base_id}/{table_name}/{table_id}`. Base and table names in stream names are lowercased, with spaces replaced by underscores. Field names are normalized the same way.
-
-In addition to the table's fields, each record includes the following fields:
-
-- `_airtable_id`: The Airtable record ID
-- `_airtable_created_time`: The time the record was created
-- `_airtable_table_name`: The name of the table
-- `_airtable_extracted_at`: The incremental sync cursor. See [Incremental sync](#incremental-sync).
-
-The connector skips records that have no field values. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
+This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
 
 ### Base collaborators
 
@@ -133,7 +113,7 @@ Airtable enforces the following [rate limits](https://airtable.com/developers/we
 
 If either limit is exceeded, the API returns a `429` status code and requests must wait 30 seconds before retrying. The connector handles this automatically with built-in backoff and retry logic.
 
-Airtable also applies [monthly API call limits](https://support.airtable.com/docs/managing-api-call-limits-in-airtable) to Free and Team workspaces. Retries don't bypass these quotas. If a sync fails with `PUBLIC_API_BILLING_LIMIT_EXCEEDED`, check your workspace's API usage and wait for the allowance to reset or upgrade your Airtable plan.
+Airtable also applies [monthly API call limits](https://support.airtable.com/docs/managing-api-call-limits-in-airtable) to Free and Team workspaces. Check your workspace's API usage if requests fail or are throttled despite staying below the per-second rate limits.
 
 ## Data type map
 
@@ -192,6 +172,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.1 | 2026-11-10 | [89120](https://github.com/airbytehq/airbyte/pull/89120) | Update dependencies |
 | 4.8.0 | 2026-11-05 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
 | 4.7.0 | 2026-11-03 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
 | 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
