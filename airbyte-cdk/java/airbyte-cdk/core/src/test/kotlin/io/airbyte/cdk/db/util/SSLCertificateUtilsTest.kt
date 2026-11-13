@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.db.util
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.IOException
 import java.nio.file.FileSystem
 import java.nio.file.Files
@@ -21,13 +20,13 @@ internal class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificateInternal(
         certString: String,
         pwd: String,
         fs: FileSystem?,
-        directory: String?
+        directory: String?,
     ) {
         val ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory)
 
@@ -43,7 +42,7 @@ internal class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificate() {
         testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, null, SLASH_TMP)
@@ -60,7 +59,7 @@ internal class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificateInMemory() {
         testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD2, null, null)
@@ -72,21 +71,20 @@ internal class SSLCertificateUtilsTest {
         Assertions.assertNotNull(exception)
     }
 
-    @SuppressFBWarnings("HARD_CODE_PASSWORD")
     @Throws(
         KeyStoreException::class,
         IOException::class,
         CertificateException::class,
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificateInternal(
         certString: String,
         keyString: String,
         keyStorePassword: String,
         filesystem: FileSystem?,
-        directory: String?
+        directory: String?,
     ) {
         val ksUri =
             SSLCertificateUtils.keyStoreFromClientCertificate(
@@ -94,7 +92,7 @@ internal class SSLCertificateUtilsTest {
                 keyString,
                 keyStorePassword,
                 filesystem,
-                directory
+                directory,
             )
         val ks = KeyStore.getInstance("PKCS12")
         val inputStream = Files.newInputStream(Path.of(ksUri))
@@ -112,7 +110,7 @@ internal class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificate() {
         testKeyStoreFromClientCertificateInternal(
@@ -120,7 +118,7 @@ internal class SSLCertificateUtilsTest {
             clientKey,
             KEY_STORE_PASSWORD,
             null,
-            SLASH_TMP
+            SLASH_TMP,
         )
 
         val exceptionKey: Exception =
@@ -130,7 +128,7 @@ internal class SSLCertificateUtilsTest {
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
                     null,
-                    SLASH_TMP
+                    SLASH_TMP,
                 )
             }
         Assertions.assertNotNull(exceptionKey)
@@ -142,7 +140,7 @@ internal class SSLCertificateUtilsTest {
                     clientKey,
                     KEY_STORE_PASSWORD,
                     null,
-                    SLASH_TMP
+                    SLASH_TMP,
                 )
             }
         Assertions.assertNotNull(exceptionCert)
@@ -155,7 +153,7 @@ internal class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificateInMemory() {
         testKeyStoreFromClientCertificateInternal(
@@ -163,7 +161,7 @@ internal class SSLCertificateUtilsTest {
             clientKey,
             KEY_STORE_PASSWORD,
             null,
-            null
+            null,
         )
 
         val exceptionKey: Exception =
@@ -173,7 +171,7 @@ internal class SSLCertificateUtilsTest {
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
                     null,
-                    null
+                    null,
                 )
             }
         Assertions.assertNotNull(exceptionKey)
@@ -185,7 +183,7 @@ internal class SSLCertificateUtilsTest {
                     clientKey,
                     KEY_STORE_PASSWORD,
                     null,
-                    null
+                    null,
                 )
             }
         Assertions.assertNotNull(exceptionCert)

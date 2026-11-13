@@ -15,17 +15,17 @@ internal class CompressionTypeHelperTest {
     fun testGetCompressionType() {
         Assertions.assertEquals(
             S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
-            parseCompressionType(null)
+            parseCompressionType(null),
         )
 
         Assertions.assertEquals(
             CompressionType.NO_COMPRESSION,
-            parseCompressionType(jsonNode(Map.of("compression_type", "No Compression")))
+            parseCompressionType(jsonNode(Map.of("compression_type", "No Compression"))),
         )
 
         Assertions.assertEquals(
             CompressionType.GZIP,
-            parseCompressionType(jsonNode(Map.of("compression_type", "GZIP")))
+            parseCompressionType(jsonNode(Map.of("compression_type", "GZIP"))),
         )
     }
 }

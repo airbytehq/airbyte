@@ -15,8 +15,7 @@ object ResourceUtils {
                     Thread.currentThread().contextClassLoader,
                     ResourceUtils::class.java.classLoader,
                 )
-                .firstOrNull()
-                ?: throw RuntimeException("no ClassLoader found")
+                .firstOrNull() ?: throw RuntimeException("no ClassLoader found")
         return loader.getResource(resourceName)
             ?: throw RuntimeException("resource not found $resourceName")
     }

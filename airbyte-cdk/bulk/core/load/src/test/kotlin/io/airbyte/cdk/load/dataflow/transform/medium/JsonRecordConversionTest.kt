@@ -51,7 +51,7 @@ class JsonRecordConversionTest {
                 valueCoercer,
                 validationResultHandler,
                 jsonConverterConfig,
-                AirbyteValueCoercer(useFastTimestampParsing = true),
+                AirbyteValueCoercer(),
             )
     }
 
