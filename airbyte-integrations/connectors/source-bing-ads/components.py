@@ -18,11 +18,14 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.utils.traced_exception import FailureType
 
 
 logger = logging.getLogger(__name__)
@@ -571,6 +574,43 @@ class BingAdsGzipCsvDecoder(Decoder):
         csv_reader = csv.DictReader(text_stream)
         for row in csv_reader:
             yield row
+
+
+DOWNLOAD_URL_EXPIRED_AZURE_ERROR_CODE = "AuthenticationFailed"
+DOWNLOAD_URL_EXPIRED_AZURE_ERROR_DETAIL = "Signature not valid in the specified time frame"
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for report and bulk file downloads that recognises an expired download URL.
+
+    Bing Ads hands out pre-signed (SAS) Azure Blob Storage URLs that are only valid for a few minutes. Once
+    that window has passed, Azure answers 403 ``AuthenticationFailed`` with the detail "Signature not valid in
+    the specified time frame". The CDK's default mapping reports every 403 as a permission problem
+    (``config_error``), but no configuration change fixes an expired URL and a later attempt gets a new one, so
+    it is reported as a ``transient_error``. Requesting the same URL again cannot succeed, hence FAIL and not RETRY.
+
+    The body is only read for a 403 carrying Azure's error code. Successful downloads are streamed, and reading
+    their body here would leave nothing for the decoders, which consume ``response.raw``.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if self._is_expired_download_url(response_or_exception):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.transient_error,
+                error_message="Bing Ads file download URL is expired.",
+            )
+        return super().interpret_response(response_or_exception)
+
+    @staticmethod
+    def _is_expired_download_url(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
+        return (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == 403
+            and response_or_exception.headers.get("x-ms-error-code") == DOWNLOAD_URL_EXPIRED_AZURE_ERROR_CODE
+            and DOWNLOAD_URL_EXPIRED_AZURE_ERROR_DETAIL in response_or_exception.text
+        )
 
 
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"

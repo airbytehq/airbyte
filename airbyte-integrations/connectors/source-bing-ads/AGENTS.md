@@ -29,3 +29,11 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download Requesters Must Not Read the Response Body Before the Decoders
+
+Report and bulk files are downloaded from pre-signed Azure Blob Storage URLs as streamed responses, and `BingAdsReportZipCsvDecoder` and `BingAdsGzipCsvDecoder` consume `response.raw`. The built-in `HttpResponseFilter` calls `response.json()` to evaluate `predicate` and reads the body for `error_message_contains`, on every response including successful ones. That drains the stream, so the decoders see an empty file and the stream emits zero records without any error. For this reason the download requesters use the custom `BingAdsDownloadErrorHandler`, which only reads the body of a 403 that carries Azure's `x-ms-error-code: AuthenticationFailed` header.
+
+That handler reports an expired download URL (Azure detail `Signature not valid in the specified time frame`) as a `transient_error` with action `FAIL`: the URL cannot be fixed through configuration, and requesting the same URL again cannot succeed.
+
+**Why this matters:** Adding a declarative `response_filters` entry with a `predicate` or `error_message_contains` to either `download_requester` looks harmless and silently empties every report and bulk stream.
