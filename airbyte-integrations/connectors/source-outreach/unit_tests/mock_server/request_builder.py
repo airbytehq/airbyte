@@ -47,8 +47,12 @@ class OutreachRequestBuilder:
             "filter[updatedAt][gte]": self._updated_since,
         }
 
-    def build(self) -> HttpRequest:
-        return HttpRequest(f"{BASE_URL}{self._path}", query_params=self._query_params())
+    def build(self, access_token: str = "test-access-token") -> HttpRequest:
+        return HttpRequest(
+            f"{BASE_URL}{self._path}",
+            query_params=self._query_params(),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
 
     def next_page_url(self, page_after: str) -> str:
         """The `links.next` URL Outreach returns: the same query plus an opaque `page[after]` cursor."""
