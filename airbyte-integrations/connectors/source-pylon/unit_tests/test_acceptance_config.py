@@ -31,5 +31,9 @@ def test_acceptance_spec_and_discover_are_offline(manifest_path: Path) -> None:
                 assert len(output.spec_messages) == 1
             else:
                 output = discover(source, config)
-                assert len(output.catalog.catalog.streams) == 15
+                assert len(output.catalog.catalog.streams) == 19
+                configured = json.loads((root / "integration_tests/configured_catalog.json").read_text())
+                assert {entry["stream"]["name"] for entry in configured["streams"]} == {
+                    stream.name for stream in output.catalog.catalog.streams
+                }
             assert output.errors == []

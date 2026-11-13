@@ -93,9 +93,10 @@ case sensitive.
 #### Airbyte Cloud
 
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
-configuration. Airbyte Cloud never connects to a database without encryption: the connection must
-either use TLS/SSL, or go through an SSH tunnel, which encrypts the hop between Airbyte and your
-bastion host. In practice:
+configuration. For configurations that explicitly set **Encryption**, the connection must either
+use TLS/SSL or go through an SSH tunnel, which encrypts the hop between Airbyte and your bastion
+host. Legacy configurations without `ssl_mode` can still connect without encryption for backward
+compatibility. Update those configurations to use TLS/SSL or an SSH tunnel. In practice:
 
 | Setup                                                                                               | Supported on Airbyte Cloud                                                                   |
 | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
@@ -391,10 +392,10 @@ When you select **Read Changes using Change Data Capture (CDC)** as the update m
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |
-| **Initial Waiting Time in Seconds (Advanced)** | 300 | How long the connector waits at startup to determine whether there is new CDC data to sync. |
+| **Initial Waiting Time in Seconds (Advanced)** | 300 | How long the connector waits at startup to determine whether there is new CDC data to sync. The configuration description specifies 120–3600 seconds, but the connector does not validate this range. |
 | **Invalid CDC Position Behavior (Advanced)** | `Fail sync` | What happens when the saved CDC position is no longer available on the server, for example because the CDC cleanup job removed it. `Fail sync` stops the sync, and you must reset the connection. `Re-sync data` automatically resets to the current position. Changes between the saved position and the current position are lost, and the reset can increase costs. |
-| **Initial Load Timeout in Hours (Advanced)** | 8 | How long the initial load can run before the connector switches to catching up on CDC changes. Valid range: 4 to 24 hours. |
-| **Poll Interval in Milliseconds (Advanced)** | 500 | How often Debezium polls the change tables for new data. Must be between 100 and 14999, and smaller than the connector's 15000 ms heartbeat interval. Lower values capture changes sooner but can increase database load. |
+| **Initial Load Timeout in Hours (Advanced)** | 8 | How long the initial load can run before the connector switches to catching up on CDC changes. Use 4 to 24 hours, as specified by the configuration. |
+| **Poll Interval in Milliseconds (Advanced)** | 500 | How often Debezium polls the change tables for new data. The configuration specifies 100–14999 ms. Values of 15000 ms or more fail the configuration check because the interval must be smaller than the heartbeat interval. Lower values capture changes sooner but can increase database load. |
 | **Max Transactions per CDC Iteration (Advanced)** | 500 | The maximum number of transactions Debezium reads from the change tables in each streaming iteration. Set to `0` for no limit. Negative values fail the configuration check. |
 
 The **Max Transactions per CDC Iteration** limit counts transactions on every CDC-enabled table in the database, not only the tables in your connection. If other CDC-enabled tables in the same database receive many writes, syncs can fall behind at the default value. To catch up faster on a large CDC backlog, raise this value or set it to `0`. Higher values can increase the connector's memory usage. This setting maps to the Debezium [`max.iteration.transactions`](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-max-iteration-transactions) property.
@@ -526,6 +527,7 @@ Version 4.3.0 introduces a migration from the legacy CDK to the new CDK architec
   - `CursorBasedStatus` (cursor-based incremental) → version 3 `cursor_based` state type
 - **Backward Compatibility**: Existing connections keep working without manual intervention.
 - **Unrecognized legacy state**: Starting with version 5.1.2, if a cursor-based stream has a legacy state that matches neither format, the connector logs `Unknown legacy state format, the stream will be re-read from scratch` and re-reads that stream from the beginning on the next sync. Earlier versions treated the stream as already synced and emitted no records for it.
+- **Empty state**: Starting with version 5.1.2, an empty object (`{}`) has no resume position and triggers a cold start rather than skipping the stream. The connector reads the stream from the beginning again.
 
 ## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
 

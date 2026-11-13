@@ -45,7 +45,7 @@ def test_check_rejects_invalid_token():
         (401, "organization_deactivated", "Contact Pylon support"),
         (401, "organization_suspended", "Contact Pylon support"),
         (401, "unrecognized_code", "update the token in your Airbyte source settings"),
-        (403, "permission_denied", "https://api.usepylon.com/tags"),
+        (403, "permission_denied", "The API token's role is not allowed to read https://api.usepylon.com/tags"),
     ],
 )
 @freeze_time(NOW)
@@ -131,16 +131,31 @@ def test_other_stream_uncoded_400_is_not_retried(stream) -> None:
         ({"code": "rate_limited"}, {"Retry-After": "7", "X-Retry-After": "13"}, 8),
     ],
 )
-@pytest.mark.parametrize("stream,suffix", [("issue_threads", "threads"), ("issue_messages", "messages")])
+@pytest.mark.parametrize("stream,suffix", [("issue_threads", "threads"), ("issue_messages", "messages"), ("audit_logs", None)])
 @freeze_time(NOW)
 def test_child_429_uses_shared_backoff(body, headers, wait, stream, suffix) -> None:
     parent = fixture_record("issues")
     with patch("time.sleep") as sleep, patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call"), HttpMocker() as mocker:
-        mocker.post(search_request(), page([parent]))
-        request = list_request(f"issues/{parent['id']}/{suffix}")
+        if suffix:
+            mocker.post(search_request(), page([parent]))
+        request = list_request(f"issues/{parent['id']}/{suffix}" if suffix else "audit-logs")
         mocker.get(request, [HttpResponse(json.dumps(body), status_code=429, headers=headers), page([fixture_record(stream)])])
         output = run(stream)
         mocker.assert_number_of_calls(request, 2)
         assert [call.args[0] for call in sleep.call_args_list if call.args[0] > 0] == [wait]
+    assert output.errors == []
+    assert len(output.records) == 1
+
+
+@pytest.mark.parametrize("status", [500, 502, 503, 504])
+@pytest.mark.parametrize("stream", ["tags", "audit_logs"])
+@freeze_time(NOW)
+def test_server_errors_use_shared_backoff(status: int, stream: str) -> None:
+    request = list_request(stream.replace("_", "-"))
+    with patch("time.sleep") as sleep, patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call"), HttpMocker() as mocker:
+        mocker.get(request, [error(status), error(status), page([fixture_record(stream)])])
+        output = run(stream)
+        mocker.assert_number_of_calls(request, 3)
+        assert [call.args[0] for call in sleep.call_args_list if call.args[0] > 0] == [11, 21]
     assert output.errors == []
     assert len(output.records) == 1

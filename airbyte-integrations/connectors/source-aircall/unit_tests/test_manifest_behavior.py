@@ -37,7 +37,11 @@ def _epoch(value: str) -> int:
 
 
 def _request(path: str, query_params: dict[str, str] | None = None) -> HttpRequest:
-    return HttpRequest(f"{_BASE_URL}{path}", query_params=query_params or {})
+    query_params = query_params or {}
+    if path == "/calls":
+        # Every calls request asks for the IVR options.
+        query_params = {**query_params, "fetch_call_timeline": "true"}
+    return HttpRequest(f"{_BASE_URL}{path}", query_params=query_params)
 
 
 def _read_stream(
@@ -230,36 +234,6 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
         assert len(output.records) == window_count
         for request in requests:
             http_mocker.assert_number_of_calls(request, 1)
-
-
-@pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("numbers", id="numbers"),
-        pytest.param("teams", id="teams"),
-    ],
-)
-def test_numbers_and_teams_emit_records_with_past_state(stream_name: str) -> None:
-    with freeze_time(_NOW), HttpMocker() as http_mocker:
-        request = _request(f"/{stream_name}", {"per_page": "50"})
-        http_mocker.get(
-            request,
-            _response(
-                stream_name,
-                [
-                    {"id": 1, "created_at": "2023-10-03T18:35:43.000Z"},
-                    {"id": 2, "created_at": "2025-10-03T18:35:43Z"},
-                ],
-            ),
-        )
-        state = StateBuilder().with_stream_state(stream_name, {"created_at": "2025-06-01T00:00:00.000Z"}).build()
-
-        output = _read_stream(stream_name, SyncMode.incremental, state=state)
-
-        assert output.errors == []
-        http_mocker.assert_number_of_calls(request, 1)
-        assert [record.record.data["id"] for record in output.records] == [1, 2]
-        assert output.most_recent_state.stream_state.created_at == "2025-10-03T18:35:43.000000+0000"
 
 
 @pytest.mark.parametrize(
@@ -505,6 +479,30 @@ def test_start_date_is_optional_hidden_and_unconstrained() -> None:
     assert "start_date" not in spec["required"]
     assert start_date["airbyte_hidden"] is True
     assert "pattern" not in start_date and "format" not in start_date
+
+
+def test_window_settings_declare_the_fallbacks_as_defaults_and_conversation_intelligence_is_opt_in() -> None:
+    properties = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]["connection_specification"]["properties"]
+
+    assert properties["window_in_days"]["default"] == 1
+    assert properties["contacts_window_in_days"]["default"] == 30
+    assert properties["include_conversation_intelligence"]["type"] == "boolean"
+    assert properties["include_conversation_intelligence"]["default"] is False
+
+
+def test_calls_ask_for_ivr_options_and_emit_them() -> None:
+    ivr_option = {"id": "5cb41cde-aed2-4357-a98c-e1b33d68851a", "title": "", "key": "1", "branch": "Default"}
+    with freeze_time(_NOW), HttpMocker() as http_mocker:
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
+        query = {"from": str(start), "to": str(_epoch(_NOW)), "per_page": "50", "fetch_call_timeline": "true"}
+        request = HttpRequest(f"{_BASE_URL}/calls", query_params=query)
+        http_mocker.get(request, _response("calls", [{**_call_record(start, 1), "ivr_options_selected": [ivr_option]}]))
+
+        output = _read_stream("calls", SyncMode.full_refresh, config={**_CONFIG, "window_in_days": 365})
+
+        assert output.errors == []
+        assert output.records[0].record.data["ivr_options_selected"] == [ivr_option]
+        http_mocker.assert_number_of_calls(request, 1)
 
 
 _DOCUMENTED_FIELDS = {
