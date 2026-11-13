@@ -259,7 +259,7 @@ definitions:
         pagination_strategy:
           type: "CursorPagination"
           cursor_value: "{{ last_record['dt'] }}"
-          stop_condition: "{{ not last_record }}"
+          stop_condition: "{{ not last_record or last_page_size < 30 or response['dt'] == last_record['dt'] }}"
         page_token_option:
           type: "RequestOption"
           field_name: "beforeDate"
@@ -961,7 +961,7 @@ streams:
         pagination_strategy:
           type: "CursorPagination"
           cursor_value: "{{ last_record['dt'] }}"
-          stop_condition: "{{ not last_record }}"
+          stop_condition: "{{ not last_record or last_page_size < 30 or response['dt'] == last_record['dt'] }}"
         page_token_option:
           type: "RequestOption"
           field_name: "beforeDate"
