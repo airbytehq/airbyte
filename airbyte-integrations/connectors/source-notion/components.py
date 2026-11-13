@@ -3,8 +3,10 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -21,16 +23,42 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    The stream is client-side incremental. Recent CDK versions only apply that filtering in the record selector of a
+    standard SimpleRetriever, so this retriever does it itself, after deciding whether to recurse: a block whose own
+    last_edited_time is older than the cursor can still have children that were edited since then. Filtering in the
+    record selector would drop such a block before its children are read, so a cursor filter found there (older CDK
+    versions put one there) is moved here. `cursor` and `is_client_side_incremental_sync` are passed in by the
+    declarative component factory.
     """
+
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._client_side_cursor: Optional[Cursor] = self.cursor if self.is_client_side_incremental_sync else None
+        record_filter = getattr(self.record_selector, "record_filter", None)
+        if isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator):
+            self._client_side_cursor = record_filter._cursor
+            self.record_selector.record_filter = (
+                RecordFilter(parameters={}, config=record_filter.config, condition=record_filter.condition)
+                if record_filter.condition
+                else None
+            )
 
     def read_records(
         self,
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._read_block_tree(records_schema, stream_slice, stream_slice)
+
+    def _read_block_tree(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice],
+        page_slice: Optional[StreamSlice],
     ) -> Iterable[StreamData]:
         # if reached recursive limit, don't read anymore
         if self.current_block_depth > MAX_BLOCK_DEPTH:
@@ -44,10 +72,17 @@ class BlocksRetriever(SimpleRetriever):
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
                     cursor_slice=stream_slice.cursor_slice,
                 )
-                yield from self.read_records(records_schema, child_stream_slice)
+                yield from self._read_block_tree(records_schema, child_stream_slice, page_slice)
                 self.current_block_depth -= 1
 
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if self._should_be_synced(stream_data, page_slice):
+                yield stream_data
+
+    def _should_be_synced(self, stream_data: StreamData, page_slice: Optional[StreamSlice]) -> bool:
+        if self._client_side_cursor is None or not isinstance(stream_data, Record):
+            return True
+        # Check against the page partition the cursor emitted: nested block_id partitions are unknown to the cursor.
+        return self._client_side_cursor.should_be_synced(Record(data=stream_data.data, associated_slice=page_slice, stream_name=stream_data.stream_name))

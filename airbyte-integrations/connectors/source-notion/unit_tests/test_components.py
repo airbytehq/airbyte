@@ -3,9 +3,11 @@
 #
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+import pytest
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -279,3 +281,106 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id: str, last_edited_time: str, has_children: bool = False, parent_id: str = "page-1") -> dict:
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": parent_id},
+        "created_time": "2021-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": [], "color": "default"},
+    }
+
+
+def _list_response(results: list) -> dict:
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+@pytest.mark.parametrize(
+    "stream_state",
+    [
+        pytest.param({"last_edited_time": "2021-11-01T00:00:00.000Z"}, id="legacy_flat_state"),
+        pytest.param(
+            {"use_global_cursor": True, "state": {"last_edited_time": "2021-11-01T00:00:00.000Z"}, "lookback_window": 0},
+            id="global_substream_state",
+        ),
+    ],
+)
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock, stream_state):
+    """
+    An incremental read of `blocks` with prior state emits only blocks whose last_edited_time is at or after the
+    state value, and still walks into the children of an older block so that a newer nested block is not lost.
+    """
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response(
+            [{"object": "page", "id": "page-1", "last_edited_time": "2021-12-01T00:00:00.000Z", "parent": {"type": "workspace"}}]
+        ),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json=_list_response(
+            [
+                _block("old-leaf", "2021-10-19T13:33:00.000Z"),
+                _block("old-parent", "2021-10-19T13:33:00.000Z", has_children=True),
+                _block("new-leaf", "2021-11-19T13:33:00.000Z"),
+            ]
+        ),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/old-parent/children",
+        json=_list_response(
+            [
+                _block("old-child", "2021-10-20T00:00:00.000Z", parent_id="old-parent"),
+                _block("new-child", "2021-11-20T00:00:00.000Z", parent_id="old-parent"),
+            ]
+        ),
+    )
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    assert [record.record.data["id"] for record in output.records] == ["new-child", "new-leaf"]
+    requested_paths = [request.path for request in requests_mock.request_history if request.method == "GET"]
+    assert requested_paths == ["/v1/blocks/page-1/children", "/v1/blocks/old-parent/children"]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["state"]["last_edited_time"].startswith("2021-11-20T00:00:00")
+
+
+def test_blocks_read_without_state_emits_all_blocks_since_start_date(requests_mock):
+    """Without prior state every block edited after start_date is emitted, including nested children."""
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response(
+            [{"object": "page", "id": "page-1", "last_edited_time": "2021-12-01T00:00:00.000Z", "parent": {"type": "workspace"}}]
+        ),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json=_list_response(
+            [
+                _block("before-start", "2019-06-01T00:00:00.000Z"),
+                _block("parent", "2021-10-19T13:33:00.000Z", has_children=True),
+            ]
+        ),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/parent/children",
+        json=_list_response([_block("child", "2021-10-20T00:00:00.000Z", parent_id="parent")]),
+    )
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
+
+    output = read(get_source(config), config=config, catalog=catalog)
+
+    assert [record.record.data["id"] for record in output.records] == ["child", "parent"]
