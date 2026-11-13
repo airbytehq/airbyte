@@ -41,7 +41,7 @@ ChatGPT workspace Admin keys are separate from API Platform Admin keys. An API P
    - **OpenAI-Organization**: your API Platform organization ID.
    - **OpenAI-token**: your API Platform Admin API key.
    - **Start time**: the first date to sync, in `YYYY-MM-DD` format.
-   - **End Time** (optional): the date to stop syncing, in `YYYY-MM-DD` format. If you leave it blank, the connector syncs up to the current date.
+   - **End Time** (optional): the date to stop syncing, in `YYYY-MM-DD` format. If you leave it blank, the connector syncs up to midnight UTC at the start of the current day.
    - **OpenAI-compliance-token** (optional): your ChatGPT workspace Admin key.
    - **Workspace ID** (optional): your ChatGPT workspace ID.
 3. Select **Set up source**.
