@@ -1,0 +1,20 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-microsoft-lists-tests"
+version = "0.0.0"
+description = "Unit tests for source-microsoft-lists"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = { version = "7.37.0.post9.dev39463931382", allow-prereleases = true }
+pytest = "^8"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.12.1"
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:This class is experimental*"]
