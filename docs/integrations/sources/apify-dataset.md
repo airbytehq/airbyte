@@ -30,7 +30,9 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 ### Trigger an Airbyte sync from an Apify webhook
 
-When an [Actor run](https://docs.apify.com/platform/actors/running) finishes, it can start an Airbyte sync. Create an Apify [webhook](https://docs.apify.com/platform/integrations/webhooks) that fires when the run succeeds and calls the Airbyte API endpoint that [triggers a sync job](https://reference.airbyte.com/reference/createjob) for your connection.
+When an [Actor run](https://docs.apify.com/platform/actors/running) finishes, it can start an Airbyte sync. Configure an Apify [webhook](https://docs.apify.com/platform/integrations/webhooks) to notify an orchestrator that obtains a fresh Airbyte access token and then [creates a sync job](https://reference.airbyte.com/reference/createjob) for your connection.
+
+Airbyte Public API access tokens expire after 15 minutes. A token stored in a webhook's static Authorization header won't keep working for later Actor runs. See [Configuring API access](/platform/using-airbyte/configuring-api-access) for application credentials and token generation.
 
 ![Apify webhook configured to trigger an Airbyte connection sync](/.gitbook/assets/apify_trigger_airbyte_connection.png)
 
