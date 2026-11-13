@@ -7,25 +7,10 @@ standard declarative connector patterns. Read this before making changes to the 
 
 ---
 
-## 1. Dynamic Sandbox vs Production Endpoint Selection
+The connector uses the production API at `https://business-api.tiktok.com/open_api/v1.3/`.
+Live tests use production credentials; TikTok's retired sandbox authentication is not supported.
 
-The connector dynamically selects between two completely different API base URLs based on the
-authentication type in the config:
-- **Sandbox:** `https://sandbox-ads.tiktok.com/open_api/v1.3/`
-- **Production:** `https://business-api.tiktok.com/open_api/v1.3/`
-
-This is evaluated via a Jinja expression in the `url_base`:
-`"sandbox-ads" if config.get('credentials', {}).get('auth_type', "") == "sandbox_access_token" else "business-api"`.
-
-**Why this matters:** The sandbox and production APIs have different data availability and rate limits.
-When using a sandbox account, it is impossible to retrieve advertiser IDs via the API (the
-`oauth2/advertiser/get/` endpoint does not work), which is why the config allows specifying an
-`advertiser_id` directly. If you test changes against a sandbox account, be aware that some streams may
-behave differently or return no data compared to production.
-
----
-
-## 2. Dual Advertiser ID Partition Routers
+## 1. Dual Advertiser ID Partition Routers
 
 The connector uses two custom partition routers that handle advertiser IDs differently depending on
 whether the ID is provided in the config or fetched from the API:
@@ -48,7 +33,7 @@ single ID expected).
 
 ---
 
-## 3. Empty Metric Values Returned as Dash Strings
+## 2. Empty Metric Values Returned as Dash Strings
 
 TikTok's Reporting API returns the string `"-"` (a literal dash) for metrics that have no data, rather
 than returning `null` or `0`. The `TransformEmptyMetrics` custom transformation iterates over the
@@ -62,7 +47,7 @@ transformation or the stream will emit invalid metric types.
 
 ---
 
-## 4. Rate Limit Detection via Response Body Code
+## 3. Rate Limit Detection via Response Body Code
 
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
 200 with a `code` field in the JSON response body set to `40100` or `40016` (app-level limits) or `40133`
@@ -80,7 +65,7 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Daily Report Window Splitting (40067)
+## 4. Daily Report Window Splitting (40067)
 
 TikTok rejects a daily report request that is too large with HTTP 200 and body `code` 40067 ("Your query
 is too large, please reduce the query size..."). `report_daily_error_handler` maps it to
@@ -104,7 +89,7 @@ rules either fails to load or fails on 40067 instead of splitting.
 
 ---
 
-## 6. Smart+ Ads Missing modify_time Filter
+## 5. Smart+ Ads Missing modify_time Filter
 
 The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
 specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
@@ -116,12 +101,6 @@ reports missing ads data, Smart+ ads without `modify_time` values are the likely
 trade-off to maintain incremental sync reliability.
 
 ---
-
-## 7. Sandbox Account Rate Limit and Credential Restriction
-
-The TikTok Sandbox account has a rate limit of 10 requests per second. If you run CATs in CI while simultaneously testing locally with the same credentials, you will exceed this limit and the credentials may be temporarily restricted — preventing **all** requests from succeeding. The restriction appears to last a couple of hours, and there is evidence that continued request attempts during the restriction period extend the lockout duration. There is no official TikTok documentation on this restriction behavior or its exact duration.
-
-**Why this matters:** Unlike most API rate limits that simply queue or retry, exceeding TikTok's sandbox rate limit can completely lock out the credentials for hours. Never run CI tests and local tests concurrently against the sandbox account. If you experience sudden 100% request failures with sandbox credentials, stop all requests and wait before retrying.
 
 ## Incremental Stream Considerations
 

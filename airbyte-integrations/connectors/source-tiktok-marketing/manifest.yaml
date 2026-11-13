@@ -16,7 +16,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: '"https://{{ "sandbox-ads" if config.get(''credentials'', {}).get(''auth_type'', "") == "sandbox_access_token" else "business-api" }}.tiktok.com/open_api/v1.3/"'
+    url_base: https://business-api.tiktok.com/open_api/v1.3/
     path: "{{ parameters['path'] }}"
     http_method: GET
     error_handler:
@@ -6130,26 +6130,22 @@ streams:
   - $ref: "#/definitions/creative_assets_music_stream"
   - $ref: "#/definitions/creative_assets_portfolios_stream"
   - $ref: "#/definitions/creative_assets_videos_stream"
-  # The following streams are only included if the config is not using a sandbox account for authentication
-  - type: ConditionalStreams
-    condition: "{{ config.get('credentials', {}).get('auth_type') != 'sandbox_access_token' if 'credentials' in config else (config.get('environment', {}).get('secret') or '') != '' }}"
-    streams:
-    - $ref: "#/definitions/advertiser_ids_stream"
-    - $ref: "#/definitions/ads_reports_by_country_daily_stream"
-    - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
-    - $ref: "#/definitions/advertisers_reports_daily_stream"
-    - $ref: "#/definitions/advertisers_audience_reports_daily_stream"
-    - $ref: "#/definitions/advertisers_audience_reports_by_country_daily_stream"
-    - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
-    - $ref: "#/definitions/ads_reports_by_country_hourly_stream"
-    - $ref: "#/definitions/advertisers_reports_hourly_stream"
-    - $ref: "#/definitions/ad_groups_reports_by_country_hourly_stream"
-    - $ref: "#/definitions/advertisers_reports_lifetime_stream"
-    - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
-    - $ref: "#/definitions/spark_ads_stream"
-    - $ref: "#/definitions/pixels"
-    - $ref: "#/definitions/pixel_instant_page_events"
-    - $ref: "#/definitions/pixel_events_statistics"
+  - $ref: "#/definitions/advertiser_ids_stream"
+  - $ref: "#/definitions/ads_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
+  - $ref: "#/definitions/advertisers_reports_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ads_reports_by_country_hourly_stream"
+  - $ref: "#/definitions/advertisers_reports_hourly_stream"
+  - $ref: "#/definitions/ad_groups_reports_by_country_hourly_stream"
+  - $ref: "#/definitions/advertisers_reports_lifetime_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
+  - $ref: "#/definitions/spark_ads_stream"
+  - $ref: "#/definitions/pixels"
+  - $ref: "#/definitions/pixel_instant_page_events"
+  - $ref: "#/definitions/pixel_events_statistics"
 
 spec:
   type: Spec
@@ -6199,28 +6195,6 @@ spec:
             required:
               - app_id
               - secret
-              - access_token
-          - title: Sandbox Access Token
-            type: object
-            properties:
-              auth_type:
-                title: Auth Type
-                const: sandbox_access_token
-                order: 0
-                type: string
-              advertiser_id:
-                title: Advertiser ID
-                description:
-                  The Advertiser ID which generated for the developer's Sandbox
-                  application.
-                type: string
-              access_token:
-                title: Access Token
-                description: The long-term authorized access token.
-                airbyte_secret: true
-                type: string
-            required:
-              - advertiser_id
               - access_token
       start_date:
         title: Replication Start Date

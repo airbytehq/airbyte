@@ -8,6 +8,8 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 ## Prerequisites
 
+Version 5.5.0 and later support production accounts only. If you use **Sandbox Access Token**, follow the [migration guide](tiktok-marketing-migrations.md#upgrading-to-550) to connect a production advertiser.
+
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
@@ -19,16 +21,12 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 **For Airbyte Open Source:**
 
-For the Production environment (OAuth2.0):
+For production authentication (OAuth2.0):
 
 - Access token
 - Secret
 - App ID
 
-To access the Sandbox environment:
-
-- Access token
-- Advertiser ID
 <!-- /env:oss -->
 
 ## Setup guide
@@ -37,7 +35,6 @@ To access the Sandbox environment:
 
 1. [Create a TikTok For Business account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250). <!-- env:oss -->
 2. [Create a developer application](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450).
-3. For a sandbox environment, [create a Sandbox Ad Account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026).
 <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -67,7 +64,7 @@ To access the Sandbox environment:
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Select `OAuth2.0` or `Sandbox Access Token` as the authorization method, then enter the credentials from step 1. With `OAuth2.0`, the **Advertiser ID** is optional. Leave it empty to sync every advertiser the access token can reach, or set it to sync a single advertiser. With `Sandbox Access Token`, the **Advertiser ID** is required.
+4. Select `OAuth2.0` as the authorization method, then enter the credentials from step 1. The **Advertiser ID** is optional. Leave it empty to sync every advertiser the access token can reach, or set it to sync a single advertiser.
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
@@ -87,42 +84,42 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 
 | Stream                                    | Environment  | Key                                        | Incremental |
 |:------------------------------------------|:-------------|:-------------------------------------------|:------------|
-| Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
-| AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
-| Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
-| Campaigns                                 | Prod,Sandbox | campaign_id                                | Yes         |
-| AdsReportsHourly                          | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
-| AdsReportsDaily                           | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
-| AdsReportsLifetime                        | Prod,Sandbox | ad_id                                      | No          |
+| Advertisers                               | Prod         | advertiser_id                              | No          |
+| AdGroups                                  | Prod         | adgroup_id                                 | Yes         |
+| Ads                                       | Prod         | ad_id                                      | Yes         |
+| Campaigns                                 | Prod         | campaign_id                                | Yes         |
+| AdsReportsHourly                          | Prod         | ad_id, stat_time_hour                      | Yes         |
+| AdsReportsDaily                           | Prod         | ad_id, stat_time_day                       | Yes         |
+| AdsReportsLifetime                        | Prod         | ad_id                                      | No          |
 | AdvertisersReportsHourly                  | Prod         | advertiser_id, stat_time_hour              | Yes         |
 | AdvertisersReportsDaily                   | Prod         | advertiser_id, stat_time_day               | Yes         |
 | AdvertisersReportsLifetime                | Prod         | advertiser_id                              | No          |
-| AdGroupsReportsHourly                     | Prod,Sandbox | adgroup_id, stat_time_hour                 | Yes         |
-| AdGroupsReportsDaily                      | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
-| AdGroupsReportsLifetime                   | Prod,Sandbox | adgroup_id                                 | No          |
-| Audiences                                 | Prod,Sandbox | audience_id                                | No          |
-| CampaignsReportsHourly                    | Prod,Sandbox | campaign_id, stat_time_hour                | Yes         |
-| CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
-| CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
-| CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
-| CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
-| CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
+| AdGroupsReportsHourly                     | Prod         | adgroup_id, stat_time_hour                 | Yes         |
+| AdGroupsReportsDaily                      | Prod         | adgroup_id, stat_time_day                  | Yes         |
+| AdGroupsReportsLifetime                   | Prod         | adgroup_id                                 | No          |
+| Audiences                                 | Prod         | audience_id                                | No          |
+| CampaignsReportsHourly                    | Prod         | campaign_id, stat_time_hour                | Yes         |
+| CampaignsReportsDaily                     | Prod         | campaign_id, stat_time_day                 | Yes         |
+| CampaignsReportsLifetime                  | Prod         | campaign_id                                | No          |
+| CreativeAssetsImages                      | Prod         | image_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod         | music_id                                   | No          |
+| CreativeAssetsPortfolios                  | Prod         | creative_portfolio_id                      | No          |
+| CreativeAssetsVideos                      | Prod         | video_id                                   | Yes         |
 | AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
 | AdvertisersAudienceReportsLifetime        | Prod         | advertiser_id, gender, age                 | No          |
-| AdGroupAudienceReportsDaily               | Prod,Sandbox | adgroup_id, stat_time_day, gender, age     | Yes         |
-| AdGroupAudienceReportsByCountryDaily      | Prod,Sandbox | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupAudienceReportsByPlatformDaily     | Prod,Sandbox | adgroup_id, stat_time_day, platform        | Yes         |
-| AdsAudienceReportsDaily                   | Prod,Sandbox | ad_id, stat_time_day, gender, age          | Yes         |
-| AdsAudienceReportsByCountryDaily          | Prod,Sandbox | ad_id, stat_time_day, country_code         | Yes         |
-| AdsAudienceReportsByPlatformDaily         | Prod,Sandbox | ad_id, stat_time_day, platform             | Yes         |
-| AdsAudienceReportsByProvinceDaily         | Prod,Sandbox | ad_id, stat_time_day, province_id          | Yes         |
-| CampaignsAudienceReportsDaily             | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
-| CampaignsAudienceReportsByCountryDaily    | Prod,Sandbox | campaign_id, stat_time_day, country_code   | Yes         |
-| CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
+| AdGroupAudienceReportsDaily               | Prod         | adgroup_id, stat_time_day, gender, age     | Yes         |
+| AdGroupAudienceReportsByCountryDaily      | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupAudienceReportsByPlatformDaily     | Prod         | adgroup_id, stat_time_day, platform        | Yes         |
+| AdsAudienceReportsDaily                   | Prod         | ad_id, stat_time_day, gender, age          | Yes         |
+| AdsAudienceReportsByCountryDaily          | Prod         | ad_id, stat_time_day, country_code         | Yes         |
+| AdsAudienceReportsByPlatformDaily         | Prod         | ad_id, stat_time_day, platform             | Yes         |
+| AdsAudienceReportsByProvinceDaily         | Prod         | ad_id, stat_time_day, province_id          | Yes         |
+| CampaignsAudienceReportsDaily             | Prod         | campaign_id, stat_time_day, gender, age    | Yes         |
+| CampaignsAudienceReportsByCountryDaily    | Prod         | campaign_id, stat_time_day, country_code   | Yes         |
+| CampaignsAudienceReportsByPlatformDaily   | Prod         | campaign_id, stat_time_day, platform       | Yes         |
 | SparkAds                                  | Prod         | spark_ads_post_id                          | No          |
 | Pixels                                    | Prod         | pixel_id                                   | No          |
 | PixelInstantPageEvents                    | Prod         | -                                          | No          |
@@ -131,8 +128,6 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
 | AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
-
-Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
@@ -180,6 +175,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.5.0 | 2026-11-13 | [92576](https://github.com/airbytehq/airbyte/pull/92576) | Remove Sandbox Access Token authentication following TikTok's sandbox retirement. Use a production advertiser; existing production sources require no changes. |
 | 5.4.0 | 2026-11-04 | [90968](https://github.com/airbytehq/airbyte/pull/90968) | Add website Place an Order metrics (`on_web_order`, `total_on_web_order_value`, `cost_per_on_web_order`, `value_per_on_web_order`, `on_web_order_rate`) to the ad, ad group and campaign daily report streams |
 | 5.3.4 | 2026-10-21 | [89016](https://github.com/airbytehq/airbyte/pull/89016) | Include the TikTok Marketing API error code in the message of sync failures caused by unhandled TikTok API errors |
 | 5.3.3 | 2026-10-20 | [89410](https://github.com/airbytehq/airbyte/pull/89410) | Update dependencies |
