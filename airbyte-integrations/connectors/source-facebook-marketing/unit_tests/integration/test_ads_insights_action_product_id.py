@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -151,6 +152,8 @@ def _job_start_request(
     since: Optional[datetime] = None,
     until: Optional[datetime] = None,
     fields: Optional[List[str]] = None,
+    include_incrementality: bool = False,
+    include_filtering: bool = True,
 ) -> RequestBuilder:
     since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
     until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
@@ -184,6 +187,10 @@ def _job_start_request(
         ],
         "time_range": {"since": since, "until": until},
     }
+    if include_incrementality:
+        body["action_attribution_windows"].append("incrementality")
+    if not include_filtering:
+        del body["filtering"]
     return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))
 
 
@@ -243,6 +250,64 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
+
+
+@pytest.mark.parametrize(
+    "top_level,per_insight",
+    [(True, None), (False, True), (True, False), (False, None)],
+)
+@pytest.mark.parametrize("empty_response", [False, True])
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
+def test_custom_insights_incrementality_request(top_level, per_insight, empty_response):
+    with HttpMocker() as http_mocker:
+        account_ids = ["123123123", "321321321"]
+        config_builder = config().with_account_ids(account_ids)
+        custom_insight = {"name": "Incrementality", "fields": ["actions"], "breakdowns": ["product_id"]}
+        if per_insight is not None:
+            custom_insight["include_incrementality"] = per_insight
+        config_builder.build().update({"include_incrementality": top_level, "custom_insights": [custom_insight]})
+
+        expected_records = []
+        for index, account_id in enumerate(account_ids):
+            report_run_id = f"report_{index}"
+            job_id = f"job_{index}"
+            http_mocker.get(get_account_request(account_id).build(), get_account_response(account_id=account_id))
+            http_mocker.get(_update_api_throttle_limit_request(account_id).build(), _update_api_throttle_limit_response())
+            http_mocker.post(
+                _job_start_request(
+                    account_id=account_id,
+                    fields=["actions"],
+                    include_incrementality=top_level or bool(per_insight),
+                    include_filtering=False,
+                ).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.post(_job_status_request(report_run_id).build(), _job_status_response(job_id, account_id=account_id))
+            records = []
+            if not empty_response:
+                record = {
+                    "account_id": account_id,
+                    "ad_id": f"ad_{index}",
+                    "product_id": f"product_{index}",
+                    "date_start": START_DATE[:10],
+                    "date_stop": END_DATE[:10],
+                    "actions": [{"action_type": "purchase", "value": "2", "7d_click": "1"}],
+                }
+                if top_level or per_insight:
+                    record["actions"][0]["incrementality"] = "0.5"
+                records.append(record)
+                expected_records.append(
+                    {
+                        **record,
+                        "actions": [{key: value if key == "action_type" else float(value) for key, value in record["actions"][0].items()}],
+                    }
+                )
+            http_mocker.get(_get_insights_request(job_id).build(), build_response(body={"data": records}, status_code=HTTPStatus.OK))
+
+        output = read_output(config_builder, "custom_incrementality", SyncMode.full_refresh)
+
+        assert output.errors == []
+        assert sorted([message.record.data for message in output.records], key=lambda record: record["account_id"]) == expected_records
 
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
