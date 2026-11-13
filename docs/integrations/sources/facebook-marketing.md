@@ -533,6 +533,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.13-rc.1 | 2026-11-06 | [76888](https://github.com/airbytehq/airbyte/pull/76888) | Treat empty `_collect_child_ids` results as "no data for this slice" instead of raising `system_error`, so syncs advance past historical intervals with no campaign activity |
 | 6.1.12 | 2026-11-04 | [90852](https://github.com/airbytehq/airbyte/pull/90852) | Build the insights stream schema once per stream instead of for every record, which speeds up insights syncs, most of all custom insights |
 | 6.1.11 | 2026-11-04 | [90896](https://github.com/airbytehq/airbyte/pull/90896) | Raise minimum supported Python version to 3.11 |
 | 6.1.10 | 2026-11-04 | [90974](https://github.com/airbytehq/airbyte/pull/90974) | Update CDK to 7.45 |
