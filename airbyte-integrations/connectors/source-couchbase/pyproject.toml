@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.10"
+version = "0.1.11"
 name = "source-couchbase"
 description = "Source implementation for couchbase."
 authors = ["Kaustav Ghosh <kaustav.ghosh@couchbase.com>"]
@@ -15,10 +15,9 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{include = "source_couchbase"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-airbyte-cdk = "^5.13.0"
+python = ">=3.10,<3.14"
+airbyte-cdk = "^7"
 couchbase = "^4.3.1"
-pendulum = "==2.1.2"
 requests = "^2.32.3"
 
 [tool.poetry.scripts]
@@ -28,7 +27,7 @@ source-couchbase = "source_couchbase.run:run"
 pytest = "^8.3.3"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pendulum = "==2.1.2"
+tomli = {version = "^2.0.1", python = "<3.11"}
 
 [tool.poe]
 include = [
