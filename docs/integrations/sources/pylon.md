@@ -156,6 +156,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.1 | 2026-11-13 | [92973](https://github.com/airbytehq/airbyte/pull/92973) | Mark the connector as certified |
 | 1.0.0 | 2026-11-12 | [92021](https://github.com/airbytehq/airbyte/pull/92021) | Type `tags` as strings and 8 timestamp fields as `date-time` |
 | 0.1.0 | 2026-11-10 | [91827](https://github.com/airbytehq/airbyte/pull/91827) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams, with an Admin-role error message for Audit Logs. |
 | 0.0.32 | 2026-11-10 | [91678](https://github.com/airbytehq/airbyte/pull/91678) | Update dependencies |
