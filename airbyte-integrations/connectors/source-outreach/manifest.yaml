@@ -886,6 +886,12 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # An access token lives two hours and Outreach can reject it before the connector's own expiry check
+        # refreshes it. Fetch a new token and retry once; a 401 on the new token fails as a config error.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
         - type: HttpResponseFilter
           http_codes:
             - 403
