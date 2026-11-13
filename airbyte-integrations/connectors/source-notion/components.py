@@ -85,4 +85,6 @@ class BlocksRetriever(SimpleRetriever):
         if self._client_side_cursor is None or not isinstance(stream_data, Record):
             return True
         # Check against the page partition the cursor emitted: nested block_id partitions are unknown to the cursor.
-        return self._client_side_cursor.should_be_synced(Record(data=stream_data.data, associated_slice=page_slice, stream_name=stream_data.stream_name))
+        return self._client_side_cursor.should_be_synced(
+            Record(data=stream_data.data, associated_slice=page_slice, stream_name=stream_data.stream_name)
+        )

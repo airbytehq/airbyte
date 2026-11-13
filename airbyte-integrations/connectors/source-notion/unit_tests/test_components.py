@@ -4,6 +4,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
