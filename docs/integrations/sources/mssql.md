@@ -33,16 +33,16 @@ for more details.
 
 ## Getting Started
 
-#### Requirements
+### Requirements
 
 1. MSSQL Server `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`,
    `SQL Server 2022`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`,
-   `PDW 2008R2 AU34`.
-2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
-3. If you want to use CDC, please see [the relevant section below](mssql.md#change-data-capture-cdc)
-   for further setup requirements
+   or `PDW 2008R2 AU34`.
+2. Create a dedicated read-only Airbyte user with access to all tables needed for replication.
+3. If you want to use CDC, see [the relevant section below](mssql.md#change-data-capture-cdc)
+   for further setup requirements.
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
 to your MSSQL instance is via the check connection tool in the UI. If you use Airbyte Cloud, your
@@ -50,7 +50,7 @@ firewall or security group must allow the
 [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)
 and the connection must be encrypted; see [Airbyte Cloud](#airbyte-cloud) below.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+### 2. Create a dedicated read-only user with access to the relevant tables (recommended but optional)
 
 This step is optional but highly recommended to allow for better permission control and auditing.
 Alternatively, you can use Airbyte with an existing user in your database.
@@ -83,9 +83,9 @@ Use the username and password you created here when configuring the MSSQL source
 plan to use CDC, this user also needs the additional CDC-related permissions described in
 [Setting up CDC for MSSQL](#3-create-a-user-and-grant-appropriate-permissions).
 
-#### 3. Your database user should now be ready for use with Airbyte!
+### 3. Your database user should now be ready for use with Airbyte
 
-#### Airbyte Cloud
+### Airbyte Cloud
 
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
 configuration. Airbyte Cloud never connects to a database without encryption: the connection must
@@ -205,7 +205,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 - To enable CDC, a SQL Server administrator with the necessary privileges \(_db_owner_ or
   _sysadmin_\) must first run a query to enable CDC at the database level.
 
-  ```text
+  ```sql
   USE {database name}
   GO
   EXEC sys.sp_cdc_enable_db
@@ -214,7 +214,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 
 - The administrator must then enable CDC for each table that you want to capture. Here's an example:
 
-  ```text
+  ```sql
   USE {database name}
   GO
 
@@ -276,7 +276,7 @@ user/permission steps below are unchanged. For the full Google-provided procedur
   your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing
   simultaneous writes by other database clients. This must be enabled on the database like so:
 
-  ```text
+  ```sql
   ALTER DATABASE {database name}
     SET ALLOW_SNAPSHOT_ISOLATION ON;
   ```
@@ -288,16 +288,16 @@ user/permission steps below are unchanged. For the full Google-provided procedur
   [db_datareader](https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15)
   role:
 
-  ```text
+  ```sql
   USE {database name};
   CREATE LOGIN {user name} WITH PASSWORD = '{password}';
   CREATE USER {user name} FOR LOGIN {user name};
   ALTER ROLE db_datareader ADD MEMBER {user name};
   ```
 
-  - Add the user to the role specified earlier when enabling cdc on the table\(s\):
+  - Add the user to the role specified earlier when enabling CDC on the tables:
 
-    ```text
+    ```sql
     ALTER ROLE {role name} ADD MEMBER {user name};
     ```
 
@@ -305,20 +305,20 @@ user/permission steps below are unchanged. For the full Google-provided procedur
     [Microsoft recommends avoiding in new work](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-addrolemember-transact-sql).
 
   - This should be enough access, but if you run into problems, try also directly granting the user
-    `SELECT` access on the cdc schema:
+    `SELECT` access on the CDC schema:
 
-    ```text
+    ```sql
     USE {database name};
     GRANT SELECT ON SCHEMA :: [cdc] TO {user name};
     ```
 
-  - If feasible, granting this user 'VIEW SERVER STATE' permissions will allow Airbyte to check
+  - If feasible, granting this user `VIEW SERVER STATE` permissions will allow Airbyte to check
     whether or not the
     [SQL Server Agent](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#relationship-with-log-reader-agent)
     is running. This is preferred as it ensures syncs will fail if the CDC tables are not being
     updated by the Agent in the source database.
 
-    ```text
+    ```sql
     USE master;
     GRANT VIEW SERVER STATE TO {user name};
     ```
@@ -333,56 +333,53 @@ user/permission steps below are unchanged. For the full Google-provided procedur
   [sys.sp_cdc_change_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15)
   as below:
 
-  ```text
+  ```sql
   -- Airbyte recommends at least 10080 minutes (7 days) as the retention period
   EXEC sp_cdc_change_job @job_type='cleanup', @retention = 10080
   ```
 
 - After making this change, a restart of the cleanup job is required:
 
-```text
+  ```sql
   EXEC sys.sp_cdc_stop_job @job_type = 'cleanup';
 
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
-```
+  ```
 
 - If you are using Transaction Replication, the retention has to be changed using the following scripts:
 
-```text
+  ```sql
+  EXEC sp_changedistributiondb
+    @database = 'distribution',
+    @property = 'max_distretention',
+    @value = 10080 -- 10080 minutes (7 days)
 
-EXEC sp_changedistributiondb
-  @database = 'distribution',
-  @property = 'max_distretention',
-  @value = 10080 -- 10080 minutes (7 days)
+  EXEC sp_changedistributiondb
+    @database = 'distribution',
+    @property = 'history_retention',
+    @value = 10080 -- 10080 minutes (7 days)
 
-EXEC sp_changedistributiondb
-  @database = 'distribution',
-  @property = 'history_retention',
-  @value = 10080 -- 10080 minutes (7 days)
+  USE [msdb]
+  GO
+  EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
+    @command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 10800'
+  GO
 
-USE [msdb]
-GO
-EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
-		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 10800'
-GO
-
-```
+  ```
 
 ##### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for CDC to work effectively. You can check the status of the SQL Server Agent as follows:
 
-```text
+  ```sql
   EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
-```
+  ```
 
 - If you see something other than 'Running.' please follow the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15) to start the service.
 
 ## Connection to MSSQL via an SSH Tunnel
 
-Airbyte has the ability to connect to a MSSQL instance via an SSH Tunnel. The reason you might want
-to do this because it is not possible \(or against security policy\) to connect to the database
-directly \(e.g. it does not have a public IP address\).
+Airbyte can connect to a MSSQL instance via an SSH tunnel. This is useful when the database is not publicly accessible or when security policy requires it.
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a.
 a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion
@@ -398,60 +395,23 @@ database on `localhost` or on a private network. Without a tunnel, Airbyte Cloud
 encrypted SSL method; see [Airbyte Cloud](#airbyte-cloud).
 :::
 
-Using this feature requires additional configuration, when creating the source. We will talk through
-what each piece of configuration means.
+To configure an SSH tunnel:
 
-1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use
-   an
-
-   SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
-
-      establishing the SSH Tunnel \(see below for more information on generating this key\).
-
-   2. Choose `Password Authentication` if you will be using a password as your secret for
-      establishing
-
-      the SSH Tunnel.
-
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will
-   connect to. This should
-
-   be a hostname or an IP Address.
-
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection.
-   The default port for
-
-   SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-
-5. `SSH Login Username` is the username that Airbyte should use when connecting to the bastion
-   server. This is NOT the
-
-   MSSQL username.
-
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
-
-   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
-
-   blank. Again, this is not the MSSQL password, but the password for the OS-user that Airbyte is
-
-   using to perform commands on the bastion.
-
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
-
-   private Key that you are using to create the SSH connection. This should be the full contents of
-
-   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
-
-   with `-----END RSA PRIVATE KEY-----`.
+1. Configure all fields for the source as you normally would, except **SSH Tunnel Method**.
+2. **SSH Tunnel Method** defaults to **No Tunnel** (direct connection). To use an SSH tunnel, choose **SSH Key Authentication** or **Password Authentication**.
+   - Choose **SSH Key Authentication** if you will be using an RSA private key as your secret for establishing the SSH tunnel. See below for more information on generating this key.
+   - Choose **Password Authentication** if you will be using a password as your secret for establishing the SSH tunnel.
+3. **SSH Tunnel Jump Server Host** is the hostname or IP address of the bastion server.
+4. **SSH Connection Port** is the port on the bastion server for the SSH connection. The default SSH port is `22`.
+5. **SSH Login Username** is the username that Airbyte uses when connecting to the bastion server. This is not the MSSQL username.
+6. If you are using **Password Authentication**, set **Password** to the password of the OS user from the previous step. This is not the MSSQL password, but the password for the OS user that Airbyte uses on the bastion.
+7. If you are using **SSH Key Authentication**, then **SSH Private Key** should be set to the RSA private key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ### Generating an SSH Key Pair
 
 The connector expects an RSA key in PEM format. To generate this key:
 
-```text
+```bash
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
