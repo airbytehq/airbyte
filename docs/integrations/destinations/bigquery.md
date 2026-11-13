@@ -109,7 +109,9 @@ You cannot change the location later.
 
 :::note
 Query, load, and copy jobs then run against the job project's quotas, while data still lands in
-datasets under **Project ID**. The service account needs the
+datasets under **Project ID**. If you turn on **Legacy raw tables**, the queries that check
+existing raw tables at the start of a sync still run in the **Project ID** project. The service
+account needs the
 [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
 role on the job project, in addition to its existing roles on the dataset project.
 :::
@@ -158,11 +160,11 @@ The final table contains these fields, in addition to the columns declared in yo
 See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 The output tables in BigQuery are partitioned by the Time-unit column `_airbyte_extracted_at` at a
-daily granularity. Tables are clustered on `_airbyte_extracted_at`, and deduplicating streams also
-cluster on up to the first three primary key columns, because BigQuery allows a maximum of four
-clustering columns. Partition boundaries are based on UTC time. Partitioning limits the number of
-partitions scanned when you query these tables with a predicate filter (a `WHERE` clause) on the
-partitioning column, which reduces query cost. Airbyte doesn't enable BigQuery's
+daily granularity. Tables are clustered on `_airbyte_extracted_at`. Deduplicating streams cluster on
+up to the first three primary key columns followed by `_airbyte_extracted_at`, because BigQuery
+allows a maximum of four clustering columns. Partition boundaries are based on UTC time.
+Partitioning limits the number of partitions scanned when you query these tables with a predicate
+filter (a `WHERE` clause) on the partitioning column, which reduces query cost. Airbyte doesn't enable BigQuery's
 **Require partition filter** setting, but you can enable it yourself on the produced tables.
 
 ### Legacy raw tables schema
@@ -212,8 +214,8 @@ namespace with `n` for converted namespaces.
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
 
-If a primary key column of a deduplicating stream maps to `JSON`, the sync fails, because BigQuery
-can't cluster on a JSON column.
+If one of the first three primary key columns of a deduplicating stream maps to `JSON`, the sync
+fails, because BigQuery can't cluster on a JSON column.
 
 ## Troubleshooting
 
@@ -323,7 +325,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.2.4-rc.1 | 2026-11-12 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
-| 3.2.3 | 2026-11-10 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
+| 3.2.3 | 2026-11-11 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
 | 3.2.2 | 2026-10-30 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
 | 3.2.1 | 2026-10-09 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
 | 3.2.0 | 2026-10-02 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
