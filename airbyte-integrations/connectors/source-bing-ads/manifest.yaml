@@ -2660,6 +2660,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_expired_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2678,6 +2680,21 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+  # Report and bulk files are downloaded from pre-signed Azure Blob URLs; the download requests carry no user
+  # credentials, so a 403 here means the URL's signature is no longer valid (typically `AuthenticationFailed`,
+  # "Signature not valid in the specified time frame"), never a user permission problem. Without this filter the CDK
+  # default maps it to a "You don't have permission" config_error. FAIL (not RETRY) is used because an in-place retry
+  # would resend the same expired URL. Match on `http_codes` only: a `predicate` or `error_message_contains` makes the
+  # CDK call `response.json()` on every response, which drains the streamed body the download decoders read.
+  download_url_expired_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "Bing Ads file download URL is expired or no longer valid."
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2726,6 +2743,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_url_expired_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder

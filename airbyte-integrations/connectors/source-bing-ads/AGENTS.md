@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired Download URLs Are Transient Errors, Not Permission Errors
+
+Report and bulk files are downloaded from pre-signed Azure Blob Storage URLs that Microsoft documents as short-lived. The download requests carry no user credentials, so a `403` there means the URL's signature is no longer valid (Azure answers `AuthenticationFailed`, "Signature not valid in the specified time frame"). Both download requesters use `download_url_expired_error_handler`, which fails the stream with a `transient_error` on `403` instead of the CDK default (`config_error`, "You don't have permission…").
+
+**Why this matters:** Re-authenticating cannot fix an expired download URL; the next sync gets a fresh one. Keep the filter on `http_codes` only: a `predicate` or `error_message_contains` makes the CDK call `response.json()` on every response, including successful ones, which drains the streamed body that `BingAdsGzipCsvDecoder` and `BingAdsReportZipCsvDecoder` read from `response.raw`, and the streams silently emit zero records. Do not switch the action to `RETRY` either, since an in-place retry resends the same expired URL.
