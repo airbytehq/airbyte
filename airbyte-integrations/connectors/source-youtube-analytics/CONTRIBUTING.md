@@ -15,4 +15,4 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
 ## Testing
 
-From `unit_tests/`, install dependencies with `poetry install --no-root` and run the unit tests with `poetry run pytest -x`. The connection check uses `report_types` because it can validate credentials without requiring a reporting job. Acceptance tests use the GSM secret `SECRET_YOUTUBE-ANALYTICS_CREDS`.
+From `unit_tests/`, install dependencies with `poetry install --no-root` and run the unit tests with `poetry run pytest -x`. Acceptance tests use the GSM secret `SECRET_YOUTUBE-ANALYTICS_CREDS`.
