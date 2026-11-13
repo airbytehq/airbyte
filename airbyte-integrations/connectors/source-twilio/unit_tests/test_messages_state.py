@@ -125,6 +125,7 @@ def test_message_media_incremental_checkpoint(requests_mock):
     assert checkpoint.get("parent_state", {}) == {}
     media.reset()
     state = StateBuilder().with_stream_state("message_media", checkpoint).build()
-    read_from_stream(config, "message_media", SyncMode.incremental, state)
+    with freeze_time("2022-11-17 12:03:11+00:00"):
+        read_from_stream(config, "message_media", SyncMode.incremental, state)
     assert media.called
     assert all(parse_qs(urlparse(request.url).query)["DateCreated>"] == ["2022-11-16"] for request in media.request_history)
