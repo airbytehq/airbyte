@@ -1,0 +1,425 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  Sync address balances, address summaries, address transaction history and
+  network state for Bitcoin, Litecoin, Dogecoin and Zcash (and their testnets)
+  from the SoChain API. Works without an API key; add one for more requests.
+
+check:
+  type: CheckStream
+  stream_names:
+    - address_balances
+
+definitions:
+  linked:
+    HttpRequester:
+      request_headers:
+        API-KEY: "{{ config['api_key'] if config.get('api_key') else None }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+              - 401
+            error_message: >-
+              SoChain rejected the API key. Check it at
+              https://sochain.com/dashboard, or leave it empty.
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+              - 400
+              - 404
+            error_message: "SoChain: {{ response.data.error_message }}"
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
+            max_waiting_time_in_seconds: 600
+          - type: ExponentialBackoffStrategy
+            factor: 5
+    AddressPartitionRouter:
+      type: ListPartitionRouter
+      cursor_field: address
+      values: "{{ config['addresses'] }}"
+    AddressFields:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - network
+            value: "{{ config['network'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - address
+            value: "{{ stream_partition['address'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: address_balances
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://sochain.com/api/v3/balance/{{ config['network'] }}/{{ stream_partition['address'] }}
+        http_method: GET
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        $ref: "#/definitions/linked/AddressPartitionRouter"
+    transformations:
+      $ref: "#/definitions/linked/AddressFields"
+    primary_key:
+      - network
+      - address
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          network:
+            type: string
+          address:
+            type: string
+          confirmed:
+            type:
+              - string
+              - "null"
+            description: Balance from confirmed transactions, a decimal string in coins.
+          unconfirmed:
+            type:
+              - string
+              - "null"
+            description: Pending change from the mempool, a decimal string in coins. Can be negative.
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: address_summaries
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://sochain.com/api/v3/address_summary/{{ config['network'] }}/{{ stream_partition['address'] }}
+        http_method: GET
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        $ref: "#/definitions/linked/AddressPartitionRouter"
+    transformations:
+      $ref: "#/definitions/linked/AddressFields"
+    primary_key:
+      - network
+      - address
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          network:
+            type: string
+          address:
+            type: string
+          txs_sent:
+            type:
+              - integer
+              - "null"
+          txs_received:
+            type:
+              - integer
+              - "null"
+          txs_total:
+            type:
+              - integer
+              - "null"
+          confirmed_balance:
+            type:
+              - string
+              - "null"
+          unconfirmed_balance:
+            type:
+              - string
+              - "null"
+          confirmed_received:
+            type:
+              - string
+              - "null"
+          first_active:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - integer
+                  - "null"
+              time:
+                type:
+                  - integer
+                  - "null"
+          last_active:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - integer
+                  - "null"
+              time:
+                type:
+                  - integer
+                  - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: address_transactions
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://sochain.com/api/v3/transactions/{{ config['network'] }}/{{ stream_partition['address'] }}
+        http_method: GET
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          unconfirmed: exclude
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - transactions
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['data']['next_cursor'] }}"
+          stop_condition: "{{ not response['data']['next_cursor'] }}"
+      partition_router:
+        $ref: "#/definitions/linked/AddressPartitionRouter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: time
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '2009-01-03' }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: from_time
+        inject_into: request_parameter
+      lookback_window: PT3H
+    transformations:
+      $ref: "#/definitions/linked/AddressFields"
+    primary_key:
+      - network
+      - address
+      - hash
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          network:
+            type: string
+          address:
+            type: string
+          hash:
+            type: string
+          value_sent:
+            type:
+              - string
+              - "null"
+          value_received:
+            type:
+              - string
+              - "null"
+          balance_change:
+            type:
+              - string
+              - "null"
+          time:
+            type: integer
+          block:
+            type:
+              - integer
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          p2pk:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: network_info
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://sochain.com/api/v3/network_info/{{ config['network'] }}
+        http_method: GET
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - network
+            value: "{{ config['network'] }}"
+    primary_key:
+      - network
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          network:
+            type: string
+          block_count:
+            type:
+              - integer
+              - "null"
+          best_block_hash:
+            type:
+              - string
+              - "null"
+          hashrate:
+            type:
+              - string
+              - "null"
+          mempool:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    title: SoChain Source Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - network
+      - addresses
+    properties:
+      network:
+        type: string
+        title: Network
+        description: >-
+          The network the addresses are on. BTCTEST is Bitcoin testnet4.
+        enum:
+          - BTC
+          - LTC
+          - DOGE
+          - ZEC
+          - BTCTEST
+          - LTCTEST
+          - DOGETEST
+          - ZECTEST
+        default: BTC
+        order: 0
+      addresses:
+        type: array
+        title: Addresses
+        description: Addresses on that network to sync, written in full.
+        items:
+          type: string
+        minItems: 1
+        order: 1
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Optional. Without a key SoChain allows 2,500 requests a day per IP. A
+          free key from https://sochain.com/dashboard gives 75,000 a month; paid
+          plans give more.
+        airbyte_secret: true
+        order: 2
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Optional. UTC date to sync address transactions from, in YYYY-MM-DD
+          format. Leave empty to sync each address's full history.
+        format: date
+        pattern: ^([0-9]{4}-[0-9]{2}-[0-9]{2})?$
+        examples:
+          - "2026-01-01"
+        order: 3
+    additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
