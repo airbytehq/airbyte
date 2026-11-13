@@ -77,7 +77,11 @@ def _read(
             re.compile(r"https://slack\.com/api/conversations\.replies"),
             json={"messages": [{"ts": "1610150400.000100", "thread_ts": "1610150400.000100"}]},
         )
-        catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+        catalog = (
+            CatalogBuilder()
+            .with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental))
+            .build()
+        )
         built_state = StateBuilder().with_stream_state(stream_name, state).build() if state else StateBuilder().build()
         output = read(get_source(config, stream_name, built_state), config=config, catalog=catalog, state=built_state)
         history_queries = [request.qs for request in http.request_history if "conversations.history" in request.url]
