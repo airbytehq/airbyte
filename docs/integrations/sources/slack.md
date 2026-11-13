@@ -195,7 +195,7 @@ The Slack Web API often reports errors in an HTTP 200 response whose `ok` field 
 - **Transient errors**, such as `request_timeout`, `service_unavailable`, `fatal_error`, and `internal_error`, are retried automatically.
 - **Any other error code** fails the sync with a system error that includes the code Slack returned.
 
-For non-200 responses whose error code doesn't match an earlier filter, HTTP-status filters can take precedence over the error-code catch-all. For example, the Users stream treats HTTP 400/403 as configuration errors, while Users and Channel Members retry HTTP 500/503. HTTP 429 responses are rate-limited and retried.
+For non-200 responses whose error code doesn't match an earlier filter, HTTP-status filters can take precedence over the error-code catch-all. For example, the Users stream treats HTTP 400/403 as configuration errors, while Users and Channel Members retry HTTP 500/503. Users and Channel Members also explicitly handle HTTP 429 before the catch-all. Channels, Channel Messages, and Threads can fail with a system error if an HTTP 429 response contains `ok=false` and an unrecognized error code.
 
 Automatic channel joining is separate: for HTTP 200 `ok=false` responses, a `missing_scope` error fails with a configuration error, but other join errors are logged rather than classified by the data-reading rules above.
 
