@@ -251,8 +251,8 @@ table you created yourself that happens to have the same name.
 
 The connector also creates indexes on each final table. Every table gets an index on
 `_airbyte_extracted_at`. Deduplicated streams additionally get an index on the primary key columns
-and, when the stream has one, an index on the cursor column. The connector recreates these indexes
-when the columns they cover change, so don't modify or drop them yourself.
+and, when the stream has one, an index on the cursor column. The connector recreates the primary key
+and cursor indexes when the stream's primary key or cursor changes.
 
 ### Output Schema (Raw Tables) - Deprecated
 
