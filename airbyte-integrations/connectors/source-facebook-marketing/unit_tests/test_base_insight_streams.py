@@ -56,6 +56,51 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-10-01")
+    @pytest.mark.parametrize("interrupted", [True, False])
+    @pytest.mark.parametrize("empty_results", [True, False])
+    def test_lookback_replay_preserves_cursor(self, mocker, api, async_manager_mock, interrupted, empty_results):
+        account_id = "unknown_account"
+        bookmark = "2026-09-20"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": bookmark, "slices": []}, "time_increment": 1}
+
+        def completed_jobs():
+            for index in range(39):
+                if interrupted and index == 1:
+                    raise RuntimeError("Interrupted while waiting for the next report")
+                slice_date = date(2026, 8, 23) + timedelta(days=index)
+                job = mocker.Mock(spec=InsightAsyncJob)
+                job.interval = DateInterval(slice_date, slice_date)
+                record = mocker.Mock()
+                record.export_all_data.return_value = {"date_start": job.interval.start.isoformat(), "account_id": account_id}
+                job.get_result = mocker.Mock(return_value=[] if empty_results else [record])
+                yield job
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        emitted_states = []
+
+        def read():
+            for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+                emitted_states.append(copy.deepcopy(stream.state))
+
+        if interrupted:
+            with pytest.raises(RuntimeError, match="Interrupted while waiting"):
+                read()
+        else:
+            read()
+
+        assert emitted_states
+        assert all(state[account_id]["date_start"] >= bookmark for state in emitted_states)
+        assert stream.state[account_id]["date_start"] == (bookmark if interrupted else "2026-09-30")
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
