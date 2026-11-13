@@ -53,8 +53,8 @@ abstract class PerStreamStateMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(StreamDescriptor().withName(name))
-                                .withStreamState(Jsons.jsonNode(value))
-                        )
+                                .withStreamState(Jsons.jsonNode(value)),
+                        ),
                 )
         }
     }

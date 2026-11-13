@@ -1,2 +1,0 @@
-
-1. Navigate to the Airbyte Open Source dashboard.

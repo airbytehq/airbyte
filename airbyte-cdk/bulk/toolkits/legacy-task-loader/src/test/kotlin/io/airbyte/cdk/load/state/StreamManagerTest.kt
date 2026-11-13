@@ -104,7 +104,7 @@ class StreamManagerTest {
                         records = 3,
                         serializedBytes = 5,
                         rejectedRecords = 2,
-                    )
+                    ),
             ),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
@@ -116,7 +116,7 @@ class StreamManagerTest {
                         records = 4,
                         serializedBytes = 5,
                         rejectedRecords = 1,
-                    )
+                    ),
             ),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
@@ -234,7 +234,7 @@ class StreamManagerTest {
                                         records = 9,
                                         serializedBytes = 10,
                                         rejectedRecords = 1,
-                                    )
+                                    ),
                             ),
                         )
                     "2" ->
@@ -247,12 +247,12 @@ class StreamManagerTest {
                 if (index < 2) {
                     Assertions.assertFalse(
                         manager.isBatchProcessingCompleteForCheckpoints(),
-                        "steps: $steps; step: $index"
+                        "steps: $steps; step: $index",
                     )
                 } else {
                     Assertions.assertTrue(
                         manager.isBatchProcessingCompleteForCheckpoints(),
-                        "steps: $steps; final step"
+                        "steps: $steps; final step",
                     )
                 }
             }

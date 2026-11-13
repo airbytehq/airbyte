@@ -26,12 +26,12 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
         ROOT_AND_SERVER_CERTIFICATES("withRootAndServerCertificates"),
         CLIENT_CERTITICATE("withClientCertificate"),
         NETWORK("withNetwork"),
-        CUSTOM_NAME("withCustomName")
+        CUSTOM_NAME("withCustomName"),
     }
 
     override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
         // Besides setting up user and privileges, we also need to create a soft link otherwise
-        // airbyte-ci on github runner would not be able to connect to DB, because the sock file
+        // CI on github runner would not be able to connect to DB, because the sock file
         // does not
         // exist.
         return Stream.of(
@@ -57,7 +57,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
                     ),
                     "set global local_infile=true",
                     "REVOKE ALL PRIVILEGES, GRANT OPTION FROM $userName@'%'",
-                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'"
+                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'",
                 ),
             ),
         )
