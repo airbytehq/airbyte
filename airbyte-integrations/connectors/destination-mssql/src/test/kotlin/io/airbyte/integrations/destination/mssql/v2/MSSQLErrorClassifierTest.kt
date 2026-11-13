@@ -33,7 +33,7 @@ class MSSQLErrorClassifierTest {
                 "The INSERT permission was denied on the object 'unit_info', database 'data', schema 'gcpexport'.",
                 "42000",
                 229,
-                intArrayOf()
+                intArrayOf(),
             )
 
         val exception =
@@ -52,8 +52,8 @@ class MSSQLErrorClassifierTest {
                     SQLException(
                         "The INSERT permission was denied on the object 'unit_info'.",
                         "42000",
-                        0
-                    )
+                        0,
+                    ),
                 )
             }
 
@@ -69,14 +69,14 @@ class MSSQLErrorClassifierTest {
                         "String or binary data would be truncated in table 'x', column 'y'.",
                         "22001",
                         2628,
-                        intArrayOf()
-                    )
+                        intArrayOf(),
+                    ),
                 )
             }
 
         assertEquals(
             "Record value exceeds the length of a destination table column.",
-            exception.message
+            exception.message,
         )
     }
 

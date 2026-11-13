@@ -159,7 +159,8 @@ class GlueWriteTest :
                       "id": 1,
                       "array": [42, "potato"]
                     }
-                    """.trimIndent(),
+                    """
+                        .trimIndent(),
                     emittedAtMs = 100,
                 ),
             ),
@@ -305,7 +306,7 @@ class GlueWriteTest :
                         ),
                         Dedupe(
                             primaryKey = listOf(listOf("RecordId")),
-                            cursor = listOf("updatedAt")
+                            cursor = listOf("updatedAt"),
                         ),
                     ),
             )
@@ -483,7 +484,8 @@ class NessieMinioWriteTest :
                     "warehouse_location": "s3://demobucket/",
                     "main_branch_name": "main"
                 }
-                """.trimIndent()
+                """
+                .trimIndent()
         }
 
         @JvmStatic
@@ -545,7 +547,8 @@ class RestWriteTest :
                     "warehouse_location": "s3://warehouse/",
                     "main_branch_name": "main"
                 }
-                """.trimIndent()
+                """
+                .trimIndent()
         }
 
         @JvmStatic

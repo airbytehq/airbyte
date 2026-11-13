@@ -35,7 +35,7 @@ The Intercom API supports cursor-based pagination and `updated_at`-style filteri
 | tags | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup, no date filter |
 | teams | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup, no date filter |
 | tickets | medium | top-level parent | updated_at | updated_at | incremental |  |
-| company_segments | medium | child | updated_at | updated_at | incremental |  |
+| company_segments | medium | child | updated_at | updated_at | incremental | `company_id` comes from the parent slice (`AddFields`), and the primary key is `[company_id, id]` (1.0.0). The client-side filter is on the segment's `updated_at`, so memberships of unchanged segments and companies last updated before Start Date are skipped; see the docs. |
 | conversation_parts | medium | child | updated_at | updated_at | incremental |  |
 
 ### Future incremental stream candidates

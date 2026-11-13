@@ -41,7 +41,7 @@ object DynamoDbClientFactory {
 
     /**
      * @param stsEndpointOverride test hook: sends the `AssumeRole` call to an emulator instead of
-     * the regional STS endpoint.
+     *   the regional STS endpoint.
      */
     fun create(
         configuration: DynamoDbSourceConfiguration,
@@ -54,7 +54,7 @@ object DynamoDbClientFactory {
                 .overrideConfiguration(
                     ClientOverrideConfiguration.builder()
                         .putHeader(ACCEPT_ENCODING_HEADER, GZIP_ENCODING)
-                        .build()
+                        .build(),
                 )
         configuration.endpoint?.let { builder.endpointOverride(it) }
         return builder.build()

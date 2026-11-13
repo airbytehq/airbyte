@@ -27,7 +27,7 @@ class BigLakeDataDumper(
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val records = delegateDataDumper.dumpRecords(spec, stream)
 
@@ -42,7 +42,7 @@ class BigLakeDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         return delegateDataDumper.dumpFile(spec, stream)
     }
@@ -67,7 +67,7 @@ class BigLakeDataDumper(
     /** Recursively reverse-maps field names in an ObjectValue from sanitized to original names. */
     private fun reverseMapFieldNames(
         obj: ObjectValue,
-        reverseMapping: Map<String, String>
+        reverseMapping: Map<String, String>,
     ): ObjectValue {
         val remappedValues = LinkedHashMap<String, io.airbyte.cdk.load.data.AirbyteValue>()
 

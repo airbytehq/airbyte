@@ -16,10 +16,15 @@ import logging
 import pytest
 
 from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    StreamDescriptor,
     SyncMode,
     Type,
 )
@@ -92,20 +97,20 @@ def _mock_repository_resolution(requests_mock):
     )
 
 
-def _read_messages(config, stream_name):
+def _read_messages(config, stream_name, state=None):
     catalog = _catalog(stream_name)
-    source = make_source(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=state or [])
     messages, error = [], None
     try:
-        for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []):
+        for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
             messages.append(message)
     except Exception as exc:  # noqa: BLE001 - assertions inspect the failure
         error = exc
     return messages, error
 
 
-def _read(config, stream_name):
-    messages, error = _read_messages(config, stream_name)
+def _read(config, stream_name, state=None):
+    messages, error = _read_messages(config, stream_name, state=state)
     return _records(messages), error
 
 
@@ -128,12 +133,13 @@ def _variables(request):
     return json.loads(request.body)["variables"]
 
 
-def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None):
+def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None, repository=REPOSITORY):
+    owner, name = repository.split("/")
     return {
         "data": {
             "repository": {
-                "name": REPOSITORY.split("/")[1],
-                "owner": {"login": REPOSITORY.split("/")[0]},
+                "name": name,
+                "owner": {"login": owner},
                 connection: {
                     "nodes": nodes,
                     "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
@@ -143,13 +149,13 @@ def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None
     }
 
 
-def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0"):
+def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0", created_at="2022-01-01T00:00:00Z"):
     return {
         "node_id": node_id,
         "id": database_id,
         "name": "release one",
         "tag_name": tag,
-        "created_at": "2022-01-01T00:00:00Z",
+        "created_at": created_at,
         "published_at": "2022-01-01T00:00:00Z",
         "updated_at": "2022-01-02T00:00:00Z",
         "draft": False,
@@ -174,6 +180,18 @@ def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0"):
 
 
 # --- Releases ---------------------------------------------------------------------------
+
+
+def _legacy_releases_state(**per_repository_cursor):
+    return [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="releases"),
+                stream_state=AirbyteStateBlob({repository: {"created_at": cursor} for repository, cursor in per_repository_cursor.items()}),
+            ),
+        )
+    ]
 
 
 def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_response, requests_mock):
@@ -248,6 +266,151 @@ def test_releases_paginates_on_end_cursor(rate_limit_mock_response, requests_moc
     requests = _graphql_requests(requests_mock)
     assert "after" not in _variables(requests[0])
     assert _variables(requests[1])["after"] == "CURSOR"
+
+
+def test_releases_query_orders_newest_first_by_creation_time(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
+
+    _read(_config(), "releases")
+
+    request = _graphql_requests(requests_mock)[0]
+    assert "orderBy: {field: CREATED_AT, direction: DESC}" in json.loads(request.body)["query"]
+
+
+def test_releases_stop_paginating_after_a_page_ending_below_the_state_cursor(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_3", 13, created_at="2022-09-01T00:00:00Z"),
+                        _release_node("RE_2", 12, created_at="2022-07-01T00:00:00Z"),
+                        _release_node("RE_1", 11, created_at="2022-03-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="CURSOR",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [_release_node("RE_0", 10, created_at="2021-01-01T00:00:00Z")],
+                )
+            },
+        ],
+    )
+
+    messages, error = _read_messages(
+        _config(),
+        "releases",
+        state=_legacy_releases_state(**{REPOSITORY: "2022-06-01T00:00:00Z"}),
+    )
+
+    assert error is None
+    assert len(_graphql_requests(requests_mock)) == 1
+    assert [record["id"] for record in _records(messages)] == [13, 12]
+
+
+def test_releases_first_sync_stops_at_the_page_reaching_start_date(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_3", 13, created_at="2022-09-01T00:00:00Z"),
+                        _release_node("RE_2", 12, created_at="2022-08-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="C1",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_1", 11, created_at="2022-07-01T00:00:00Z"),
+                        _release_node("RE_0", 10, created_at="2022-05-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="C2",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [_release_node("RE_old", 9, created_at="2021-01-01T00:00:00Z")],
+                )
+            },
+        ],
+    )
+
+    records, error = _read(_config(start_date="2022-06-01T00:00:00Z"), "releases")
+
+    assert error is None
+    requests = _graphql_requests(requests_mock)
+    assert len(requests) == 2
+    assert _variables(requests[1])["after"] == "C1"
+    assert [record["id"] for record in records] == [13, 12, 11]
+
+
+def test_releases_incremental_sync_without_new_releases_makes_one_request_per_repository(rate_limit_mock_response, requests_mock):
+    repositories = [REPOSITORY, "airbytehq/other"]
+    cursor = "2022-09-01T00:00:00Z"
+    for index, repository in enumerate(repositories, start=1):
+        requests_mock.get(
+            f"https://api.github.com/repos/{repository}",
+            json={"id": index, "full_name": repository, "organization": {"login": repository.split("/")[0]}},
+        )
+
+    release_ids = {"airbyte": (13, 12), "other": (23, 22)}
+
+    def releases_page(request, context):
+        variables = _variables(request)
+        repository = f"{variables['owner']}/{variables['name']}"
+        if variables.get("after"):
+            return _repository_envelope("releases", [], repository=repository)
+        boundary_id, older_id = release_ids[variables["name"]]
+        return _repository_envelope(
+            "releases",
+            [
+                _release_node(f"RE_{boundary_id}", boundary_id, created_at=cursor),
+                _release_node(f"RE_{older_id}", older_id, created_at="2022-08-01T00:00:00Z"),
+            ],
+            has_next_page=True,
+            end_cursor="CURSOR",
+            repository=repository,
+        )
+
+    requests_mock.post(GRAPHQL_URL, json=releases_page)
+
+    messages, error = _read_messages(
+        _config(repositories=repositories),
+        "releases",
+        state=_legacy_releases_state(**{repository: cursor for repository in repositories}),
+    )
+
+    assert error is None
+    requests_by_repository = {}
+    for request in _graphql_requests(requests_mock):
+        name = _variables(request)["name"]
+        requests_by_repository[name] = requests_by_repository.get(name, 0) + 1
+    assert requests_by_repository == {"airbyte": 1, "other": 1}
+
+    records_by_repository = {}
+    for record in _records(messages):
+        records_by_repository.setdefault(record["repository"], []).append(record)
+    for repository, (boundary_id, older_id) in zip(repositories, release_ids.values()):
+        repository_records = records_by_repository[repository]
+        assert [record["id"] for record in repository_records] == [boundary_id]
+        assert [record["created_at"] for record in repository_records] == [cursor]
+        assert older_id not in [record["id"] for record in repository_records]
 
 
 def test_releases_draft_with_null_tag_has_no_tarball_urls(rate_limit_mock_response, requests_mock):

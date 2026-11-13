@@ -2,7 +2,11 @@
 
 This page contains the setup guide and reference information for the [KVdb](https://kvdb.io/) destination connector.
 
-KVdb is a hosted key-value store with a REST API. This connector writes each record from your source to a KVdb bucket as a separate key-value pair.
+KVdb is a hosted key-value store with a REST API. This connector writes source records to a KVdb bucket.
+
+:::note
+KVdb is disabled in Airbyte's default Cloud and Self-Managed connector registries. These instructions apply to installations where the connector has been added separately; it might not appear in the destination picker.
+:::
 
 ## Prerequisites
 
@@ -11,25 +15,8 @@ KVdb is a hosted key-value store with a REST API. This connector writes each rec
 
 ## Setup guide
 
-### Step 1: Create a KVdb bucket
-
-Create a bucket with a secret key. Use an email address you can access so you can manage the bucket later. For example:
-
-```bash
-curl https://kvdb.io \
-  -d 'email=user@example.com' \
-  -d 'secret_key=YOUR_SECRET_KEY'
-```
-
-KVdb returns the bucket ID in the response. For other bucket options, see [Create a Bucket](https://kvdb.io/docs/api/#create-a-bucket) in the KVdb API documentation.
-
-### Step 2: Set up the KVdb destination in Airbyte
-
-1. In Airbyte, go to **Destinations** and click **New destination**.
-2. Select **KVdb**.
-3. For **Bucket ID**, enter the ID of your KVdb bucket.
-4. For **Secret Key**, enter the bucket's secret key.
-5. Click **Set up destination**.
+1. [Create a bucket](https://kvdb.io/docs/api/#create-a-bucket) with a secret key and a valid email address. KVdb returns its bucket ID.
+2. Configure the KVdb destination's **Bucket ID** and **Secret Key** fields with those values.
 
 When you test the connection, the connector writes a test key with a random UUID name to the bucket and then deletes it.
 
@@ -52,7 +39,7 @@ The connector writes each record as one key-value pair:
 - **Key**: `<stream_name>__ab__<timestamp>`, where `<timestamp>` is the time, in milliseconds since the Unix epoch, when the connector processed the record. The timestamp can include a fractional part, for example `users__ab__1728738000123.456`.
 - **Value**: the record's data as a JSON object.
 
-The connector doesn't use the source's primary key, so every record becomes a new key. To read the records for a stream, [list the bucket's keys](https://kvdb.io/docs/api/#list-keys) with the `<stream_name>__ab__` prefix.
+The connector doesn't use the source's primary key. To read the records for a stream, [list the bucket's keys](https://kvdb.io/docs/api/#list-keys) with the `<stream_name>__ab__` prefix.
 
 The connector writes records in batches of up to 1,000 using the KVdb [transaction API](https://kvdb.io/docs/api/#execute-transaction).
 
@@ -85,7 +72,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 | 0.1.6   | 2024-06-06 | [39236](https://github.com/airbytehq/airbyte/pull/39236) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.5   | 2024-06-03 | [38894](https://github.com/airbytehq/airbyte/pull/38894) | Replace AirbyteLogger with logging.Logger |
 | 0.1.4   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                                       |
-| 0.1.3   | 2024-02-19 | [35424](https://github.com/airbytehq/airbyte/pull/35424) | bump connector version to publish, convert to base docker image and poetry |
+| 0.1.3   | 2024-02-20 | [35424](https://github.com/airbytehq/airbyte/pull/35424) | bump connector version to publish, convert to base docker image and poetry |
 | 0.1.2   | 2024-02-19 | [35422](https://github.com/airbytehq/airbyte/pull/35422)  | bump connector version to publish                                          |
 | 0.1.1   | 2024-02-16 | [35370](https://github.com/airbytehq/airbyte/pull/35370)  | bump connector version to publish                                          |
 | 0.1.0   | 2021-07-19 | [4786](https://github.com/airbytehq/airbyte/pull/4786)    | Python Demo Destination: KVDB                                              |

@@ -25,6 +25,7 @@ import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
 
 interface FusionUploader : AutoCloseable {
     fun upload(path: Path, key: String, metadata: Map<String, String>): CompletableFuture<*>
+
     fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*>
 }
 
@@ -37,7 +38,7 @@ constructor(
     private val bootstrap: AwsCredentialsProvider =
         if (config.accessKeyId != null && config.secretAccessKey != null) {
             StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey)
+                AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey),
             )
         } else {
             DefaultCredentialsProvider.builder().build()
@@ -56,7 +57,7 @@ constructor(
                     .roleArn(config.roleArn)
                     .roleSessionName("airbyte-fusion-${java.util.UUID.randomUUID()}")
                     .apply { config.externalId?.let { externalId(it) } }
-                    .build()
+                    .build(),
             )
             .build()
     private val s3 =
@@ -66,21 +67,21 @@ constructor(
             .httpClientBuilder(
                 NettyNioAsyncHttpClient.builder()
                     .maxConcurrency(16)
-                    .connectionTimeout(Duration.ofSeconds(10))
+                    .connectionTimeout(Duration.ofSeconds(10)),
             )
             .overrideConfiguration(
                 ClientOverrideConfiguration.builder()
                     .retryStrategy(StandardRetryStrategy.builder().maxAttempts(3).build())
                     .apiCallAttemptTimeout(Duration.ofMinutes(2))
                     .apiCallTimeout(Duration.ofMinutes(30))
-                    .build()
+                    .build(),
             )
             .build()
 
     override fun upload(
         path: Path,
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): CompletableFuture<*> {
         val request =
             PutObjectRequest.builder()
@@ -99,7 +100,7 @@ constructor(
                 .key(key)
                 .contentType("application/json")
                 .build(),
-            AsyncRequestBody.fromBytes(bytes)
+            AsyncRequestBody.fromBytes(bytes),
         )
 
     override fun close() {

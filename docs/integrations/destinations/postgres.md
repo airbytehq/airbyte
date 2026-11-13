@@ -299,6 +299,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.24 | 2026-10-22 | [89654](https://github.com/airbytehq/airbyte/pull/89654) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; PostgreSQL JDBC driver 42.7.14. |
 | 3.0.23 | 2026-10-01 | [87617](https://github.com/airbytehq/airbyte/pull/87617) | Upgrade to Bulk CDK 1.1.1. |
 | 3.0.22  | 2026-09-23 | [86926](https://github.com/airbytehq/airbyte/pull/86926) | Strip the leading `+` from extended-year date/timestamp values so PostgreSQL `COPY` accepts them |
 | 3.0.21 | 2026-09-15 | [86331](https://github.com/airbytehq/airbyte/pull/86331) | Version bump to republish the Cloud-specific connector spec. |

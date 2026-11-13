@@ -28,7 +28,7 @@ flowchart LR
 
 ### Capabilities by plan
 
-- **Cloud**: If you're a cloud customer, you can choose from Airbyte's managed regions. If you're an [Enterprise Flex](../../enterprise-flex/) customer, you can also choose one of your own self-managed regions.
+- **Cloud**: If you're a cloud customer, you can choose from Airbyte's managed regions. If you're an [Enterprise Flex](/platform/hybrid-deployment) customer, you can also choose one of your own self-managed regions.
 
 - **Self-Managed**: If you're an Airbyte Core user, you can choose one of your own self-managed regions.
 

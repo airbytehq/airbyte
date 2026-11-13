@@ -35,7 +35,7 @@ class ClickhouseChecker(
 
         client
             .execute(
-                "CREATE TABLE IF NOT EXISTS $resolvedTableName$onCluster (test UInt8) ENGINE = $engine ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS $resolvedTableName$onCluster (test UInt8) ENGINE = $engine ORDER BY ()",
             )
             .get(10, TimeUnit.SECONDS)
 
@@ -44,7 +44,7 @@ class ClickhouseChecker(
                 .insert(
                     resolvedTableName,
                     Constants.TEST_DATA.byteInputStream(),
-                    ClickHouseFormat.JSONEachRow
+                    ClickHouseFormat.JSONEachRow,
                 )
                 .get(10, TimeUnit.SECONDS)
 
