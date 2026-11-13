@@ -1,0 +1,433 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  Read-only Novada source connector for syncing daily capture usage, wallet
+  usage records, and wallet balance to Airbyte destinations for cost monitoring
+  and billing reconciliation. Uses a Bearer API key; no external resources are
+  modified.
+
+check:
+  type: CheckStream
+  stream_names:
+    - capture_usage_daily
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 3
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            predicate: "{{ response.code != 0 }}"
+            failure_type: config_error
+            error_message: "Novada API error {{ response.code }}: {{ response.msg }}"
+
+streams:
+  - type: DeclarativeStream
+    name: capture_usage_daily
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api-m.novada.com/v1/capture/logs
+        http_method: POST
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.code != 0 }}"
+              failure_type: config_error
+              error_message: "Novada API error {{ response.code }}: {{ response.msg }}"
+              error_message_contains: ""
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - list
+    primary_key: time_label
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: time_label
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      lookback_window: P1D
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: wallet_usage_records
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: body_data
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: body_data
+        pagination_strategy:
+          type: PageIncrement
+          page_size: "{{ config['wallet_page_size'] }}"
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api-m.novada.com/v1/wallet/usage_record
+        http_method: POST
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.code != 0 }}"
+              failure_type: config_error
+              error_message: "Novada API error {{ response.code }}: {{ response.msg }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - list
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          type:
+            type:
+              - number
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          uid:
+            type:
+              - number
+              - "null"
+          coin:
+            type:
+              - number
+              - "null"
+          money:
+            type:
+              - number
+              - "null"
+          belong:
+            type:
+              - number
+              - "null"
+          origin:
+            type:
+              - number
+              - "null"
+          pay_sn:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          order_id:
+            type:
+              - string
+              - "null"
+          pay_cate:
+            type:
+              - number
+              - "null"
+          pay_time:
+            type:
+              - number
+              - "null"
+          pay_type:
+            type:
+              - string
+              - "null"
+          closed_at:
+            type:
+              - number
+              - "null"
+          pay_money:
+            type:
+              - number
+              - "null"
+          actual_num:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          order_type:
+            type:
+              - string
+              - "null"
+          pay_status:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
+          actual_coin:
+            type:
+              - number
+              - "null"
+          coupon_code:
+            type:
+              - string
+              - "null"
+          is_followed:
+            type:
+              - number
+              - "null"
+          is_get_back:
+            type:
+              - string
+              - "null"
+          open_status:
+            type:
+              - number
+              - "null"
+          refund_json:
+            type:
+              - string
+              - "null"
+          refund_type:
+            type:
+              - number
+              - "null"
+          coin_balance:
+            type:
+              - number
+              - "null"
+          coupon_money:
+            type:
+              - number
+              - "null"
+          create_admin:
+            type:
+              - string
+              - "null"
+          refund_money:
+            type:
+              - number
+              - "null"
+          sales_rebate:
+            type:
+              - number
+              - "null"
+          package_price:
+            type:
+              - number
+              - "null"
+          invoice_number:
+            type:
+              - string
+              - "null"
+          is_first_order:
+            type:
+              - number
+              - "null"
+          refund_process:
+            type:
+              - number
+              - "null"
+          service_charge:
+            type:
+              - number
+              - "null"
+          is_first_wallet:
+            type:
+              - number
+              - "null"
+          actual_coin_balance:
+            type:
+              - number
+              - "null"
+          belong_sales_rebate:
+            type:
+              - number
+              - "null"
+          refund_invoice_type:
+            type:
+              - number
+              - "null"
+          credit_card_subscribe:
+            type:
+              - number
+              - "null"
+          invoice_download_type:
+            type:
+              - string
+              - "null"
+          normal_invoice_number:
+            type:
+              - string
+              - "null"
+          refund_invoice_number:
+            type:
+              - string
+              - "null"
+          can_download_normal_invoice:
+            type:
+              - number
+              - "null"
+          can_download_refund_invoice:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: wallet_balance_snapshot
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api-m.novada.com/v1/wallet/balance
+        http_method: POST
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.code != 0 }}"
+              failure_type: config_error
+              error_message: "Novada API error {{ response.code }}: {{ response.msg }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          balance:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 2
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: UTC ISO 8601, for example 2026-09-20T00:00:00Z
+        order: 0
+        title: Start Date
+      wallet_page_size:
+        type: integer
+        order: 1
+        title: Wallet Page Size
+        default: 10
+        minimum: 1
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    capture_usage_daily:
+      isStale: false
+      hasRecords: true
+      streamHash: fec369fd7a0a394a94f48d356bd43bafbc4e8c59
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    wallet_usage_records:
+      isStale: false
+      hasRecords: true
+      streamHash: be10bc4e0440cc1fd3348bfeaaeb60825b57189b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    wallet_balance_snapshot:
+      isStale: false
+      hasRecords: true
+      streamHash: f18a03f9e4a90d4b44bbee1cd638c9e46c471564
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    capture_usage_daily: true
+    wallet_usage_records: true
+    wallet_balance_snapshot: true
