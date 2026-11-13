@@ -1,0 +1,259 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  # Bright Data Web Unlocker Connector Setup Guide
+
+
+  This guide will help you set up and configure the Bright Data Web Unlocker
+  connector for Airbyte.
+
+
+
+  ## Prerequisites
+
+
+  Before setting up the connector, ensure you have:
+
+
+  1. **Bright Data Account**
+     - An active Bright Data account
+     - API key (Bearer token)
+
+
+  2. **URLs to Unlock**
+     - List of URLs you want to unlock
+     - URLs should be publicly accessible
+
+  ## Step 1: Obtain Bright Data Credentials
+
+
+  ### Get Your API Key
+
+
+  1. Log in to your [Bright Data dashboard](https://brightdata.com/)
+
+  2. Navigate to **Settings** → **Users and API Keys**
+
+  3. Generate a new API key or copy your existing Bearer token
+
+  4. Store this securely - you'll need it for connector configuration
+
+
+
+  ## Step 2: Configure the Connector
+
+
+  ### Required Configuration Fields
+
+
+  The connector requires the following mandatory fields:
+
+
+  | Field | Type | Description | Example |
+
+  |-------|------|-------------|---------|
+
+  | **API Key** | string (secret) | Your Bright Data Bearer token |
+  `your_api_key_here` |
+
+  | **URLs** | array[string] | List of URLs to unlocke |
+  `["https://example.com/page1", "https://example.com/page2"]` |
+
+
+  ### Optional Configuration Fields
+
+
+  | Field | Type | Description | Default |
+
+  |-------|------|-------------|---------|
+
+  | **Format** | enum | Data delivery format | `json` |
+
+  | **Country** | enum | Data delivery format | `us` |
+
+check:
+  type: CheckStream
+  stream_names:
+    - Bright Data Web Unlocker
+
+streams:
+  - type: DeclarativeStream
+    name: Bright Data Web Unlocker
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.brightdata.com/request
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ stream_slice['url'] }}"
+            zone: "{{ config['zone'] }}"
+            format: "{{ config.get('format', 'json') }}"
+            method: "{{ config.get('method', 'GET') }}"
+            country: "{{ config.get('country', 'us') }}"
+            data_format: "{{ config.get('data_format') }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          Content-Type: application/json
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config['urls'] }}"
+        cursor_field: url
+    primary_key:
+      - url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - url
+        properties:
+          url:
+            type: string
+          body:
+            type:
+              - string
+              - "null"
+          headers:
+            type:
+              - object
+              - "null"
+            properties:
+              date:
+                type:
+                  - string
+                  - "null"
+              server:
+                type:
+                  - string
+                  - "null"
+              connection:
+                type:
+                  - string
+                  - "null"
+              content-type:
+                type:
+                  - string
+                  - "null"
+              cache-control:
+                type:
+                  - string
+                  - "null"
+              transfer-encoding:
+                type:
+                  - string
+                  - "null"
+              access-control-allow-origin:
+                type:
+                  - string
+                  - "null"
+          status_code:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - url
+            value: "{{ stream_slice['url'] }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - zone
+      - urls
+    properties:
+      urls:
+        type: array
+        description: List of URLs to scrape using Unlocker
+        items:
+          type: string
+        order: 2
+        title: URLs to Scrape
+      zone:
+        type: string
+        description: Bright Data zone identifier (e.g., web_unlocker1)
+        order: 1
+        title: Zone
+        default: web_unlocker1
+      format:
+        type: string
+        description: Response format
+        enum:
+          - json
+          - raw
+        order: 3
+        title: Response Format
+        default: json
+      method:
+        type: string
+        description: HTTP method for the request
+        enum:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        order: 6
+        title: HTTP Method
+        default: GET
+      api_key:
+        type: string
+        description: Your Bright Data API Key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      country:
+        type: string
+        description: Two-letter ISO country code for proxy location (e.g., us, gb, de)
+        order: 4
+        title: Country Code
+        default: us
+      data_format:
+        type: string
+        description: Additional response format transformation
+        enum:
+          - markdown
+          - screenshot
+        order: 5
+        title: Data Format
+
+metadata:
+  testedStreams:
+    Bright Data Web Unlocker:
+      isStale: false
+      hasRecords: true
+      streamHash: 0537551650bb6c02b635c3c472ad2ea2edfd27df
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Bright Data Web Unlocker: true
