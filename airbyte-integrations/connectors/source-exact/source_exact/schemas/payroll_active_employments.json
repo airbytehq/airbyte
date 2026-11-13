@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "PayrollActiveEmployments",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "AverageDaysPerWeek": {
+      "description": "The average number of contract days that an employee works per week",
+      "type": ["null", "integer"]
+    },
+    "AverageHoursPerWeek": {
+      "description": "The average number of contract hours that an employee works per week",
+      "type": ["null", "integer"]
+    },
+    "Contract": {
+      "description": "Employment contract ID",
+      "type": ["null", "string"]
+    },
+    "ContractEndDate": {
+      "description": "End date of employment contract",
+      "type": ["null", "string"]
+    },
+    "ContractProbationEndDate": {
+      "description": "Employment probation end date",
+      "type": ["null", "string"]
+    },
+    "ContractProbationPeriod": {
+      "description": "Employment probation period",
+      "type": ["null", "integer"]
+    },
+    "ContractStartDate": {
+      "description": "Start date of employment contract",
+      "type": ["null", "string"]
+    },
+    "ContractType": {
+      "description": "Type of employment contract. 1 - Definite, 2 - Indefinite, 3 - External",
+      "type": ["null", "integer"]
+    },
+    "ContractTypeDescription": {
+      "description": "Description of employment contract type",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Created date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator.",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Department": {
+      "description": "Department of employee",
+      "type": ["null", "string"]
+    },
+    "DepartmentCode": {
+      "description": "Department code of employee",
+      "type": ["null", "string"]
+    },
+    "DepartmentDescription": {
+      "description": "Description of department",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Employee": {
+      "description": "Employee ID",
+      "type": ["null", "string"]
+    },
+    "EmployeeFullName": {
+      "description": "Name of employee",
+      "type": ["null", "string"]
+    },
+    "EmployeeHID": {
+      "description": "Numeric number of Employee",
+      "type": ["null", "integer"]
+    },
+    "EmploymentOrganization": {
+      "description": "Organization of employment",
+      "type": ["null", "string"]
+    },
+    "EndDate": {
+      "description": "End date of employment",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "HID": {
+      "description": "Numeric ID of the employment",
+      "type": ["null", "integer"]
+    },
+    "HourlyWage": {
+      "description": "Hourly wage",
+      "type": ["null", "integer"]
+    },
+    "InternalRate": {
+      "description": "Internal rate for time & billing or professional service user",
+      "type": ["null", "integer"]
+    },
+    "Jobtitle": {
+      "description": "Job title of employee",
+      "type": ["null", "string"]
+    },
+    "JobtitleDescription": {
+      "description": "Description of job title",
+      "type": ["null", "string"]
+    },
+    "Modified": {
+      "description": "Last modified date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "ReasonEnd": {
+      "description": "ID of employment ended",
+      "type": ["null", "integer"]
+    },
+    "ReasonEndDescription": {
+      "description": "Reason of ended flexible employment",
+      "type": ["null", "string"]
+    },
+    "ReasonEndFlex": {
+      "description": "Reason of ended flexible employment",
+      "type": ["null", "integer"]
+    },
+    "ReasonEndFlexDescription": {
+      "description": "Other reason for end of employment",
+      "type": ["null", "string"]
+    },
+    "Salary": {
+      "description": "Employment salary",
+      "type": ["null", "string"]
+    },
+    "Schedule": {
+      "description": "Work schedule",
+      "type": ["null", "string"]
+    },
+    "ScheduleAverageHours": {
+      "description": "Average hours per week in a schedule",
+      "type": ["null", "string"]
+    },
+    "ScheduleCode": {
+      "description": "Work schedule code",
+      "type": ["null", "string"]
+    },
+    "ScheduleDays": {
+      "description": "Number of days of work per week",
+      "type": ["null", "string"]
+    },
+    "ScheduleDescription": {
+      "description": "Description of work schedule",
+      "type": ["null", "string"]
+    },
+    "ScheduleHours": {
+      "description": "Number of work hours per week",
+      "type": ["null", "integer"]
+    },
+    "StartDate": {
+      "description": "Start date of employment",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "StartDateOrganization": {
+      "description": "Start date of the employee in the organization. This fiels is ueds to count the years in service",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

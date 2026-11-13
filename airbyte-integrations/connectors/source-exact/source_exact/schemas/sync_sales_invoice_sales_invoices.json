@@ -1,0 +1,464 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncSalesInvoiceSalesInvoices",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "AmountDC": {
+      "description": "Amount in the default currency of the company. For almost all lines this can be calculated like: AmountDC = AmountFC * RateFC",
+      "type": ["null", "number"]
+    },
+    "AmountDiscount": {
+      "description": "Discount amount in the default currency of the company. Only supported for header",
+      "type": ["null", "number"]
+    },
+    "AmountDiscountExclVat": {
+      "description": "Discount amount exclude VAT in the default currency of the company. Only supported for header",
+      "type": ["null", "number"]
+    },
+    "AmountFC": {
+      "description": "For normal lines it's the amount excluding VAT",
+      "type": ["null", "number"]
+    },
+    "AmountFCExclVat": {
+      "description": "Sum of all lines, excluding VAT. Only supported for header",
+      "type": ["null", "number"]
+    },
+    "CostCenter": {
+      "description": "Reference to Cost center",
+      "type": ["null", "string"]
+    },
+    "CostCenterDescription": {
+      "description": "Description of CostCenter",
+      "type": ["null", "string"]
+    },
+    "CostUnit": {
+      "description": "Reference to Cost unit",
+      "type": ["null", "string"]
+    },
+    "CostUnitDescription": {
+      "description": "Description of CostUnit",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Currency": {
+      "description": "Currency for the invoice. Default this is the currency of the administration",
+      "type": ["null", "string"]
+    },
+    "CustomerItemCode": {
+      "description": "Code the customer uses for this item",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "DeliverTo": {
+      "description": "Delivery account for invoice",
+      "type": ["null", "string"]
+    },
+    "DeliverToAddress": {
+      "description": "Address of delivery as per invoice delivery account",
+      "type": ["null", "string"]
+    },
+    "DeliverToContactPerson": {
+      "description": "Delivery account person for invoice",
+      "type": ["null", "string"]
+    },
+    "DeliverToContactPersonFullName": {
+      "description": "Name of delivery account's contact person as per invoice",
+      "type": ["null", "string"]
+    },
+    "DeliverToName": {
+      "description": "Name of the delivery account's customer as per invoice",
+      "type": ["null", "string"]
+    },
+    "DeliveryDate": {
+      "description": "Delivery date of an item in a sales invoice. This is used for VAT on prepayments, only if sales order is not used in the license.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Description": {
+      "description": "Description. Can be different for header and lines",
+      "type": ["null", "string"]
+    },
+    "Discount": {
+      "description": "Discount given on the default price. Discount = (DefaultPrice of Item - PriceItem in line) / DefaultPrice of Item",
+      "type": ["null", "number"]
+    },
+    "DiscountType": {
+      "description": "Leading field of total discount. 1=Discount percentage, 2=Discount amount excl. VAT, 3=Discount amount incl. VAT, 4=Total amount excl. VAT, 5=Total amount incl. VAT",
+      "type": ["null", "integer"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Document": {
+      "description": "Document that is manually linked to the invoice",
+      "type": ["null", "string"]
+    },
+    "DocumentNumber": {
+      "description": "Number of the document",
+      "type": ["null", "integer"]
+    },
+    "DocumentSubject": {
+      "description": "Subject of the document",
+      "type": ["null", "string"]
+    },
+    "DueDate": {
+      "description": "The due date for payments. This date is calculated based on the EntryDate and the Paymentcondition",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Employee": {
+      "description": "Link to Employee originating from time and cost transactions",
+      "type": ["null", "string"]
+    },
+    "EmployeeFullName": {
+      "description": "Name of employee",
+      "type": ["null", "string"]
+    },
+    "EndTime": {
+      "description": "EndTime is used to store the last date of a period. EndTime is used in combination with StartTime",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ExtraDutyAmountFC": {
+      "description": "Extra duty amount in the currency of the transaction. Both extra duty amount and VAT amount need to be specified in order to differ this property from automatically calculated.",
+      "type": ["null", "number"]
+    },
+    "ExtraDutyPercentage": {
+      "description": "Extra duty percentage",
+      "type": ["null", "number"]
+    },
+    "GAccountAmountFC": {
+      "description": "A positive value of the amount indicates that the amount is to be paid by the customer to your G bank account.In case of a credit invoice the amount should have negative value when retrieved or posted to Exact.",
+      "type": ["null", "number"]
+    },
+    "GLAccount": {
+      "description": "The GL Account of the sales invoice line. This field is mandatory. This field is generated based on the revenue account of the item (or the related item group). G/L Account is also used to determine whether the costcenter / costunit is mandatory",
+      "type": ["null", "string"]
+    },
+    "GLAccountDescription": {
+      "description": "Description of GLAccount",
+      "type": ["null", "string"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "IncotermAddress": {
+      "description": "Address of Incoterm",
+      "type": ["null", "string"]
+    },
+    "IncotermCode": {
+      "description": "Code of Incoterm",
+      "type": ["null", "string"]
+    },
+    "IncotermVersion": {
+      "description": "Version of Incoterm  Supported version for Incoterms : 2010, 2020",
+      "type": ["null", "integer"]
+    },
+    "InvoiceDate": {
+      "description": "Official date for the invoice. When the invoice is entered it's equal to the field 'EntryDate'. During the printing process the invoice date can be entered",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "InvoiceID": {
+      "description": "The InvoiceID identifies the sales invoice. All the lines of a sales invoice have the same InvoiceID",
+      "type": ["null", "string"]
+    },
+    "InvoiceNumber": {
+      "description": "Assigned at entry or at printing depending on setting. The number assigned is based on the freenumbers as defined for the Journal. When printing the field InvoiceNumber is copied to the fields EntryNumber and InvoiceNumber of the sales entry",
+      "type": ["null", "integer"]
+    },
+    "InvoiceTo": {
+      "description": "Reference to the Customer who will receive the invoice",
+      "type": ["null", "string"]
+    },
+    "InvoiceToContactPerson": {
+      "description": "Reference to the Contact person of the customer who will receive the invoice",
+      "type": ["null", "string"]
+    },
+    "InvoiceToContactPersonFullName": {
+      "description": "Name of the contact person of the customer who will receive the invoice",
+      "type": ["null", "string"]
+    },
+    "InvoiceToName": {
+      "description": "Name of the customer who will receive the invoice",
+      "type": ["null", "string"]
+    },
+    "IsExtraDuty": {
+      "description": "Indicates whether the invoice has extra duty",
+      "type": ["null", "boolean"]
+    },
+    "Item": {
+      "description": "Reference to the item that is sold in this sales invoice line",
+      "type": ["null", "string"]
+    },
+    "ItemCode": {
+      "description": "Item code",
+      "type": ["null", "string"]
+    },
+    "ItemDescription": {
+      "description": "Description of Item",
+      "type": ["null", "string"]
+    },
+    "Journal": {
+      "description": "The journal code. Every invoice should be linked to a sales journal",
+      "type": ["null", "string"]
+    },
+    "JournalDescription": {
+      "description": "Description of Journal",
+      "type": ["null", "string"]
+    },
+    "LineNumber": {
+      "description": "Indicates the sequence of the lines within one invoice",
+      "type": ["null", "integer"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "NetPrice": {
+      "description": "Net price of the sales invoice line",
+      "type": ["null", "number"]
+    },
+    "Notes": {
+      "description": "Extra notes",
+      "type": ["null", "string"]
+    },
+    "OrderDate": {
+      "description": "Order date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "OrderedBy": {
+      "description": "Customer who ordered the invoice",
+      "type": ["null", "string"]
+    },
+    "OrderedByContactPerson": {
+      "description": "Contact person of customer who ordered the invoice",
+      "type": ["null", "string"]
+    },
+    "OrderedByContactPersonFullName": {
+      "description": "Name of contact person of customer who ordered the invoice",
+      "type": ["null", "string"]
+    },
+    "OrderedByName": {
+      "description": "Name of customer who ordered the invoice",
+      "type": ["null", "string"]
+    },
+    "OrderNumber": {
+      "description": "Number to identify the order. By default the number is based on a setting for the first free number, but you can post your own number.",
+      "type": ["null", "integer"]
+    },
+    "PaymentCondition": {
+      "description": "The payment condition used for due date and discount calculation",
+      "type": ["null", "string"]
+    },
+    "PaymentConditionDescription": {
+      "description": "Description of PaymentCondition",
+      "type": ["null", "string"]
+    },
+    "PaymentReference": {
+      "description": "Payment reference for sales invoice",
+      "type": ["null", "string"]
+    },
+    "Pricelist": {
+      "description": "Price list",
+      "type": ["null", "string"]
+    },
+    "PricelistDescription": {
+      "description": "Description of Pricelist",
+      "type": ["null", "string"]
+    },
+    "Project": {
+      "description": "The project to which the sales transaction line is linked. The project can be different per line. Sometimes also the project in the header is filled although this is not really used",
+      "type": ["null", "string"]
+    },
+    "ProjectDescription": {
+      "description": "Description of Project",
+      "type": ["null", "string"]
+    },
+    "ProjectWBS": {
+      "description": "WBS linked to the sales invoice",
+      "type": ["null", "string"]
+    },
+    "ProjectWBSDescription": {
+      "description": "Description of WBS",
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "description": "The number of items sold in default units. The quantity shown in the entry screen is Quantity * UnitFactor",
+      "type": ["null", "number"]
+    },
+    "Remarks": {
+      "description": "Extra remarks",
+      "type": ["null", "string"]
+    },
+    "SalesChannel": {
+      "description": "ID of Sales channel.",
+      "type": ["null", "string"]
+    },
+    "SalesChannelCode": {
+      "description": "Code of Sales channel.",
+      "type": ["null", "string"]
+    },
+    "SalesChannelDescription": {
+      "description": "Description of Sales channel.",
+      "type": ["null", "string"]
+    },
+    "SalesOrder": {
+      "description": "Identifies the sales order this invoice line is based on",
+      "type": ["null", "string"]
+    },
+    "SalesOrderLine": {
+      "description": "Identifies the sales order line this sales invoice line is based on",
+      "type": ["null", "string"]
+    },
+    "SalesOrderLineNumber": {
+      "description": "Then line number of the sales order line on which this invoice line is based on",
+      "type": ["null", "integer"]
+    },
+    "SalesOrderNumber": {
+      "description": "The order number of the sales order on which this invoice line is based on",
+      "type": ["null", "integer"]
+    },
+    "Salesperson": {
+      "description": "Sales representative",
+      "type": ["null", "string"]
+    },
+    "SalespersonFullName": {
+      "description": "Name of sales representative",
+      "type": ["null", "string"]
+    },
+    "StarterSalesInvoiceStatus": {
+      "description": "Starter Sales invoice status (for starter functionality)",
+      "type": ["null", "integer"]
+    },
+    "StarterSalesInvoiceStatusDescription": {
+      "description": "Description of StarterSalesInvoiceStatus",
+      "type": ["null", "string"]
+    },
+    "StartTime": {
+      "description": "StartTime is used to store the first date of a period. StartTime is used in combination with EndTime",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Status": {
+      "description": "The status of the entry. 10 = draft. During the creation of an invoice draft records occur in the draft modus if during an invoice a new page with lines is triggered. If the user leaves the invoice in an abnormal way the draft invoices can be recovered. Draft invoices are not included in financial reports, balances etc. 20 = open. Open invoices can be changed. New invoices get the status open by default. 50 = processed. Processed invoices can't be changed anymore. Processing is done via printing. Processed invoices can't be reopened",
+      "type": ["null", "integer"]
+    },
+    "StatusDescription": {
+      "description": "Description of Status",
+      "type": ["null", "string"]
+    },
+    "Subscription": {
+      "description": "When generating invoices from subscriptions, this field records the link between invoice lines and subscription lines",
+      "type": ["null", "string"]
+    },
+    "SubscriptionDescription": {
+      "description": "Description of subscription line",
+      "type": ["null", "string"]
+    },
+    "TaxSchedule": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "TaxScheduleCode": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "TaxScheduleDescription": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "Type": {
+      "description": "Indicates the type of invoice Values: 8020 - Sales invoices, 8021 - Sales credit note, 8023 - Direct sales invoice, 8024 - Direct credit note. Type 8023 and 8024 are only supported by the Plus, Professional and Premium for Wholesale & Distribution and Manufacturing",
+      "type": ["null", "integer"]
+    },
+    "TypeDescription": {
+      "description": "Description of the type",
+      "type": ["null", "string"]
+    },
+    "UnitCode": {
+      "description": "Code of Unit",
+      "type": ["null", "string"]
+    },
+    "UnitDescription": {
+      "description": "Description of Unit",
+      "type": ["null", "string"]
+    },
+    "UnitPrice": {
+      "description": "Price per unit",
+      "type": ["null", "number"]
+    },
+    "VATAmountDC": {
+      "description": "VAT amount in the default currency of the company",
+      "type": ["null", "number"]
+    },
+    "VATAmountFC": {
+      "description": "VAT amount in the currency of the transaction",
+      "type": ["null", "number"]
+    },
+    "VATCode": {
+      "description": "The VAT code that is used when the invoice is registered",
+      "type": ["null", "string"]
+    },
+    "VATCodeDescription": {
+      "description": "Description of VATCode",
+      "type": ["null", "string"]
+    },
+    "VATPercentage": {
+      "description": "The vat percentage of the VAT code. This is the percentage at the moment the invoice is created. It's also used for the default calculation of VAT amounts and VAT base amounts",
+      "type": ["null", "number"]
+    },
+    "Warehouse": {
+      "description": "Mandatory for direct sales invoice/credit note, cannot be set for normal sales invoice/credit note.",
+      "type": ["null", "string"]
+    },
+    "WithholdingTaxAmountFC": {
+      "description": "Withholding tax amount applied to sales invoice. Not supported in The Netherlands.",
+      "type": ["null", "number"]
+    },
+    "WithholdingTaxBaseAmount": {
+      "description": "Withholding tax base amount to calculate withholding amount. Not supported in The Netherlands.",
+      "type": ["null", "number"]
+    },
+    "WithholdingTaxPercentage": {
+      "description": "Withholding tax percentage applied to sales invoice. Not supported in The Netherlands.",
+      "type": ["null", "number"]
+    },
+    "YourRef": {
+      "description": "The invoice number of the customer",
+      "type": ["null", "string"]
+    }
+  }
+}
