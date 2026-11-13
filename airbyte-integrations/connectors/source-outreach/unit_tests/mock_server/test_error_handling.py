@@ -106,7 +106,10 @@ class TestErrorHandling(TestCase):
         assert output.records == []
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert output.errors[0].trace.error.message == "Refreshed OAuth access token is rejected by the API."
-        assert "Outreach rejected the access token: Please get a new access token and try again." in output.errors[0].trace.error.internal_message
+        assert (
+            "Outreach rejected the access token: Please get a new access token and try again."
+            in output.errors[0].trace.error.internal_message
+        )
         http_mocker.assert_number_of_calls(token_request, 2)
         http_mocker.assert_number_of_calls(request, 2)
 
