@@ -29,7 +29,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f2e53e88-3c6b-4e5a-b7c2-a1d9c5e8f4b6
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-pylon
   githubIssueLabel: source-pylon
   icon: icon.svg
@@ -62,6 +62,18 @@ data:
       url: https://www.usepylon.com/changelog
       type: api_release_history
   releases:
+    breakingChanges:
+      1.0.0:
+        message: "Tags on accounts and issues are now arrays of strings instead of objects; typed destinations previously nulled these tags. Eight timestamp fields are now typed as date-time. Refresh the source schema after upgrading. S3 Data Lake and other Iceberg destinations must also clear the affected streams, and ClickHouse destinations may need to clear issues and issue_messages, depending on the server version. Before clearing, back up and set Start Date early enough, because issues and issue_messages only re-read from Start Date. See the migration guide: https://docs.airbyte.com/integrations/sources/pylon-migrations#upgrading-to-100"
+        upgradeDeadline: "2026-12-03"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - accounts
+              - issues
+              - issue_messages
+              - custom_fields
     rolloutConfiguration:
       defaultRolloutMode: autopilot
       autopilotConfig:

@@ -9,7 +9,7 @@ For general guidance on contributing to Airbyte connectors, see the
 
 Every stream follows the full URL in `links.next` until it is absent
 ([Pagination](https://developers.outreach.io/api/common-patterns/)). Every stream sends `sort=updatedAt` except
-`audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
+`events`, `duties`, `audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
   ("must be a number between 1 and 1000, inclusive").
@@ -23,7 +23,7 @@ Every stream follows the full URL in `links.next` until it is absent
 
 ### Incremental sync
 
-- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except the three below. The
+- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except `events`, `duties` and the three below. The
   filter includes the cursor value, so the last record of the previous sync is read again.
 - `audit_logs` is incremental on `timestamp`, with `sort=timestamp` and `filter[timestamp][gte]`. `/auditLogs`
   rejects `sort=updatedAt` with `400 sort_parameter.unsupported_attribute`, and its records have no `updatedAt`.
@@ -37,7 +37,30 @@ Every stream follows the full URL in `links.next` until it is absent
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
   second format the value fails to parse and the state stays at `start_date`.
-- `is_data_feed: true` is set on every stream: a record older than the saved cursor is dropped and stops the read.
+- `is_data_feed: true` is set on every incremental stream: a record older than the saved cursor is dropped and stops the read.
+
+### Activity and organization streams
+
+| Stream | Required OAuth scope |
+| :----- | :----- |
+| events | `events.read` |
+| teams | `teams.read` |
+| roles | `roles.read` |
+| profiles | `profiles.read` |
+| duties | `duties.read` |
+| rulesets | `rulesets.read` |
+| favorites | `favorites.read` |
+| mail_aliases | `mailAliases.read` |
+
+Existing tokens without these scopes hit the shared 403 `config_error` filter.
+Re-authenticate with the required scopes or deselect the affected streams.
+
+- `events` is incremental on `createdAt`, with `sort=createdAt` and `filter[createdAt][gte]`.
+  Events are immutable, and `createdAt` is the read-only insertion time. `eventAt` is the writable occurrence time;
+  using it as the cursor could miss an event recorded after the last sync but occurring before the saved state.
+  `/events` has no `updatedAt`; filtering on it returns 400 `filterParameter.unknownFilter`.
+- `duties` is full refresh because it has no timestamps. It sends neither a cursor filter nor
+  a sort: `sort=updatedAt` returns 400 `sortParameter.unknownAttribute`.
 
 ### OAuth scopes
 
@@ -99,7 +122,7 @@ The backoff strategies run in order:
   every access token and a refresh token stays active for 14 days
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
-- `sequence_states` is the stream the test account cannot seed; its mock-server tests are its only coverage.
+- `mail_aliases` has no records in the test account; mock-server tests cover its reads.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
   returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and

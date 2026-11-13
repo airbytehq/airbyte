@@ -38,7 +38,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
       1. Leave `role` unspecified
       2. Select `Salesforce` for the User License
-      3. Select `Standard User` for Profile.
+      3. Select **Minimum Access - Salesforce** for **Profile**.
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
@@ -137,7 +137,8 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
 11. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
-12. Click **Set up source** and wait for the tests to complete.
+12. (Optional) For **Stream Slice Step for Incremental sync**, enter an ISO 8601 duration to set the time window used to slice incremental sync requests. The default is `P30D` (30 days).
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -158,7 +159,8 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
 11. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
-12. Click **Set up source** and wait for the tests to complete.
+12. (Optional) For **Stream Slice Step for Incremental sync**, enter an ISO 8601 duration to set the time window used to slice incremental sync requests. The default is `P30D` (30 days).
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -261,17 +263,22 @@ The Salesforce connector syncs formula field outputs from Salesforce. If the for
 
 The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
+### Salesforce API version
+
+The connector uses Salesforce API v62.0.
+
 ### Usage of the BULK API vs REST API
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
 - The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
+- The Salesforce object is in the connector's unsupported Bulk API objects list. In this case the connector uses the REST API, which will occasionally cost more of your API quota. Examples include:
   - AcceptedEventRelation
   - Attachment
   - CaseStatus
   - ContractStatus
   - DeclinedEventRelation
+  - EventWhoRelation
   - FieldSecurityClassification
   - KnowledgeArticle
   - KnowledgeArticleVersion
@@ -286,7 +293,12 @@ Salesforce allows extracting data using either the [BULK API](https://developer.
   - SolutionStatus
   - TaskPriority
   - TaskStatus
+  - TaskWhoRelation
   - UndecidedEventRelation
+  - WorkOrderLineItemStatus
+  - WorkOrderStatus
+
+  This is not an exhaustive list. The connector selects the REST API for objects in its unsupported Bulk API objects list.
 
 More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
@@ -413,7 +425,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full refresh syncs |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
+| 2.7.16-rc.1 | 2025-10-28 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
 | 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
@@ -434,7 +446,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0 |
 | 2.6.4 | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
-| 2.6.2       | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
+| 2.6.2       | 2024-10-16 | [46719](https://github.com/airbytehq/airbyte/pull/46719) | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1       | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0       | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
 | 2.5.34      | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies                                                                                                                                                    |
