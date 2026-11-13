@@ -432,6 +432,48 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/event_type_memberships"
+    event_type_availability_schedules:
+      type: DeclarativeStream
+      name: event_type_availability_schedules
+      primary_key:
+        - event_type
+        - availability_rule_uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_type_availability_schedules
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/fan_out_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [collection]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uri
+              request_option:
+                type: RequestOption
+                field_name: event_type
+                inject_into: request_parameter
+              partition_field: event_type_uri
+              stream:
+                $ref: "#/definitions/streams/event_types"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [availability_rule_uri]
+              value: "{{ record['availability_rule']['uri'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_type_availability_schedules"
     group_relationships:
       type: DeclarativeStream
       name: group_relationships
@@ -1090,6 +1132,7 @@ streams:
   - $ref: "#/definitions/streams/event_invitees"
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/event_type_memberships"
+  - $ref: "#/definitions/streams/event_type_availability_schedules"
   - $ref: "#/definitions/streams/group_relationships"
   - $ref: "#/definitions/streams/user_availability_schedules"
   - $ref: "#/definitions/streams/locations"
@@ -1116,7 +1159,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
 
 spec:
   type: Spec
@@ -1216,6 +1260,14 @@ spec:
         title: Lookback window (days)
         default: 0
         order: 2
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: Number of workers that read streams concurrently. Reduce this if other connections share the same Calendly account's rate limit.
+        default: 4
+        minimum: 2
+        maximum: 10
+        order: 3
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -1304,6 +1356,7 @@ metadata:
     event_invitees: true
     teams: false
     event_type_memberships: false
+    event_type_availability_schedules: false
     group_relationships: false
     user_availability_schedules: false
     locations: false
@@ -2309,6 +2362,54 @@ schemas:
               type: [string, 'null']
               format: date
     required: [uri]
+  event_type_availability_schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      event_type:
+        type: string
+        format: uri
+      availability_rule_uri:
+        type: string
+        format: uri
+      availability_setting:
+        type: [string, 'null']
+      availability_rule:
+        type: [object, 'null']
+        properties:
+          uri:
+            type: [string, 'null']
+            format: uri
+          name:
+            type: [string, 'null']
+          user:
+            type: [string, 'null']
+            format: uri
+          timezone:
+            type: [string, 'null']
+          rules:
+            type: [array, 'null']
+            items:
+              type: [object, 'null']
+              properties:
+                type:
+                  type: [string, 'null']
+                intervals:
+                  type: [array, 'null']
+                  items:
+                    type: [object, 'null']
+                    properties:
+                      from:
+                        type: [string, 'null']
+                      to:
+                        type: [string, 'null']
+                wday:
+                  type: [string, 'null']
+                date:
+                  type: [string, 'null']
+                  format: date
+    required: [event_type, availability_rule_uri]
   locations:
     type: object
     $schema: http://json-schema.org/schema#

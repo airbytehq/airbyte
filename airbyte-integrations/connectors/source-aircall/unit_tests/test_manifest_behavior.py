@@ -397,7 +397,8 @@ def test_429_waits_until_the_reset_header_then_reads_records(monkeypatch: pytest
         assert abs(sum(sleeps) - 60) < 0.1
 
 
-def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_500_without_reset_header_retries_with_exponential_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    # ExponentialBackoffStrategy (factor 5): 5 * 2**1 = 10 s for the first retry, plus the 1 s the CDK adds.
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
         start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
@@ -419,7 +420,7 @@ def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pyt
         assert output.errors == []
         assert len(output.records) == 1
         http_mocker.assert_number_of_calls(request, 2)
-        assert sleeps == [1]
+        assert sleeps[0] == 11.0
 
 
 def test_check_requests_only_company() -> None:
@@ -547,3 +548,38 @@ def test_discovered_schemas_declare_primary_keys_and_documented_fields() -> None
             assert _field_type(schemas[stream_name], path) == field_type, (stream_name, path)
     assert "webhook_id" not in schemas["teams"]
     assert "state" not in schemas["users"]
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 2), (1, 2), (2, 2), (3, 3), (4, 4)])
+def test_concurrency_never_drops_below_two_workers(num_workers, expected) -> None:
+    config = {**_CONFIG, "num_workers": num_workers} if num_workers else dict(_CONFIG)
+    level = yaml.safe_load(_YAML_FILE_PATH.read_text())["concurrency_level"]
+    from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
+
+    concurrency = ConcurrencyLevel(
+        default_concurrency=level["default_concurrency"], max_concurrency=level["max_concurrency"], config=config, parameters={}
+    )
+    assert concurrency.get_concurrency_level() == expected
+
+
+def test_every_error_handler_backs_off_exponentially_after_the_reset_header() -> None:
+    # Aircall sends X-AircallApi-Reset only on 429; a 5xx without it needs the exponential strategy.
+    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
+    handlers = []
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "DefaultErrorHandler":
+                handlers.append(node)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(manifest)
+    assert len(handlers) >= 7
+    for handler in handlers:
+        strategies = handler["backoff_strategies"]
+        assert strategies[0] == {"$ref": "#/definitions/backoff_strategy"}
+        assert strategies[-1] == {"type": "ExponentialBackoffStrategy"}
