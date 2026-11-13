@@ -11,6 +11,7 @@ import responses
 from source_convex.source import ConvexStream
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 @pytest.fixture
@@ -148,23 +149,54 @@ def test_http_method(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
+def test_error_handler_response_action(patch_base_class, http_status, expected_action):
+    response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
+    response_mock.ok = http_status < 400
     stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
-    assert stream.should_retry(response_mock) == should_retry
+    assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_action
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+def test_backoff_strategy(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.get_backoff_strategy() is None
+
+
+@responses.activate
+def test_read_records_bad_request_fails_without_retry(patch_base_class):
+    stream = ConvexStream("http://mocked_base_url:8080", "accesskey", "json", "messages", None)
+    responses.add(
+        responses.GET,
+        "http://mocked_base_url:8080/api/list_snapshot?tableName=messages&format=json",
+        json={"code": "BadRequest", "message": "bad request"},
+        status=400,
+    )
+    with pytest.raises(Exception):
+        list(stream.read_records(SyncMode.full_refresh))
+    assert len(responses.calls) == 1
+
+
+@pytest.mark.parametrize("http_status", [HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.INTERNAL_SERVER_ERROR])
+@responses.activate
+def test_read_records_retries_transient_errors(patch_base_class, mocker, http_status):
+    mocker.patch("time.sleep")
+    stream = ConvexStream("http://mocked_base_url:8080", "accesskey", "json", "messages", None)
+    url = "http://mocked_base_url:8080/api/list_snapshot?tableName=messages&format=json"
+    responses.add(responses.GET, url, json={"code": "Transient", "message": "try again"}, status=http_status)
+    responses.add(
+        responses.GET,
+        url,
+        json={"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 5000, "hasMore": False},
+    )
+    records = list(stream.read_records(SyncMode.full_refresh))
+    assert [record["field"] for record in records] == ["f"]
+    assert len(responses.calls) == 2
+    assert stream.state == {"delta_cursor": 5000, "snapshot_cursor": 1234, "snapshot_has_more": False}
