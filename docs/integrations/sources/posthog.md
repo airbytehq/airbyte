@@ -64,7 +64,7 @@ The `projects` stream lists your PostHog projects. Every other stream reads its 
 
 ### Incremental sync for the events stream
 
-The `events` stream uses the event `timestamp` field as its cursor. The connector stores a separate cursor value for each project, so a project added after your last sync starts from the configured start date while existing projects continue from where they left off. Within each project, the connector requests events in time windows sized by the **Events stream slice step size** setting.
+The `events` stream uses the event `timestamp` field as its cursor. The connector stores a separate cursor value for each project. A project with no saved cursor normally starts from the configured start date; if a legacy shared timestamp remains in the state, that timestamp is used as the fallback for the project instead. Existing projects resume from their saved cursors. Within each project, the connector requests events in time windows sized by the **Events stream slice step size** setting.
 
 ## Limitations
 
