@@ -29,6 +29,8 @@ Follow the steps in the [Basecamp authentication guide](https://github.com/basec
 - Authorization: `https://launchpad.37signals.com/authorization/new`
 - Token exchange: `https://launchpad.37signals.com/authorization/token`
 
+According to the [37signals authentication documentation](https://github.com/basecamp/api/blob/master/sections/authentication.md), access tokens currently expire after two weeks. The connector uses your refresh token to request new access tokens.
+
 Any OAuth 2.0 client library can perform this flow. If you'd prefer a ready-made tool, the community-maintained [basecampy3](https://github.com/phistrom/basecampy3) CLI walks you through the flow and prints the resulting tokens. Record the `refresh_token` value; that's what Airbyte needs.
 
 Refresh tokens issued by 37signals do not expire unless you revoke the integration, so you can reuse the same value across syncs.
@@ -89,6 +91,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.59 | 2026-11-10 | [91359](https://github.com/airbytehq/airbyte/pull/91359) | Update dependencies |
+| 0.0.58 | 2026-11-03 | [90471](https://github.com/airbytehq/airbyte/pull/90471) | Update dependencies |
+| 0.0.57 | 2026-10-27 | [89806](https://github.com/airbytehq/airbyte/pull/89806) | Update dependencies |
+| 0.0.56 | 2026-10-20 | [89110](https://github.com/airbytehq/airbyte/pull/89110) | Update dependencies |
+| 0.0.55 | 2026-10-13 | [88511](https://github.com/airbytehq/airbyte/pull/88511) | Update dependencies |
+| 0.0.54 | 2026-10-08 | [88363](https://github.com/airbytehq/airbyte/pull/88363) | Replace the default Airbyte icon with the Basecamp logo |
+| 0.0.53 | 2026-10-06 | [87773](https://github.com/airbytehq/airbyte/pull/87773) | Update dependencies |
+| 0.0.52 | 2026-09-29 | [87071](https://github.com/airbytehq/airbyte/pull/87071) | Update dependencies |
+| 0.0.51 | 2026-09-22 | [86516](https://github.com/airbytehq/airbyte/pull/86516) | Update dependencies |
+| 0.0.50 | 2026-09-15 | [85972](https://github.com/airbytehq/airbyte/pull/85972) | Update dependencies |
+| 0.0.49 | 2026-09-08 | [85390](https://github.com/airbytehq/airbyte/pull/85390) | Update dependencies |
 | 0.0.48 | 2026-08-18 | [84494](https://github.com/airbytehq/airbyte/pull/84494) | Update dependencies |
 | 0.0.47 | 2026-08-11 | [83829](https://github.com/airbytehq/airbyte/pull/83829) | Update dependencies |
 | 0.0.46 | 2026-08-04 | [83358](https://github.com/airbytehq/airbyte/pull/83358) | Update dependencies |
@@ -102,7 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.38 | 2026-06-02 | [78583](https://github.com/airbytehq/airbyte/pull/78583) | Update dependencies |
 | 0.0.37 | 2026-04-28 | [77177](https://github.com/airbytehq/airbyte/pull/77177) | Update dependencies |
 | 0.0.36 | 2026-04-21 | [76843](https://github.com/airbytehq/airbyte/pull/76843) | Bump SDM base image to stable 7.17.2 |
-| 0.0.35 | 2026-03-31 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.0.35 | 2026-04-02 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
 | 0.0.33 | 2026-03-17 | [75000](https://github.com/airbytehq/airbyte/pull/75000) | Update dependencies |
 | 0.0.32 | 2026-02-24 | [73800](https://github.com/airbytehq/airbyte/pull/73800) | Update dependencies |

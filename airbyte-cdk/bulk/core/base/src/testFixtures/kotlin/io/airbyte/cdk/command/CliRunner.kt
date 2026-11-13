@@ -45,7 +45,7 @@ data object CliRunner {
                     args,
                     additionalMicronautEnvs = emptyList(),
                     featureFlags.systemEnv,
-                    out.beanDefinition
+                    out.beanDefinition,
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -62,14 +62,13 @@ data object CliRunner {
         micronautProperties: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
-        val inputBeanDefinition: RuntimeBeanDefinition<InputStream>? =
-            inputStream?.let {
-                RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
-                    .singleton(true)
-                    .named("inputStream")
-                    .replaces(InputStream::class.java)
-                    .build()
-            }
+        val inputBeanDefinition: RuntimeBeanDefinition<InputStream>? = inputStream?.let {
+            RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
+                .singleton(true)
+                .named("inputStream")
+                .replaces(InputStream::class.java)
+                .build()
+        }
         val out = CliRunnerOutputStream()
         val configPath: Path? = inputFileFromString(configContents)
         val runnable: Runnable =
@@ -84,7 +83,7 @@ data object CliRunner {
                             out.beanDefinition,
                         )
                         .filterNotNull()
-                        .toTypedArray()
+                        .toTypedArray(),
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -118,7 +117,7 @@ data object CliRunner {
             inputStream,
             additionalMicronautEnvs,
             micronautProperties,
-            *featureFlags.toTypedArray()
+            *featureFlags.toTypedArray(),
         )
     }
 
@@ -164,11 +163,11 @@ data object CliRunner {
     private val Array<out FeatureFlag>.systemEnv: Map<String, String>
         get() = toSet().map { it.envVar.name to it.requiredEnvVarValue }.toMap()
 
-    private fun inputFile(contents: Any?): Path? =
-        contents?.let { inputFileFromString(Jsons.writeValueAsString(contents)) }
+    private fun inputFile(contents: Any?): Path? = contents?.let {
+        inputFileFromString(Jsons.writeValueAsString(contents))
+    }
 
-    private fun inputFileFromString(contents: String?): Path? =
-        contents?.let {
-            Files.createTempFile(null, null).also { file -> Files.writeString(file, contents) }
-        }
+    private fun inputFileFromString(contents: String?): Path? = contents?.let {
+        Files.createTempFile(null, null).also { file -> Files.writeString(file, contents) }
+    }
 }

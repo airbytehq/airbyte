@@ -78,9 +78,9 @@ class TestCredentials(GoogleSheetsBaseTest):
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="Something went wrong in the connector. See the logs for more details.",
-                internal_message="401 Client Error: None for url: https://www.googleapis.com/oauth2/v4/token",
-                failure_type=FailureType.system_error,
+                message="Google authentication failed. Re-authenticate the source for expired or revoked OAuth credentials, or replace the service-account JSON key.",
+                internal_message="Google rejected the token request.",
+                failure_type=FailureType.config_error,
                 stack_trace=ANY,
             ),
         )
@@ -105,9 +105,9 @@ class TestCredentials(GoogleSheetsBaseTest):
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="Something went wrong in the connector. See the logs for more details.",
-                internal_message="401 Client Error: None for url: https://www.googleapis.com/oauth2/v4/token",
-                failure_type=FailureType.system_error,
+                message="Google authentication failed. Re-authenticate the source for expired or revoked OAuth credentials, or replace the service-account JSON key.",
+                internal_message="Google rejected the token request.",
+                failure_type=FailureType.config_error,
                 stack_trace=ANY,
             ),
         )

@@ -195,7 +195,7 @@ class MySqlSourceDatatypeIntegrationTest {
      * - Datetime (micro and millis): invalid, interpreted as NULL
      * - Date: invalid, interpreted as NULL
      * - Timestamp: interpreted as 0, which is then converted to the Unix epoch, 1970-01-01.
-     * Snapshot reads can still produce NULL values.
+     *   Snapshot reads can still produce NULL values.
      * - Time: 00:00:00 represents midnight, which is a valid time value.
      */
     @Test
@@ -224,13 +224,13 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use {
                 it.execute(
                     "CREATE TABLE $tableName (k INT PRIMARY KEY, v DATETIME(3) NOT NULL, w DATETIME(6) NOT NULL, " +
-                        "y DATETIME(3) NOT NULL DEFAULT '2020-03-30 10:30:00', x DATETIME(6) NOT NULL DEFAULT '2020-03-30 10:30:00')"
+                        "y DATETIME(3) NOT NULL DEFAULT '2020-03-30 10:30:00', x DATETIME(6) NOT NULL DEFAULT '2020-03-30 10:30:00')",
                 )
             }
             connection.createStatement().use {
                 it.execute(
                     "INSERT INTO $tableName (k, v, w, y, x) VALUES (1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', " +
-                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00') "
+                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00') ",
                 )
             }
         }
@@ -289,7 +289,7 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use {
                 it.execute(
                     "INSERT INTO $database.$tableName (k, v, w, y, x) VALUES (2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'," +
-                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00')"
+                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00')",
                 )
             }
         }
@@ -307,11 +307,11 @@ class MySqlSourceDatatypeIntegrationTest {
         // Default values
         assertEquals(
             "2020-03-30T10:30:00.000000",
-            cdcOutput.records()[0].data["y"].asText()
+            cdcOutput.records()[0].data["y"].asText(),
         ) // millis
         assertEquals(
             "2020-03-30T10:30:00.000000",
-            cdcOutput.records()[0].data["x"].asText()
+            cdcOutput.records()[0].data["x"].asText(),
         ) // micro
     }
 
@@ -340,12 +340,12 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
             connection.createStatement().use {
                 it.execute(
-                    "CREATE TABLE $tableName (k INT PRIMARY KEY, v DATE NOT NULL, w DATE NOT NULL DEFAULT '2025-05-05')"
+                    "CREATE TABLE $tableName (k INT PRIMARY KEY, v DATE NOT NULL, w DATE NOT NULL DEFAULT '2025-05-05')",
                 )
             }
             connection.createStatement().use {
                 it.execute(
-                    "INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00', '0000-00-00') "
+                    "INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00', '0000-00-00') ",
                 )
             }
         }
@@ -397,7 +397,7 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
             connection.createStatement().use {
                 it.execute(
-                    "INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00', '0000-00-00')"
+                    "INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00', '0000-00-00')",
                 )
             }
         }
@@ -440,12 +440,12 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
             connection.createStatement().use {
                 it.execute(
-                    "CREATE TABLE $tableName (k INT PRIMARY KEY, v TIMESTAMP NOT NULL, w TIMESTAMP NOT NULL DEFAULT '2025-05-05 00:00:00') "
+                    "CREATE TABLE $tableName (k INT PRIMARY KEY, v TIMESTAMP NOT NULL, w TIMESTAMP NOT NULL DEFAULT '2025-05-05 00:00:00') ",
                 )
             }
             connection.createStatement().use {
                 it.execute(
-                    "INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00 00:00:00', '0000-00-00 00:00:00') "
+                    "INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00 00:00:00', '0000-00-00 00:00:00') ",
                 )
             }
         }
@@ -497,7 +497,7 @@ class MySqlSourceDatatypeIntegrationTest {
             connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
             connection.createStatement().use {
                 it.execute(
-                    "INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00 00:00:00', '0000-00-00 00:00:00')"
+                    "INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00 00:00:00', '0000-00-00 00:00:00')",
                 )
             }
         }
@@ -514,11 +514,11 @@ class MySqlSourceDatatypeIntegrationTest {
         // Since the column is not getting a NULL value, the default value will be ignored.
         assertEquals(
             expected = "1970-01-01T00:00:00.000000Z",
-            actual = cdcOutput.records()[0].data["v"].asText()
+            actual = cdcOutput.records()[0].data["v"].asText(),
         )
         assertEquals(
             expected = "1970-01-01T00:00:00.000000Z",
-            actual = cdcOutput.records()[0].data["w"].asText()
+            actual = cdcOutput.records()[0].data["w"].asText(),
         )
     }
 
@@ -609,7 +609,7 @@ class MySqlSourceDatatypeIntegrationTest {
         assertTrue(cdcOutput.records().isNotEmpty())
         assertEquals(
             expected = "00:00:00.000000",
-            actual = cdcOutput.records()[0].data["v"].asText()
+            actual = cdcOutput.records()[0].data["v"].asText(),
         )
     }
 
@@ -632,7 +632,7 @@ object MySqlSourceDatatypeTestOperations :
         MySqlSourceConfigurationSpecification,
         MySqlSourceConfiguration,
         MySqlSourceConfigurationFactory,
-        MySqlSourceDatatypeTestCase
+        MySqlSourceDatatypeTestCase,
     > {
 
     private val log = KotlinLogging.logger {}
@@ -641,12 +641,12 @@ object MySqlSourceDatatypeTestOperations :
     override val globalCursorMetaField: MetaField = MySqlSourceCdcMetaFields.CDC_CURSOR
 
     override fun streamConfigSpec(
-        container: MySQLContainer<*>
+        container: MySQLContainer<*>,
     ): MySqlSourceConfigurationSpecification =
         MySqlContainerFactory.config(container).also { it.setIncrementalValue(UserDefinedCursor) }
 
     override fun globalConfigSpec(
-        container: MySQLContainer<*>
+        container: MySQLContainer<*>,
     ): MySqlSourceConfigurationSpecification =
         MySqlContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
@@ -757,7 +757,7 @@ object MySqlSourceDatatypeTestOperations :
             "'2022-01-01'" to """"2022-01-01"""",
             "'0600-12-02'" to """"0600-12-02"""",
             "'1752-09-09'" to """"1752-09-09"""",
-            "NULL" to """"2020-03-30""""
+            "NULL" to """"2020-03-30"""",
         )
 
     val timeValues =
@@ -849,7 +849,8 @@ object MySqlSourceDatatypeTestOperations :
                     "FLOAT(7,4)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
-                    isGlobal = false // 123.4567 renders as 123.45670318603516 with CDC, which is OK
+                    isGlobal =
+                        false, // 123.4567 renders as 123.45670318603516 with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "FLOAT(53,8)",
@@ -953,7 +954,7 @@ object MySqlSourceDatatypeTestOperations :
                     "JSON",
                     jsonValues,
                     LeafAirbyteSchemaType.STRING, // TODO: fix this bug, should be JSONB
-                    isGlobal = false // different, more compact rendering with CDC, which is OK
+                    isGlobal = false, // different, more compact rendering with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "ENUM('a', 'b', 'c')",

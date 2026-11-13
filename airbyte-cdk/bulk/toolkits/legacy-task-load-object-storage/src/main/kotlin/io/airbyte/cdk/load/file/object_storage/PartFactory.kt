@@ -39,7 +39,7 @@ class PartFactory(
             fileNumber = fileNumber,
             partIndex = nextIndex,
             bytes = bytes,
-            isFinal = isFinal
+            isFinal = isFinal,
         )
     }
 }
@@ -81,7 +81,7 @@ class PartBookkeeper {
         if (part.bytes != null) {
             if (part.partIndex in partIndexes) {
                 throw IllegalStateException(
-                    "Part index ${part.partIndex} already seen for ${part.key}"
+                    "Part index ${part.partIndex} already seen for ${part.key}",
                 )
             }
             partIndexes.add(part.partIndex)
@@ -90,9 +90,10 @@ class PartBookkeeper {
         // The final part conveys the last
         // index even if it is empty.
         if (part.isFinal) {
-            if (!finalIndex.compareAndSet(null, part.partIndex)) {
+            val previousFinalIndex = finalIndex.getAndUpdate { it ?: part.partIndex }
+            if (previousFinalIndex != null) {
                 throw IllegalStateException(
-                    "Final part ${finalIndex.get()} already seen for ${part.key}"
+                    "Final part $previousFinalIndex already seen for ${part.key}",
                 )
             }
         }

@@ -137,18 +137,17 @@ For more information about HMAC authentication, see the [Infor Nexus HMAC docume
 
 ## Supported sync modes
 
-The Infor Nexus Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Infor Nexus Datasets source connector supports the [Full Refresh](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) sync mode. The connector doesn't track a cursor or save state between syncs, so Airbyte Incremental sync modes aren't available.
 
-- Full Refresh
-- Incremental
+The **Infor Streaming Mode** setting controls what Infor Nexus includes in the export, not how Airbyte syncs it. `Full` requests the complete dataset. `Incremental` requests only the changes since the last export. Airbyte reads whatever the export returns on each sync.
 
 ## Supported streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| datasets | None | Yes | Yes | Yes |
+| datasets | None | No | Yes | No |
 
-The `datasets` stream returns records from the configured Infor Nexus export dataset. Each record contains the following fields:
+The `datasets` stream returns records from the configured Infor Nexus export dataset. The connector reads the export as JSON Lines and converts every non-null value to a string. Each record contains the following fields:
 
 - `raw_data`: The record payload as a JSON object.
 - `raw_data_string`: The record payload as a JSON string.
@@ -164,6 +163,7 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 | 200 | Dataset is ready to stream. | No action needed. |
 | 202 | Dataset is not yet ready. | Wait and retry the sync later. |
 | 304 | Dataset is not ready. | Contact Infor member services to investigate. |
+| Other | Unexpected response. | The sync fails. Review the error message, and contact Infor member services if the error persists. |
 
 ## IP allow list
 
@@ -176,6 +176,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.17 | 2026-11-12 | [91811](https://github.com/airbytehq/airbyte/pull/91811) | Upgrade SDM base image to 7.47.0 |
+| 0.1.16 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` and `secret_key` as `airbyte_secret` |
+| 0.1.15 | 2026-10-07 | [88193](https://github.com/airbytehq/airbyte/pull/88193) | Fix sync failing on every ready export: accept the `binary/octet-stream` Content-Type the Infor Nexus export returns; treat HTTP 202 (dataset not ready) as a transient error |
 | 0.1.14 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 0.1.13 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.1.11 — 0.1.12 is built on SDM 7.23.7, which breaks bundled custom components |
 | 0.1.12 | 2026-07-28 | [83015](https://github.com/airbytehq/airbyte/pull/83015) | Update dependencies |
