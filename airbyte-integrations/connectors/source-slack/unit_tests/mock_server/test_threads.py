@@ -38,7 +38,9 @@ def _config(**overrides: Any) -> MutableMapping[str, Any]:
 
 
 def _read(stream_name: str, config: Mapping[str, Any], stream_state: Mapping[str, Any]):
-    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
     state = StateBuilder().with_stream_state(stream_name, stream_state).build()
     return read(get_source(config, stream_name, state), config=config, catalog=catalog, state=state)
 
@@ -50,7 +52,9 @@ def _history_requests(requests_mock) -> List[Mapping[str, List[str]]]:
 def _channel_messages_parent_state(cursors: Mapping[str, float]) -> Mapping[str, Any]:
     return {
         "use_global_cursor": False,
-        "states": [{"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(ts)}} for channel, ts in cursors.items()],
+        "states": [
+            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(ts)}} for channel, ts in cursors.items()
+        ],
         "lookback_window": 0,
         "parent_state": {},
     }
