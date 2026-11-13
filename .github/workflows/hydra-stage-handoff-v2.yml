@@ -29,7 +29,8 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      notify the appropriate human via Ops MCP, with approval-gated retry
 #      buttons for known actionable reasons.
 #   5. Idempotency (HYD-372): each dispatch first records a hidden
-#      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
+#      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action),
+#      plus a reason hash for escalations,
 #      and skips when that key is already on the PR, so repeat wakes on the
 #      same head don't dispatch the same stage twice. A new push changes the
 #      key. To retry a stage on the same head, dispatch with `force: true`.
@@ -400,6 +401,9 @@ jobs:
               && echo "::error::hydra output has no head_sha for airbytehq/airbyte#$PR_NUMBER; refusing to dispatch without an idempotency key" \
               && exit 1
             local KEY_FIELDS="pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION"
+            if [[ "$NEXT_ACTION" == escalate ]]; then
+              KEY_FIELDS+="; reason_hash=$(printf '%s' "$REASON" | sha256sum | cut -c1-16)"
+            fi
             local KEY="<!-- hydra_handoff_v2: $KEY_FIELDS -->"
             echo "idempotency_key=$KEY_FIELDS" | tee -a "$GITHUB_OUTPUT"
             local BODIES
