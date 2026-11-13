@@ -122,4 +122,7 @@ data:
     - title: Usage plans and rate limits
       url: https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api
       type: other
+    - title: Selling Partner API models repository
+      url: https://github.com/amzn/selling-partner-api-models
+      type: spec_repository
 metadataSpecVersion: "1.0"
