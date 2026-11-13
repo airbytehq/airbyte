@@ -120,6 +120,10 @@ Airbox deploys a data plane on a single machine with Docker and is an option for
 
 Each workspace uses one region, which you can set in **Workspace settings** or with the API. Airbyte Cloud control planes run on GCP in the United States. Airbyte-managed data planes are available in the United States on GCP and in the European Union on AWS. See [Set data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency).
 
+### Upgrades
+
+Airbyte upgrades the control plane and Airbyte-managed data planes for you. You upgrade your self-managed data planes. To learn how long Airbyte supports each data plane version and how to upgrade, see the [support and upgrade policy](/platform/enterprise-flex/support-and-upgrade-policy).
+
 ## Enterprise Flex and other plans
 
 Enterprise Flex lets you run self-managed data planes in your own infrastructure alongside Airbyte-managed data planes. See [Airbyte pricing](https://airbyte.com/pricing) for a full plan comparison. To upgrade, [talk to sales](https://airbyte.com/company/talk-to-sales).

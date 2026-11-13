@@ -1,5 +1,11 @@
 # Airbyte Cloud release notes
 
+## November 12, 2026
+
+Connections
+
+- When a connection test or save fails while you set up or edit a source or destination, you now see the error directly above the form's buttons. You can copy the error details and view or download test logs when they are available.
+
 ## November 11, 2026
 
 Connections
