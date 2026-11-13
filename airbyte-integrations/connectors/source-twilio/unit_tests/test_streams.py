@@ -534,7 +534,6 @@ class TestIncrementalTwilioStream:
         # The partition whose second child failed is never checkpointed, so the state stays at the start date.
         assert _alert_state_date(output) == "2022-11-15T00:00:00Z"
 
-
     @freeze_time("2026-05-22 12:00:00+00:00")
     @pytest.mark.parametrize(
         "stream_name,cursor_field,resource,lower_key,upper_key",
@@ -543,7 +542,9 @@ class TestIncrementalTwilioStream:
             ("recordings", "date_created", "Recordings", "DateCreated>", "DateCreated<"),
         ],
     )
-    def test_stale_partition_state_resumes_from_global_cursor(self, stream_name, cursor_field, resource, lower_key, upper_key, requests_mock):
+    def test_stale_partition_state_resumes_from_global_cursor(
+        self, stream_name, cursor_field, resource, lower_key, upper_key, requests_mock
+    ):
         """A partition whose stored cursor lags the global cursor must resume from the global cursor.
 
         Before the fix, the stale per-partition cursor (older than the 400-day start bound) won over the recent global
