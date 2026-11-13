@@ -3,11 +3,11 @@
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 
 HISTORY_URL = "https://slack.com/api/conversations.history"
@@ -89,7 +89,9 @@ def test_archived_non_member_channels_are_not_partitioned_when_joining(requests_
         {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
         {"id": "C_ARCHIVED", "name": "archived", "is_member": False, "is_archived": True},
     ]
-    requests_mock.register_uri("GET", f"{LIST_URL}?limit=999&types=public_channel&exclude_archived=false", json={"ok": True, "channels": channels})
+    requests_mock.register_uri(
+        "GET", f"{LIST_URL}?limit=999&types=public_channel&exclude_archived=false", json={"ok": True, "channels": channels}
+    )
     requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
     requests_mock.register_uri("GET", HISTORY_URL, json={"ok": True, "messages": []})
     requests_mock.register_uri("GET", REPLIES_URL, json={"ok": True, "messages": []})
