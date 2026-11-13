@@ -26,6 +26,8 @@ To authenticate the Google Search Console connector, you will need to use one of
 
 You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
 
+The connector requests the `https://www.googleapis.com/auth/webmasters.readonly` OAuth scope for read-only access to your Search Console data.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -135,20 +137,20 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ## Supported Streams
 
-- [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-- [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
-- [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`sites`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
+- [`sitemaps`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
+- [`search_analytics_all_fields`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
+- [`search_analytics_by_country`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_date`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_device`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_query`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_page_report`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_site_report_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_site_report_by_site`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_page_report`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_site_report_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_site_report_by_site`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
 ### Entity-Relationship Diagram (ERD)
@@ -216,7 +218,7 @@ Expand to see details about Google Search Console connector limitations and trou
 
 The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
+**Request-rate quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site. When exceeded, the connector retries with a 60-second backoff.
 
 **Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
 
@@ -227,13 +229,17 @@ To check your actual QPS quota limits:
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+Check your project's actual quotas in Google Cloud Console before requesting an increase. Configure **Search Analytics API Requests Per Minute** in the connector to stay within the applicable limits.
 
 If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+
+#### Row limit
+
+The [Search Analytics API](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) accepts a `rowLimit` of at most 25,000 rows per response and uses `startRow` for pagination. It returns top rows and does not guarantee that every row is available through the API.
 
 #### Retired search appearance values
 
@@ -272,6 +278,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.21 | 2026-11-10 | [89240](https://github.com/airbytehq/airbyte/pull/89240) | Update dependencies |
 | 2.1.20 | 2026-11-05 | [91063](https://github.com/airbytehq/airbyte/pull/91063) | Clarify Website URL Property formats for Domain and URL-prefix properties |
 | 2.1.19 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Emit dimension values exactly as Google returns them, including quoted and numeric-looking queries |
 | 2.1.18 | 2026-10-22 | [89665](https://github.com/airbytehq/airbyte/pull/89665) | Fix 400 errors on the search_analytics_site_report_by_site stream by using aggregationType auto for Google News and Discover search types; keep numeric-looking search queries as strings in keyword streams |

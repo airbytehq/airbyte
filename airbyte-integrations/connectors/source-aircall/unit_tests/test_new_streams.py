@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 import pytest
 from freezegun import freeze_time
+from jsonschema import Draft7Validator
 from unit_tests.conftest import get_source, sleep_moves_clock
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -29,6 +30,7 @@ _NEW_STREAMS = {
     "trackers": [["id"]],
     "sms_templates": [["id"]],
     "whatsapp_templates": [["number_id"], ["id"]],
+    "user_numbers": [["user_id"], ["id"]],
 }
 _KEY_FIELD_TYPES = {
     "conversations": {"id": "integer", "last_engagement_at": "string"},
@@ -38,6 +40,7 @@ _KEY_FIELD_TYPES = {
     "trackers": {"id": "integer"},
     "sms_templates": {"id": "integer"},
     "whatsapp_templates": {"id": "string", "number_id": "integer"},
+    "user_numbers": {"id": "number", "user_id": "integer", "priority": "integer", "created_at": "string"},
 }
 
 
@@ -145,7 +148,7 @@ def test_new_streams_declare_keys_sync_modes_and_key_field_types() -> None:
     assert streams["conversation_engagements"].default_cursor_field == ["created_at"]
     for name in ("conversations", "conversation_engagements"):
         assert [mode.value for mode in streams[name].supported_sync_modes] == ["full_refresh", "incremental"]
-    for name in ("campaigns", "campaign_outcomes", "trackers", "sms_templates", "whatsapp_templates"):
+    for name in ("campaigns", "campaign_outcomes", "trackers", "sms_templates", "whatsapp_templates", "user_numbers"):
         assert [mode.value for mode in streams[name].supported_sync_modes] == ["full_refresh"]
 
 
@@ -535,3 +538,49 @@ def test_whatsapp_templates_gateway_403_stays_a_config_error() -> None:
         output = _read("whatsapp_templates", expecting_exception=True)
 
         assert "Aircall returned HTTP 403 for https://api.aircall.io/v1/numbers/1/templates." in _config_error(output).message
+
+
+# The live response of GET /v2/users/{id}/numbers for the test account's user.
+_USER_NUMBER = {
+    "id": 673,
+    "direct_link": "https://api.aircall.io/v1/numbers/673",
+    "name": "Support",
+    "digits": "+33 1 76 42 03 02",
+    "country": "FR",
+    "time_zone": "Europe/Paris",
+    "open": True,
+    "availability_status": "open",
+    "is_ivr": False,
+    "live_recording_activated": False,
+    "priority": 0,
+    "messages": {"welcome": "https://example.com/welcome.mp3", "voicemail": "https://example.com/voicemail.mp3"},
+    "created_at": "2016-12-28T10:15:05.000Z",
+}
+
+
+def _v2_request(path: str, page: int | None = None) -> HttpRequest:
+    params = {"per_page": "50"}
+    if page:
+        params["page"] = str(page)
+    return HttpRequest(f"https://api.aircall.io/v2{path}", query_params=params)
+
+
+def test_user_numbers_read_each_user_paginate_and_carry_user_id() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_v2_request("/users"), _json({"users": [{"id": 7}, {"id": 8}]}))
+        first, second, other = _v2_request("/users/7/numbers"), _v2_request("/users/7/numbers", page=2), _v2_request("/users/8/numbers")
+        http_mocker.get(first, _json({"numbers": [{**_USER_NUMBER, "id": index} for index in range(50)]}))
+        http_mocker.get(second, _json({"numbers": [{**_USER_NUMBER, "id": 50}]}))
+        http_mocker.get(other, _json({"numbers": [_USER_NUMBER]}))
+
+        output = _read("user_numbers")
+
+        assert output.errors == []
+        keys = [(record.record.data["user_id"], record.record.data["id"]) for record in output.records]
+        assert sorted(keys) == [(7, index) for index in range(51)] + [(8, 673)]
+        record = next(record.record.data for record in output.records if record.record.data["user_id"] == 8)
+        assert record == {**_USER_NUMBER, "user_id": 8}
+        schema = next(stream.json_schema for stream in get_source(_CONFIG).discover(None, _CONFIG).streams if stream.name == "user_numbers")
+        assert [error.message for error in Draft7Validator(schema).iter_errors(record)] == []
+        for request in (first, second, other):
+            http_mocker.assert_number_of_calls(request, 1)
