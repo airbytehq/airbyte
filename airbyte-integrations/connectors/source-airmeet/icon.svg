@@ -1,0 +1,4 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="40" fill="#4A90E2"/>
+  <text x="50" y="60" font-size="30" text-anchor="middle" fill="white">A</text>
+</svg>
