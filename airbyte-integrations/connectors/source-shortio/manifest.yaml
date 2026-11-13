@@ -258,20 +258,30 @@ definitions:
         type: "DefaultPaginator"
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ response['nextPageToken'] }}"
+          cursor_value: "{{ last_record['dt'] }}"
+          stop_condition: "{{ not last_record or last_page_size < 30 or response['dt'] == last_record['dt'] }}"
         page_token_option:
-          type: "RequestPath"
-          field_name: "pageToken"
-          inject_into: "request_parameter"
+          type: "RequestOption"
+          field_name: "beforeDate"
+          inject_into: "body_json"
       requester:
         type: HttpRequester
-        url_base: "https://api-v2.short.cm/statistics/"
-        http_method: "GET"
-        path: "domain/{{ config['domain_id'] }}/link_clicks"
+        url_base: "https://statistics.short.io/statistics/"
+        http_method: "POST"
+        path: "domain/{{ config['domain_id'] }}/last_clicks"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
+              error_message: "No clicks are available."
         authenticator:
           type: "ApiKeyAuthenticator"
           header: "Authorization"
           api_token: "{{ config['secret_key'] }}"
+        request_body_json:
+          limit: 30
     name: "clicks"
     schema_loader:
       type: InlineSchemaLoader
@@ -376,6 +386,18 @@ definitions:
               - "null"
               - string
           lcpath:
+            type:
+              - "null"
+              - string
+          geoname_id:
+            type:
+              - "null"
+              - string
+          utm_term:
+            type:
+              - "null"
+              - string
+          utm_content:
             type:
               - "null"
               - string
@@ -676,6 +698,18 @@ schemas:
         type:
           - "null"
           - string
+      geoname_id:
+        type:
+          - "null"
+          - string
+      utm_term:
+        type:
+          - "null"
+          - string
+      utm_content:
+        type:
+          - "null"
+          - string
 streams:
   - type: DeclarativeStream
     retriever:
@@ -933,20 +967,30 @@ streams:
         type: "DefaultPaginator"
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ response['nextPageToken'] }}"
+          cursor_value: "{{ last_record['dt'] }}"
+          stop_condition: "{{ not last_record or last_page_size < 30 or response['dt'] == last_record['dt'] }}"
         page_token_option:
-          type: "RequestPath"
-          field_name: "pageToken"
-          inject_into: "request_parameter"
+          type: "RequestOption"
+          field_name: "beforeDate"
+          inject_into: "body_json"
       requester:
         type: HttpRequester
-        url_base: "https://api-v2.short.cm/statistics/"
-        http_method: "GET"
-        path: "domain/{{ config['domain_id'] }}/link_clicks"
+        url_base: "https://statistics.short.io/statistics/"
+        http_method: "POST"
+        path: "domain/{{ config['domain_id'] }}/last_clicks"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
+              error_message: "No clicks are available."
         authenticator:
           type: "ApiKeyAuthenticator"
           header: "Authorization"
           api_token: "{{ config['secret_key'] }}"
+        request_body_json:
+          limit: 30
     name: "clicks"
     schema_loader:
       type: InlineSchemaLoader
@@ -1051,6 +1095,18 @@ streams:
               - "null"
               - string
           lcpath:
+            type:
+              - "null"
+              - string
+          geoname_id:
+            type:
+              - "null"
+              - string
+          utm_term:
+            type:
+              - "null"
+              - string
+          utm_content:
             type:
               - "null"
               - string
