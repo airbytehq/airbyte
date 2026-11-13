@@ -17,8 +17,8 @@ You can use the API Platform streams without a ChatGPT workspace. The ChatGPT st
 ### Step 1: Get your API Platform organization ID and Admin API key
 
 1. In [OpenAI Platform](https://platform.openai.com/), open your organization settings and copy your organization ID. It starts with `org-`.
-2. As an organization owner, go to **Organization settings** > **Admin keys**, select **Create new admin key**, and choose the permissions the connector needs. The connector reads organization users, invites, and completions usage. See [Admin and Audit Logs API for the API Platform](https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform).
-3. Copy the key. You can't view it again after you close the dialog.
+2. As an organization owner, go to [**Organization settings** > **Admin keys**](https://platform.openai.com/settings/organization/admin-keys), select **Create new admin key**, and choose the permissions the connector needs. The connector reads organization users, invites, and completions usage. See [Admin and Audit Logs API for the API Platform](https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform).
+3. Copy the key and store it securely. You can't recover a lost Admin key, so you'd need to create a new one.
 
 Admin API keys only work with administration endpoints. A standard project API key doesn't work.
 
@@ -28,9 +28,9 @@ Skip this step if you only need the `users`, `invites`, and `completions` stream
 
 ChatGPT workspace Admin keys are separate from API Platform Admin keys. An API Platform key can't read ChatGPT workspace data, and a workspace key can't read API Platform data.
 
-1. Sign in to [Admin Console](https://chatgpt.com/admin) and select the ChatGPT workspace you want to sync.
+1. Sign in to [Admin Console](https://admin.openai.com/). Select your tenant if needed, then select the ChatGPT workspace you want to sync.
 2. Go to **Credentials** > **Admin keys** and select **Create new admin key**.
-3. Choose the permissions for the streams you plan to sync. For example, `current_users` needs read access to **Users**, and `conversation_messages` and `conversation_messages_log` need the **Conversation messages** compliance permission. For details, see [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console).
+3. Choose the permissions for the streams you plan to sync, such as read access to **Users** for the user streams and the **Conversation messages** compliance permission for the conversation streams. For the scopes each endpoint requires, see the [ChatGPT Admin API reference](https://chatgpt.com/public/admin/api-reference) and [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console).
 4. Choose an expiration. When the key expires, the ChatGPT streams start failing until you create a new key and update the connector.
 5. Copy the key, and copy the workspace ID of the selected workspace.
 
@@ -115,6 +115,9 @@ The `users`, `invites`, `current_users`, and `historical_users` streams always r
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.0.1 | 2026-10-26 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.4 | 2026-11-10 | [91660](https://github.com/airbytehq/airbyte/pull/91660) | Update dependencies |
+| 0.0.3 | 2026-11-03 | [90676](https://github.com/airbytehq/airbyte/pull/90676) | Update dependencies |
+| 0.0.2 | 2026-10-27 | [90015](https://github.com/airbytehq/airbyte/pull/90015) | Update dependencies |
+| 0.0.1 | 2026-10-08 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>

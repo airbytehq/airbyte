@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import copy
+import logging
 from datetime import datetime, timezone
 from unittest import TestCase
 
@@ -8,7 +9,7 @@ import freezegun
 from jsonschema import Draft7Validator
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import Level, SyncMode, Type
+from airbyte_cdk.models import FailureType, Level, Status, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -54,21 +55,57 @@ class TestProjectDetailStream(TestCase):
         assert len(output.records) >= 1, "Expected project detail record"
         assert output.records[0].record.data["slug"] == "test-project"
 
-    def test_spec_rejects_blank_project_and_organization(self):
+    @HttpMocker()
+    def test_text_project_config_is_migrated_to_a_list(self, http_mocker: HttpMocker):
+        """A config saved before 1.1.0 ("project": "<slug>") is wrapped in a list, passes the spec check, and syncs that project."""
+        config = {**self._config(), "project": _PROJECT}
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1, f"Expected the text-config project to sync, got {len(output.records)} records"
+        assert output.records[0].record.data["slug"] == _PROJECT
+
+    @HttpMocker()
+    def test_duplicate_project_slugs_sync_once(self, http_mocker: HttpMocker):
+        """
+        A slug listed twice is read once. Incremental streams already merge duplicate
+        partitions, but full-refresh streams like this one rely on the router's dedupe.
+        """
+        config = ConfigBuilder().with_projects([_PROJECT, _PROJECT]).build()
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1, f"Expected the duplicated slug to be read once, got {len(output.records)}"
+
+    def test_spec_project_is_string_array(self):
         connector_spec = get_source(config={}).spec(logger=None)
 
         connection_specification = connector_spec.connectionSpecification
         project_schema = connection_specification["properties"]["project"]
         organization_schema = connection_specification["properties"]["organization"]
 
-        assert project_schema["minLength"] == 1
-        assert project_schema["pattern"] == r"^.*\S.*$"
+        assert project_schema["type"] == "array"
+        assert project_schema["minItems"] == 1
+        assert project_schema["items"]["type"] == "string"
+        assert project_schema["items"]["minLength"] == 1
         assert organization_schema["minLength"] == 1
         assert organization_schema["pattern"] == r"^.*\S.*$"
 
     @HttpMocker()
     def test_404_error_uses_config_error_message(self, http_mocker: HttpMocker):
-        error_message = "Sentry organization or project is missing or invalid."
+        error_message = "Sentry organization or project is missing or invalid"
         http_mocker.get(
             SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
             create_response("project_detail", status_code=404, has_next=False),
@@ -79,6 +116,46 @@ class TestProjectDetailStream(TestCase):
         output = read(source, config=self._config(), catalog=catalog)
 
         assert any(log.type == Type.LOG and log.log.level == Level.ERROR and error_message in log.log.message for log in output.logs)
+
+    @HttpMocker()
+    def test_check_reads_only_the_first_project(self, http_mocker: HttpMocker):
+        """
+        Setup reads one record from the first project only, so a misspelled slug later in the list
+        passes setup. The docs say so; if this test starts failing, update them.
+        """
+        config = ConfigBuilder().with_projects([_PROJECT, "misspelled-project"]).build()
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        status = get_source(config=config).check(logging.getLogger("airbyte"), config)
+
+        assert status.status == Status.SUCCEEDED, status.message
+
+    @HttpMocker()
+    def test_misspelled_project_fails_the_sync_with_a_config_error(self, http_mocker: HttpMocker):
+        """A slug Sentry doesn't know fails the sync as a config error, after the valid projects sync."""
+        config = ConfigBuilder().with_projects([_PROJECT, "misspelled-project"]).build()
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "misspelled-project", _AUTH_TOKEN).build(),
+            create_response("project_detail", status_code=404, has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=True)
+
+        assert [record.record.data["slug"] for record in output.records] == [_PROJECT]
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and "Check the organization and every slug in Projects." in error.trace.error.message
+            for error in output.errors
+        ), [error.trace.error.message for error in output.errors]
 
     @HttpMocker()
     def test_boolean_replay_rage_click_option_matches_stream_schema(self, http_mocker: HttpMocker):

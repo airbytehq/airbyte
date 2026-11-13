@@ -78,11 +78,17 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun releaseResources() {
-        if (::outputMessageRouter.isInitialized) {
-            outputMessageRouter.close()
+        try {
+            if (::outputMessageRouter.isInitialized) {
+                outputMessageRouter.close()
+            }
+        } finally {
+            try {
+                acquiredResources.getAndSet(null)?.forEach { it.value.close() }
+            } finally {
+                partitionId = generatePartitionId(4)
+            }
         }
-        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
-        partitionId = generatePartitionId(4)
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */

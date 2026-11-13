@@ -35,6 +35,7 @@ export const ProductInformation = ({ products }) => {
   const ossCommunity =
     products["oss-community"] || products["oss-*"] || products["all"];
   const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
+  const cloudNoFlex = products["cloud-no-flex"];
   // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
   const cloudPlus = products["cloud-plus"];
   const cloudTeams = products["cloud-teams"];
@@ -47,13 +48,13 @@ export const ProductInformation = ({ products }) => {
         Core
       </Badge>
       <Badge
-        available={cloud && !cloudTeams && !enterpriseFlex}
+        available={cloudNoFlex || cloud && !cloudTeams && !enterpriseFlex}
         title="Formerly Cloud"
       >
         Standard
       </Badge>
-      <Badge available={cloud && !cloudTeams && !enterpriseFlex || cloudPlus}>Plus</Badge>
-      <Badge available={cloudPlus || cloud || cloudTeams} title="Formerly Cloud Teams">
+      <Badge available={cloudNoFlex || cloud && !cloudTeams && !enterpriseFlex || cloudPlus}>Plus</Badge>
+      <Badge available={cloudNoFlex || cloudPlus || cloud || cloudTeams} title="Formerly Cloud Teams">
         Pro
       </Badge>
       <Badge available={cloudPlus || cloud || cloudTeams || enterpriseFlex}>
