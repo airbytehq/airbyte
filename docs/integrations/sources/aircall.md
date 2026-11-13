@@ -106,6 +106,8 @@ Every other stream is full refresh only. Aircall filters some of these lists, su
 | [`trackers`](https://developers.aircall.io/api-references/#list-all-trackers) | Full refresh | `id` | AI Assist or AI Assist Pro |
 | [`user_availability`](https://developers.aircall.io/api-references/#retrieve-list-of-users-availability) | Full refresh | `id` | All plans |
 | [`user_numbers`](https://developers.aircall.io/api-references/#list-all-numbers-for-a-user-v2) | Full refresh | `user_id`, `id` | All plans |
+| [`dialer_campaigns`](https://developers.aircall.io/api-references/#retrieve-a-dialer-campaign) | Full refresh | `user_id`, `id` | All plans (Power Dialer) |
+| [`dialer_campaign_phone_numbers`](https://developers.aircall.io/api-references/#retrieve-phone-numbers) | Full refresh | `user_id`, `id` | All plans (Power Dialer) |
 | [`users`](https://developers.aircall.io/api-references/#list-all-users-v2) | Full refresh | `id` | All plans |
 | [`webhooks`](https://developers.aircall.io/api-references/#list-all-webhooks) | Full refresh | `webhook_id` | All plans |
 | [`whatsapp_templates`](https://developers.aircall.io/api-references/#list-whatsapp-templates) | Full refresh | `number_id`, `id` | Numbers registered for WhatsApp |
@@ -117,6 +119,7 @@ Notes:
 - `contacts` returns shared contacts only ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts)).
 - `users` reads the [User V2 API](https://developers.aircall.io/api-references/#user-v2-overview).
 - `user_numbers` returns the numbers each user is assigned to, with `user_id` identifying the user. It makes at least one request per user.
+- `dialer_campaigns` and `dialer_campaign_phone_numbers` return each user's active Power Dialer campaign and the phone numbers on it, with `user_id` identifying the user. Aircall keeps one active campaign per user and no history: deleting a campaign deletes its numbers. Users without an active campaign are skipped with a log message. Each stream makes one request per user. `number` holds the digits without the leading `+`.
 - `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)).
 - `conversation_engagements` returns the calls, messages, WhatsApp messages, assignments, unassignments, closes and reopens of each conversation. The first sync and every full refresh make at least one request per conversation. Each incremental sync re-reads the engagements of every conversation active since three days before the previous sync, so syncing more often than daily repeats most of that work.
 - `whatsapp_templates` returns the templates of each number, with `number_id` identifying the number.
@@ -175,6 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.2.0 | 2026-11-13 | [92571](https://github.com/airbytehq/airbyte/pull/92571) | Add the Power Dialer `dialer_campaigns` and `dialer_campaign_phone_numbers` streams, back off exponentially on 5xx, and upgrade to `source-declarative-manifest` 7.48.0 |
 | 1.1.0 | 2026-11-11 | [92012](https://github.com/airbytehq/airbyte/pull/92012) | Add user_numbers, IVR options on calls and opt-in conversation intelligence streams |
 | 1.0.0 | 2026-11-11 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
 | 0.6.1 | 2026-11-10 | [91341](https://github.com/airbytehq/airbyte/pull/91341) | Update dependencies |
