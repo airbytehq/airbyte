@@ -300,8 +300,8 @@ class TestBaseInsightsStream:
                 {
                     AdsInsights.cursor_field: "2010-10-03",
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-04",
+                        "2010-10-05",
                     ],
                     "time_increment": 1,
                 },
@@ -309,8 +309,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-04",
+                            "2010-10-05",
                         ],
                     },
                     "time_increment": 1,
@@ -348,8 +348,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-04",
+                            "2010-10-05",
                         ],
                     },
                     "time_increment": 1,
@@ -1980,3 +1980,79 @@ class TestCheckBreakdowns:
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2
+
+
+class TestInsightsCursorMonotonicity:
+    """Re-reading the lookback window must never move the committed cursor below the cursor loaded from state."""
+
+    ACCOUNT_ID = "unknown_account"
+
+    @staticmethod
+    def _patch_manager(mocker):
+        """Replace the async job manager with one that 'completes' every generated job in order with no records."""
+
+        def _manager(api, jobs, account_id):
+            manager = mocker.Mock()
+
+            def completed_jobs():
+                for job in jobs:
+                    completed = mocker.Mock(spec=InsightAsyncJob)
+                    completed.interval = job.interval
+                    completed.get_result.return_value = []
+                    yield completed
+
+            manager.completed_jobs.side_effect = completed_jobs
+            return manager
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager", side_effect=_manager)
+
+    def _run_attempt(self, api, input_state, max_slices=None):
+        """Run one sync attempt, returning (job start dates, cursor value emitted after each slice, final state)."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=[self.ACCOUNT_ID],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 25),
+            insights_lookback_window=28,
+        )
+        job_starts, emitted_cursors = [], []
+        for i, stream_slice in enumerate(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=input_state)):
+            if max_slices is not None and i >= max_slices:
+                break  # attempt interrupted: the platform keeps the last emitted state
+            job_starts.append(stream_slice["insight_job"].interval.start)
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            emitted_cursors.append(stream.state[self.ACCOUNT_ID].get(AdsInsights.cursor_field))
+        return job_starts, emitted_cursors, copy.deepcopy(stream.state)
+
+    @freeze_time("2026-09-25")
+    def test_interrupted_attempt_does_not_regress_cursor_or_widen_next_window(self, mocker, api):
+        self._patch_manager(mocker)
+        input_state = {self.ACCOUNT_ID: {AdsInsights.cursor_field: "2026-09-20", "slices": []}, "time_increment": 1}
+
+        # Attempt 0 is interrupted after 10 of the 34 lookback/new slices.
+        job_starts, emitted_cursors, state = self._run_attempt(api, input_state, max_slices=10)
+        assert job_starts[0] == date(2026, 8, 23)  # cursor - 28 day lookback is still fully re-read
+        assert emitted_cursors == ["2026-09-20"] * 10
+        assert state[self.ACCOUNT_ID] == {AdsInsights.cursor_field: "2026-09-20", "slices": []}
+
+        # Attempt 1 resumes from the same window, not one lookback period further back.
+        job_starts, emitted_cursors, state = self._run_attempt(api, state)
+        assert job_starts == [date(2026, 8, 23) + timedelta(days=i) for i in range(34)]
+        assert emitted_cursors == ["2026-09-20"] * 28 + ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25"]
+        assert state[self.ACCOUNT_ID] == {AdsInsights.cursor_field: "2026-09-25", "slices": []}
+
+    @freeze_time("2026-09-25")
+    def test_stale_completed_slices_at_or_below_cursor_are_not_persisted(self, mocker, api):
+        self._patch_manager(mocker)
+        input_state = {
+            self.ACCOUNT_ID: {
+                AdsInsights.cursor_field: "2026-09-24",
+                "slices": ["2026-09-05", "2026-09-12", "2026-09-13", "2026-09-14"],
+            },
+            "time_increment": 1,
+        }
+
+        job_starts, emitted_cursors, state = self._run_attempt(api, input_state, max_slices=1)
+
+        assert job_starts == [date(2026, 8, 27)]
+        assert state[self.ACCOUNT_ID] == {AdsInsights.cursor_field: "2026-09-24", "slices": []}

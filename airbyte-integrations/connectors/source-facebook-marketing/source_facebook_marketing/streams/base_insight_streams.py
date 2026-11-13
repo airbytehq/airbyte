@@ -131,6 +131,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
+        # Cursor values loaded from the incoming state. The committed cursor must never be moved below these while the
+        # lookback window is re-read, otherwise an interrupted attempt persists a lower cursor and the next attempt
+        # subtracts the lookback window again, widening the re-read window on every interruption.
+        self._state_cursor_values: Mapping[str, Optional[date]] = {}
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
@@ -278,7 +282,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._completed_slices_for_state(account_id)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -320,12 +324,19 @@ class AdsInsights(FBMarketingIncrementalStream):
             )
             for account_id in self._account_ids
         }
+        self._state_cursor_values = dict(self._cursor_values)
         self._completed_slices = {
             account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
             for account_id in self._account_ids
         }
 
         self._next_cursor_values = self._get_start_date()
+
+    def _completed_slices_for_state(self, account_id: str) -> List[str]:
+        """Completed slices to persist. Slices at or below the committed cursor are never used to skip jobs
+        (the next sync always re-reads from `cursor - lookback`), so they are not persisted."""
+        cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+        return sorted({d.isoformat() for d in self._completed_slices[account_id] if not cursor_value or d > cursor_value})
 
     def _get_end_date_for_account(self, account_id: str) -> date:
         """Compute the effective end date for a specific account based on its timezone.
@@ -419,10 +430,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            # Never move the committed cursor backwards while re-reading the lookback window.
+            state_cursor_value = self._state_cursor_values.get(account_id)
+            new_cursor_value = max(ts_start, state_cursor_value) if state_cursor_value else ts_start
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                self._cursor_values[account_id] = new_cursor_value
             else:
-                self._cursor_values = {account_id: ts_start}
+                self._cursor_values = {account_id: new_cursor_value}
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
