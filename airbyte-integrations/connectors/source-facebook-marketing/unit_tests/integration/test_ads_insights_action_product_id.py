@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,56 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_and_failure_within_lookback_window_when_read_then_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id = "123123123"
+        lookback_days = 2
+        cursor_value = (NOW - timedelta(days=1)).replace(hour=0, minute=0, second=0)
+        # The lookback window re-reads [cursor - lookback, now], one async job per day.
+        days = [cursor_value - timedelta(days=lookback_days) + timedelta(days=offset) for offset in range(lookback_days + 2)]
+        report_run_ids = [f"15718600600195{index:02d}" for index in range(len(days))]
+        job_ids = [f"10499373796016{index:02d}" for index in range(len(days))]
+        state = (
+            StateBuilder()
+            .with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: cursor_value.strftime(DATE_FORMAT)}, "time_increment": 1})
+            .build()
+        )
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        # The first (oldest) lookback day is read successfully, then the second day's results cannot be downloaded.
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_ids[1]).build(),
+            build_response(body={"error": {"code": 100, "message": "Invalid parameter"}}, status_code=HTTPStatus.BAD_REQUEST),
+        )
+
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(NOW - timedelta(days=9))
+            .with_end_date(NOW)
+            .with_insights_lookback_window(lookback_days),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        assert output.errors
+        account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id, {})
+        assert account_state == {_CURSOR_FIELD: cursor_value.strftime(DATE_FORMAT), "slices": []}
