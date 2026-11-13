@@ -358,7 +358,7 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
-                include_incrementality=insight.include_incrementality,
+                include_incrementality=insight.include_incrementality or config.include_incrementality,
                 include_engaged_view=insight.include_engaged_view,
             )
             streams.append(stream)
