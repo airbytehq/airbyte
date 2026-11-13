@@ -14,11 +14,7 @@ These streams share one error handler that skips every 400 (the invalid `start_c
 
 ## Incremental Stream Considerations
 
-The Notion API supports `filter` with `last_edited_time` for databases and pages. The connector uses Python custom components referenced from the manifest.
-
-**Connector type:** Python custom components (hybrid manifest + Python)
-
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+`pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time`. `blocks` filters on emit in `BlocksRetriever`, after recursion, so unchanged parents do not hide updated children. Since CDK 7.3.3, `CustomRetriever` does not receive the CDK client-side record filter; `BlocksRetriever` uses the stream cursor directly and removes selector-level cursor filtering on older CDKs while preserving block-type exclusions. `users` is full refresh only.
 
 ### Future incremental stream candidates
 
