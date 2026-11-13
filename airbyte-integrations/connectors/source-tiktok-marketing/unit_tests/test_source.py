@@ -343,4 +343,4 @@ def test_internal_service_timeout_codes_are_retried(config, code):
         resolution = error_handler.interpret_response(response)
         assert resolution.response_action == ResponseAction.RETRY
         assert f"code {code}" in resolution.error_message
-        assert "transient" in resolution.error_message
+        assert "server-side error" in resolution.error_message
