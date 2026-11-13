@@ -19,6 +19,13 @@ data:
       2.0.0:
         message: "`is_read_only` has been removed from the `dashboards` stream schema. This attribute is deprecated as per API upgrade. See more [here](https://docs.datadoghq.com/dashboards/guide/is-read-only-deprecation/)"
         upgradeDeadline: "2024-12-13"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
