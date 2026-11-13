@@ -886,6 +886,13 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Access tokens last two hours and a request can go out on one Outreach already treats as expired, which
+        # would otherwise end the sync. Refresh the token once and resend; a second 401 fails as a config error.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
         - type: HttpResponseFilter
           http_codes:
             - 403
