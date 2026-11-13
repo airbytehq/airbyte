@@ -54,6 +54,15 @@ class StreamManagerTest {
     }
 
     @Test
+    fun `loader started flag is false until marked`() {
+        val manager = StreamManager(stream1)
+
+        Assertions.assertFalse(manager.isLoaderStarted())
+        manager.markLoaderStarted()
+        Assertions.assertTrue(manager.isLoaderStarted())
+    }
+
+    @Test
     fun `cannot increment after end-of-stream`() {
         val manager = StreamManager(stream1)
         val ck = checkpoint("c1")
