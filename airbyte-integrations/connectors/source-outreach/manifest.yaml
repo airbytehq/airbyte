@@ -886,6 +886,16 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # An access token can be rejected as expired before its tracked expiry, for example when a request is
+        # retried after a long rate-limit wait. Refresh it once and retry instead of failing the sync.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
+          error_message: >-
+            Outreach rejected the access token: {{ (response.get('detail') or ((response.get('errors') or [{}])[0].get('detail')) or 'the token is expired or invalid.')[:300] }}
+            The connector refreshes the token and retries the request once. If this keeps failing, re-authenticate the source.
         - type: HttpResponseFilter
           http_codes:
             - 403
