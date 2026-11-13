@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -47,6 +47,7 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
 class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
+    Raise stale partition cursors to the global cursor without lowering newer cursors.
 
     Initial:
       {
@@ -73,14 +74,31 @@ class TwilioStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_state = stream_state.get("state", {})
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
+            if isinstance(global_state, dict):
+                for key, value in global_state.items():
+                    if self._is_older(state.get("cursor", {}).get(key), value):
+                        state["cursor"][key] = value
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
-            return True
+        global_state = stream_state.get("state", {})
+        for state in stream_state.get("states", []):
+            if "parent_slice" not in state["partition"]:
+                return True
+            if isinstance(global_state, dict) and any(
+                self._is_older(state.get("cursor", {}).get(key), value) for key, value in global_state.items()
+            ):
+                return True
         return False
+
+    @staticmethod
+    def _is_older(partition_value: Any, global_value: Any) -> bool:
+        partition_datetime = ab_datetime_try_parse(partition_value)
+        global_datetime = ab_datetime_try_parse(global_value)
+        return partition_datetime is not None and global_datetime is not None and partition_datetime < global_datetime
 
 
 class TwilioAlertsStateMigration(StateMigration):

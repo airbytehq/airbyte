@@ -7,7 +7,7 @@ from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -15,6 +15,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 BASE = "https://api.twilio.com/2010-04-01"
@@ -158,7 +159,87 @@ class TestTwilioStream:
         assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
 
 
+@pytest.mark.parametrize(
+    "partition_cursor,global_cursor,expected_cursor,should_migrate",
+    [
+        ("2022-11-13T12:11:10Z", "2022-11-15T00:00:00Z", "2022-11-15T00:00:00Z", True),
+        ("2022-11-13 12:11:10Z", "2022-11-15", "2022-11-15", True),
+        ("2022-11-13", "2022-11-15 00:00:00Z", "2022-11-15 00:00:00Z", True),
+        ("2022-11-16", "2022-11-15", "2022-11-16", False),
+        ("2022-11-15T01:00:00+01:00", "2022-11-15T00:00:00Z", "2022-11-15T01:00:00+01:00", False),
+        ("invalid", "2022-11-15", "invalid", False),
+        ("2022-11-13", "invalid", "2022-11-13", False),
+        (None, "2022-11-15", None, False),
+        ("2022-11-13", None, "2022-11-13", False),
+    ],
+)
+def test_twilio_state_migration_cursor_values(partition_cursor, global_cursor, expected_cursor, should_migrate):
+    state = {
+        "use_global_cursor": False,
+        "lookback_window": 60,
+        "parent_state": {"accounts": {}},
+        "state": {"date_sent": global_cursor},
+        "states": [{"partition": {"parent_slice": {}}, "cursor": {"date_sent": partition_cursor, "other": "unchanged"}}],
+    }
+    migration = TwilioStateMigration()
+
+    assert migration.should_migrate(state) is should_migrate
+    migrated = migration.migrate(state)
+
+    assert migrated["states"][0]["cursor"] == {"date_sent": expected_cursor, "other": "unchanged"}
+    assert migrated["state"] == {"date_sent": global_cursor}
+    assert migrated["use_global_cursor"] is False
+    assert migrated["lookback_window"] == 60
+    assert migrated["parent_state"] == {"accounts": {}}
+
+
+@pytest.mark.parametrize("state", [{}, {"state": {"date_sent": "2022-11-15"}, "states": []}, {"states": []}])
+def test_twilio_state_migration_empty(state):
+    migration = TwilioStateMigration()
+    assert not migration.should_migrate(state)
+    assert migration.migrate(state) == state
+
+
 class TestIncrementalTwilioStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "partition_cursor,legacy,expected_start",
+        [
+            ("2022-11-01T00:00:00Z", False, "2022-11-15 00:00:00Z"),
+            ("2022-11-15T12:00:00Z", False, "2022-11-15 12:00:00Z"),
+            ("2022-11-01T00:00:00Z", True, "2022-11-15 00:00:00Z"),
+        ],
+        ids=["stale", "newer", "legacy-stale"],
+    )
+    def test_messages_partition_cursor_respects_global(self, requests_mock, partition_cursor, legacy, expected_start):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": []})
+        partition = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"}
+        if not legacy:
+            partition["parent_slice"] = {}
+        global_cursor = "2022-11-15T00:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "use_global_cursor": False,
+                    "state": {"date_sent": global_cursor},
+                    "states": [{"partition": partition, "cursor": {"date_sent": partition_cursor}}],
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert messages.call_count == 1
+        query = parse_qs(urlparse(messages.last_request.url).query)
+        assert query["DateSent>"] == [expected_start]
+        assert query["DateSent<"] == ["2022-11-16 12:03:11Z"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert ab_datetime_parse(final_state["states"][0]["cursor"]["date_sent"]) >= ab_datetime_parse(global_cursor)
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
