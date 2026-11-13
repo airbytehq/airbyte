@@ -59,6 +59,6 @@ The `apis` stream takes one call. The `best_plans` stream takes one call per API
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.1.0   | 2026-11-13 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New source: Datacircle |
+| 0.1.0   | 2026-11-13 | [92968](https://github.com/airbytehq/airbyte/pull/92968) | New source: Datacircle |
 
 </details>
