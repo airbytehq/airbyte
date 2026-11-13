@@ -525,6 +525,7 @@ module.exports = {
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
             "enterprise-flex/log-collection",
+            "enterprise-flex/support-and-upgrade-policy",
           ],
         },
         {

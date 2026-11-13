@@ -23,7 +23,7 @@ from .zoom_mocks import (
 
 
 _USER_ID = "u1"
-_PAGE_SIZE = "30"
+_PAGE_SIZE = "300"
 _START_DATE = "2026-10-09T00:00:00Z"
 _LATE_SESSION_START_DATE = "2026-09-01T00:00:00Z"
 _BEFORE_START_REQUEST = request(

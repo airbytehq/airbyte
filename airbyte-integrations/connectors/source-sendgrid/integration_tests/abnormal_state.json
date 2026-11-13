@@ -19,5 +19,26 @@
       "stream_descriptor": { "name": "bounces" },
       "stream_state": { "created": "4070908800" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "spam_reports" },
+      "stream_state": { "created": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "invalid_emails" },
+      "stream_state": { "created": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "blocks" },
+      "stream_state": { "created": "4070908800" }
+    }
   }
 ]

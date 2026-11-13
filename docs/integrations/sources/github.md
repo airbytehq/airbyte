@@ -264,7 +264,7 @@ GitHub's [Events API](https://docs.github.com/en/rest/activity/events) returns a
 
 #### `review_comments` page size
 
-As of version 2.8.2, `review_comments` requests 100 comments per page instead of 10 from GitHub's [repository review comments endpoint](https://docs.github.com/en/rest/pulls/comments#list-review-comments-in-a-repository). On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one returns more data and takes longer, so sync speed for this stream may change compared with earlier versions. The page size is fixed, not a configuration option, and you don't need to reset the stream when upgrading. The other large streams (`pull_requests`, `comments`, `issues`, `releases` and `pull_request_stats`) still use 10 per page.
+As of version 2.8.2, `review_comments` requests 100 comments per page instead of 10 from GitHub's [repository review comments endpoint](https://docs.github.com/en/rest/pulls/comments#list-review-comments-in-a-repository). On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one can return more data and take longer, so sync speed for this stream may change compared with earlier versions. The page size is fixed, not a configuration option, and you don't need to reset the stream when upgrading. The other large streams (`pull_requests`, `comments`, `issues`, `releases` and `pull_request_stats`) still use 10 per page.
 
 #### GraphQL query timeouts (502 and 504)
 
@@ -274,7 +274,7 @@ GitHub's GraphQL API reports most other failures — including a spent rate limi
 
 #### Stargazers stream requires admin or collaborator access
 
-GitHub limits the [list stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers) endpoint to the repository's admins and collaborators ([GitHub changelog, June 30, 2026](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)). For a repository where the authenticated user or app is neither, GitHub answers with `404` or `403`. As of version 2.7.8, the connector skips that repository for the `stargazers` stream only and logs a message that names the repository and this restriction. The sync still succeeds, and the other streams for that repository are unaffected. GitHub can also answer with an empty list instead of an error, in which case the stream syncs no records for that repository. Expect the `stargazers` stream to be empty for public or third-party repositories you do not collaborate on. The aggregate star count is still available in the `stargazers_count` field of the `repositories` stream.
+GitHub limits the [list stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers) endpoint to the repository's admins and collaborators ([GitHub changelog, June 30, 2026](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)). For a repository where the authenticated user or app is neither, GitHub answers with `404` or `403`. As of version 2.7.8, the connector skips that repository for the `stargazers` stream only and logs a message that names the repository and this restriction. The sync still succeeds, and the other streams for that repository are unaffected. If GitHub returns an empty list instead of an error, the stream also syncs no records for that repository. Expect the `stargazers` stream to be empty for public or third-party repositories you do not collaborate on. The aggregate star count is still available in the `stargazers_count` field of the `repositories` stream.
 
 #### Unreadable repositories and repeated server errors
 
@@ -335,6 +335,7 @@ For classic personal access tokens and OAuth tokens, use the `repo` scope to acc
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.6 | 2026-11-10 | [91494](https://github.com/airbytehq/airbyte/pull/91494) | Update dependencies |
 | 2.8.5 | 2026-11-05 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-04 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |

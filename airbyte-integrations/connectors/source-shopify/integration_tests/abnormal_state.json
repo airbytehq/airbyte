@@ -618,5 +618,16 @@
         "deleted_at": "2099-10-27T14:28:50Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "collection_products"
+      },
+      "stream_state": {
+        "collection_updated_at": "2099-06-25T17:26:54+00:00"
+      }
+    }
   }
 ]
