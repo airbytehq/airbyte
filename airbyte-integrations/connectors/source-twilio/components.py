@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,69 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the stream's global cursor.
+
+    The concurrent per-partition cursor saves each partition's cursor as the most recent
+    record cursor it saw, not as the point the sync fully read up to. A partition (account)
+    with no recent records keeps an old cursor forever. Every sync then re-reads that
+    partition from the old cursor, re-emitting records in Append mode, even though the global
+    `state` cursor is recent.
+
+    The global cursor is only advanced when every slice of the sync closed successfully, so
+    a partition entry older than it is stale. Removing the entry makes the CDK fall back to
+    the global cursor (minus the recorded `lookback_window`) for that partition, which is the
+    same behavior it already uses for partitions without saved state.
+
+    Entries whose cursor cannot be compared (missing or unparseable values) are kept.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-20 00:00:00Z" },
+        "lookback_window": 60,
+        "states": [
+          { "partition": { "subresource_uri": ".../AC1/Messages.json", "parent_slice": {} }, "cursor": { "date_sent": "2026-05-20 00:00:00Z" } },
+          { "partition": { "subresource_uri": ".../AC2/Messages.json", "parent_slice": {} }, "cursor": { "date_sent": "2025-04-01 00:00:00Z" } }
+        ]
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-20 00:00:00Z" },
+        "lookback_window": 60,
+        "states": [
+          { "partition": { "subresource_uri": ".../AC1/Messages.json", "parent_slice": {} }, "cursor": { "date_sent": "2026-05-20 00:00:00Z" } }
+        ]
+      }
+    """
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], global_state: Mapping[str, Any]) -> bool:
+        cursor = partition_state.get("cursor") or {}
+        for cursor_key, global_value in global_state.items():
+            if cursor_key not in cursor:
+                continue
+            partition_dt = ab_datetime_try_parse(str(cursor[cursor_key]))
+            global_dt = ab_datetime_try_parse(str(global_value))
+            if partition_dt is not None and global_dt is not None:
+                return partition_dt < global_dt
+        return False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_state = stream_state["state"]
+        migrated = dict(stream_state)
+        migrated["states"] = [state for state in stream_state["states"] if not self._is_stale(state, global_state)]
+        return migrated
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or not isinstance(stream_state.get("state"), Mapping) or not stream_state.get("states"):
+            return False
+        return any(self._is_stale(state, stream_state["state"]) for state in stream_state["states"])
 
 
 class TwilioAlertsStateMigration(StateMigration):

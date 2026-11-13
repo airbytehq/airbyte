@@ -255,6 +255,108 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_field,lower_key,upper_key,global_cursor,stale_cursor,expected_stale_windows",
+        [
+            (
+                "messages",
+                "Messages",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                "2022-11-15 00:00:00Z",
+                "2021-12-01 00:00:00Z",
+                [("2022-11-14 23:59:00Z", "2022-11-16 12:03:11Z")],
+            ),
+            (
+                "recordings",
+                "Recordings",
+                "date_created",
+                "DateCreated>",
+                "DateCreated<",
+                "2022-11-15 00:00:00Z",
+                "2021-12-01 00:00:00Z",
+                [("2022-11-14 23:59:00Z", "2022-11-16 12:03:11Z")],
+            ),
+            (
+                "calls",
+                "Calls",
+                "end_time",
+                "EndTime>",
+                "EndTime<",
+                "2022-11-15",
+                "2021-12-01",
+                [("2022-11-14", "2022-11-16")],
+            ),
+        ],
+    )
+    def test_stale_partition_state_resumes_from_global_cursor(
+        self,
+        stream_name,
+        resource,
+        cursor_field,
+        lower_key,
+        upper_key,
+        global_cursor,
+        stale_cursor,
+        expected_stale_windows,
+        requests_mock,
+    ):
+        """
+        A partition whose saved cursor is older than the global cursor must not re-read (and re-emit)
+        history: it resumes from the global cursor minus the recorded lookback window.
+        """
+        accounts = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"}}
+                for sid in ("AC111", "AC222")
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
+
+        requested_windows = {"AC111": [], "AC222": []}
+
+        def _child_callback(account_sid):
+            def _callback(request, context):
+                query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+                lower, upper = query[lower_key][0], query[upper_key][0]
+                requested_windows[account_sid].append((lower, upper))
+                if lower < "2022-11":
+                    # Records already synced by earlier syncs; they must not be requested again.
+                    return {stream_name: [{"sid": f"{account_sid}_OLD", cursor_field: "2022-01-15T00:00:00Z"}]}
+                return {stream_name: [{"sid": f"{account_sid}_NEW", cursor_field: "2022-11-16T01:00:00Z"}]}
+
+            return _callback
+
+        for account_sid in requested_windows:
+            requests_mock.get(f"{BASE}/Accounts/{account_sid}/{resource}.json", json=_child_callback(account_sid))
+
+        def _partition(account_sid):
+            return {"subresource_uri": f"/2010-04-01/Accounts/{account_sid}/{resource}.json", "parent_slice": {}}
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "state": {cursor_field: global_cursor},
+                    "lookback_window": 60,
+                    "states": [
+                        {"partition": _partition("AC111"), "cursor": {cursor_field: global_cursor}},
+                        {"partition": _partition("AC222"), "cursor": {cursor_field: stale_cursor}},
+                    ],
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2021-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        assert requested_windows["AC222"] == expected_stale_windows
+        assert sorted(record.record.data["sid"] for record in output.records) == ["AC111_NEW", "AC222_NEW"]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")

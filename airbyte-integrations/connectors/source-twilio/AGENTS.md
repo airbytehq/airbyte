@@ -16,6 +16,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+## Stale per-partition state (`calls`, `messages`, `recordings`)
+
+These streams are partitioned by account and keep both per-account cursors (`states`) and a global cursor (`state`). The CDK saves each account's cursor as the newest record it saw. An account with no recent records keeps an old cursor even after a full read, and the CDK prefers that cursor over the global one. `TwilioStalePartitionStateMigration` drops per-account entries older than the global cursor, so those accounts resume from the global cursor minus `lookback_window`. The global cursor only advances when every slice of a sync succeeds. The one gap: an account missing from `Accounts.json` during that sync, which reappears later, resumes from the global cursor.
+
 ## Alerts request window splitting
 
 The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WINDOW` response filter plus `request_window_splitting`:
