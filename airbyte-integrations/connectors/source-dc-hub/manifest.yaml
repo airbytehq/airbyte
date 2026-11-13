@@ -1,0 +1,2704 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  DC Hub (dchub.cloud): data center and energy intelligence. The Data Center
+  Power Index (DCPI) scores 300+ markets daily on where data centers can get
+  grid power. Also available as 94 MCP tools at https://dchub.cloud/mcp.
+
+check:
+  type: CheckStream
+  stream_names:
+    - dcpi_verdicts
+
+definitions:
+  linked:
+    HttpRequester:
+      request_headers:
+        Accept: application/json
+        X-API-Key: "{{ config.get('api_key') or None }}"
+        User-Agent: airbyte-source-dchub/0.1.0
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
+              - 401
+              - 402
+              - 403
+            error_message: >-
+              DC Hub answered {{ response.status_code }}: this stream needs an
+              API key (one POST to https://dchub.cloud/api/v1/keys/claim).
+              Skipped.
+
+streams:
+  - type: DeclarativeStream
+    name: dcpi_scores
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        url: https://dchub.cloud/api/v1/dcpi/scores
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - scores
+    primary_key:
+      - market_slug
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - market_slug
+        properties:
+          iso:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          locked:
+            type:
+              - boolean
+              - "null"
+          verdict:
+            type:
+              - "null"
+              - string
+          latitude:
+            type:
+              - "null"
+              - number
+          longitude:
+            type:
+              - "null"
+              - number
+          data_basis:
+            type:
+              - "null"
+              - string
+          method_doc:
+            type:
+              - "null"
+              - string
+          computed_at:
+            type:
+              - "null"
+              - string
+          market_name:
+            type:
+              - "null"
+              - string
+          market_slug:
+            type:
+              - string
+          signal_tier:
+            type:
+              - "null"
+              - string
+          method_version:
+            type:
+              - "null"
+              - string
+          top_risks_json:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - string
+          composite_score:
+            type:
+              - "null"
+              - number
+          data_basis_note:
+            type:
+              - "null"
+              - string
+          dcpi_confidence:
+            type:
+              - "null"
+              - object
+            properties:
+              basis:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  freshness:
+                    type:
+                      - "null"
+                      - string
+                  layer_max:
+                    type:
+                      - "null"
+                      - number
+                  input_count:
+                    type:
+                      - "null"
+                      - number
+                  live_inputs:
+                    type:
+                      - "null"
+                      - number
+                  live_layers:
+                    type:
+                      - "null"
+                      - number
+                  live_layer_names:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  silent_layer_names:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  iso_default_matched:
+                    type:
+                      - boolean
+                      - "null"
+                additionalProperties: true
+              level:
+                type:
+                  - "null"
+                  - string
+              value:
+                type:
+                  - "null"
+                  - number
+              reason: {}
+              evaluated_at:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          dcpi_provenance:
+            type:
+              - "null"
+              - object
+            properties:
+              as_of:
+                type:
+                  - "null"
+                  - string
+              score:
+                type:
+                  - "null"
+                  - string
+              input_basis:
+                type:
+                  - "null"
+                  - string
+              live_inputs:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+              live_sources:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+              broker_inputs:
+                type:
+                  - array
+                  - "null"
+                items: {}
+              inputs_reason: {}
+              blended_inputs:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+              method_version:
+                type:
+                  - "null"
+                  - string
+              modeled_inputs:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+              modeled_source:
+                type:
+                  - "null"
+                  - string
+              metro_basis_gap:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  note:
+                    type:
+                      - "null"
+                      - string
+                  metro:
+                    type:
+                      - "null"
+                      - string
+                  distance_km:
+                    type:
+                      - "null"
+                      - number
+                  nearby_markets:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - "null"
+                        - string
+                additionalProperties: true
+              queue_wait_basis:
+                type:
+                  - "null"
+                  - string
+              structural_zero_inputs:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+            additionalProperties: true
+          constraint_score:
+            type:
+              - "null"
+              - number
+          data_basis_source:
+            type:
+              - "null"
+              - string
+          signal_tier_basis:
+            type:
+              - "null"
+              - string
+          excess_power_score:
+            type:
+              - "null"
+              - number
+          time_to_power_basis:
+            type:
+              - "null"
+              - object
+            properties:
+              note:
+                type:
+                  - "null"
+                  - string
+              formula:
+                type:
+                  - "null"
+                  - string
+              adjustment_rule:
+                type:
+                  - "null"
+                  - string
+              adjustment_applied: {}
+            additionalProperties: true
+          time_to_power_months:
+            type:
+              - "null"
+              - number
+          top_opportunities_json:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: dcpi_verdicts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        url: https://dchub.cloud/api/v1/dcpi/verdicts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - markets
+    primary_key:
+      - market_slug
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - market_slug
+        properties:
+          iso:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          verdict:
+            type:
+              - "null"
+              - string
+          market_name:
+            type:
+              - "null"
+              - string
+          market_slug:
+            type:
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: markets
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        url: https://dchub.cloud/api/v1/markets
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - id
+        properties:
+          id:
+            type:
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          cities:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - string
+          country:
+            type:
+              - "null"
+              - string
+          contained_in:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - string
+          international:
+            type:
+              - boolean
+              - "null"
+          facility_count:
+            type:
+              - "null"
+              - number
+          total_power_mw:
+            type:
+              - "null"
+              - number
+          auto_discovered:
+            type:
+              - boolean
+              - "null"
+          avg_kwh_price_usd:
+            type:
+              - "null"
+              - number
+          pipeline_mw_total:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: grid_intelligence
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 401
+                - 402
+                - 403
+              error_message: >-
+                DC Hub answered {{ response.status_code }}: this stream needs an
+                API key (one POST to https://dchub.cloud/api/v1/keys/claim).
+                Skipped.
+        url: >-
+          https://dchub.cloud/api/v1/grid/intelligence/{{ stream_partition.iso
+          }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ 'error' not in record }}"
+      partition_router:
+        type: ListPartitionRouter
+        values: >-
+          {{ config.get('isos') or ['PJM', 'ERCOT', 'CAISO', 'MISO', 'SPP',
+          'NYISO', 'ISONE'] }}
+        cursor_field: iso
+    primary_key:
+      - iso
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - iso
+        properties:
+          iso:
+            type:
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          min_mw:
+            type:
+              - "null"
+              - number
+          region:
+            type:
+              - "null"
+              - string
+          peak_mw:
+            type:
+              - "null"
+              - number
+          rto_code:
+            type:
+              - "null"
+              - string
+          demand_mw:
+            type:
+              - "null"
+              - number
+          lmp_as_of:
+            type:
+              - "null"
+              - string
+          demand_24h:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                mw:
+                  type:
+                    - "null"
+                    - number
+                period:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+          provenance:
+            type:
+              - "null"
+              - object
+            properties:
+              as_of:
+                type:
+                  - "null"
+                  - string
+              basis:
+                type:
+                  - "null"
+                  - string
+              fields:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  min_mw:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      unit:
+                        type:
+                          - "null"
+                          - string
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      basis:
+                        type:
+                          - "null"
+                          - string
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      source_id:
+                        type:
+                          - "null"
+                          - string
+                      basis_class:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  peak_mw:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      unit:
+                        type:
+                          - "null"
+                          - string
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      basis:
+                        type:
+                          - "null"
+                          - string
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      source_id:
+                        type:
+                          - "null"
+                          - string
+                      basis_class:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  demand_mw:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      unit:
+                        type:
+                          - "null"
+                          - string
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      basis:
+                        type:
+                          - "null"
+                          - string
+                      source_id:
+                        type:
+                          - "null"
+                          - string
+                      basis_class:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  load_factor:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      unit:
+                        type:
+                          - "null"
+                          - string
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      basis:
+                        type:
+                          - "null"
+                          - string
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      source_id:
+                        type:
+                          - "null"
+                          - string
+                      basis_class:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  generation_mix:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      unit:
+                        type:
+                          - "null"
+                          - string
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      basis:
+                        type:
+                          - "null"
+                          - string
+                      source_id:
+                        type:
+                          - "null"
+                          - string
+                      basis_class:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                additionalProperties: true
+              method:
+                type:
+                  - "null"
+                  - string
+              source:
+                type:
+                  - "null"
+                  - string
+              caveats:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    code:
+                      type:
+                        - "null"
+                        - string
+                    text:
+                      type:
+                        - "null"
+                        - string
+                  additionalProperties: true
+              cite_as:
+                type:
+                  - "null"
+                  - string
+              license:
+                type:
+                  - "null"
+                  - string
+              sources:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    as_of:
+                      type:
+                        - "null"
+                        - string
+                    license:
+                      type:
+                        - "null"
+                        - string
+                    fetched_at:
+                      type:
+                        - "null"
+                        - string
+                    attribution:
+                      type:
+                        - "null"
+                        - string
+                  additionalProperties: true
+              default_v:
+                type:
+                  - "null"
+                  - string
+              fetched_at:
+                type:
+                  - "null"
+                  - string
+              basis_class:
+                type:
+                  - "null"
+                  - string
+              fallback_url:
+                type:
+                  - "null"
+                  - string
+              provenance_version:
+                type:
+                  - "null"
+                  - number
+              provenance_revision:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          lmp_usd_mwh:
+            type:
+              - "null"
+              - number
+          load_factor:
+            type:
+              - "null"
+              - number
+          demand_period:
+            type:
+              - "null"
+              - string
+          freshness_sla:
+            type:
+              - "null"
+              - object
+            properties:
+              note:
+                type:
+                  - "null"
+                  - string
+              layers:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  lmp:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  demand:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  da_price:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  dc_queue:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  fuel_mix:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  reserves:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  telemetry:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  dc_load_share:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  load_forecast:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  capacity_price:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  ancillary_price:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  dc_queue_measured:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  committed_capacity:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  installed_capacity:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      as_of:
+                        type:
+                          - "null"
+                          - string
+                      sla_hours:
+                        type:
+                          - "null"
+                          - number
+                      within_sla:
+                        type:
+                          - boolean
+                          - "null"
+                      age_minutes:
+                        type:
+                          - "null"
+                          - number
+                      source_cadence:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                additionalProperties: true
+              checked_at:
+                type:
+                  - "null"
+                  - string
+              verify_url:
+                type:
+                  - "null"
+                  - string
+              stale_layers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    layer:
+                      type:
+                        - "null"
+                        - string
+                    sla_hours:
+                      type:
+                        - "null"
+                        - number
+                    age_minutes:
+                      type:
+                        - "null"
+                        - number
+                  additionalProperties: true
+              within_sla_core:
+                type:
+                  - boolean
+                  - "null"
+            additionalProperties: true
+          generation_mix:
+            type:
+              - "null"
+              - object
+            properties:
+              NG:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              BAT:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              COL:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              GEO:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              NUC:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              OIL:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              OTH:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              SUN:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              WAT:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              WND:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  mw:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+            additionalProperties: true
+          data_center_load:
+            type:
+              - "null"
+              - object
+            properties:
+              as_of:
+                type:
+                  - "null"
+                  - string
+              source:
+                type:
+                  - "null"
+                  - string
+              source_url:
+                type:
+                  - "null"
+                  - string
+              queued_generation_gw:
+                type:
+                  - "null"
+                  - number
+              queued_load_total_gw:
+                type:
+                  - "null"
+                  - number
+              data_center_share_pct:
+                type:
+                  - "null"
+                  - number
+              queued_generation_gw_as_of:
+                type:
+                  - "null"
+                  - string
+              queued_load_data_center_gw:
+                type:
+                  - "null"
+                  - number
+              queued_load_data_center_gw_basis:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          dc_load_queue_gw:
+            type:
+              - "null"
+              - number
+          extended_metrics:
+            type:
+              - "null"
+              - object
+            properties:
+              lmp:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              capacity:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              da_price:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              fuel_mix:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              reserves:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              dc_load_queue:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              dc_load_share:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              load_forecast:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              capacity_price:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              rt_lmp_hub_avg:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              ancillary_price:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              installed_capacity:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  period:
+                    type:
+                      - "null"
+                      - string
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              dc_load_queue_measured:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  unit:
+                    type:
+                      - "null"
+                      - string
+                  as_of:
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  source:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+            additionalProperties: true
+          licence_withheld:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field:
+                  type:
+                    - "null"
+                    - string
+                reason:
+                  type:
+                    - "null"
+                    - string
+                category:
+                  type:
+                    - "null"
+                    - string
+                dataset_id:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+          load_forecast_mw:
+            type:
+              - "null"
+              - number
+          dc_load_share_pct:
+            type:
+              - "null"
+              - number
+          headroom_measured:
+            type:
+              - "null"
+              - object
+            properties:
+              iso:
+                type:
+                  - "null"
+                  - string
+              basis:
+                type:
+                  - "null"
+                  - string
+              source:
+                type:
+                  - "null"
+                  - string
+              load_mw:
+                type:
+                  - "null"
+                  - number
+              age_minutes:
+                type:
+                  - "null"
+                  - number
+              observed_at:
+                type:
+                  - "null"
+                  - string
+              online_gen_mw:
+                type:
+                  - "null"
+                  - number
+              headroom_mw_raw:
+                type:
+                  - "null"
+                  - number
+              adjustment_method:
+                type:
+                  - "null"
+                  - string
+              headroom_mw_adjusted:
+                type:
+                  - "null"
+                  - number
+              structural_offset_pp:
+                type:
+                  - "null"
+                  - number
+              reserve_margin_pct_raw:
+                type:
+                  - "null"
+                  - number
+              reserve_margin_pct_adjusted:
+                type:
+                  - "null"
+                  - number
+            additionalProperties: true
+          dc_load_queue_as_of:
+            type:
+              - "null"
+              - string
+          dc_load_share_as_of:
+            type:
+              - "null"
+              - string
+          generation_mix_note:
+            type:
+              - "null"
+              - string
+          load_forecast_as_of:
+            type:
+              - "null"
+              - string
+          capacity_price_as_of:
+            type:
+              - "null"
+              - string
+          headroom_unavailable:
+            type:
+              - "null"
+              - object
+            properties:
+              note:
+                type:
+                  - "null"
+                  - string
+              reason:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          committed_capacity_mw:
+            type:
+              - "null"
+              - number
+          day_ahead_price_as_of:
+            type:
+              - "null"
+              - string
+          generation_mix_native:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                mw:
+                  type:
+                    - "null"
+                    - number
+                code:
+                  type:
+                    - "null"
+                    - string
+                marginal:
+                  type:
+                    - boolean
+                    - "null"
+                excluded_as:
+                  type:
+                    - "null"
+                    - string
+                fuel_category:
+                  type:
+                    - "null"
+                    - string
+                in_generation_mix:
+                  type:
+                    - boolean
+                    - "null"
+                fuel_category_rollup:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+          generation_mix_period:
+            type:
+              - "null"
+              - string
+          generation_mix_source:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              as_of:
+                type:
+                  - "null"
+                  - string
+              dataset_id:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          installed_capacity_mw:
+            type:
+              - "null"
+              - number
+          operating_reserves_mw:
+            type:
+              - "null"
+              - number
+          dc_load_queue_gw_as_of:
+            type:
+              - "null"
+              - string
+          day_ahead_price_usd_mwh:
+            type:
+              - "null"
+              - number
+          committed_capacity_as_of:
+            type:
+              - "null"
+              - string
+          generation_mix_age_hours:
+            type:
+              - "null"
+              - number
+          operating_reserves_as_of:
+            type:
+              - "null"
+              - string
+          capacity_price_usd_mw_day:
+            type:
+              - "null"
+              - number
+          dc_load_queue_measured_gw:
+            type:
+              - "null"
+              - number
+          generation_mix_code_basis:
+            type:
+              - "null"
+              - string
+          generation_mix_imports_mw:
+            type:
+              - "null"
+              - number
+          generation_mix_superseded:
+            type:
+              - "null"
+              - object
+            properties:
+              period:
+                type:
+                  - "null"
+                  - string
+              reason:
+                type:
+                  - "null"
+                  - string
+              source:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          generation_mix_stale_hours:
+            type:
+              - "null"
+              - number
+          ancillary_regup_price_as_of:
+            type:
+              - "null"
+              - string
+          installed_capacity_mw_as_of:
+            type:
+              - "null"
+              - string
+          installed_capacity_mw_basis:
+            type:
+              - "null"
+              - string
+          ancillary_regup_price_usd_mw:
+            type:
+              - "null"
+              - number
+          dc_load_queue_measured_as_of:
+            type:
+              - "null"
+              - string
+          installed_capacity_mw_period:
+            type:
+              - "null"
+              - string
+          installed_capacity_mw_source:
+            type:
+              - "null"
+              - string
+          generation_mix_marginal_fuels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - string
+          generation_mix_freshness_basis:
+            type:
+              - "null"
+              - string
+          generation_mix_lag_at_snapshot_hours:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - iso
+            value: "{{ stream_partition.iso }}"
+  - type: DeclarativeStream
+    name: interconnection_queue
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 401
+                - 402
+                - 403
+              error_message: >-
+                DC Hub answered {{ response.status_code }}: this stream needs an
+                API key (one POST to https://dchub.cloud/api/v1/keys/claim).
+                Skipped.
+        request_parameters:
+          limit: "1000"
+        url: https://dchub.cloud/api/v1/interconnection-queue/refined
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: ListPartitionRouter
+        values: >-
+          {{ config.get('isos') or ['PJM', 'ERCOT', 'CAISO', 'MISO', 'SPP',
+          'NYISO', 'ISONE'] }}
+        cursor_field: iso
+        request_option:
+          type: RequestOption
+          field_name: iso
+          inject_into: request_parameter
+    primary_key:
+      - queue_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - queue_id
+        properties:
+          v:
+            type:
+              - "null"
+              - string
+          iso:
+            type:
+              - "null"
+              - string
+          lat:
+            type:
+              - "null"
+              - number
+          lng:
+            type:
+              - "null"
+              - number
+          state:
+            type:
+              - "null"
+              - string
+          county:
+            type:
+              - "null"
+              - string
+          fiber_km:
+            type:
+              - "null"
+              - number
+          poi_name:
+            type:
+              - "null"
+              - string
+          queue_id:
+            type:
+              - string
+          developer:
+            type:
+              - "null"
+              - string
+          fuel_type:
+            type:
+              - "null"
+              - string
+          lifecycle:
+            type:
+              - "null"
+              - string
+          load_zone:
+            type:
+              - "null"
+              - string
+          expires_at:
+            type:
+              - "null"
+              - string
+          fuel_class:
+            type:
+              - "null"
+              - string
+          queue_date:
+            type:
+              - "null"
+              - string
+          capacity_mw:
+            type:
+              - "null"
+              - number
+          cod_delayed:
+            type:
+              - boolean
+              - "null"
+          is_credible:
+            type:
+              - boolean
+              - "null"
+          snapshot_id:
+            type:
+              - "null"
+              - string
+          candidate_id:
+            type:
+              - "null"
+              - string
+          funnel_stage:
+            type:
+              - "null"
+              - string
+          project_name:
+            type:
+              - "null"
+              - string
+          queue_status:
+            type:
+              - "null"
+              - string
+          projected_cod:
+            type:
+              - "null"
+              - string
+          source_report:
+            type:
+              - "null"
+              - string
+          ia_signed_date:
+            type:
+              - "null"
+              - string
+          queue_date_note:
+            type:
+              - "null"
+              - string
+          ercotqueue_as_of:
+            type:
+              - "null"
+              - string
+          queue_date_basis:
+            type:
+              - "null"
+              - string
+          queue_entry_date:
+            type:
+              - "null"
+              - string
+          fis_approved_date:
+            type:
+              - "null"
+              - string
+          fis_requested_date:
+            type:
+              - "null"
+              - string
+          sync_approved_date:
+            type:
+              - "null"
+              - string
+          coordinate_precision:
+            type:
+              - "null"
+              - string
+          estimated_ttp_months:
+            type:
+              - "null"
+              - number
+          representative_point:
+            type:
+              - "null"
+              - object
+            properties:
+              lat:
+                type:
+                  - "null"
+                  - number
+              lng:
+                type:
+                  - "null"
+                  - number
+            additionalProperties: true
+          ercotqueue_provenance:
+            type:
+              - "null"
+              - object
+            properties:
+              as_of:
+                type:
+                  - "null"
+                  - string
+              fields:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - "null"
+                    - string
+              source:
+                type:
+                  - "null"
+                  - string
+              license:
+                type:
+                  - "null"
+                  - string
+              basis_class:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  developer:
+                    type:
+                      - "null"
+                      - string
+                  lifecycle:
+                    type:
+                      - "null"
+                      - string
+                  load_zone:
+                    type:
+                      - "null"
+                      - string
+                  cod_delayed:
+                    type:
+                      - "null"
+                      - string
+                  is_credible:
+                    type:
+                      - "null"
+                      - string
+                  funnel_stage:
+                    type:
+                      - "null"
+                      - string
+                  source_report:
+                    type:
+                      - "null"
+                      - string
+                  ia_signed_date:
+                    type:
+                      - "null"
+                      - string
+                  ercotqueue_as_of:
+                    type:
+                      - "null"
+                      - string
+                  queue_entry_date:
+                    type:
+                      - "null"
+                      - string
+                  fis_approved_date:
+                    type:
+                      - "null"
+                      - string
+                  fis_requested_date:
+                    type:
+                      - "null"
+                      - string
+                  sync_approved_date:
+                    type:
+                      - "null"
+                      - string
+                  technology_normalized:
+                    type:
+                      - "null"
+                      - string
+                  completion_probability:
+                    type:
+                      - "null"
+                      - string
+                  completion_probability_p05:
+                    type:
+                      - "null"
+                      - string
+                  completion_probability_p95:
+                    type:
+                      - "null"
+                      - string
+                  energization_approved_date:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+              license_url:
+                type:
+                  - "null"
+                  - string
+              source_report:
+                type:
+                  - "null"
+                  - string
+            additionalProperties: true
+          queue_date_deprecated:
+            type:
+              - boolean
+              - "null"
+          technology_normalized:
+            type:
+              - "null"
+              - string
+          completion_probability:
+            type:
+              - "null"
+              - number
+          site_evaluation_handoff:
+            type:
+              - "null"
+              - object
+            properties:
+              analyze_site:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  lat:
+                    type:
+                      - "null"
+                      - number
+                  lon:
+                    type:
+                      - "null"
+                      - number
+                  capacity_mw:
+                    type:
+                      - "null"
+                      - number
+                  include_risk:
+                    type:
+                      - boolean
+                      - "null"
+                  include_fiber:
+                    type:
+                      - boolean
+                      - "null"
+                additionalProperties: true
+              get_water_risk:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  lat:
+                    type:
+                      - "null"
+                      - number
+                  lng:
+                    type:
+                      - "null"
+                      - number
+                additionalProperties: true
+            additionalProperties: true
+          completion_probability_p05:
+            type:
+              - "null"
+              - number
+          completion_probability_p95:
+            type:
+              - "null"
+              - number
+          energization_approved_date:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: capacity_listings
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_headers:
+          Accept: application/json
+          X-API-Key: "{{ config.get('api_key') or None }}"
+          User-Agent: airbyte-source-dchub/0.1.0
+        request_parameters:
+          limit: "200"
+        url: https://dchub.cloud/api/v1/listings
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - id
+        properties:
+          id:
+            type:
+              - number
+          url:
+            type:
+              - "null"
+              - string
+          slug:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          locked:
+            type:
+              - boolean
+              - "null"
+          market:
+            type:
+              - "null"
+              - string
+          region:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          available:
+            type:
+              - "null"
+              - string
+          freshness:
+            type:
+              - "null"
+              - object
+            properties:
+              state:
+                type:
+                  - "null"
+                  - string
+              lapsed:
+                type:
+                  - boolean
+                  - "null"
+              overdue:
+                type:
+                  - boolean
+                  - "null"
+              age_days:
+                type:
+                  - "null"
+                  - number
+              verified_at:
+                type:
+                  - "null"
+                  - string
+              pending_since:
+                type:
+                  - "null"
+                  - string
+              update_cadence:
+                type:
+                  - "null"
+                  - string
+              withdraw_after:
+                type:
+                  - "null"
+                  - string
+              next_update_due:
+                type:
+                  - "null"
+                  - string
+              verification_pending:
+                type:
+                  - boolean
+                  - "null"
+            additionalProperties: true
+          created_at:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+          capacity_kw:
+            type:
+              - "null"
+              - number
+          capacity_mw:
+            type:
+              - "null"
+              - number
+          lock_reason:
+            type:
+              - "null"
+              - string
+          tracked_url:
+            type:
+              - "null"
+              - string
+          contiguous_kw:
+            type:
+              - "null"
+              - number
+          delivery_type:
+            type:
+              - "null"
+              - string
+          update_cadence:
+            type:
+              - "null"
+              - string
+          access_required:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    title: DC Hub Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties:
+      isos:
+        type: array
+        description: >-
+          US grid operators (ISOs/RTOs) to sync for the grid_intelligence and
+          interconnection_queue streams. Leave empty for all seven.
+        items:
+          type: string
+          enum:
+            - PJM
+            - ERCOT
+            - CAISO
+            - MISO
+            - SPP
+            - NYISO
+            - ISONE
+        order: 1
+        title: Grid operators
+        default:
+          - PJM
+          - ERCOT
+          - CAISO
+          - MISO
+          - SPP
+          - NYISO
+          - ISONE
+      api_key:
+        type: string
+        description: >-
+          Optional DC Hub API key, sent as the X-API-Key header. Without one,
+          most streams return a preview and grid_intelligence is skipped. Get a
+          key with one POST to https://dchub.cloud/api/v1/keys/claim (no account
+          needed), or see https://dchub.cloud/developers.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    markets: false
+    dcpi_scores: false
+    dcpi_verdicts: false
+    capacity_listings: false
+    grid_intelligence: false
+    interconnection_queue: false
+  testedStreams:
+    dcpi_scores:
+      streamHash: 0236f33fa77a2193d811ebe1952c19179b8fda77
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dcpi_verdicts:
+      streamHash: 41d8f6a67a1b69110c997b3b61391d7fb62a20f5
+    markets:
+      streamHash: 8d90c996e98e68a5df2eec951fc425d3cee29f8c
+    grid_intelligence:
+      streamHash: eeabc1f45677ba7060bd6e3a26a7c5aa10840b64
+    interconnection_queue:
+      streamHash: 7b2aa215dbfed412787f648c3dc09995eb3465c0
+    capacity_listings:
+      streamHash: 44c073fd75ee730c36d6fadb4a2947e84fc578bf
