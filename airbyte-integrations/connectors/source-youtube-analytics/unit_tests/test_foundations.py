@@ -256,12 +256,12 @@ def test_403_fails_as_config_error_quoting_the_vendor_message(config):
     with requests_mock.Mocker() as mocker:
         _register_token(mocker)
         mocker.get(
-            f"{_API}/reportTypes",
+            f"{_API}/jobs",
             status_code=403,
             json={"error": {"code": 403, "message": "The caller does not have permission", "status": "PERMISSION_DENIED"}},
         )
 
-        output = _read(config, stream="report_types")
+        output = _read(config)
 
     error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
@@ -271,9 +271,9 @@ def test_403_fails_as_config_error_quoting_the_vendor_message(config):
 def test_403_without_a_json_body_still_has_a_message(config):
     with requests_mock.Mocker() as mocker:
         _register_token(mocker)
-        mocker.get(f"{_API}/reportTypes", status_code=403, text="Forbidden")
+        mocker.get(f"{_API}/jobs", status_code=403, text="Forbidden")
 
-        output = _read(config, stream="report_types")
+        output = _read(config)
 
     error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
