@@ -49,6 +49,46 @@ def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exceptio
     return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
 
 
+def _register_windowed_substream(requests_mock, stream_name, cursor_field, lower_key, upper_key, records_by_account):
+    """Serve two accounts and, per account, only the records inside the requested window. Returns the (account, lower, upper) requests."""
+    resource = stream_name.capitalize()
+    accounts = [
+        {
+            "sid": account_sid,
+            "date_created": "2022-01-01T00:00:00Z",
+            "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{account_sid}/{resource}.json"},
+        }
+        for account_sid in records_by_account
+    ]
+    requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": accounts}, status_code=200)
+    requests = []
+    requests_lock = Lock()
+
+    def _callback_for(account_sid):
+        def _callback(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            lower, upper = query[lower_key][0], query[upper_key][0]
+            with requests_lock:
+                requests.append((account_sid, lower, upper))
+            return {
+                stream_name: [
+                    {"sid": sid, cursor_field: datetime.strptime(value, "%Y-%m-%d %H:%M:%SZ").strftime("%a, %d %b %Y %H:%M:%S +0000")}
+                    for sid, value in records_by_account[account_sid]
+                    if lower <= value <= upper
+                ]
+            }
+
+        return _callback
+
+    for account_sid in records_by_account:
+        requests_mock.get(f"{BASE}/Accounts/{account_sid}/{resource}.json", json=_callback_for(account_sid), status_code=200)
+    return requests
+
+
+def _partition_cursors(stream_state, cursor_field):
+    return {state["partition"]["subresource_uri"].split("/")[3]: state["cursor"][cursor_field] for state in stream_state["states"]}
+
+
 def _register_alerts_callback(requests_mock):
     requests = []
     response_handler = {"callback": None}
@@ -253,6 +293,101 @@ class TestIncrementalTwilioStream:
         assert accounts_matcher.called, "Accounts endpoint was not called"
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @pytest.mark.parametrize(
+        "stream_name,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_second_incremental_read_resumes_each_account_from_its_last_record(
+        self, stream_name, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        """The first read spans several monthly windows; the next read must start at each account's latest record."""
+        records = {
+            "AC123": [("R1", "2022-03-10 10:00:00Z"), ("R2", "2022-11-15 10:00:00Z")],
+            "AC456": [("R3", "2022-02-10 10:00:00Z"), ("R4", "2022-04-10 10:00:00Z")],
+        }
+        requests = _register_windowed_substream(requests_mock, stream_name, cursor_field, lower_key, upper_key, records)
+        config = {**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}
+
+        with freeze_time("2022-11-16 12:03:11+00:00"):
+            first_read = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert sorted(record.record.data["sid"] for record in first_read.records) == ["R1", "R2", "R3", "R4"]
+        first_state = first_read.most_recent_state.stream_state.__dict__
+        assert _partition_cursors(first_state, cursor_field) == {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-04-10 10:00:00Z"}
+        assert first_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+
+        requests.clear()
+        state = StateBuilder().with_stream_state(stream_name, first_state).build()
+        with freeze_time("2022-11-17 12:03:11+00:00"):
+            second_read = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+        # AC123 resumes from its own latest record. AC456 is behind the global cursor, which already covers it, so it
+        # resumes from the global cursor. The bounds are inclusive, so only the record on the boundary is read again.
+        assert sorted(requests) == [
+            ("AC123", "2022-11-15 10:00:00Z", "2022-11-17 12:03:11Z"),
+            ("AC456", "2022-11-15 10:00:00Z", "2022-11-17 12:03:11Z"),
+        ]
+        assert [record.record.data["sid"] for record in second_read.records] == ["R2"]
+        second_state = second_read.most_recent_state.stream_state.__dict__
+        assert _partition_cursors(second_state, cursor_field) == {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-11-15 10:00:00Z"}
+        assert second_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+
+    @freeze_time("2022-11-18 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_stale_partition_cursor_behind_global_cursor_does_not_reread_history(
+        self, stream_name, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        """State saved by versions <= 1.1.10: AC123's cursor is stuck months behind the global cursor."""
+        records = {
+            "AC123": [("R1", "2022-03-10 10:00:00Z"), ("R2", "2022-11-17 10:00:00Z"), ("R3", "2022-11-18 09:00:00Z")],
+            "AC456": [("R4", "2022-11-17 11:00:00Z"), ("R5", "2022-11-18 08:00:00Z")],
+        }
+        requests = _register_windowed_substream(requests_mock, stream_name, cursor_field, lower_key, upper_key, records)
+        uri = "/2010-04-01/Accounts/{}/" + stream_name.capitalize() + ".json"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": uri.format("AC123"), "parent_slice": {}},
+                            "cursor": {cursor_field: "2022-02-01 00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": uri.format("AC456"), "parent_slice": {}},
+                            "cursor": {cursor_field: "2022-11-17 11:00:00Z"},
+                        },
+                    ],
+                    "state": {cursor_field: "2022-11-17 11:00:00Z"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        assert sorted(requests) == [
+            ("AC123", "2022-11-17 11:00:00Z", "2022-11-18 12:03:11Z"),
+            ("AC456", "2022-11-17 11:00:00Z", "2022-11-18 12:03:11Z"),
+        ]
+        assert sorted(record.record.data["sid"] for record in output.records) == ["R3", "R4", "R5"]
+        emitted_state = output.most_recent_state.stream_state.__dict__
+        assert _partition_cursors(emitted_state, cursor_field) == {"AC123": "2022-11-18 09:00:00Z", "AC456": "2022-11-18 08:00:00Z"}
+        assert emitted_state["state"] == {cursor_field: "2022-11-18 09:00:00Z"}
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):

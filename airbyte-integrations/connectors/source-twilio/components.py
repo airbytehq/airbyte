@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -308,3 +308,63 @@ class TwilioConferencesStateMigration(StateMigration):
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are behind the stream's global cursor so those partitions resume from the
+    global cursor instead of re-reading history.
+
+    Connector versions up to 1.1.10 never advanced the per-partition cursors of `messages` and `recordings`
+    past the first request window, while the global cursor (`state`) kept advancing. The global cursor is only
+    saved after a sync has read every partition up to the sync start, so a partition cursor older than it only
+    points at data that was already synced. Partitions without a saved cursor fall back to the global cursor.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 12
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "states": [],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 12
+      }
+    """
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], global_cursor: Mapping[str, Any]) -> bool:
+        if not isinstance(global_cursor, Mapping) or len(global_cursor) != 1:
+            return False
+        cursor_field, global_value = next(iter(global_cursor.items()))
+        partition_value = (partition_state.get("cursor") or {}).get(cursor_field)
+        if not isinstance(global_value, str) or not isinstance(partition_value, str):
+            return False
+        global_datetime = ab_datetime_try_parse(global_value)
+        partition_datetime = ab_datetime_try_parse(partition_value)
+        if global_datetime is None or partition_datetime is None:
+            return False
+        return partition_datetime < global_datetime
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = stream_state.get("state") or {}
+        return {
+            **stream_state,
+            "states": [state for state in stream_state.get("states", []) if not self._is_stale(state, global_cursor)],
+        }
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+        global_cursor = stream_state.get("state") or {}
+        return any(self._is_stale(state, global_cursor) for state in stream_state.get("states", []))
