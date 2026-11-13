@@ -1089,15 +1089,13 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
-                  error_message: App only access is restricting some resources
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 403
+              error_message: App only access is restricting some resources
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1422,16 +1420,14 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ 'No threadId found for TeamId' in response }}"
-                  http_codes:
-                    - 404
-                  error_message: Resource not found for team Ids
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ 'No threadId found for TeamId' in response }}"
+              http_codes:
+                - 404
+              error_message: Resource not found for team Ids
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1759,16 +1755,14 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ 'No Team found with Group id' in response }}"
-                  http_codes:
-                    - 404
-                  error_message: Resource not found for group Ids
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ 'No Team found with Group id' in response }}"
+              http_codes:
+                - 404
+              error_message: Resource not found for group Ids
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -2099,16 +2093,14 @@ streams:
                       scopes: []
                       access_token_name: access_token
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              predicate: "{{ 'No threadId found for TeamId' in response }}"
-                              http_codes:
-                                - 404
-                              error_message: Resource not found for team Ids
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          predicate: "{{ 'No threadId found for TeamId' in response }}"
+                          http_codes:
+                            - 404
+                          error_message: Resource not found for team Ids
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -2473,16 +2465,14 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ 'No Team found with Group id' in response }}"
-                  http_codes:
-                    - 404
-                  error_message: Resource not found for group Ids
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ 'No Team found with Group id' in response }}"
+              http_codes:
+                - 404
+              error_message: Resource not found for group Ids
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -2807,16 +2797,14 @@ streams:
                       scopes: []
                       access_token_name: access_token
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              predicate: "{{ 'No threadId found for TeamId' in response }}"
-                              http_codes:
-                                - 404
-                              error_message: Resource not found for team Ids
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          predicate: "{{ 'No threadId found for TeamId' in response }}"
+                          http_codes:
+                            - 404
+                          error_message: Resource not found for team Ids
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -3148,17 +3136,15 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ 'App Only access is not allowed' in response }}"
-                  http_codes:
-                    - 404
-                    - 403
-                  error_message: Some resources not found for parent resources
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ 'App Only access is not allowed' in response }}"
+              http_codes:
+                - 404
+                - 403
+              error_message: Some resources not found for parent resources
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -3489,15 +3475,13 @@ streams:
                       scopes: []
                       access_token_name: access_token
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 403
-                              error_message: App only access is restricting some resources
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          http_codes:
+                            - 403
+                          error_message: App only access is restricting some resources
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -3896,18 +3880,16 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ 'App Only access is not allowed' in response }}"
-                  http_codes:
-                    - 404
-                    - 403
-                    - 503
-                  error_message: Some resources are not allowed to extract
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ 'App Only access is not allowed' in response }}"
+              http_codes:
+                - 404
+                - 403
+                - 503
+              error_message: Some resources are not allowed to extract
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -4238,15 +4220,13 @@ streams:
                       scopes: []
                       access_token_name: access_token
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 403
-                              error_message: App only access is restricting some resources
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          http_codes:
+                            - 403
+                          error_message: App only access is restricting some resources
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -4590,19 +4570,17 @@ streams:
                       scopes: []
                       access_token_name: access_token
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              predicate: >-
-                                {{ 'App Only access is not allowed' in response
-                                }}
-                              http_codes:
-                                - 404
-                                - 403
-                              error_message: Some resources not found for parent resources
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          predicate: >-
+                            {{ 'App Only access is not allowed' in response
+                            }}
+                          http_codes:
+                            - 404
+                            - 403
+                          error_message: Some resources not found for parent resources
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -4939,17 +4917,15 @@ streams:
                                   scopes: []
                                   access_token_name: access_token
                                 error_handler:
-                                  type: CompositeErrorHandler
-                                  error_handlers:
-                                    - type: DefaultErrorHandler
-                                      response_filters:
-                                        - type: HttpResponseFilter
-                                          action: IGNORE
-                                          http_codes:
-                                            - 403
-                                          error_message: >-
-                                            App only access is restricting some
-                                            resources
+                                  type: DefaultErrorHandler
+                                  response_filters:
+                                    - type: HttpResponseFilter
+                                      action: IGNORE
+                                      http_codes:
+                                        - 403
+                                      error_message: >-
+                                        App only access is restricting some
+                                        resources
                                 request_body_json: {}
                               record_selector:
                                 type: RecordSelector
@@ -5362,16 +5338,14 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
-                    - 403
-                  error_message: Some resources are not found or not allowed to access
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+                - 403
+              error_message: Some resources are not found or not allowed to access
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -5727,15 +5701,13 @@ streams:
           scopes: []
           access_token_name: access_token
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 400
-                  error_message: Personal account not supported
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+              error_message: Personal account not supported
         request_body_json: {}
       record_selector:
         type: RecordSelector
