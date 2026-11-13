@@ -17,7 +17,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 class RecordSizeEstimator
 @JvmOverloads
 constructor( // number of record messages
-private val sampleBatchSize: Int = DEFAULT_SAMPLE_BATCH_SIZE) {
+    private val sampleBatchSize: Int = DEFAULT_SAMPLE_BATCH_SIZE,
+) {
     // latest estimated record message size for each stream
     private val streamRecordSizeEstimation: MutableMap<String, Long> = HashMap()
 

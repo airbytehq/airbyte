@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_github.source import SourceGithub
-
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     UnionPartitionRouter as UnionPartitionRouterModel,
 )
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+
+from .utils import make_source
 
 
 _CONFIG = {
@@ -22,7 +22,7 @@ _CONFIG = {
 
 
 def _build_router(definition_name: str, config: dict):
-    source = SourceGithub(config=config)
+    source = make_source(config=config)
     definition = source.resolved_manifest["definitions"][definition_name]
     factory = ModelToComponentFactory()
     return factory.create_component(

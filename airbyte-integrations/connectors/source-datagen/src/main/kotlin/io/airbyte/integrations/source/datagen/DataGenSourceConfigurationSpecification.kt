@@ -40,14 +40,14 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Max Concurrency")
     @JsonSchemaDescription(
-        "Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance.",
     )
     var concurrency: Int? = null
 
     @JsonProperty("max_records")
     @JsonSchemaTitle("Max Record")
     @JsonSchemaDescription(
-        "The number of record messages to emit from this connector. Min 1. Max 100 billion."
+        "The number of record messages to emit from this connector. Min 1. Max 100 billion.",
     )
     @JsonSchemaInject(json = """{"default":"100"}""")
     var maxRecords: Long = 100
@@ -83,8 +83,8 @@ data class Wide(
     @JsonProperty("column_count")
     @JsonSchemaTitle("Column Count")
     @JsonSchemaDescription(
-        "Number of columns to generate (including the id column). Min 1. Max 1000."
+        "Number of columns to generate (including the id column). Min 1. Max 1000.",
     )
     @JsonSchemaInject(json = """{"default":50,"minimum":1,"maximum":1000}""")
-    val columnCount: Int = 50
+    val columnCount: Int = 50,
 ) : FlavorSpec

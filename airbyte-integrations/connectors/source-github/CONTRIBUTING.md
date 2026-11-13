@@ -2,20 +2,26 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-## Migration to manifest-only (in progress)
+This connector is manifest-only: `manifest.yaml` serves every stream (with every JSON schema inline) and runs on the `source-declarative-manifest` base image. `components.py` holds the custom components the manifest names by `class_name`; `unit_tests/` is a self-contained poetry project (`cd unit_tests && poetry install --no-root && poetry run pytest`). See `AGENTS.md` for the details a change needs to respect.
 
-This connector is being migrated from Python stream classes to a declarative manifest, a few streams at a time, so it is currently a hybrid: `source_github/manifest.yaml` serves the migrated streams (`repositories`, `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users`) and `source_github/streams.py` serves the rest. When you change a stream, check which half owns it first. Migrated streams keep their JSON schema inline in the manifest instead of under `source_github/schemas/`. See `AGENTS.md` for the details a change to either half needs to respect.
+## Behavior that differs from the legacy Python connector
+
+These are deliberate. `AGENTS.md` has the reasoning: "Manifest design notes › Error handling" for the first three, "Migration to manifest-only" for the last two.
+
+- A repository that keeps answering 502/504 fails the stream instead of being skipped silently (`test_repeated_502_fails_the_stream`).
+- 404 and 409 skip the repository on the first response instead of after the retries run out (5, or 7 on `comments`; `test_inaccessible_repository_is_skipped`).
+- Skipped repositories are logged at INFO, and the shared skip messages do not name the repository (the stargazers ones do, from `request_url`).
+- Incremental streams re-emit the record whose cursor equals the stored state once per sync (`test_start_date_filters_older_records_and_keeps_the_boundary`).
+- State is checkpointed per partition, so an interrupted sync restarts the repository it was reading.
+
+## Manifest comments
+
+Keep comments in `manifest.yaml` to one to three lines that say what a definition must not lose. Put the reasoning, history and measurements in the matching `AGENTS.md` section and point to it.
 
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
 
-**Connector type:** hybrid — declarative manifest plus Python CDK stream classes
+**Connector type:** manifest-only — every stream in `manifest.yaml`, plus `components.py` for the custom components
 
-**Analysis status:** Full stream-by-stream analysis requires Python code review of the streams still in `streams.py`.
-
-### Future incremental stream candidates
-
-- **Streams still in `streams.py` deferred for Python code review:** a full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added after reviewing the remaining Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
-- **The five streams migrated in Step 3** (`assignees`, `branches`, `collaborators`, `issue_labels`, `tags`) have no usable cursor: none of their endpoints returns an `updated_at`/`created_at` field or accepts `since`, so they stay full refresh.
-- **The three streams migrated in Step 4** (`organizations`, `teams`, `users`) stay full refresh for the same reason, and they slice on organizations rather than repositories. `teams` and `users` carry an injected `organization` field; `organizations` does not, because the Python class it replaced never added one.
+**Analysis status:** Every stream is in the manifest; the stream-by-stream table is in `AGENTS.md`.

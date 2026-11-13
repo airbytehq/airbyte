@@ -7,10 +7,11 @@ import time
 from unittest.mock import patch
 
 import pytest
-from source_github.source import SourceGithub
 
-from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
+from airbyte_cdk.models import Status
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .utils import make_source, resolve_repositories_and_organizations
 
 
 def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
@@ -18,19 +19,25 @@ def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
     requests_mock.get(f"{api_url}/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
 
 
+def _check(config):
+    """`check` is `CheckStream` on `branches` with `config_overrides.max_waiting_time: 1`
+    (see the manifest's `check` component). Returns (ok, message)."""
+    status = make_source(config=dict(config)).check(logging.getLogger("airbyte"), dict(config))
+    return status.status == Status.SUCCEEDED, status.message
+
+
 def _resolve(config):
-    """Run repository resolution the way `check_connection`/`streams()` do: config
+    """Run repository resolution the way `check` does: config
     normalization first, then enumeration of the manifest's partition routers."""
-    source = SourceGithub(config=dict(config))
-    normalized = source._validate_and_transform_config(dict(config))
-    return source._resolve_repositories_and_organizations(normalized)
+    source = make_source(config=dict(config))
+    return resolve_repositories_and_organizations(source, source._config)
 
 
 def test_check_connection_still_fails_when_every_explicit_repository_is_forbidden(requests_mock):
     """`repository_stats` skips a 403 rather than failing, so that one SAML-protected repository
     does not take the healthy ones down with it (`resolve_explicit_repository_error_handler`).
     That must not cost `check` its ability to reject a token that can read nothing: with every
-    entry skipped the resolved list is empty, which `check_connection` already reports."""
+    entry skipped the resolved list is empty, which `check` already reports."""
     _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/repos/saml/protected-repo",
@@ -39,10 +46,10 @@ def test_check_connection_still_fails_when_every_explicit_repository_is_forbidde
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["saml/protected-repo"]}
 
-    ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+    ok, message = _check(config)
 
     assert ok is False
-    assert "couldn't be found" in message
+    assert "no stream slices were found" in message
 
 
 def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
@@ -54,13 +61,8 @@ def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
         "https://api.github.com/rate_limit",
         json={"resources": {"core": dict(exhausted), "graphql": dict(exhausted)}},
     )
-    source = SourceGithub(config={"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]})
-
     with patch("time.sleep") as sleep_mock:
-        ok, message = source.check_connection(
-            logging.getLogger("airbyte"),
-            {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]},
-        )
+        ok, message = _check({"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]})
 
     assert ok is False
     assert "Rate limit is exceeded for all provided tokens." in message
@@ -80,10 +82,10 @@ def test_check_connection_fails_fast_when_the_server_reports_a_rate_limit(reques
         json={"message": "API rate limit exceeded for user ID 1."},
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
 
     with patch("time.sleep") as sleep_mock:
-        ok, message = source.check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(dict(config))
 
     assert ok is False
     assert "rate limit" in message.lower()
@@ -116,10 +118,7 @@ def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
 
 
 def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock):
-    """The wait cap must not turn ordinary transient errors into failures. A headerless 5xx falls
-    back to the `min_wait: 60` floor, and the CDK raises at `>=`, so a user on the spec's minimum
-    Max Waiting Time of 1 minute would hit a 60s cap that exactly equals that floor. Measured
-    before the `+ 1` in the manifest: a single 500 failed the whole resolution."""
+    """Headerless 5xx responses use exponential backoff and do not consult the rate-limit wait cap."""
     _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/org/repos",
@@ -178,11 +177,8 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
 
 
 def test_check_retries_a_transient_error_instead_of_reporting_a_rate_limit(requests_mock):
-    """`check` must survive one GitHub blip. Its wait budget has to stay above the `min_wait: 60`
-    floor that `WaitUntilTimeFromHeader` returns for any retryable response without rate-limit
-    headers, or the cap refuses that floor and a 500 fails the connection test on the first
-    attempt — reported as "The rate limit wait time is longer than the connector is allowed to
-    wait." Measured with `max_waiting_time: 0` in `check_config`: exactly that, one attempt."""
+    """`check` must survive one GitHub blip. A headerless 500 uses exponential backoff and does
+    not consult the rate-limit cap, so it can retry instead of being reported as a rate-limit error."""
     _mock_rate_limit(requests_mock)
     listing = requests_mock.get(
         "https://api.github.com/orgs/org/repos",
@@ -191,10 +187,11 @@ def test_check_retries_a_transient_error_instead_of_reporting_a_rate_limit(reque
             {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
+    requests_mock.get("https://api.github.com/repos/org/repo/branches", json=[{"name": "main"}])
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
 
     with patch("time.sleep"):
-        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(config)
 
     assert (ok, message) == (True, None)
     assert listing.call_count == 2
@@ -213,7 +210,7 @@ def test_check_still_fails_fast_when_the_server_reports_a_rate_limit_after_the_r
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
 
     with patch("time.sleep") as sleep_mock:
-        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(config)
 
     assert ok is False
     assert "rate limit" in message.lower()
@@ -257,7 +254,7 @@ def test_every_num_workers_the_spec_allows_builds(requests_mock, num_workers):
         "num_workers": num_workers,
     }
 
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
 
     assert source.spec(logging.getLogger("airbyte")).connectionSpecification["properties"]["num_workers"]["default"] == 4
 
@@ -309,7 +306,7 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     the two backoff caps — and CDK 7.28.1 resolves the caps when the strategy is constructed, so a
     value one of them cannot render fails every command rather than one retry. Null is the case
     that bit: it renders as an empty string, so `config.get('max_waiting_time', 120)` produced
-    "PTM" and the source would not build. Zero must keep working too, since `check_connection`
+    "PTM" and the source would not build. Zero must keep working too, since `check`
     passes it deliberately.
     """
     quota = {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}
@@ -324,16 +321,12 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
         **max_waiting_time_config,
     }
 
-    source = SourceGithub(config=dict(config))
-    python_stream = source.streams(config)[0]
-    streams = ConcurrentDeclarativeSource.streams(source, config)
+    source = make_source(config=dict(config))
+    streams = source.streams(config)
 
     # Building at all is the assertion: every manifest stream shares the authenticator and the
     # backoff strategies, so a value one of those interpolations cannot render fails here.
     assert "repositories" in [stream.name for stream in streams]
-    max_waiting_time = max_waiting_time_config.get("max_waiting_time")
-    expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
-    assert python_stream.max_wait_time_seconds == expected_wait_time * 60
 
 
 def test_resolution_raises_on_no_tokens():
@@ -478,7 +471,7 @@ def test_resolution_custom_api_url(requests_mock):
 
 def test_resolution_legacy_repository_field(requests_mock):
     """Legacy space-delimited `repository` field is normalized by
-    `_validate_and_transform_config` before resolution and validated."""
+    `ConfigNormalization` before resolution and validated."""
     _mock_rate_limit(requests_mock)
     for repo in ("org/repo1", "org/repo2"):
         requests_mock.get(

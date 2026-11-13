@@ -112,6 +112,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.12 | 2026-10-13 | [88058](https://github.com/airbytehq/airbyte/pull/88058) | Update dependencies |
+| 1.4.11 | 2026-09-29 | [87395](https://github.com/airbytehq/airbyte/pull/87395) | Update dependencies |
+| 1.4.10 | 2026-09-22 | [86844](https://github.com/airbytehq/airbyte/pull/86844) | Update dependencies |
 | 1.4.9 | 2026-09-15 | [74518](https://github.com/airbytehq/airbyte/pull/74518) | Update dependencies |
 | 1.4.8 | 2026-04-27 | [77124](https://github.com/airbytehq/airbyte/pull/77124) | Promoted release candidate to GA |
 | 1.4.8-rc.5 | 2026-04-21 | [76418](https://github.com/airbytehq/airbyte/pull/76418) | Increase max_concurrency to 75, no api_budget (reviewed/explored, relying on CDK 429 backoff) |

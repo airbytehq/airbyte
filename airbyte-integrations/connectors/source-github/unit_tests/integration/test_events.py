@@ -3,8 +3,6 @@
 import json
 from unittest import TestCase, mock
 
-from source_github import SourceGithub
-
 from airbyte_cdk.models import AirbyteStreamStatus, SyncMode, TraceType
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -12,6 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from ..utils import make_source
 from .config import ConfigBuilder
 
 
@@ -85,7 +84,7 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        source = SourceGithub()
+        source = make_source(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
@@ -101,7 +100,7 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        source = SourceGithub()
+        source = make_source(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
@@ -130,7 +129,7 @@ class EventsTest(TestCase):
                 status_code=200,
             ),
         )
-        source = SourceGithub()
+        source = make_source(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 4
@@ -151,7 +150,7 @@ class EventsTest(TestCase):
 
         state = StateBuilder().with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2022-06-09T10:00:00Z"}}).build()
         # Declarative streams read their state at construction, not from `read()`'s argument.
-        source = SourceGithub(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = make_source(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         assert len(actual_messages.records) == 1
 
@@ -169,7 +168,7 @@ class EventsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2020-06-09T10:00:00Z"}}).build()
-        source = SourceGithub(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = make_source(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         assert len(actual_messages.records) == 2
         assert actual_messages.state_messages[-1].state.stream.stream_state.__dict__["states"] == [
@@ -190,7 +189,7 @@ class EventsTest(TestCase):
             ),
             HttpResponse('{"message":"some_error_message"}', 403),
         )
-        source = SourceGithub(config=_CONFIG, catalog=_create_catalog())
+        source = make_source(config=_CONFIG, catalog=_create_catalog())
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert actual_messages.records == []

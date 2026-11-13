@@ -4,6 +4,7 @@
 
 import logging
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -25,8 +26,8 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
-PAGE_URL = "https://graph.facebook.com/v24.0/1"
-FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+PAGE_URL = "https://graph.facebook.com/v26.0/1"
+FEED_URL = "https://graph.facebook.com/v26.0/1/feed"
 MANIFEST_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "manifest.yaml"
 
 
@@ -72,7 +73,7 @@ def read_from_stream(config, stream: str, sync_mode, expecting_exception: bool =
             ["id", "name", "category"],
             PAGE_URL,
             {"id": "1", "name": "Test Page", "category": "Business"},
-            "/v24.0/1",
+            "/v26.0/1",
             id="page_stream_filters_to_3_fields",
         ),
         pytest.param(
@@ -80,7 +81,7 @@ def read_from_stream(config, stream: str, sync_mode, expecting_exception: bool =
             ["id", "message", "created_time"],
             FEED_URL,
             {"data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
-            "/v24.0/1/feed",
+            "/v26.0/1/feed",
             id="post_stream_filters_to_3_fields",
         ),
         pytest.param(
@@ -88,7 +89,7 @@ def read_from_stream(config, stream: str, sync_mode, expecting_exception: bool =
             ["id", "fan_count"],
             PAGE_URL,
             {"id": "1", "fan_count": "100"},
-            "/v24.0/1",
+            "/v26.0/1",
             id="page_stream_filters_to_2_fields",
         ),
     ],
@@ -120,8 +121,8 @@ def test_without_catalog_at_init_requests_all_fields():
         logger = logging.getLogger("test")
         list(source.read(logger, CONFIG, catalog))
 
-        raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
-        assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
+        raw_fields = _get_fields_from_request(m.request_history, "/v26.0/1")
+        assert raw_fields is not None, "Expected a request to /v26.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
         assert (
             len(requested_fields) > 3
@@ -183,9 +184,70 @@ def test_facebook_transient_bad_request_is_retried(error):
         assert not output.errors
 
 
+def test_facebook_reduce_data_error_is_retried():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            [
+                {
+                    "json": {
+                        "error": {
+                            "code": 1,
+                            "message": "Please reduce the amount of data you're asking for, then retry your request",
+                        }
+                    },
+                    "status_code": 500,
+                },
+                {
+                    "json": {
+                        "data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}],
+                        "paging": {},
+                    },
+                    "status_code": 200,
+                },
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "post", SyncMode.full_refresh)
+
+        assert feed_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
+def test_facebook_reduce_data_error_exhausts_retries_as_transient_error():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            json={
+                "error": {
+                    "code": 1,
+                    "message": "Please reduce the amount of data you're asking for, then retry your request",
+                }
+            },
+            status_code=500,
+        )
+
+        with patch("time.sleep"):
+            output = read_from_stream(CONFIG, "post", SyncMode.full_refresh, expecting_exception=True)
+
+        assert feed_request.call_count == 6
+        assert not output.records
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Please reduce the amount of data" in formatted_error_message
+        assert "Page Size" in formatted_error_message
+
+
 def test_facebook_app_approval_error_is_config_error():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
-    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+    response_filter = next(
+        f
+        for f in manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+        if f.get("error_message_contains") == "This application has not been approved to use this API"
+    )
 
     assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
     assert response_filter["failure_type"] == FailureType.config_error.value
@@ -203,8 +265,39 @@ def test_invalid_insights_metric_error_is_not_retried():
 
     invalid_metric_filter = invalid_metric_filters[0]
     assert invalid_metric_filter["action"] == "FAIL"
-    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+    assert invalid_metric_filter["failure_type"] == FailureType.config_error.value
 
     # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
     blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
     assert response_filters.index(invalid_metric_filter) < blanket_400_index
+
+
+def test_page_access_token_is_exchanged_once_per_sync():
+    pages = [
+        {
+            "json": {
+                "data": [{"id": f"1_{i}", "message": f"post {i}", "created_time": "2024-01-01T00:00:00+0000"}],
+                "paging": {"cursors": {"after": f"cursor{i}"}, "next": f"{FEED_URL}?after=cursor{i}"},
+            },
+            "status_code": 200,
+        }
+        for i in range(4)
+    ]
+    pages.append(
+        {
+            "json": {"data": [{"id": "1_4", "message": "post 4", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
+            "status_code": 200,
+        }
+    )
+
+    with rm.Mocker() as m:
+        token_request = m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(FEED_URL, pages)
+
+        output = read_from_stream(CONFIG, "post", SyncMode.full_refresh)
+
+        assert len(output.records) == 5
+        assert feed_request.call_count == 5
+        assert token_request.call_count == 1, "The page access token should be exchanged once per sync, not once per request"
+        for req in feed_request.request_history:
+            assert parse_qs(urlparse(req.url).query)["access_token"] == ["access"]
