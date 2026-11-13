@@ -86,9 +86,7 @@ def test_forbidden_file_download_fails_as_transient_expired_url(
     body: str,
 ) -> None:
     mock_job(requests_mock)
-    requests_mock.get(
-        DOWNLOAD_URL, status_code=403, text=body, headers={"Content-Type": "application/xml", "x-ms-error-code": error_code}
-    )
+    requests_mock.get(DOWNLOAD_URL, status_code=403, text=body, headers={"Content-Type": "application/xml", "x-ms-error-code": error_code})
 
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     output = read(get_source(config, {}), config, catalog, None, expecting_exception=True)
