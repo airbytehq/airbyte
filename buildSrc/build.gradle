@@ -4,7 +4,18 @@ plugins {
 
 repositories {
     // Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-    gradlePluginPortal()
+    // buildSrc is a separate build that resolves before the root build, so it needs its own mirror
+    // indirection. It inherits -P and ORG_GRADLE_PROJECT_* overrides but NOT the root
+    // gradle.properties, hence the fallback to the plugin portal shorthand.
+    def pluginPortalUrl = findProperty('airbyte.dependencies.maven.gradlePluginPortal')?.toString()?.trim()
+    if (pluginPortalUrl) {
+        maven {
+            name 'gradle-plugin-portal'
+            url pluginPortalUrl
+        }
+    } else {
+        gradlePluginPortal()
+    }
 }
 
 dependencies {
