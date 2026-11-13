@@ -16,6 +16,7 @@ data:
   externalDocumentationUrls:
     - title: Developer Updates
       url: https://support.zendesk.com/hc/en-us/sections/4405298889242-Developer-updates
+      type: api_deprecations
     - title: Changelog
       url: https://developer.zendesk.com/api-reference/changelog/changelog/
       type: api_release_history
@@ -27,6 +28,9 @@ data:
       type: authentication_guide
     - title: Zendesk feature removal announcements
       url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
+      type: api_deprecations
+    - title: Zendesk Chat end-of-life announcement
+      url: https://support.zendesk.com/hc/en-us/articles/10934638765466
       type: api_deprecations
     - title: Zendesk Status
       url: https://status.zendesk.com/
