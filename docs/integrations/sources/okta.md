@@ -36,7 +36,7 @@ Create an [API service app](https://developer.okta.com/docs/guides/implement-oau
 - **Private key**: the corresponding private key in PEM format. You can paste it with real line breaks or with escaped `\n` sequences.
 - **Scope**: the granted scopes, separated by spaces.
 
-The connector doesn't send DPoP proofs, so if the service app requires DPoP (**Require Demonstrating Proof of Possession (DPoP) header in token requests**), turn that setting off.
+The connector doesn't send Demonstrating Proof of Possession (DPoP) proofs. If the service app requires DPoP, turn off that requirement in the app's settings, or the token request fails with an `invalid_dpop_proof` error.
 
 ### Step 2: Set up the Okta source in Airbyte
 
