@@ -82,6 +82,23 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: deleted
+          values:
+            - "false"
+            - "true"
+          request_option:
+            type: RequestOption
+            field_name: filter[deleted]
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - deleted
+              value: "{{ stream_partition['deleted'] == 'true' }}"
+              value_type: boolean
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -364,6 +381,23 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: deleted
+          values:
+            - "false"
+            - "true"
+          request_option:
+            type: RequestOption
+            field_name: is_deleted
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - deleted
+              value: "{{ stream_partition['deleted'] == 'true' }}"
+              value_type: boolean
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -748,6 +782,14 @@ schemas:
           - "null"
         description: Creation date of the dashboard.
         format: date-time
+        readOnly: true
+      deleted:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Whether the dashboard is deleted. The connector sets it from the
+          request that returned the record.
         readOnly: true
       deleted_at:
         type:
@@ -1835,6 +1877,10 @@ schemas:
             type:
               - string
               - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
       groups:
         type:
           - array

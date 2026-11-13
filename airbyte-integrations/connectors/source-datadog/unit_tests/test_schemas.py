@@ -10,12 +10,14 @@ from unit_tests.conftest import CONFIG, get_source
 
 
 ADDED_FIELDS = [
+    ("dashboards", "deleted", "boolean", None, None),
     ("dashboards", "is_read_only", "boolean", None, None),
     ("monitors", "creator.id", "integer", None, None),
     ("monitors", "draft_status", "string", None, None),
     ("monitors", "matching_downtimes[].active", "boolean", None, None),
     ("monitors", "matching_downtimes[].groups", "array", None, None),
     ("monitors", "matching_downtimes[].monitor_id", "integer", None, None),
+    ("service_level_objectives", "deleted", "boolean", None, None),
     ("service_level_objectives", "sli_specification", "object", None, None),
     ("users", "attributes.allowed_login_methods", "array", None, "string"),
     ("users", "attributes.is_access_configurable_bot", "boolean", None, None),
