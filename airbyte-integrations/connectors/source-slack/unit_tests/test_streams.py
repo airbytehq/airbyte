@@ -4,7 +4,9 @@
 
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
+from urllib.parse import parse_qs, urlparse
 
+import freezegun
 import pytest
 from requests import Response
 
@@ -1022,3 +1024,125 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _incremental_catalog(stream_name):
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+def _history_requests(requests_mock):
+    """Returns the (channel, oldest) pair of every conversations.history request, in the order they were sent."""
+    history_urls = [request.url for request in requests_mock.request_history if "conversations.history" in request.url]
+    queries = [parse_qs(urlparse(url).query) for url in history_urls]
+    return [(query["channel"][0], query["oldest"][0]) for query in queries]
+
+
+_BEGINNERS_MESSAGE_TS = "1627000000.000100"
+_GOOD_READS_MESSAGE_TS = "1627050000.000200"
+_ONE_DAY_LOOKBACK = 86400
+
+
+def _keep_emitted_state(state):
+    return state
+
+
+def _as_global_cursor_state(state):
+    """The shape `threads` state takes once the CDK stops tracking one cursor per thread: no `states`, only the global cursor."""
+    return {key: value for key, value in state.items() if key != "states"} | {"use_global_cursor": True}
+
+
+@freezegun.freeze_time("2021-07-24T00:00:00Z")
+@pytest.mark.parametrize(
+    "to_resumed_state",
+    (_keep_emitted_state, _as_global_cursor_state),
+    ids=["per_thread_cursors", "global_thread_cursor"],
+)
+def test_threads_resumes_each_channel_from_its_saved_parent_cursor(requests_mock, token_config, to_resumed_state):
+    """A second `threads` read asks `conversations.history` for each channel from that channel's saved cursor minus the lookback window."""
+    token_config["start_date"] = "2021-07-01T00:00:00Z"
+    token_config.pop("end_date")
+    for channel, ts in (("airbyte-for-beginners", _BEGINNERS_MESSAGE_TS), ("good-reads", _GOOD_READS_MESSAGE_TS)):
+        requests_mock.register_uri(
+            "GET",
+            f"https://slack.com/api/conversations.history?channel={channel}",
+            json={"ok": True, "messages": [{"ts": ts, "thread_ts": ts, "reply_count": 1}]},
+        )
+        requests_mock.register_uri(
+            "GET",
+            f"https://slack.com/api/conversations.replies?channel={channel}",
+            json={"ok": True, "messages": [{"ts": ts, "thread_ts": ts}]},
+        )
+    catalog = _incremental_catalog("threads")
+
+    no_state = StateBuilder().build()
+    first_read = read(get_source(token_config, "threads", no_state), config=token_config, catalog=catalog, state=no_state)
+    first_state = first_read.most_recent_state.stream_state.__dict__
+    saved_parent_cursors = {
+        partition_state["partition"]["channel"]: partition_state["cursor"]["float_ts"]
+        for partition_state in first_state["parent_state"]["channel_messages"]["states"]
+    }
+    assert saved_parent_cursors == {"airbyte-for-beginners": "1627000000.0001", "good-reads": "1627050000.0002"}
+
+    requests_mock.reset_mock()
+    resumed_state = StateBuilder().with_stream_state("threads", to_resumed_state(first_state)).build()
+    second_read = read(get_source(token_config, "threads", resumed_state), config=token_config, catalog=catalog, state=resumed_state)
+
+    assert second_read.errors == []
+    assert sorted(_history_requests(requests_mock)) == [
+        ("airbyte-for-beginners", str(1627000000.0001 - _ONE_DAY_LOOKBACK)),
+        ("good-reads", str(1627050000.0002 - _ONE_DAY_LOOKBACK)),
+    ]
+    # The lookback window re-reads each channel's last message, so both threads are emitted again.
+    assert sorted(record.record.data["ts"] for record in second_read.records) == [_BEGINNERS_MESSAGE_TS, _GOOD_READS_MESSAGE_TS]
+    assert second_read.most_recent_state.stream_state.__dict__["parent_state"] == first_state["parent_state"]
+
+
+@freezegun.freeze_time("2021-07-24T00:00:00Z")
+@pytest.mark.parametrize("stream_name", ("channel_messages", "threads"))
+def test_archived_channels_the_bot_cannot_join_are_not_requested(requests_mock, token_config, stream_name):
+    """With archived channels included and auto-join on, message partitions skip archived channels the bot is not a member of."""
+    token_config["include_archived_channels"] = True
+    token_config["channel_filter"] = []
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
+        json={
+            "channels": [
+                {"id": "C_ACTIVE_MEMBER", "name": "active-member", "is_member": True, "is_archived": False},
+                {"id": "C_ACTIVE_JOINABLE", "name": "active-joinable", "is_member": False, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED_NOT_MEMBER", "name": "archived-not-member", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+    requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history",
+        json={"ok": True, "messages": [{"ts": "1627000000.000100", "thread_ts": "1627000000.000100", "reply_count": 1}]},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies",
+        json={"ok": True, "messages": [{"ts": "1627000000.000100", "thread_ts": "1627000000.000100"}]},
+    )
+
+    state = StateBuilder().build()
+    output = read(get_source(token_config, stream_name, state), config=token_config, catalog=_incremental_catalog(stream_name), state=state)
+
+    assert output.errors == []
+    readable_channels = ["C_ACTIVE_JOINABLE", "C_ACTIVE_MEMBER", "C_ARCHIVED_MEMBER"]
+    assert sorted(channel for channel, _ in _history_requests(requests_mock)) == readable_channels
+    assert sorted(record.record.data["channel_id"] for record in output.records) == readable_channels
+    joined = [request.json()["channel"] for request in requests_mock.request_history if "conversations.join" in request.url]
+    assert joined == ["C_ACTIVE_JOINABLE"]
