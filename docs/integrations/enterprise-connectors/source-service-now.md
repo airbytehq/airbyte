@@ -67,6 +67,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 
 The connector is still incubating; this section exists to satisfy Airbyte's QA checks.
 
+- 0.1.2: Upgrade base image to source-declarative-manifest 7.48.0 to patch CVE-2024-52533.
 - 0.1.0
 
 </details>
