@@ -67,6 +67,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 
 The connector is still incubating; this section exists to satisfy Airbyte's QA checks.
 
+- 0.1.2 (2026-11-12): Upgraded the base image to `source-declarative-manifest` 7.47.0 (Python 3.13) to address CVE-2025-4517 in Python's `tarfile` module.
 - 0.1.0
 
 </details>
