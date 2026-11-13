@@ -78,6 +78,7 @@ class StreamManager(
     }
 
     fun readCount(): Long = recordsReadPerCheckpoint.values.sumOf { it }
+
     fun byteCount(): Long = bytesPerCheckpoint.values.sumOf { it }
 
     /**
@@ -109,7 +110,7 @@ class StreamManager(
      * [FailStreamTask]).
      *
      * @return `true` if this stream manager was not already terminating; `false` if another thread
-     * has already invoked `setClosed` on this stream manager
+     *   has already invoked `setClosed` on this stream manager
      */
     fun setClosed(): Boolean {
         return isClosed.setOnce()
@@ -158,7 +159,7 @@ class StreamManager(
 
     private fun countByStateForCheckpoint(
         checkpointId: CheckpointId,
-        state: BatchState
+        state: BatchState,
     ): CheckpointValue {
         val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
         val recordCount = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
@@ -238,13 +239,11 @@ class StreamManager(
         val persistedCount =
             checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            }
-                ?: 0L
+            } ?: 0L
         val completeCount =
             checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            }
-                ?: 0L
+            } ?: 0L
         return max(persistedCount, completeCount)
     }
 

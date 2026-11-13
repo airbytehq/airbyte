@@ -1,16 +1,15 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """
-Mock server tests for the `notes` stream incremental slice bounds.
+Mock server tests for the `notes` stream incremental cursor.
 
-`GET /v1/notes` treats `created_before=<date>` as excluding that whole day, so
-day-truncated slice bounds dropped every note created on a slice boundary day.
-These tests pin the exact `created_after` / `created_before` pairs sent across
-several 30-day slices and assert that boundary-day notes are emitted.
+`GET /v1/notes` filters on `updated_after` only — there is no `updated_before` —
+so `notes` syncs in a single unbounded slice keyed on `updated_at`. These tests
+pin the `updated_after` values sent and assert that notes edited after a
+previous sync are re-emitted.
 """
 
 import json
-from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
@@ -30,35 +29,13 @@ _NOW = "2026-01-15T12:00:00Z"
 _START_DATE = "2025-10-12"
 _STREAM_NAME = "notes"
 
-# With start_date 2025-10-12, step P30D and second-granular bounds, adjacent
-# slices are contiguous: each ends at 23:59:59Z of the day the next one starts.
-_SLICE_BOUNDS = [
-    ("2025-10-12T00:00:00Z", "2025-11-10T23:59:59Z"),
-    ("2025-11-11T00:00:00Z", "2025-12-10T23:59:59Z"),
-    ("2025-12-11T00:00:00Z", "2026-01-09T23:59:59Z"),
-    ("2026-01-10T00:00:00Z", _NOW),
-]
 
-# Notes created on a slice boundary day - the records the day-truncated bounds dropped.
-_BOUNDARY_NOTES = [
-    {"id": "note-boundary-1", "created_at": "2025-11-10T15:00:00Z"},
-    {"id": "note-boundary-2", "created_at": "2025-12-10T08:30:00Z"},
-    {"id": "note-boundary-3", "created_at": "2026-01-09T23:59:59Z"},
-]
-_MID_SLICE_NOTE = {"id": "note-mid-slice", "created_at": "2025-10-20T10:00:00Z"}
-
-
-def _notes_request(created_after: str, created_before: str) -> HttpRequest:
-    return GranolaRequestBuilder.notes_endpoint().with_created_after(created_after).with_created_before(created_before).build()
+def _notes_request(updated_after: str) -> HttpRequest:
+    return GranolaRequestBuilder.notes_endpoint().with_updated_after(updated_after).build()
 
 
 def _notes_response(notes: List[Dict[str, Any]]) -> HttpResponse:
     return HttpResponse(body=json.dumps({"notes": notes, "hasMore": False}), status_code=200)
-
-
-def _notes_within(created_after: str, created_before: str) -> List[Dict[str, Any]]:
-    """The notes a correct API would return for the given slice bounds."""
-    return [note for note in _BOUNDARY_NOTES + [_MID_SLICE_NOTE] if created_after <= note["created_at"] <= created_before]
 
 
 def _read_notes(state: Optional[List[AirbyteStateMessage]] = None) -> EntrypointOutput:
@@ -69,69 +46,112 @@ def _read_notes(state: Optional[List[AirbyteStateMessage]] = None) -> Entrypoint
 
 
 @freezegun.freeze_time(_NOW)
-class TestNotesIncrementalSliceBounds(TestCase):
+class TestNotesIncrementalUpdatedAtCursor(TestCase):
     @HttpMocker()
-    def test_slice_bounds_are_contiguous_second_granular_datetimes(self, http_mocker: HttpMocker):
-        """Every slice is requested with second-granular bounds, leaving no gap between slices."""
-        requests = [_notes_request(created_after, created_before) for created_after, created_before in _SLICE_BOUNDS]
-        for request in requests:
-            http_mocker.get(request, _notes_response([]))
+    def test_initial_sync_requests_single_slice_from_start_date(self, http_mocker: HttpMocker):
+        """With no `updated_before` in the API, the whole range is one slice bounded by start_date."""
+        notes = [
+            {"id": "note-1", "created_at": "2025-10-20T10:00:00Z", "updated_at": "2025-11-02T09:00:00Z"},
+            {"id": "note-2", "created_at": "2025-12-01T08:00:00Z", "updated_at": "2026-01-05T17:30:00Z"},
+        ]
+        request = _notes_request("2025-10-12T00:00:00Z")
+        http_mocker.get(request, _notes_response(notes))
 
         output = _read_notes()
-
-        assert output.errors == []
-        for request in requests:
-            http_mocker.assert_number_of_calls(request, 1)
-
-    @HttpMocker()
-    def test_notes_created_on_a_slice_boundary_day_are_emitted(self, http_mocker: HttpMocker):
-        for created_after, created_before in _SLICE_BOUNDS:
-            http_mocker.get(
-                _notes_request(created_after, created_before),
-                _notes_response(_notes_within(created_after, created_before)),
-            )
-
-        output = _read_notes()
-
-        emitted_ids = {message.record.data["id"] for message in output.records}
-        assert emitted_ids == {note["id"] for note in _BOUNDARY_NOTES} | {_MID_SLICE_NOTE["id"]}
-
-    @HttpMocker()
-    def test_date_only_state_from_earlier_versions_resumes(self, http_mocker: HttpMocker):
-        """Versions up to 0.2.13 persisted date-only cursors, which must still resume."""
-        self._assert_resumes_from("2025-12-20", http_mocker)
-
-    @HttpMocker()
-    def test_datetime_state_resumes(self, http_mocker: HttpMocker):
-        self._assert_resumes_from("2025-12-20T00:00:00Z", http_mocker)
-
-    def _assert_resumes_from(self, cursor_value: str, http_mocker: HttpMocker) -> None:
-        request = _notes_request("2025-12-20T00:00:00Z", _NOW)
-        http_mocker.get(request, _notes_response(_notes_within("2025-12-20T00:00:00Z", _NOW)))
-
-        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": cursor_value}).build())
 
         assert output.errors == []
         http_mocker.assert_number_of_calls(request, 1)
-        assert {message.record.data["id"] for message in output.records} == {"note-boundary-3"}
+        assert {message.record.data["id"] for message in output.records} == {"note-1", "note-2"}
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-05T17:30:00Z"
+
+    @HttpMocker()
+    def test_note_edited_after_first_sync_is_emitted_again_on_next_sync(self, http_mocker: HttpMocker):
+        """A note created before the stored cursor but edited after it is replicated again."""
+        request = _notes_request("2025-12-19T23:59:59Z")
+        edited_note = {
+            "id": "note-edited",
+            "created_at": "2025-10-20T10:00:00Z",
+            "updated_at": "2026-01-05T09:00:00Z",
+        }
+        http_mocker.get(request, _notes_response([edited_note]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2025-12-20T00:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert {message.record.data["id"] for message in output.records} == {"note-edited"}
+
+    @HttpMocker()
+    def test_next_sync_requests_one_second_before_cursor_to_catch_same_second_updates(self, http_mocker: HttpMocker):
+        """`updated_after` is exclusive and a whole-second value excludes that entire
+        second, so the request starts one second before the stored cursor. A note
+        updated in the cursor's own second that the previous sync didn't see is emitted."""
+        request = _notes_request("2026-01-05T08:59:59Z")
+        already_synced = {"id": "note-synced", "created_at": "2026-01-05T08:00:00Z", "updated_at": "2026-01-05T09:00:00.200Z"}
+        same_second = {"id": "note-same-second", "created_at": "2026-01-05T08:30:00Z", "updated_at": "2026-01-05T09:00:00.700Z"}
+        http_mocker.get(request, _notes_response([already_synced, same_second]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2026-01-05T09:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert {message.record.data["id"] for message in output.records} == {"note-synced", "note-same-second"}
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-05T09:00:00Z"
+
+    @HttpMocker()
+    def test_lookback_does_not_move_the_cursor_backwards_when_nothing_changed(self, http_mocker: HttpMocker):
+        """A sync that returns no notes keeps the stored cursor instead of the lookback bound."""
+        request = _notes_request("2026-01-05T08:59:59Z")
+        http_mocker.get(request, _notes_response([]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2026-01-05T09:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-05T09:00:00Z"
+
+    @HttpMocker()
+    def test_date_only_state_from_earlier_versions_resumes(self, http_mocker: HttpMocker):
+        """Date-only cursor state still parses and resumes from midnight that day, less the one-second lookback."""
+        request = _notes_request("2025-12-19T23:59:59Z")
+        http_mocker.get(request, _notes_response([]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2025-12-20"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_legacy_created_at_state_restarts_from_start_date(self, http_mocker: HttpMocker):
+        """State written by versions before 1.0.0 is keyed on `created_at`, so the
+        `updated_at` cursor finds no value, restarts from start_date, and writes
+        `updated_at` state."""
+        request = _notes_request("2025-10-12T00:00:00Z")
+        note = {"id": "note-1", "created_at": "2025-11-01T10:00:00Z", "updated_at": "2026-01-03T08:00:00Z"}
+        http_mocker.get(request, _notes_response([note]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": "2025-12-20T00:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-03T08:00:00Z"
 
 
 @freezegun.freeze_time(_NOW)
 class TestNotesPagination(TestCase):
-    _LAST_SLICE = _SLICE_BOUNDS[-1]
-
-    def _mock_empty_slices_except_last(self, http_mocker: HttpMocker) -> None:
-        for created_after, created_before in _SLICE_BOUNDS[:-1]:
-            http_mocker.get(_notes_request(created_after, created_before), _notes_response([]))
+    _UPDATED_AFTER = "2025-10-12T00:00:00Z"
 
     def _page(self, note_id: str, cursor: Optional[str], has_more: bool) -> HttpResponse:
-        body = {"notes": [{"id": note_id, "created_at": "2026-01-12T09:00:00Z"}], "hasMore": has_more, "cursor": cursor}
+        body = {
+            "notes": [{"id": note_id, "created_at": "2026-01-12T09:00:00Z", "updated_at": "2026-01-12T09:00:00Z"}],
+            "hasMore": has_more,
+            "cursor": cursor,
+        }
         return HttpResponse(body=json.dumps(body), status_code=200)
 
     @HttpMocker()
     def test_follows_the_cursor_while_has_more_is_true(self, http_mocker: HttpMocker):
-        self._mock_empty_slices_except_last(http_mocker)
-        builder = GranolaRequestBuilder.notes_endpoint().with_created_after(self._LAST_SLICE[0]).with_created_before(self._LAST_SLICE[1])
+        builder = GranolaRequestBuilder.notes_endpoint().with_updated_after(self._UPDATED_AFTER)
         first_page = builder.build()
         second_page = builder.with_cursor("cursor-2").build()
         http_mocker.get(first_page, self._page("note-page-1", cursor="cursor-2", has_more=True))
@@ -146,8 +166,7 @@ class TestNotesPagination(TestCase):
 
     @HttpMocker()
     def test_stops_when_has_more_is_false_even_if_a_cursor_is_returned(self, http_mocker: HttpMocker):
-        self._mock_empty_slices_except_last(http_mocker)
-        request = _notes_request(*self._LAST_SLICE)
+        request = _notes_request(self._UPDATED_AFTER)
         http_mocker.get(request, self._page("note-only", cursor="stale-cursor", has_more=False))
 
         output = _read_notes()
@@ -158,37 +177,16 @@ class TestNotesPagination(TestCase):
 
 
 @freezegun.freeze_time(_NOW)
-class TestNotesState(TestCase):
-    @HttpMocker()
-    def test_state_advances_to_the_latest_created_at_emitted(self, http_mocker: HttpMocker):
-        for created_after, created_before in _SLICE_BOUNDS:
-            http_mocker.get(
-                _notes_request(created_after, created_before),
-                _notes_response(_notes_within(created_after, created_before)),
-            )
-
-        output = _read_notes()
-
-        assert output.errors == []
-        assert output.most_recent_state.stream_state.__dict__ == {"created_at": "2026-01-09T23:59:59Z"}
-
+class TestNotesDefaultStartDate(TestCase):
     @HttpMocker()
     def test_without_start_date_reads_the_last_730_days(self, http_mocker: HttpMocker):
-        """The spec leaves `start_date` optional; the first slice then starts 730 days before now."""
-        requests = []
-        slice_start = datetime(2024, 1, 16, tzinfo=timezone.utc)
-        now = datetime(2026, 1, 15, 12, tzinfo=timezone.utc)
-        while slice_start <= now:
-            slice_end = min(slice_start + timedelta(days=30) - timedelta(seconds=1), now)
-            requests.append(_notes_request(slice_start.strftime("%Y-%m-%dT%H:%M:%SZ"), slice_end.strftime("%Y-%m-%dT%H:%M:%SZ")))
-            slice_start = slice_end + timedelta(seconds=1)
-        for request in requests:
-            http_mocker.get(request, _notes_response([]))
+        """The spec leaves `start_date` optional; the single slice then starts 730 days before now."""
+        request = _notes_request("2024-01-16T00:00:00Z")
+        http_mocker.get(request, _notes_response([]))
 
         config = ConfigBuilder().build()
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
 
         assert output.errors == []
-        for request in requests:
-            http_mocker.assert_number_of_calls(request, 1)
+        http_mocker.assert_number_of_calls(request, 1)
