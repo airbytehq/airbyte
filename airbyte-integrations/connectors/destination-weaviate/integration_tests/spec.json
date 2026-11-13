@@ -360,9 +360,13 @@
         "properties": {
           "host": {
             "title": "Public Endpoint",
-            "description": "The public endpoint of the Weaviate cluster.",
+            "description": "The REST endpoint of the Weaviate cluster. For Weaviate Cloud, paste the REST Endpoint shown in the console; https is assumed when no scheme is given.",
             "order": 1,
-            "examples": ["https://my-cluster.weaviate.network"],
+            "examples": [
+              "https://my-cluster.weaviate.cloud",
+              "my-cluster.c0.europe-west3.gcp.weaviate.cloud",
+              "http://my-weaviate-host:8080"
+            ],
             "type": "string"
           },
           "auth": {
@@ -372,7 +376,7 @@
             "order": 2,
             "oneOf": [
               {
-                "title": "API Token",
+                "title": "API Key",
                 "type": "object",
                 "properties": {
                   "mode": {
@@ -383,14 +387,14 @@
                     "type": "string"
                   },
                   "token": {
-                    "title": "API Token",
-                    "description": "API Token for the Weaviate instance",
+                    "title": "API Key",
+                    "description": "API key for the Weaviate instance",
                     "airbyte_secret": true,
                     "type": "string"
                   }
                 },
                 "required": ["token", "mode"],
-                "description": "Authenticate using an API token (suitable for Weaviate Cloud)"
+                "description": "Authenticate using an API key (suitable for Weaviate Cloud)"
               },
               {
                 "title": "Username/Password",
@@ -415,10 +419,83 @@
                     "airbyte_secret": true,
                     "order": 2,
                     "type": "string"
+                  },
+                  "scope": {
+                    "title": "Scope",
+                    "description": "Space-separated OIDC scopes to request. Leave empty to use the default scope of the identity provider.",
+                    "default": "",
+                    "order": 3,
+                    "type": "string"
                   }
                 },
                 "required": ["username", "password", "mode"],
-                "description": "Authenticate using username and password (suitable for self-managed Weaviate clusters)"
+                "description": "Authenticate using username and password via OIDC (suitable for self-managed Weaviate clusters)"
+              },
+              {
+                "title": "OIDC Client Credentials",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "client_credentials",
+                    "const": "client_credentials",
+                    "enum": ["client_credentials"],
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "title": "Client Secret",
+                    "description": "OIDC client secret of the application",
+                    "airbyte_secret": true,
+                    "order": 1,
+                    "type": "string"
+                  },
+                  "scope": {
+                    "title": "Scope",
+                    "description": "Space-separated OIDC scopes to request. Required by some identity providers, for example Azure (`<client id>/.default`).",
+                    "default": "",
+                    "order": 2,
+                    "type": "string"
+                  }
+                },
+                "required": ["client_secret", "mode"],
+                "description": "Authenticate using the OIDC client credentials flow (suitable for clusters behind an identity provider)"
+              },
+              {
+                "title": "OIDC Bearer Token",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "bearer_token",
+                    "const": "bearer_token",
+                    "enum": ["bearer_token"],
+                    "type": "string"
+                  },
+                  "access_token": {
+                    "title": "Access Token",
+                    "description": "OIDC access token",
+                    "airbyte_secret": true,
+                    "order": 1,
+                    "type": "string"
+                  },
+                  "refresh_token": {
+                    "title": "Refresh Token",
+                    "description": "OIDC refresh token. Without it, syncs that outlast the access token fail.",
+                    "default": "",
+                    "airbyte_secret": true,
+                    "order": 2,
+                    "type": "string"
+                  },
+                  "expires_in": {
+                    "title": "Expires In",
+                    "description": "Lifetime of the access token, in seconds",
+                    "default": 60,
+                    "order": 3,
+                    "type": "integer"
+                  }
+                },
+                "required": ["access_token", "mode"],
+                "description": "Authenticate using an existing OIDC access token and, optionally, a refresh token"
               },
               {
                 "title": "No Authentication",
@@ -443,6 +520,20 @@
             "default": 128,
             "type": "integer"
           },
+          "concurrent_requests": {
+            "title": "Concurrent Batch Requests",
+            "description": "Number of batches sent to Weaviate in parallel",
+            "default": 1,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "consistency_level": {
+            "title": "Consistency Level",
+            "description": "Replication consistency level for writes and deletes. `default` uses the server default (QUORUM).",
+            "default": "default",
+            "enum": ["default", "ONE", "QUORUM", "ALL"],
+            "type": "string"
+          },
           "text_field": {
             "title": "Text Field",
             "description": "The field in the object that contains the embedded text",
@@ -452,8 +543,8 @@
           "tenant_id": {
             "title": "Tenant ID",
             "description": "The tenant ID to use for multi tenancy",
-            "airbyte_secret": true,
             "default": "",
+            "airbyte_secret": true,
             "type": "string"
           },
           "default_vectorizer": {
@@ -499,6 +590,151 @@
               },
               "required": ["header_key", "value"]
             }
+          },
+          "connection": {
+            "title": "Connection Options",
+            "type": "object",
+            "properties": {
+              "grpc_host": {
+                "title": "gRPC Endpoint",
+                "description": "The gRPC endpoint of the cluster as host or host:port. Leave empty to derive it from the public endpoint: the cluster's gRPC host on port 443 for Weaviate Cloud, the same host on port 50051 otherwise.",
+                "default": "",
+                "examples": [
+                  "my-weaviate-host:50051",
+                  "grpc.my-weaviate-host.com:443"
+                ],
+                "order": 1,
+                "type": "string"
+              },
+              "grpc_secure": {
+                "title": "gRPC TLS",
+                "description": "Whether the gRPC connection uses TLS. `auto` uses TLS when the public endpoint uses https.",
+                "default": "auto",
+                "enum": ["auto", "enabled", "disabled"],
+                "order": 2,
+                "type": "string"
+              },
+              "timeout_init": {
+                "title": "Init Timeout",
+                "description": "Timeout in seconds for the initial connection checks",
+                "default": 2,
+                "minimum": 0,
+                "order": 3,
+                "type": "number"
+              },
+              "timeout_query": {
+                "title": "Query Timeout",
+                "description": "Timeout in seconds for schema, tenant and delete requests",
+                "default": 30,
+                "minimum": 0,
+                "order": 4,
+                "type": "number"
+              },
+              "timeout_insert": {
+                "title": "Insert Timeout",
+                "description": "Timeout in seconds for batch inserts",
+                "default": 90,
+                "minimum": 0,
+                "order": 5,
+                "type": "number"
+              },
+              "skip_init_checks": {
+                "title": "Skip Init Checks",
+                "description": "Skip the server version and readiness checks when connecting, for example when a proxy blocks the meta endpoints",
+                "default": false,
+                "order": 6,
+                "type": "boolean"
+              },
+              "trust_env": {
+                "title": "Trust Environment",
+                "description": "Read proxy settings and CA bundles from the environment variables (HTTP_PROXY, HTTPS_PROXY, SSL_CERT_FILE, ...)",
+                "default": false,
+                "order": 7,
+                "type": "boolean"
+              },
+              "http_proxy": {
+                "title": "HTTP Proxy",
+                "description": "Proxy URL for http requests",
+                "default": "",
+                "airbyte_secret": true,
+                "order": 8,
+                "type": "string"
+              },
+              "https_proxy": {
+                "title": "HTTPS Proxy",
+                "description": "Proxy URL for https requests",
+                "default": "",
+                "airbyte_secret": true,
+                "order": 9,
+                "type": "string"
+              },
+              "grpc_proxy": {
+                "title": "gRPC Proxy",
+                "description": "Proxy URL for gRPC requests",
+                "default": "",
+                "airbyte_secret": true,
+                "order": 10,
+                "type": "string"
+              },
+              "session_pool_connections": {
+                "title": "Session Pool Connections",
+                "description": "Number of connection pools to cache for http requests",
+                "default": 20,
+                "minimum": 1,
+                "order": 11,
+                "type": "integer"
+              },
+              "session_pool_maxsize": {
+                "title": "Session Pool Max Size",
+                "description": "Maximum number of connections to keep in the http pool",
+                "default": 100,
+                "minimum": 1,
+                "order": 12,
+                "type": "integer"
+              },
+              "session_pool_max_retries": {
+                "title": "Session Pool Max Retries",
+                "description": "Number of retries for failed http requests",
+                "default": 3,
+                "minimum": 0,
+                "order": 13,
+                "type": "integer"
+              },
+              "session_pool_timeout": {
+                "title": "Session Pool Timeout",
+                "description": "Seconds to wait for a free connection from the http pool",
+                "default": 5,
+                "minimum": 0,
+                "order": 14,
+                "type": "integer"
+              },
+              "grpc_channel_options": {
+                "title": "gRPC Channel Options",
+                "description": "Extra gRPC channel arguments, see https://grpc.github.io/grpc/core/group__grpc__arg__keys.html",
+                "default": [],
+                "order": 15,
+                "type": "array",
+                "items": {
+                  "title": "GrpcChannelOption",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "title": "Option Name",
+                      "examples": ["grpc.keepalive_time_ms"],
+                      "type": "string"
+                    },
+                    "value": {
+                      "title": "Option Value",
+                      "description": "Integer values are passed as integers",
+                      "examples": ["10000"],
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "value"]
+                }
+              }
+            },
+            "description": "Advanced connection settings: gRPC endpoint, TLS, timeouts, proxies and connection pool. The defaults work for Weaviate Cloud."
           }
         },
         "required": ["host", "auth"],
