@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.72 | 2026-11-13 | [0](https://github.com/airbytehq/airbyte/pull/0) | Add independent daily pacing budgets for project and release requests. |
+| 0.2.72 | 2026-11-13 | [92996](https://github.com/airbytehq/airbyte/pull/92996) | Add independent daily pacing budgets for project and release requests. |
 | 0.2.72 | 2026-11-10 | [91682](https://github.com/airbytehq/airbyte/pull/91682) | Update dependencies |
 | 0.2.71 | 2026-11-03 | [90700](https://github.com/airbytehq/airbyte/pull/90700) | Update dependencies |
 | 0.2.70 | 2026-10-27 | [90042](https://github.com/airbytehq/airbyte/pull/90042) | Update dependencies |
