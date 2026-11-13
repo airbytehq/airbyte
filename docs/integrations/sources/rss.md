@@ -1,23 +1,20 @@
 # RSS
 
-## Overview
+The RSS source connector reads items from a single RSS 2.0, RSS 0.9x, RSS 1.0 (RDF), or Atom feed.
 
-The RSS source allows you to read data from any individual RSS feed.
+## Prerequisites
 
-#### Output schema
+- The URL of a publicly accessible feed. The connector doesn't support authentication, so it can't read feeds that require a login, API key, or custom headers. You can include query parameters in the URL.
 
-This source is capable of syncing the following streams:
+## Set up the RSS connector
 
-- `items`
-  - Provides stats about specific RSS items.
-  - Supports RSS 2.0, RSS 1.0 (RDF), and Atom feeds.
-  - Most fields are kept from feed items as strings if present (`title`, `link`, `description`, `author`, `category`, `comments`, `enclosure`, `guid`). Relative links are resolved against the feed URL, `enclosure` holds the enclosure URL, and `description` contains the HTML exactly as the feed publishes it, without sanitization.
-  - The date field is handled differently. It's transformed into a UTC datetime in a `published` field for easier use in data warehouses and other destinations. The connector reads it from `pubDate`, `published` or `issued` (RSS, in any capitalization), `atom:published`, `dcterms:issued`, `published` or `updated` (Atom), or `dc:date`. Dates are converted using their time zone, including offsets like `-05:00` or `GMT+0530` and US zone abbreviations like `PT`.
-  - Items without a parseable date are skipped instead of failing the sync. Items dated in the future are held back until that date passes.
-  - The connector requests the feed URL exactly as you enter it. If the response isn't an RSS, RDF or Atom feed, or can't be parsed as XML after the connector repairs common errors, the sync reads zero records and logs a warning, and the connection check still passes.
-  - Since `guid` is not a required field, there is no primary key for the feed, only a cursor on the published date.
+1. In Airbyte, create a new RSS source.
+2. In **RSS Feed URL**, enter the URL of the feed. The connector requests this URL exactly as you enter it, without adding a trailing slash or changing query parameters.
+3. Click **Set up source**.
 
-#### Features
+The connection check passes even if the URL doesn't return a valid feed. To confirm the URL works, run a sync and check that it returns records.
+
+## Supported sync modes
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
@@ -25,13 +22,24 @@ This source is capable of syncing the following streams:
 | Incremental - Append Sync | Yes        |
 | Namespaces                | No         |
 
-### Requirements / Setup Guide
+The stream has no primary key because `guid` is optional in feeds, so Incremental - Append + Deduped isn't supported. Incremental syncs use the `published` field as the cursor.
 
-Only the `url` of an RSS feed is required.
+## Supported streams
 
-## Performance considerations
+The connector syncs one stream, `items`, with one record per feed item (RSS `<item>` or Atom `<entry>`).
 
-None
+- `title`, `link`, `description`, `author`, `category`, `comments`, `enclosure`, and `guid` are read from the item as strings when present.
+- Relative links are resolved against the feed URL.
+- `enclosure` contains the enclosure URL.
+- `description` contains the item's HTML exactly as the feed publishes it, without sanitization.
+- `published` is the item's date converted to a UTC datetime. The connector reads it from `pubDate`, `published` or `issued` (RSS, in any capitalization), `atom:published`, `dcterms:issued`, `published` or `updated` (Atom), or `dc:date`. Time zone offsets like `-05:00` or `GMT+0530` and US zone abbreviations like `PT` are applied during conversion.
+
+## Limitations
+
+- **Only recent items on the first sync.** The connector reads only items published in the 23 hours before the sync starts. This applies to every full refresh sync and to the first incremental sync. Older items in the feed are never synced. After the first incremental sync, each sync reads items published since the last synced item, so schedule syncs often enough that items don't drop out of the feed before Airbyte reads them.
+- **Items without a date are skipped.** Items that have no parseable date are dropped instead of failing the sync.
+- **Future-dated items are held back.** Items dated in the future are skipped until that date passes.
+- **Invalid feeds return no records.** If the response isn't an RSS, RDF, or Atom feed, or can't be parsed as XML after the connector repairs common errors, the sync reads zero records and logs a warning instead of failing.
 
 ## IP allow list
 
@@ -44,7 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1.0   | 2026-11-09 | [91337](https://github.com/airbytehq/airbyte/pull/91337) | Migrate to manifest-only. The connector now requests the feed URL exactly as configured (no trailing slash is appended), emits `description` HTML unsanitized, populates `enclosure`, resolves relative links, syncs Atom, RDF and RSS 2.0 items dated only by `updated` or `dc:date`, skips items without a parseable date instead of failing the sync, and holds back items dated in the future until that date passes |
+| 1.1.0   | 2026-11-11 | [91337](https://github.com/airbytehq/airbyte/pull/91337) | Migrate to manifest-only. The connector now requests the feed URL exactly as configured (no trailing slash is appended), emits `description` HTML unsanitized, populates `enclosure`, resolves relative links, syncs Atom, RDF and RSS 2.0 items dated only by `updated` or `dc:date`, skips items without a parseable date instead of failing the sync, and holds back items dated in the future until that date passes |
 | 1.0.31  | 2025-02-01 | [51897](https://github.com/airbytehq/airbyte/pull/51897) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 1.0.30  | 2025-01-11 | [51334](https://github.com/airbytehq/airbyte/pull/51334) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 1.0.29  | 2025-01-04 | [50935](https://github.com/airbytehq/airbyte/pull/50935) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                      |
