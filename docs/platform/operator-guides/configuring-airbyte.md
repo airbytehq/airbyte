@@ -46,17 +46,24 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 1. `TEMPORAL_HOST` - Defines the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Defines the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
 3. `AIRBYTE_URL` -  Formerly `WEBAPP_URL`. Defines the URL the Airbyte web app is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
+4. `MICRONAUT_SERVER_MAX_REQUEST_SIZE` - Maximum HTTP request body size, in bytes. Defaults to `52428800` (50 MB).
+5. `MICRONAUT_SERVER_MAX_REQUEST_BUFFER_SIZE` - Maximum buffered HTTP request body size, in bytes. Defaults to `52428800` (50 MB).
+6. `NETTY_AGGREGATOR_MAX_CONTENT_LENGTH` - Maximum content length for the Netty HTTP aggregator, in bytes. Defaults to `52428800` (50 MB).
+
+When changing the request body limit, set all three variables to the same value on `server`, `worker`, and `workloadApiServer`. For a Helm configuration example and ingress requirements, see [Request body size](../deploying-airbyte/integrations/ingress.md#request-body-size).
 
 ## Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. _Legacy - this is superseded by the values below_
-2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
-3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
-4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
-5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds between failed attempts in which no data was synchronized.
-6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval between failed attempts in which no data was synchronized.
-7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
-8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
+The following retry defaults apply to Airbyte Core. The failure limits count failed attempts, not additional retries. Airbyte retries only while every failure counter is below its limit. For example, a total complete-failure limit of 5 fails the job on the fifth attempt that fails without syncing data.
+
+1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the maximum number of attempts before failing the job. Defaults to 3. Used only if Airbyte can't load the job's retry state because the retry-state activity fails, not when a job has no saved retry state. Set with the Helm value `worker.syncJobMaxAttempts`.
+2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the maximum number of successive failed attempts that sync no data before failing the job. Defaults to 5.
+3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the maximum total number of failed attempts that sync no data before failing the job. Defaults to 5.
+4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds after failed attempts that sync no data. Defaults to 10.
+5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds after failed attempts that sync no data. Defaults to 1800 (30 minutes).
+6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval after failed attempts that sync no data. Defaults to 3. The backoff is `min(min_interval × base^(n-1), max_interval)` seconds, where `n` is the number of successive complete failures.
+7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the maximum number of successive failed attempts that sync some data before failing the job. Defaults to 1000.
+8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the maximum total number of failed attempts that sync some data before failing the job. Defaults to 10.
 9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Defines the number of days a sync job will execute for before timing out.
 10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Defines the job container's minimum CPU usage. Defaults to none.
 11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Defines the job container's maximum CPU usage. Defaults to none.
@@ -72,6 +79,17 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 21. `JOB_KUBE_BUSYBOX_IMAGE` - Defines the Job pod busybox image.
 22. `JOB_KUBE_CURL_IMAGE` - Defines the Job pod curl image pull.
 23. `JOB_KUBE_NAMESPACE` - Defines the Kubernetes namespace Job pods are created in.
+
+The `SYNC_JOB_RETRIES_*` variables have no dedicated Helm values. Set them on the worker with `worker.extraEnv`, for example:
+
+```yaml title="values.yaml"
+worker:
+  extraEnv:
+    - name: SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL
+      value: "5"
+    - name: SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL
+      value: "10"
+```
 
 ## Jobs-specific
 
@@ -103,14 +121,6 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 7. `S3_MINIO_ENDPOINT` - Defines the url Minio is hosted at so Airbyte can use Minio to store logs.
 8. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
 
-## Monitoring
-
-1. `PUBLISH_METRICS` - Defines whether to publish metrics collected by the Metrics Reporter. Defaults to false.
-2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
-3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-5. `OTEL_COLLECTOR_ENDPOINT` - Defines the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
-
 ## Worker
 
 1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
@@ -125,8 +135,3 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 ## Data Retention
 
 1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal. Defaults to 30 days.
-
-## Server
-
-1. `AUDIT_LOGGING_ENABLED` - For Self-Managed Enterprise only, defines whether Airbyte enables audit logging. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
-2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.

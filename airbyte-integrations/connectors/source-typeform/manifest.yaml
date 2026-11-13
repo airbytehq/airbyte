@@ -4,7 +4,11 @@ type: DeclarativeSource
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 25
-  max_concurrency: 25
+  max_concurrency: 75
+
+# api_budget intentionally omitted — reviewed and explored during concurrency tuning (rc.1–rc.4).
+# Typeform's documented rate limit is 2 req/s, but proactive budgeting caused stalling at low concurrency.
+# The CDK's built-in 429 retry/backoff handles rate limiting reactively, which works well in practice.
 
 check:
   type: CheckStream

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.0.post4.dev24089021469@sha256:c2cf578631b268f392b6c950475fbc1df5bb4ac2d7aef7b23d93bf2c1ccc4f5e
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.13.20
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   externalDocumentationUrls:
@@ -26,6 +26,9 @@ data:
     - title: Intercom API OpenAPI specification
       url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
       type: openapi_spec
+    - title: Intercom OpenAPI specification repository
+      url: https://github.com/intercom/Intercom-OpenAPI
+      type: spec_repository
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2
@@ -42,8 +45,30 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 changes the `company_segments` stream. Each record now has a `company_id` field with the
+          Intercom ID of the company the segment is attached to, and the primary key changes from `id` to
+          `[company_id, id]`, so deduplicated destinations keep one row per company and segment instead of one row
+          per segment. If you sync `company_segments` in Incremental | Append + Deduped, refresh the source schema
+          after upgrading, then refresh the stream with "Refresh stream and remove records" to drop the old rows,
+          which have no `company_id`. In Incremental | Append, do the same with "Refresh stream and retain records",
+          or the saved state keeps older memberships from getting `company_id`. Full Refresh modes need no action.
+          See the [migration guide](https://docs.airbyte.com/integrations/sources/intercom-migrations#upgrading-to-100).
+        upgradeDeadline: "2026-11-30"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "company_segments"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - conversations

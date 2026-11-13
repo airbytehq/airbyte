@@ -35,5 +35,5 @@ class BulkLoadPipeline<K : WithStream, T : RemoteObject<*>>(
             listOf(bigQueryOneShotStep)
         } else {
             listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep)
-        }
+        },
     )

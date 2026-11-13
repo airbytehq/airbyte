@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import java.util.concurrent.atomic.AtomicBoolean
@@ -18,6 +19,10 @@ class FlushThresholdTest {
     private lateinit var flusher: DestinationFlushFunction
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)
         Mockito.`when`(flusher.queueFlushThresholdBytes).thenReturn(SIZE_10MB)
