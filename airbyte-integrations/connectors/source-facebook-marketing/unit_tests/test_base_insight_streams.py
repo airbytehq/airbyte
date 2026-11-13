@@ -9,14 +9,17 @@ from datetime import date, datetime, timedelta
 import pytest
 from facebook_business.exceptions import FacebookRequestError
 from freezegun import freeze_time
+from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
 from source_facebook_marketing.streams import AdsInsights, AdsInsightsAgeAndGender, AdsInsightsCountry
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.utils import DateInterval
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStreamStateSerializer, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
@@ -56,6 +59,93 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-10-01")
+    @pytest.mark.parametrize("stream_name", ["ads_insights", "custom_ad_insights"])
+    @pytest.mark.parametrize("empty_results", [False, True])
+    @pytest.mark.parametrize("time_increment", [1, 3])
+    def test_interrupted_lookback_checkpoints_do_not_backtrack(self, mocker, api, some_config, stream_name, empty_results, time_increment):
+        account_ids = ["123", "456"]
+        initial_cursor = date(2026, 9, 20)
+        replay_start = initial_cursor - timedelta(days=6)
+        end_date = initial_cursor + timedelta(days=2 * time_increment)
+        scheduled = {}
+
+        def run_read(saved_state, until, interrupted):
+            stream = AdsInsights(
+                api=api,
+                account_ids=account_ids,
+                start_date=datetime(2026, 9, 2),
+                end_date=datetime.combine(until, datetime.min.time()),
+                insights_lookback_window=6,
+                time_increment=time_increment,
+                name=stream_name,
+            )
+            source = SourceFacebookMarketing()
+            mocker.patch.object(source, "streams", return_value=[stream])
+
+            def completed_jobs(jobs, account_id, **kwargs):
+                jobs = list(jobs)
+                scheduled[account_id] = [job.interval.start for job in jobs]
+                if interrupted:
+                    jobs = [jobs[1], jobs[0], jobs[-1], jobs[2]]
+                for index, job in enumerate(jobs):
+                    record = mocker.Mock()
+                    record.export_all_data.return_value = {"date_start": job.interval.start.isoformat(), "ad_id": "ad_1"}
+                    result = mocker.patch.object(job, "get_result", return_value=[] if empty_results else [record])
+                    if interrupted and index == 3:
+                        result.side_effect = RuntimeError("Interrupted insights report")
+                    yield job
+
+            manager = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager")
+            manager.side_effect = lambda **kwargs: mocker.Mock(completed_jobs=lambda: completed_jobs(**kwargs))
+            catalog = ConfiguredAirbyteCatalog(
+                streams=[ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental).build()]
+            )
+            config = {**some_config, "account_ids": account_ids, "credentials": {"auth_type": "Service", "access_token": "unknown_token"}}
+            return read(source, config, catalog, saved_state, expecting_exception=interrupted)
+
+        first_read = run_read(None, initial_cursor, False)
+        saved_state = [first_read.state_messages[-1].state]
+        for account_id in account_ids:
+            assert AirbyteStreamStateSerializer.dump(saved_state[0].stream)["stream_state"][account_id] == {
+                "date_start": initial_cursor.isoformat(),
+                "slices": [],
+            }
+
+        for _ in range(2):
+            interrupted_read = run_read(saved_state, end_date, True)
+            checkpoints = [
+                AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"] for message in interrupted_read.state_messages
+            ]
+            assert checkpoints
+            assert scheduled[account_ids[0]][0] == replay_start
+            assert [message.record.data["date_start"] for message in interrupted_read.records] == (
+                []
+                if empty_results
+                else [value.isoformat() for value in [replay_start + timedelta(days=time_increment), replay_start, end_date]]
+            )
+            for checkpoint in checkpoints:
+                for account_id in account_ids:
+                    assert checkpoint[account_id]["date_start"] == initial_cursor.isoformat()
+            saved_state = [interrupted_read.state_messages[-1].state]
+            saved_stream_state = AirbyteStreamStateSerializer.dump(saved_state[0].stream)["stream_state"]
+            assert saved_stream_state[account_ids[0]]["slices"] == [end_date.isoformat()]
+            assert saved_stream_state[account_ids[1]]["slices"] == []
+
+        resumed_read = run_read(saved_state, end_date, False)
+        expected_dates = [
+            (replay_start + timedelta(days=offset)).isoformat() for offset in range(0, (end_date - replay_start).days + 1, time_increment)
+        ]
+        for account_id in account_ids:
+            assert scheduled[account_id] == [date.fromisoformat(value) for value in expected_dates]
+            assert [
+                message.record.data["date_start"] for message in resumed_read.records if message.record.data["account_id"] == account_id
+            ] == ([] if empty_results else expected_dates)
+            assert (
+                AirbyteStreamStateSerializer.dump(resumed_read.most_recent_state)["stream_state"][account_id]["date_start"]
+                == end_date.isoformat()
+            )
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
