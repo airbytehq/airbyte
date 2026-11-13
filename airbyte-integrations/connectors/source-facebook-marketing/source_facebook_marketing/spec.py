@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import copy
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
@@ -42,6 +43,43 @@ ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
 ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
+
+# Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the groups it
+# shows, in form order. Properties opt into a group with `group="<id>"`. A section with `"check": True` is checked when
+# the user completes it: the platform sends a CHECK whose config carries a top-level `check-section` key, and the
+# connector validates the configuration up to that section only (see the CDK's airbyte_cdk.sources.utils.check_section
+# and SourceFacebookMarketing.check_section_connection). The review section has no check of its own: the full check the
+# platform runs before creating the source covers it.
+GROUP_ACCOUNT = "account"
+GROUP_FILTERS = "filters"
+GROUP_ADVANCED = "advanced"
+
+SECTION_ACCOUNT = "account"
+SECTION_REVIEW = "review"
+
+GROUPS: List[Dict[str, Any]] = [
+    {"id": GROUP_ACCOUNT},
+    {"id": GROUP_FILTERS, "title": "Advanced"},
+    {"id": GROUP_ADVANCED, "title": "Advanced"},
+]
+
+SECTIONS: List[Dict[str, Any]] = [
+    {
+        "id": SECTION_ACCOUNT,
+        "title": "Connect account",
+        "order": 0,
+        "description": "Sign in to Facebook and choose the ad account to sync.",
+        "groups": [GROUP_ACCOUNT, GROUP_FILTERS],
+        "check": True,
+    },
+    {
+        "id": SECTION_REVIEW,
+        "title": "Review & set up",
+        "order": 1,
+        "description": "Name your source and check the optional settings.",
+        "groups": [GROUP_ADVANCED],
+    },
+]
 
 
 class TimeIncrementPeriod(str, Enum):
@@ -242,9 +280,18 @@ class ConnectorConfig(BaseConfig):
         title = "Source Facebook Marketing"
         use_enum_values = True
 
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """The connection specification with the `groups` and `sections` of the stepped setup form."""
+        schema = super().schema(*args, **kwargs)
+        schema["groups"] = copy.deepcopy(GROUPS)
+        schema["sections"] = copy.deepcopy(SECTIONS)
+        return schema
+
     account_ids: Set[constr(regex="^[0-9]+$")] = Field(
         title="Ad Account ID(s)",
         order=0,
+        group=GROUP_ACCOUNT,
         description=(
             "The Facebook Ad account ID(s) to pull data from. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
@@ -258,7 +305,6 @@ class ConnectorConfig(BaseConfig):
 
     access_token: Optional[str] = Field(
         title="Access Token",
-        order=1,
         description=(
             "The value of the generated access token. "
             "We recommend a Meta system user access token: in Meta Business Settings, go to <b>Users</b> > <b>System users</b>, "
@@ -272,13 +318,17 @@ class ConnectorConfig(BaseConfig):
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication",
+        order=1,
         description="Credentials for connecting to the Facebook Marketing API",
         type="object",
+        display_type="radio",
+        group=GROUP_ACCOUNT,
     )
 
     start_date: Optional[datetime] = Field(
         title="Start Date",
         order=2,
+        group=GROUP_FILTERS,
         description=(
             "The date from which you'd like to replicate data for all incremental streams, "
             "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 37 months for insight streams."
@@ -290,6 +340,7 @@ class ConnectorConfig(BaseConfig):
     end_date: Optional[datetime] = Field(
         title="End Date",
         order=3,
+        group=GROUP_FILTERS,
         description=(
             "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z."
             " All data generated between the start date and this end date will be replicated. "
@@ -303,6 +354,7 @@ class ConnectorConfig(BaseConfig):
     campaign_statuses: Optional[List[ValidCampaignStatuses]] = Field(
         title="Campaign Statuses",
         order=4,
+        group=GROUP_FILTERS,
         description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         default=[],
     )
@@ -310,6 +362,7 @@ class ConnectorConfig(BaseConfig):
     adset_statuses: Optional[List[ValidAdSetStatuses]] = Field(
         title="AdSet Statuses",
         order=5,
+        group=GROUP_FILTERS,
         description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         default=[],
     )
@@ -317,20 +370,23 @@ class ConnectorConfig(BaseConfig):
     ad_statuses: Optional[List[ValidAdStatuses]] = Field(
         title="Ad Statuses",
         order=6,
+        group=GROUP_FILTERS,
         description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         default=[],
     )
 
     fetch_thumbnail_images: bool = Field(
         title="Fetch Thumbnail Images from Ad Creative",
-        order=7,
+        order=8,
+        group=GROUP_FILTERS,
         default=False,
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
     default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action breakdowns for the Built-in Ads Insight stream",
-        order=8,
+        order=9,
+        group=GROUP_FILTERS,
         default=[
             AdsInsights.ActionBreakdowns.action_type,
             AdsInsights.ActionBreakdowns.action_target_id,
@@ -341,7 +397,8 @@ class ConnectorConfig(BaseConfig):
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=9,
+        order=7,
+        group=GROUP_FILTERS,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'
@@ -350,7 +407,8 @@ class ConnectorConfig(BaseConfig):
 
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
-        order=10,
+        order=13,
+        group=GROUP_ADVANCED,
         default=100,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. "
@@ -360,7 +418,8 @@ class ConnectorConfig(BaseConfig):
 
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
-        order=11,
+        order=12,
+        group=GROUP_ADVANCED,
         description=(
             "The attribution window. Facebook freezes insight data 28 days after it was generated, "
             "which means that all data from the past 28 days may have changed since we last emitted it, "
@@ -374,7 +433,8 @@ class ConnectorConfig(BaseConfig):
 
     insights_job_timeout: Optional[PositiveInt] = Field(
         title="Insights Job Timeout",
-        order=12,
+        order=14,
+        group=GROUP_ADVANCED,
         description=(
             "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. "
             "When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. "
@@ -388,7 +448,8 @@ class ConnectorConfig(BaseConfig):
 
     include_incrementality: bool = Field(
         title="Include Incrementality",
-        order=13,
+        order=10,
+        group=GROUP_FILTERS,
         description=(
             "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams. "
             "This allows you to retrieve incrementality data for action metrics. "
@@ -400,7 +461,8 @@ class ConnectorConfig(BaseConfig):
 
     include_engaged_view: bool = Field(
         title="Include Engaged View",
-        order=14,
+        order=11,
+        group=GROUP_FILTERS,
         description=(
             "If enabled, the engaged view (ev) attribution window will be included in the action attribution windows for all built-in insight streams. "
             "This surfaces attribution data for users who had an engaged view of a video ad (watched 10+ seconds or 97%+ of a short video). "
