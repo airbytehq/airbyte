@@ -638,6 +638,11 @@ definitions:
 
   messages_stream:
     $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioMessagesGlobalStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"

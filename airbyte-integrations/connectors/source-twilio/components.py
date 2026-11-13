@@ -83,6 +83,30 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesGlobalStateMigration(StateMigration):
+    """Remove obsolete partition cursors from messages state already using a global cursor."""
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {key: value for key, value in stream_state.items() if key != "states"}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if stream_state.get("use_global_cursor") is not True or "states" not in stream_state:
+            return False
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping):
+            return False
+        cursor = global_state.get("date_sent")
+        if not isinstance(cursor, str):
+            return False
+        for datetime_format in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d %H:%M:%SZ"):
+            try:
+                datetime.strptime(cursor, datetime_format)
+                return True
+            except ValueError:
+                pass
+        return False
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
