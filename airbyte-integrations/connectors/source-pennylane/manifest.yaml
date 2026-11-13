@@ -44,7 +44,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: "{{ response.get('current_page', 0) + 1 }}"
             stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
@@ -148,7 +148,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: "{{ response.get('current_page', 0) + 1 }}"
             stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       schema_loader:
@@ -242,7 +242,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: "{{ response.get('current_page', 0) + 1 }}"
             stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
@@ -346,7 +346,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: "{{ response.get('current_page', 0) + 1 }}"
             stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       schema_loader:
@@ -440,7 +440,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: "{{ response.get('current_page', 0) + 1 }}"
             stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:

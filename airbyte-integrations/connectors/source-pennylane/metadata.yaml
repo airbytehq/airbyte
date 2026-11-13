@@ -68,8 +68,8 @@ data:
     - title: Rate limiting (v2)
       url: https://pennylane.readme.io/docs/rate-limiting-1
       type: rate_limits
-    - title: OAuth 2.0 walkthrough
-      url: https://pennylane.readme.io/docs/oauth-20-walkthrough
+    - title: Create a Company API Token
+      url: https://pennylane.readme.io/docs/generating-my-api-token
       type: authentication_guide
     - title: API scopes (v1)
       url: https://pennylane.readme.io/v1.0/docs/v1-scopes

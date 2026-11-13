@@ -8,7 +8,6 @@ from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 
 
 BASE_URL = "https://app.pennylane.com/api/external/v1"
-PAGE_SIZE = 100
 
 
 @dataclass(frozen=True)
@@ -18,18 +17,19 @@ class StreamSpec:
     records_field: str
     primary_key: str
     incremental: bool
+    page_size: int
 
 
 STREAMS: List[StreamSpec] = [
-    StreamSpec("supplier_invoices", "supplier_invoices", "invoices", "id", True),
-    StreamSpec("suppliers", "suppliers", "suppliers", "source_id", True),
-    StreamSpec("plan_items", "plan_items", "plan_items", "v2_id", False),
-    StreamSpec("customers", "customers", "customers", "source_id", True),
-    StreamSpec("customer_invoices", "customer_invoices", "invoices", "id", True),
-    StreamSpec("products", "products", "products", "source_id", True),
-    StreamSpec("category_groups", "category_groups", "category_groups", "id", False),
-    StreamSpec("categories", "categories", "categories", "source_id", True),
-    StreamSpec("customer_estimates", "customer_estimates", "estimates", "id", True),
+    StreamSpec("supplier_invoices", "supplier_invoices", "invoices", "id", True, 1000),
+    StreamSpec("suppliers", "suppliers", "suppliers", "source_id", True, 100),
+    StreamSpec("plan_items", "plan_items", "plan_items", "v2_id", False, 1000),
+    StreamSpec("customers", "customers", "customers", "source_id", True, 100),
+    StreamSpec("customer_invoices", "customer_invoices", "invoices", "id", True, 1000),
+    StreamSpec("products", "products", "products", "source_id", True, 100),
+    StreamSpec("category_groups", "category_groups", "category_groups", "id", False, 1000),
+    StreamSpec("categories", "categories", "categories", "source_id", True, 100),
+    StreamSpec("customer_estimates", "customer_estimates", "estimates", "id", True, 1000),
 ]
 INCREMENTAL_STREAMS = [stream for stream in STREAMS if stream.incremental]
 
@@ -41,7 +41,7 @@ def updated_at_filter(lower_bound: str) -> str:
 
 def list_request(stream: StreamSpec, page: int, updated_since: Optional[str] = None) -> HttpRequest:
     # The first page is requested without `page`; later pages send the page number from the previous response.
-    query_params: Dict[str, str] = {"per_page": str(PAGE_SIZE)}
+    query_params: Dict[str, str] = {"per_page": str(stream.page_size)}
     if page > 1:
         query_params["page"] = str(page)
     if updated_since is not None:

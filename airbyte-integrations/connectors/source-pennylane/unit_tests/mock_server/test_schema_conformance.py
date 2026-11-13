@@ -5,10 +5,12 @@ Fields the v1 API returns on `customer_invoices` and `customers` must be declare
 in the discovered schema with types that accept the values the API sends.
 """
 
-from typing import Any, Dict
+import re
+from typing import Any, Dict, List
 
 import freezegun
 import pytest
+from jsonschema import Draft7Validator, FormatChecker
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -17,7 +19,8 @@ from mock_server.helpers import discover_schema, read_stream
 from mock_server.request_builder import STREAMS, list_request, list_response, record
 
 
-_JSON_TYPES = {"object": dict, "string": str, "boolean": bool, "integer": int, "number": (int, float), "array": list}
+# jsonschema checks `date` out of the box but skips `date-time` unless rfc3339-validator is installed.
+_FORMAT_CHECKER = FormatChecker()
 _STREAMS_BY_NAME = {stream.name: stream for stream in STREAMS}
 
 _CUSTOMER_INVOICE_FIELDS: Dict[str, Any] = {
@@ -33,13 +36,15 @@ _CUSTOMER_FIELDS: Dict[str, Any] = {
 }
 
 
-def _accepts(schema: Dict[str, Any], value: Any) -> bool:
-    declared = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
-    if value is None:
-        return "null" in declared
-    if isinstance(value, bool):
-        return "boolean" in declared
-    return any(isinstance(value, _JSON_TYPES[json_type]) for json_type in declared if json_type in _JSON_TYPES)
+@_FORMAT_CHECKER.checks("date-time")
+def _is_date_time(value: object) -> bool:
+    return not isinstance(value, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}.*", value) is not None
+
+
+def _violations(schema: Dict[str, Any], value: Any) -> List[str]:
+    """Every way `value` breaks `schema`, nested properties and `format` included."""
+    validator = Draft7Validator(schema, format_checker=_FORMAT_CHECKER)
+    return [f"{'.'.join(map(str, error.absolute_path)) or '<value>'}: {error.message}" for error in validator.iter_errors(value)]
 
 
 @freezegun.freeze_time("2024-06-01T00:00:00Z")
@@ -62,6 +67,4 @@ def test_emitted_vendor_fields_are_declared_with_matching_types(stream_name: str
     emitted = output.records[0].record.data
     for field_name in vendor_fields:
         assert field_name in properties, f"{stream_name}.{field_name} is emitted but not declared"
-        assert _accepts(properties[field_name], emitted[field_name]), f"{stream_name}.{field_name}={emitted[field_name]!r}"
-    for sub_field, value in vendor_fields.get("imputation_dates", {}).items():
-        assert _accepts(properties["imputation_dates"]["properties"][sub_field], value)
+        assert _violations(properties[field_name], emitted[field_name]) == [], f"{stream_name}.{field_name}"
