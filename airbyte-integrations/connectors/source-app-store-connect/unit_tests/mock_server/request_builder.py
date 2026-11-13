@@ -8,6 +8,7 @@ from airbyte_cdk.test.mock_http import HttpRequest
 
 
 API_BASE_URL = "https://api.appstoreconnect.apple.com/v1"
+PAGE_SIZE = "200"
 
 
 class RequestBuilder:
@@ -19,7 +20,7 @@ class RequestBuilder:
 
     @classmethod
     def apps_endpoint(cls) -> "RequestBuilder":
-        return cls(f"{API_BASE_URL}/apps")
+        return cls(f"{API_BASE_URL}/apps").with_page_size()
 
     @classmethod
     def customer_reviews_endpoint(cls, app_id: str) -> "RequestBuilder":
@@ -35,19 +36,19 @@ class RequestBuilder:
 
     @classmethod
     def analytics_report_requests_endpoint(cls, app_id: str) -> "RequestBuilder":
-        return cls(f"{API_BASE_URL}/apps/{app_id}/analyticsReportRequests")
+        return cls(f"{API_BASE_URL}/apps/{app_id}/analyticsReportRequests").with_page_size()
 
     @classmethod
     def analytics_reports_endpoint(cls, request_id: str) -> "RequestBuilder":
-        return cls(f"{API_BASE_URL}/analyticsReportRequests/{request_id}/reports")
+        return cls(f"{API_BASE_URL}/analyticsReportRequests/{request_id}/reports").with_page_size()
 
     @classmethod
     def analytics_instances_endpoint(cls, report_id: str) -> "RequestBuilder":
-        return cls(f"{API_BASE_URL}/analyticsReports/{report_id}/instances")
+        return cls(f"{API_BASE_URL}/analyticsReports/{report_id}/instances").with_page_size()
 
     @classmethod
     def analytics_segments_endpoint(cls, instance_id: str) -> "RequestBuilder":
-        return cls(f"{API_BASE_URL}/analyticsReportInstances/{instance_id}/segments")
+        return cls(f"{API_BASE_URL}/analyticsReportInstances/{instance_id}/segments").with_page_size()
 
     @classmethod
     def analytics_segment_endpoint(cls, segment_id: str) -> "RequestBuilder":
@@ -60,6 +61,9 @@ class RequestBuilder:
     def with_query_param(self, name: str, value: Any) -> "RequestBuilder":
         self._query_params[name] = value
         return self
+
+    def with_page_size(self) -> "RequestBuilder":
+        return self.with_query_param("limit", PAGE_SIZE)
 
     def with_cursor(self, cursor: str) -> "RequestBuilder":
         return self.with_query_param("cursor", cursor)

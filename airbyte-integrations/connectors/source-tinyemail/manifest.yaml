@@ -60,7 +60,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: contacts
+          path: audiences
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -100,7 +100,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: contacts/{{ stream_partition.id }}/members
+          path: audiences/{{ stream_partition.id }}/customers
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -251,6 +251,10 @@ schemas:
           type:
             - string
             - "null"
+      contentSourceUrl:
+        type:
+          - string
+          - "null"
       delivered:
         type:
           - number
@@ -282,6 +286,22 @@ schemas:
             type:
               - string
               - "null"
+          days:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          time:
+            type:
+              - string
+              - "null"
+      sendOrder:
+        type:
+          - string
+          - "null"
       senderId:
         type:
           - string
@@ -363,6 +383,10 @@ schemas:
         type:
           - string
           - "null"
+      assignedToCampaigns:
+        type:
+          - boolean
+          - "null"
       city:
         type:
           - string
@@ -401,6 +425,10 @@ schemas:
         type:
           - string
           - "null"
+      replyTo:
+        type:
+          - string
+          - "null"
     required:
       - id
   contact_members:
@@ -436,6 +464,11 @@ schemas:
         type:
           - string
           - "null"
+      customAttributes:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
       email:
         type:
           - string
@@ -445,6 +478,26 @@ schemas:
           - string
           - "null"
       lastName:
+        type:
+          - string
+          - "null"
+      lastPurchaseDate:
+        type:
+          - string
+          - "null"
+      lastPurchaseOrder:
+        type:
+          - string
+          - "null"
+      lastPurchasePrice:
+        type:
+          - string
+          - "null"
+      latestOrderId:
+        type:
+          - string
+          - "null"
+      phone:
         type:
           - string
           - "null"
@@ -460,6 +513,10 @@ schemas:
         type:
           - string
           - "null"
+      status:
+        type:
+          - string
+          - "null"
       tags:
         type:
           - array
@@ -468,3 +525,7 @@ schemas:
           type:
             - string
             - "null"
+      unsubscribedAt:
+        type:
+          - string
+          - "null"

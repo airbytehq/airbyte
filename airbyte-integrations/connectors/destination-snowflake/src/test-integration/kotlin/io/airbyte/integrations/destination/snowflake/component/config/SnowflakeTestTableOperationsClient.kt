@@ -39,7 +39,7 @@ class SnowflakeTestTableOperationsClient(
 ) : TestTableOperationsClient {
     override suspend fun dropNamespace(namespace: String) {
         dataSource.execute(
-            "DROP SCHEMA IF EXISTS ${sqlGenerator.fullyQualifiedNamespace(namespace)}".andLog()
+            "DROP SCHEMA IF EXISTS ${sqlGenerator.fullyQualifiedNamespace(namespace)}".andLog(),
         )
     }
 
@@ -55,7 +55,7 @@ class SnowflakeTestTableOperationsClient(
             io.airbyte.cdk.load.schema.model.ColumnSchema(
                 inputToFinalColumnNames = columnTypes.keys.associateWith { it },
                 finalSchema = columnTypes.mapValues { (_, _) -> ColumnType("", true) },
-                inputSchema = emptyMap() // Not needed for insert buffer
+                inputSchema = emptyMap(), // Not needed for insert buffer
             )
         val a =
             SnowflakeAggregate(
@@ -66,7 +66,7 @@ class SnowflakeTestTableOperationsClient(
                     columnSchema = columnSchema,
                     columnManager = columnManager,
                     snowflakeRecordFormatter = snowflakeRecordFormatter,
-                )
+                ),
             )
         records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }
         a.flush()

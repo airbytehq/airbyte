@@ -120,6 +120,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.63 | 2026-10-14 | [88972](https://github.com/airbytehq/airbyte/pull/88972) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
 | 0.0.62 | 2026-09-28 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
 | 0.0.61 | 2026-08-13 | [84362](https://github.com/airbytehq/airbyte/pull/84362) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.60 | 2026-07-02 | [81383](https://github.com/airbytehq/airbyte/pull/81383) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |

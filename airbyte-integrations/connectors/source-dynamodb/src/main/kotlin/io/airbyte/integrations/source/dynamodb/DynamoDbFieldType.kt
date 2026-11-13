@@ -158,14 +158,14 @@ data class DynamoDbFieldType(
                 "array" ->
                     ArrayAirbyteSchemaType(
                         jsonSchema["items"]?.let(::airbyteSchemaTypeOf)
-                            ?: LeafAirbyteSchemaType.JSONB
+                            ?: LeafAirbyteSchemaType.JSONB,
                     )
                 "null" -> LeafAirbyteSchemaType.NULL
                 "boolean" -> LeafAirbyteSchemaType.BOOLEAN
                 "number" ->
                     when (value("airbyte_type")) {
                         "integer",
-                        "big_integer", -> LeafAirbyteSchemaType.INTEGER
+                        "big_integer" -> LeafAirbyteSchemaType.INTEGER
                         else -> LeafAirbyteSchemaType.NUMBER
                     }
                 "string" ->

@@ -64,6 +64,11 @@ The Cursor Admin API limits most endpoints, including `/teams/members`, `/teams/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2026-11-10 | [91480](https://github.com/airbytehq/airbyte/pull/91480) | Update dependencies |
+| 0.0.5 | 2026-11-03 | [90504](https://github.com/airbytehq/airbyte/pull/90504) | Update dependencies |
+| 0.0.4 | 2026-10-27 | [89852](https://github.com/airbytehq/airbyte/pull/89852) | Update dependencies |
+| 0.0.3 | 2026-10-20 | [89181](https://github.com/airbytehq/airbyte/pull/89181) | Update dependencies |
+| 0.0.2 | 2026-10-13 | [88573](https://github.com/airbytehq/airbyte/pull/88573) | Update dependencies |
 | 0.0.1 | 2026-10-07 | [82708](https://github.com/airbytehq/airbyte/pull/82708) | Initial release by [@dhlotter](https://github.com/dhlotter) via Connector Builder |
 
 </details>

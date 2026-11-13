@@ -18,7 +18,7 @@ object FusionPaths {
         namespace: String?,
         streamName: String,
         runId: UUID,
-        epochSeconds: Long
+        epochSeconds: Long,
     ): String {
         val escapedNamespace =
             when (namespace) {

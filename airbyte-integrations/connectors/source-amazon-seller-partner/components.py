@@ -25,11 +25,14 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
@@ -279,6 +282,83 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         except (json.JSONDecodeError, AttributeError, TypeError):
             # If we can't parse the response, don't invalidate
             pass
+
+
+@dataclass
+class RateLimitRetryBudgetErrorHandler(DefaultErrorHandler):
+    """
+    Gives 429 (rate limited) responses a larger retry budget than every other retryable error.
+
+    `HttpClient` reads one `max_retries` / `max_time` from the error handler per request and applies it to every
+    retryable error, and a `CompositeErrorHandler` cannot split it either: it takes `max_retries` from its first
+    handler and the largest `max_time` of all of them. So this handler hands `HttpClient` the 429 budget through
+    `max_retries` / `max_time`, and cuts every other retryable error (403, 5xx, connection errors) short itself:
+    once a request has had `other_errors_max_retries` such retries, or `other_errors_max_time` seconds have passed
+    since its first such error, the next one is resolved as FAIL instead of RETRY. 429s and other errors together
+    still cannot exceed `max_retries` / `max_time`.
+
+    The request being retried is tracked per thread: `HttpClient` runs a request's whole retry loop synchronously on
+    one thread, so the thread's current request is the one being retried. It is identified by method and URL rather
+    than by the `PreparedRequest` object, because HTTP mocking libraries hand back a different request object on
+    each attempt. The tracking is cleared by any response that is not retried.
+
+    Waiting for the shared API budget happens inside the retried request, so that wait counts toward both time limits.
+    """
+
+    other_errors_max_retries: int = 5
+    other_errors_max_time: int = 60 * 10
+
+    _RETRY_ACTIONS = (ResponseAction.RETRY, ResponseAction.RATE_LIMITED, ResponseAction.REFRESH_TOKEN_THEN_RETRY)
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._current_request = threading.local()
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        resolution = super().interpret_response(response_or_exception)
+        if resolution.response_action not in self._RETRY_ACTIONS:
+            self._current_request.tracked = None
+            return resolution
+
+        request_key = self._request_key(response_or_exception)
+        tracked = getattr(self._current_request, "tracked", None)
+        if tracked is not None and tracked[0] != request_key:
+            tracked = None
+
+        if self._is_rate_limited(response_or_exception):
+            self._current_request.tracked = tracked
+            return resolution
+
+        now = time.monotonic()
+        retries, first_error_at = (tracked[1] + 1, tracked[2]) if tracked else (1, now)
+        self._current_request.tracked = (request_key, retries, first_error_at)
+        elapsed = now - first_error_at
+        if retries <= self.other_errors_max_retries and elapsed <= self.other_errors_max_time:
+            return resolution
+
+        self._current_request.tracked = None
+        return ErrorResolution(
+            response_action=ResponseAction.FAIL,
+            failure_type=resolution.failure_type or FailureType.system_error,
+            error_message=(
+                f"Exhausted available request attempts after {retries} errors over {elapsed:.0f}s "
+                f"(limit {self.other_errors_max_retries} retries / {self.other_errors_max_time}s for errors other than 429). "
+                f"Last error: {resolution.error_message or 'see logs for details'}"
+            ),
+        )
+
+    @staticmethod
+    def _is_rate_limited(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
+        return (
+            isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.too_many_requests
+        )
+
+    @staticmethod
+    def _request_key(response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[Tuple[str, str]]:
+        request = getattr(response_or_exception, "request", None)
+        if request is None:
+            return None
+        return (str(request.method), str(request.url))
 
 
 @dataclass
@@ -545,16 +625,29 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
 
 
 class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
+    """
+    The V2 settlement report writes timestamps as `2026-09-14 22:51:31 UTC`; they are converted to
+    ISO 8601 (`2026-09-14T22:51:31+00:00`), the format the V1 report used. Empty dates become null.
+    """
+
+    UTC_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S UTC"
+
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
         self.registerCustomTransform(self.get_transform_function())
 
-    @staticmethod
-    def get_transform_function():
+    @classmethod
+    def get_transform_function(cls):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value == "" and field_schema.get("format") == "date-time":
+            value_format = field_schema.get("format")
+            if original_value == "" and value_format in ("date", "date-time"):
                 return None
+            if isinstance(original_value, str) and value_format == "date-time":
+                try:
+                    return dt.strptime(original_value, cls.UTC_DATETIME_FORMAT).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+                except ValueError:
+                    pass
             return original_value
 
         return transform_function
@@ -1168,6 +1261,80 @@ class ReportPollingRequester(HttpRequester):
             f"Add the options under Report Options in the source settings: set Report Name and "
             f"Stream Name to {report_type}, then one Name/Value pair per option. Names and values "
             f"are case-sensitive. {doc_reference}{_REPORT_OPTIONS_DOC_URL}"
+        )
+
+
+@dataclass
+class PresignedUrlDownloadRequester(HttpRequester):
+    """
+    Downloads a report document from its pre-signed S3 URL, minting a fresh URL when the current one is rejected.
+
+    Amazon signs report document URLs with `X-Amz-Expires=300`. Once that window has passed, S3 answers
+    `403 Request has expired`, and retrying the same URL can never succeed. The CDK resolves the URL once
+    per job and has no hook to resolve it again when the download fails, so this requester does it: on a
+    403 it calls `download_target_requester` (`getReportDocument`) for a new URL and downloads that one,
+    up to `max_url_refreshes` times.
+
+    The manifest must map 403 to IGNORE on this requester so the response reaches this code instead of
+    failing the request.
+    """
+
+    download_target_requester: Optional[HttpRequester] = None
+    max_url_refreshes: int = 2
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        def download(current_slice: Optional[StreamSlice]) -> Optional[requests.Response]:
+            return super(PresignedUrlDownloadRequester, self).send_request(
+                stream_state=stream_state,
+                stream_slice=current_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+
+        response = download(stream_slice)
+        for _ in range(self.max_url_refreshes):
+            if response is None or response.status_code != requests.codes.forbidden:
+                return response
+            logger.info(f"Report document download for {self.name} was rejected with 403; requesting a fresh pre-signed URL.")
+            stream_slice = self._with_fresh_download_target(stream_state, stream_slice)
+            response = download(stream_slice)
+
+        if response is not None and response.status_code == requests.codes.forbidden:
+            raise AirbyteTracedException(
+                message="Failed to download a report document from Amazon: the pre-signed URL was rejected even after being refreshed.",
+                internal_message=f"Download for {self.name} returned 403 after {self.max_url_refreshes} URL refreshes: {response.text[:500]}",
+                failure_type=FailureType.system_error,
+            )
+        return response
+
+    def _with_fresh_download_target(
+        self, stream_state: Optional[Mapping[str, Any]], stream_slice: Optional[StreamSlice]
+    ) -> Optional[StreamSlice]:
+        if self.download_target_requester is None or stream_slice is None:
+            return stream_slice
+        document_response = self.download_target_requester.send_request(stream_state=stream_state, stream_slice=stream_slice)
+        if document_response is None:
+            return stream_slice
+        return StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice=stream_slice.cursor_slice,
+            extra_fields={**stream_slice.extra_fields, "download_target": document_response.json()["url"]},
         )
 
 

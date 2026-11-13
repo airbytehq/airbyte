@@ -47,7 +47,7 @@ acceptance_tests:
             bypass_reason:
               "Merge is under beta stage and thus endpoint cannot be seeded
               manually"
-          - name: "job-interview-stages"
+          - name: "job_interview_stages"
             bypass_reason:
               "Merge is under beta stage and thus endpoint cannot be seeded
               manually"
@@ -63,6 +63,8 @@ acceptance_tests:
             bypass_reason:
               "Merge is under beta stage and thus endpoint cannot be seeded
               manually"
+          - name: users
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   # expect_records:
   #   path: "integration_tests/expected_records.jsonl"

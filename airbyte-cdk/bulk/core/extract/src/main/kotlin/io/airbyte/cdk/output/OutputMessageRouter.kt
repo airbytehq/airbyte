@@ -54,7 +54,7 @@ class OutputMessageRouter(
                                     .socketDatachannel,
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
-                                additionalProperties
+                                additionalProperties,
                             )
                         socketJsonStreamRecordConsumers =
                             feedBootstrap.streamJsonSocketRecordConsumers(socketJsonOutputConsumer)
@@ -78,7 +78,7 @@ class OutputMessageRouter(
                                     .socketDatachannel,
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
-                                additionalProperties
+                                additionalProperties,
                             )
                         protoStreamRecordOutputConsumers =
                             feedBootstrap.streamProtoRecordConsumers(
