@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+import test_bulk_stream
+import test_custom_report
 from base_test import BaseTest
 from freezegun import freeze_time
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
-import test_bulk_stream
-import test_custom_report
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
