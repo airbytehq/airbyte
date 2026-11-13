@@ -18,7 +18,9 @@ DAY = 86400
 
 
 def _catalog(stream_name: str):
-    return CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    return (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
 
 
 def _history_requests(requests_mock):
@@ -48,7 +50,10 @@ def test_threads_resumes_from_per_channel_parent_state(token_config, requests_mo
                 "parent_state": {
                     "channel_messages": {
                         "states": [
-                            {"partition": {"channel": "airbyte-for-beginners", "parent_slice": {}}, "cursor": {"float_ts": beginners_cursor}},
+                            {
+                                "partition": {"channel": "airbyte-for-beginners", "parent_slice": {}},
+                                "cursor": {"float_ts": beginners_cursor},
+                            },
                             {"partition": {"channel": "good-reads", "parent_slice": {}}, "cursor": {"float_ts": good_reads_cursor}},
                         ],
                         "state": {"float_ts": beginners_cursor},
