@@ -569,6 +569,41 @@ class TestDisplayReportStreams:
         assert len(output.records) == 1
         assert output.records[0].record.data["cost"] == 12.34
 
+    def test_given_file_when_read_tv_campaigns_report_then_return_records(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        report_id = "report-id-tv-campaigns"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"campaignId": "c1", "cost": 12.34, "clicks": 5, "impressions": 100}]')
+        requests_mock.get(
+            download_url,
+            content=report_data,
+            status_code=200,
+        )
+        output = self._read(config, "sponsored_tv_campaigns_report_stream", SyncMode.incremental)
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
+
+        assert created_report_request["configuration"]["reportTypeId"] == "stCampaigns"
+        assert created_report_request["configuration"]["groupBy"] == ["campaign"]
+        assert created_report_request["configuration"]["adProduct"] == "SPONSORED_TELEVISION"
+        assert "cost" in created_report_request["configuration"]["columns"]
+        assert len(output.records) == 1
+        assert output.records[0].record.data["cost"] == 12.34
+
     def test_given_file_when_read_brands_adgroups_report_then_return_cost_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
@@ -1095,8 +1130,8 @@ def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
 
 # Bump deliberately when adding or removing a report stream. A silent drop here would empty the
 # guard tests below, and pytest reports an empty parameter set as SKIPPED rather than FAILED.
-_EXPECTED_REPORT_STREAM_COUNT = 34
-_EXPECTED_DAILY_REPORT_STREAM_COUNT = 17
+_EXPECTED_REPORT_STREAM_COUNT = 36
+_EXPECTED_DAILY_REPORT_STREAM_COUNT = 18
 _EXPECTED_SPONSORED_PRODUCTS_SUMMARY_STREAM_COUNT = 8
 
 

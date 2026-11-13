@@ -115,6 +115,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups, Ads)
 - Sponsored Display Reports (Campaigns, Ad Groups, Product Ads, Targets, ASINs)
 - Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, [Search Terms](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/search-term), Product Ads, ASINs Keywords, ASINs Targets)
+- Sponsored Television Reports (Campaigns)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
@@ -158,6 +159,14 @@ The connector provides four types of Sponsored Brands V3 reports, each using a d
 | `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend, traffic, conversion, and video metrics. |
 | `sponsored_brands_adgroups_report_stream` | `sbAdGroup` | Ad-group-level spend, traffic, conversion, and video metrics. |
 | `sponsored_brands_ads_report_stream` | `sbAds` | Ad-level metrics, keyed by `adId`. Join to `sponsored_brands_ads` to attribute metrics to a creative. |
+
+Each stream above is available in both summary and daily variants.
+
+### Sponsored Television report types
+
+| Stream prefix | Report type | Use case |
+| :--- | :--- | :--- |
+| `sponsored_tv_campaigns_report_stream` | `stCampaigns` | Campaign-level spend, traffic, conversion, reach, frequency, and video metrics. |
 
 Each stream above is available in both summary and daily variants.
 
@@ -232,6 +241,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.3.0 | 2026-11-11 | [84937](https://github.com/airbytehq/airbyte/pull/84937) | Add Sponsored TV campaign report streams (`sponsored_tv_campaigns_report_stream`, `sponsored_tv_campaigns_report_stream_daily`) |
 | 9.2.13 | 2026-10-30 | [89746](https://github.com/airbytehq/airbyte/pull/89746) | Show Amazon's reason when it rejects a report request with HTTP 400, including a clear message when the report start date is outside Amazon's data retention window. Ad-group recommendation streams now back off longer before retrying when Amazon rate-limits them (HTTP 429). |
 | 9.2.12 | 2026-10-27 | [89801](https://github.com/airbytehq/airbyte/pull/89801) | Update dependencies |
 | 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
