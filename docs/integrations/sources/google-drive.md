@@ -296,10 +296,10 @@ Make sure the following APIs are enabled in your Google Cloud project:
 #### Authorization Scopes
 When setting up this connector, ensure that the following scopes are authorized in the Google consent screen:
 
-- https://www.googleapis.com/auth/drive.readonly
-- https://www.googleapis.com/auth/admin.directory.group.readonly
-- https://www.googleapis.com/auth/admin.directory.group.member.readonly
-- https://www.googleapis.com/auth/admin.directory.user.readonly
+- `https://www.googleapis.com/auth/drive.readonly` — Read-only access to file metadata and content.
+- `https://www.googleapis.com/auth/admin.directory.group.readonly` — Read-only access to Google Workspace groups.
+- `https://www.googleapis.com/auth/admin.directory.group.member.readonly` — Read-only access to group membership.
+- `https://www.googleapis.com/auth/admin.directory.user.readonly` — Read-only access to Google Workspace user profiles.
 
 #### Domain Field (optional)
 If you are syncing **identities** (users and groups) from a different domain than the one associated with your user account, you must specify the `domain` field in the connector configuration.
