@@ -15,14 +15,20 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   externalDocumentationUrls:
     - title: Future REST API deprecations and removals
-      url: https://docs.gitlab.com/ee/api/rest/deprecations.html
+      url: https://docs.gitlab.com/api/rest/deprecations/
+      type: api_deprecations
+    - title: Deprecations and removals by version
+      url: https://docs.gitlab.com/update/deprecations/
       type: api_deprecations
     - title: API reference
-      url: https://docs.gitlab.com/ee/api/rest/
+      url: https://docs.gitlab.com/api/rest/
       type: api_reference
     - title: GitLab API OpenAPI specification
-      url: https://docs.gitlab.com/ee/api/openapi/openapi.yaml
+      url: https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/api/openapi/openapi_v2.yaml
       type: openapi_spec
+    - title: GitLab.com rate limits
+      url: https://docs.gitlab.com/user/gitlab_com/rate_limits/
+      type: rate_limits
     - title: GitLab server source code (data/deprecations)
       url: https://gitlab.com/gitlab-org/gitlab
       type: code_repository
