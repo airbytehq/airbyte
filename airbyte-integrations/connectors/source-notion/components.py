@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -21,13 +22,27 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    The stream's client-side incremental cursor is applied here, after the recursion, instead of in the record
+    selector: a block that was not edited since the last sync can still have children that were.
     """
+
+    cursor: Optional[Cursor] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
 
     def read_records(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        for stream_data in self._read_block_tree(records_schema, stream_slice):
+            if self.cursor and isinstance(stream_data, Record) and not self.cursor.should_be_synced(stream_data):
+                continue
+            yield stream_data
+
+    def _read_block_tree(
         self,
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
@@ -44,7 +59,7 @@ class BlocksRetriever(SimpleRetriever):
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
                     cursor_slice=stream_slice.cursor_slice,
                 )
-                yield from self.read_records(records_schema, child_stream_slice)
+                yield from self._read_block_tree(records_schema, child_stream_slice)
                 self.current_block_depth -= 1
 
             if "parent" in stream_data:
