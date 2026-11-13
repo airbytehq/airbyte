@@ -24,7 +24,7 @@ interface LoadTypeSpecification {
 
     @get:JsonSchemaTitle("Load Type")
     @get:JsonPropertyDescription(
-        "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration."
+        "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
     )
     @get:JsonProperty("load_type")
     val loadType: LoadType
@@ -67,14 +67,14 @@ interface LoadTypeSpecification {
 )
 @JsonSchemaTitle("MSSQL Load Type")
 @JsonSchemaDescription(
-    "Determines the specific implementation used by the MSSQL destination to load data."
+    "Determines the specific implementation used by the MSSQL destination to load data.",
 )
 sealed class LoadType(@JsonSchemaTitle("Load Type") open val loadType: Type) {
 
     /** Enum of possible load operations in MSSQL: INSERT or BULK. */
     enum class Type(@get:JsonValue val loadTypeName: String) {
         INSERT("INSERT"),
-        BULK("BULK")
+        BULK("BULK"),
     }
 }
 
@@ -99,7 +99,7 @@ class BulkLoadSpecification(
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage account. " +
-            "See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts"
+            "See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts",
     )
     @get:JsonProperty("azure_blob_storage_account_name")
     @JsonSchemaInject(
@@ -108,27 +108,28 @@ class BulkLoadSpecification(
             "examples": ["mystorageaccount"],
             "order": 1,
             "always_show": true
-        }"""
+        }""",
     )
     override val azureBlobStorageAccountName: String,
     @get:JsonSchemaTitle("Azure Blob Storage Container Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage container. " +
-            "See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers"
+            "See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers",
     )
     @get:JsonProperty("azure_blob_storage_container_name")
     @JsonSchemaInject(
-        json = """{
+        json =
+            """{
             "order": 2,
             "always_show": true
-        }"""
+        }""",
     )
     override val azureBlobStorageContainerName: String,
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
         "A shared access signature (SAS) provides secure delegated access to resources " +
             "in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview." +
-            "Mutually exclusive with an account key"
+            "Mutually exclusive with an account key",
     )
     @get:JsonProperty("shared_access_signature")
     @JsonSchemaInject(
@@ -138,12 +139,12 @@ class BulkLoadSpecification(
             "order": 3,
             "airbyte_secret": true,
             "always_show": true
-        }"""
+        }""",
     )
     override val azureBlobStorageSharedAccessSignature: String?,
     @get:JsonSchemaTitle("Azure Blob Storage account key")
     @get:JsonPropertyDescription(
-        "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature"
+        "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature",
     )
     @get:JsonProperty("azure_blob_storage_account_key")
     @JsonSchemaInject(
@@ -153,13 +154,13 @@ class BulkLoadSpecification(
             "order": 4,
             "airbyte_secret": true,
             "always_show": true
-        }"""
+        }""",
     )
     override val azureBlobStorageAccountKey: String?,
     @get:JsonSchemaTitle("BULK Load Data Source")
     @get:JsonPropertyDescription(
         "Specifies the external data source name configured in MSSQL, which references " +
-            "the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql"
+            "the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
     )
     @get:JsonProperty("bulk_load_data_source")
     @JsonSchemaInject(
@@ -168,13 +169,13 @@ class BulkLoadSpecification(
             "examples": ["MyAzureBlobStorage"],
             "order": 5,
             "always_show": true
-        }"""
+        }""",
     )
     val bulkLoadDataSource: String,
     @get:JsonSchemaTitle("Pre-Load Value Validation")
     @get:JsonPropertyDescription(
         "When enabled, Airbyte will validate all values before loading them into the destination table. " +
-            "This provides stronger data integrity guarantees but may significantly impact performance."
+            "This provides stronger data integrity guarantees but may significantly impact performance.",
     )
     @get:JsonProperty("bulk_load_validate_values_pre_load")
     @JsonSchemaInject(
@@ -185,7 +186,7 @@ class BulkLoadSpecification(
         "type": "boolean",
         "order": 6,
         "always_show": false
-    }"""
+    }""",
     )
     val validateValuesPreLoad: Boolean?,
 ) : LoadType(loadType), AzureBlobStorageClientSpecification {
@@ -207,7 +208,7 @@ sealed interface LoadTypeConfiguration
 data class MSSQLLoadTypeConfiguration(
     @JsonSchemaTitle("MSSQL Load Type Configuration")
     @JsonPropertyDescription("Specific configuration details of the chosen MSSQL load mechanism.")
-    val loadTypeConfiguration: LoadTypeConfiguration
+    val loadTypeConfiguration: LoadTypeConfiguration,
 )
 
 /**

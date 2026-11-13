@@ -19,18 +19,18 @@ The connector splits the text fields of your records into chunks, turns each chu
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-Overwrite syncs don't delete the collection. At the start of the sync, the connector deletes the documents whose `_ab_stream` metadata value matches the streams being overwritten, so documents from other streams and from other tools stay in place.
+Overwrite syncs don't delete the collection. At the start of the sync, the connector deletes the documents whose `_ab_stream` metadata value matches the streams being overwritten. Documents with other or missing `_ab_stream` values aren't targeted.
 
-Deduplicating syncs require a primary key on the stream. Before writing a record, the connector deletes the documents whose `_ab_record_id` metadata value matches that record's primary key.
+Deduplicating syncs require a primary key on the stream. Before writing a record, the connector deletes the documents whose `_ab_record_id` metadata value matches the identifier generated from that record's stream and primary key.
 
 ## Output schema
 
 All source streams are written to one Chroma collection, which you name in the connector configuration. Each chunk becomes one document in that collection:
 
-- The document ID is a randomly generated UUID. Source primary keys are stored in metadata instead, so you can't look a record up by its source ID.
+- The document ID is a randomly generated UUID, not the source primary key. For deduplicating streams, the connector stores an identifier derived from the stream and primary key in metadata instead.
 - The chunk text is stored as the document, unless you enable **Do not store raw text**.
 - The embedding is stored as the document's embedding. If you use Chroma's default embedding function, Airbyte sends no embedding and Chroma computes one.
-- The fields you select as metadata are stored as document metadata, along with `_ab_stream` (the stream identifier, in the form `namespace_stream` when the stream has a namespace) and `_ab_record_id` (the record's primary key, for deduplicating streams).
+- The fields you select as metadata are stored as document metadata, along with `_ab_stream` (the stream identifier, in the form `namespace_stream` when the stream has a namespace) and `_ab_record_id` (an identifier derived from the stream and primary key, for deduplicating streams).
 
 Chroma metadata values must be strings, numbers, or booleans. The connector JSON-encodes any other value, such as an object or an array, into a string.
 
@@ -55,15 +55,9 @@ Make sure the Chroma server is reachable from Airbyte. If it runs inside a VPC, 
 
 **Persistent Client Mode** stores the database in a directory on the machine running Airbyte:
 
-- **Path**: an absolute path prefixed with `/local`, for example `/local/chroma`.
+- **Path**: an absolute path prefixed with `/local/`, for example `/local/chroma`.
 
-In Docker deployments, `/local` is mapped to the directory Airbyte mounts for local files, which is `/tmp/airbyte_local` unless you change the `LOCAL_ROOT` environment variable. On macOS, Docker Desktop must be allowed to share `/tmp` and `/private`, because `/tmp` is a symlink to `/private/tmp`. Grant access in **Settings** > **Resources** > **File sharing**, then apply and restart.
-
-:::danger
-
-Persistent Client Mode isn't supported on Kubernetes deployments. Use Client/Server Mode instead.
-
-:::
+The path is inside the connector's runtime environment, not necessarily on your host. To retain data between connector runs, provide persistent storage at that path. The connector doesn't configure host-directory or volume mappings for you. If your deployment can't provide persistent storage there, use Client/Server Mode instead.
 
 ### Collection name
 
@@ -87,7 +81,7 @@ Pick how the embeddings are produced:
 - **OpenAI-compatible**: for self-hosted or third-party services that expose the OpenAI embeddings API. Requires the **Base URL**, **Embedding dimensions**, and, depending on the service, an **API key** and **Model name**.
 - **From Field**: uses an embedding that already exists in the record. Set **Field name** to the field holding the vector and **Embedding dimensions** to its length. Records whose vector has a different length fail the sync.
 - **Fake**: random vectors with 1536 dimensions, for testing a pipeline without paying for embeddings.
-- **Chroma Default Embedding Function**: Airbyte sends no embedding, and Chroma embeds the documents itself with its [default embedding function](https://docs.trychroma.com/docs/embeddings/embedding-functions), which runs the `all-MiniLM-L6-v2` model on the machine running Chroma. No API key is needed.
+- **Chroma Default Embedding Function**: Airbyte supplies no precomputed embedding. The Chroma Python client uses its [default embedding function](https://docs.trychroma.com/docs/embeddings/embedding-functions), which runs the `all-MiniLM-L6-v2` model locally in the connector process, not on a remote Chroma server. No API key is needed.
 
 ### Processing
 
@@ -108,8 +102,9 @@ The connector writes documents to Chroma in batches of 128 chunks.
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date | Pull Request | Subject |
-| :------ | :--- | :----------- | :------ |
+| Version | Date       | Pull Request                                              | Subject                                                      |
+|:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.56 | 2026-10-08 | [88197](https://github.com/airbytehq/airbyte/pull/88197) | Fix username/password (client/server mode) connections failing with `No module named chromadb.auth.basic` by using the `chromadb.auth.basic_authn.BasicAuthClientProvider` path required by chromadb 0.5+ |
 | 0.0.55 | 2026-08-13 | [84361](https://github.com/airbytehq/airbyte/pull/84361) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.54 | 2025-05-03 | [59326](https://github.com/airbytehq/airbyte/pull/59326) | Update dependencies |
 | 0.0.53 | 2025-04-26 | [58256](https://github.com/airbytehq/airbyte/pull/58256) | Update dependencies |

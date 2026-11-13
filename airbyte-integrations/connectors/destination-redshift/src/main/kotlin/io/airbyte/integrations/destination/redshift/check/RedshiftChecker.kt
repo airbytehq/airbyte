@@ -191,8 +191,7 @@ class RedshiftChecker(
             configuration.uploadingMethod!!.s3BucketPath?.let { path ->
                 val trimmed = path.trimEnd('/')
                 if (trimmed.isNotEmpty()) "$trimmed/" else ""
-            }
-                ?: ""
+            } ?: ""
         return "${prefix}_airbyte_check_$testId.csv.gz"
     }
 
@@ -218,7 +217,7 @@ class RedshiftChecker(
                             finalSchema =
                                 mapOf(
                                     CHECK_COLUMN_NAME to
-                                        ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+                                        ColumnType(RedshiftDataType.VARCHAR.typeName, true),
                                 ),
                             inputSchema = emptyMap(),
                         ),

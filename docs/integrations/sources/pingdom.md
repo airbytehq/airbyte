@@ -37,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 0.0.2 | 2026-11-09 | Update to CDK v7 (source-declarative-manifest 7.47.0) ([91419](https://github.com/airbytehq/airbyte/pull/91419)) |
 | 0.0.1 | 2024-12-03 | Initial release by [@KimPlv](https://github.com/KimPlv) via Connector Builder|
 
 </details>
