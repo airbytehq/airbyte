@@ -121,7 +121,7 @@ class TestAllStreams:
             list(run_read(stream))
 
     def test_manifest_instantiates_error_handlers_for_all_streams(self):
-        """Verify every instantiated requester uses the LinkedIn Ads error handler."""
+        """Verify accounts uses the stock handler and other streams retain the custom handler."""
         config = {
             **TEST_CONFIG,
             "ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}],
@@ -135,8 +135,12 @@ class TestAllStreams:
             http_error_handler = requester._http_client._error_handler
 
             assert http_error_handler is not None
-            assert type(http_error_handler) not in (HttpStatusErrorHandler, DefaultErrorHandler)
-            assert isinstance(error_handler, LinkedInAdsErrorHandler)
+            if stream.name == "accounts":
+                assert type(error_handler) is DefaultErrorHandler
+                assert type(http_error_handler) is DefaultErrorHandler
+            else:
+                assert type(http_error_handler) not in (HttpStatusErrorHandler, DefaultErrorHandler)
+                assert isinstance(error_handler, LinkedInAdsErrorHandler)
 
             assert any(
                 isinstance(strategy, ExponentialBackoffStrategy) and float(strategy.factor) == 5

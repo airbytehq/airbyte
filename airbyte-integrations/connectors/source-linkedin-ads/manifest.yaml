@@ -18,6 +18,18 @@ definitions:
         class_name: source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy
       - type: ExponentialBackoffStrategy
         factor: 5
+  auth_error_response_filters:
+    - type: HttpResponseFilter
+      http_codes: [401]
+      action: FAIL
+      failure_type: config_error
+      error_message: LinkedIn authentication failed because the access token is invalid or expired. Re-authenticate the source.
+    - type: HttpResponseFilter
+      http_codes: [403]
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        LinkedIn ad account access is denied. Re-authenticate with the {{ (response | string | regex_search('(?<![a-zA-Z0-9_])((?:r|rw)_[a-z_]{1,60})(?![a-zA-Z0-9_])')) or 'r_ads' }} scope and ensure the authorized member has access to the ad account.
   streams:
     accounts:
       type: DeclarativeStream
@@ -35,28 +47,18 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
           error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            type: DefaultErrorHandler
             response_filters:
-              - type: HttpResponseFilter
-                http_codes: [401]
-                action: FAIL
-                failure_type: config_error
-                error_message: LinkedIn authentication failed because the access token is invalid or expired. Re-authenticate the source.
-              - type: HttpResponseFilter
-                http_codes: [403]
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  LinkedIn ad account access is denied. Re-authenticate with the {{ (response | string | regex_search('(?<![a-zA-Z0-9_])((?:r|rw)_[a-z_]{1,60})(?![a-zA-Z0-9_])')) or 'r_ads' }} scope and ensure the authorized member has access to the ad account.
+              $ref: "#/definitions/auth_error_response_filters"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+            type: DpathExtractor
+            field_path:
+              - elements
           record_filter:
             condition: "{{ record['id'] in config['account_ids'] if config.get('account_ids') else True }}"
         paginator:
@@ -74,6 +76,21 @@ definitions:
             page_size: 500
             cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
             stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+      transformations:
+        - type: AddFields
+          condition: "{{ value != '' }}"
+          fields:
+            - path:
+                - created
+              value: "{{ format_datetime(record['changeAuditStamps']['created']['time'], '%Y-%m-%dT%H:%M:%S+00:00', '%ms') if ((record.get('changeAuditStamps') or {}).get('created') or {}).get('time') is not none else '' }}"
+              value_type: string
+            - path:
+                - lastModified
+              value: "{{ format_datetime(record['changeAuditStamps']['lastModified']['time'], '%Y-%m-%dT%H:%M:%S+00:00', '%ms') if ((record.get('changeAuditStamps') or {}).get('lastModified') or {}).get('time') is not none else '' }}"
+              value_type: string
+        - type: RemoveFields
+          field_pointers:
+            - - changeAuditStamps
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -357,7 +374,13 @@ definitions:
             Linkedin-Version: "202601"
             X-RestLi-Method: FINDER
           error_handler:
-            $ref: "#/definitions/streams/accounts/retriever/requester/error_handler"
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            response_filters:
+              $ref: "#/definitions/auth_error_response_filters"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
