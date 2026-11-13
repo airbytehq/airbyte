@@ -97,6 +97,31 @@
 
 ---
 
+## `dataplane_diagnostic`
+
+| Column Name     | Datatype     | Description                                                                     |
+| --------------- | ------------ | ------------------------------------------------------------------------------- |
+| id              | UUID         | Primary key. Unique identifier for the diagnostic.                              |
+| dataplane_id    | UUID         | Required. Foreign key referencing `dataplane(id)`.                              |
+| organization_id | UUID         | Required. Identifier for the organization.                                      |
+| diagnostic_kind | VARCHAR(256) | Required. Kind of diagnostic check.                                             |
+| target_id       | UUID         | Required. Identifier for the tested target.                                     |
+| status          | VARCHAR(256) | Required. Status of the diagnostic.                                             |
+| checked_at      | TIMESTAMPTZ  | Required. Timestamp when the launcher ran the check.                            |
+| created_at      | TIMESTAMPTZ  | Required. Timestamp when the record was created. Defaults to `NOW()`.           |
+| updated_at      | TIMESTAMPTZ  | Required. Timestamp when Airbyte last received the result. Defaults to `NOW()`. |
+| error_code      | VARCHAR(256) | Nullable. Error code for the diagnostic.                                        |
+| error_message   | TEXT         | Nullable. Error message for the diagnostic.                                     |
+| observation     | JSONB        | Nullable. Observation from the diagnostic.                                      |
+
+### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `dataplane_id` references `dataplane(id)` ON DELETE CASCADE
+- Unique Constraint: (`dataplane_id`, `diagnostic_kind`, `target_id`)
+
+---
+
 ## `dataplane_group`
 
 | Column Name     | Datatype  | Description                                   |
@@ -121,15 +146,16 @@
 
 ## `organization`
 
-| Column Name | Datatype  | Description                                          |
-| ----------- | --------- | ---------------------------------------------------- |
-| id          | UUID      | Primary key. Unique identifier for the organization. |
-| name        | VARCHAR   | Name of the organization.                            |
-| user_id     | UUID      | Foreign key referencing `user(id)`.                  |
-| email       | VARCHAR   | Contact email for the organization.                  |
-| created_at  | TIMESTAMP | Timestamp when the record was created.               |
-| updated_at  | TIMESTAMP | Timestamp when the record was last modified.         |
-| tombstone   | BOOLEAN   | Indicates if the organization is deleted.            |
+| Column Name       | Datatype  | Description                                                                                                            |
+| ----------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| id                | UUID      | Primary key. Unique identifier for the organization.                                                                   |
+| name              | VARCHAR   | Name of the organization.                                                                                              |
+| user_id           | UUID      | Foreign key referencing `user(id)`.                                                                                    |
+| email             | VARCHAR   | Contact email for the organization.                                                                                    |
+| created_at        | TIMESTAMP | Timestamp when the record was created.                                                                                 |
+| updated_at        | TIMESTAMP | Timestamp when the record was last modified.                                                                           |
+| tombstone         | BOOLEAN   | Indicates if the organization is deleted.                                                                              |
+| onboarding_status | VARCHAR   | Nullable text. Status in the Cloud onboarding flow. `NULL` means the organization never went through Cloud onboarding. |
 
 ### Indexes and Constraints
 
@@ -356,22 +382,3 @@
 
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
-
----
-
-## `workspace_service_account`
-
-| Column Name           | Datatype  | Description                                  |
-| --------------------- | --------- | -------------------------------------------- |
-| workspace_id          | UUID      | Foreign key referencing `workspace(id)`.     |
-| service_account_id    | VARCHAR   | Service account ID.                          |
-| service_account_email | VARCHAR   | Email associated with the service account.   |
-| json_credential       | JSONB     | JSON blob storing credentials.               |
-| hmac_key              | JSONB     | JSON blob storing HMAC keys.                 |
-| created_at            | TIMESTAMP | Timestamp when the record was created.       |
-| updated_at            | TIMESTAMP | Timestamp when the record was last modified. |
-
-### Indexes and Constraints
-
-- Primary Key: (`workspace_id`, `service_account_id`)
-- Foreign Key: `workspace_id` references `workspace(id)`

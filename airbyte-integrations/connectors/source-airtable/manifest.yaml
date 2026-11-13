@@ -81,6 +81,52 @@ definitions:
         schema:
           $ref: "#/schemas/tables"
 
+    base_collaborators:
+      type: DeclarativeStream
+      name: base_collaborators
+      primary_key:
+        - base_id
+        - userId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          # https://airtable.com/developers/web/api/get-base-collaborators
+          path: meta/bases/{{ stream_partition.base_id }}
+          http_method: GET
+          request_parameters:
+            # Airtable leaves the collaborator keys out of the response without this.
+            include[]: collaborators
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - individualCollaborators
+              - baseCollaborators
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: base_id
+              extra_fields:
+                - ["name"]
+              stream:
+                $ref: "#/definitions/streams/bases"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["base_id"]
+              value: "{{ stream_slice.base_id }}"
+            - path: ["base_name"]
+              value: "{{ stream_slice.extra_fields.name }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/base_collaborators"
+
     airtable_stream:
       type: DeclarativeStream
       name: airtable_stream
@@ -597,6 +643,9 @@ dynamic_streams:
             - table_id
           value: "{{ components_values.id }}"
 
+streams:
+  - $ref: "#/definitions/streams/base_collaborators"
+
 # Rate limits: https://airtable.com/developers/web/api/rate-limits
 # - 5 requests per second per base
 # - 50 requests per second per user/service account
@@ -607,7 +656,7 @@ api_budget:
       rates:
         - limit: 5
           interval: PT1S
-      matchers: []  # Applies to all endpoints
+      matchers: [] # Applies to all endpoints
   status_codes_for_ratelimit_hit: [429]
 
 concurrency_level:
@@ -736,24 +785,24 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
-        - type: ConfigMigration
-          description: |
-            Remaps the existing config authentication format to a new format
-            OLD: {"api_key": ...}
-            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "api_key"]
-                  value: "{{ config['api_key'] }}"
-              condition: "{{ config.get('api_key', False) }}"
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "auth_method"]
-                  value: "api_key"
-              condition: "{{ config.get('api_key', False) }}"
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ config.get('api_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_method"]
+                value: "api_key"
+            condition: "{{ config.get('api_key', False) }}"
 
 schemas:
   bases:
@@ -979,3 +1028,37 @@ schemas:
               type:
                 - string
                 - "null"
+
+  base_collaborators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      base_id:
+        type:
+          - string
+          - "null"
+      base_name:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      permissionLevel:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      grantedByUserId:
+        type:
+          - string
+          - "null"

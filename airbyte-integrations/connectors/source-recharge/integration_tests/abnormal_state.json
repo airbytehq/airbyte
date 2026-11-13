@@ -37,7 +37,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_state": { "updated_at": "2050-05-18 00:00:00" },
       "stream_descriptor": { "name": "orders" }
     }
   },
