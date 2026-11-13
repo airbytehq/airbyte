@@ -23,6 +23,10 @@ class RequestBuilder:
         return cls(f"{API_BASE_URL}/apps").with_page_size()
 
     @classmethod
+    def app_substream_endpoint(cls, app_id: str, resource: str) -> "RequestBuilder":
+        return cls(f"{API_BASE_URL}/apps/{app_id}/{resource}").with_page_size()
+
+    @classmethod
     def customer_reviews_endpoint(cls, app_id: str) -> "RequestBuilder":
         return cls(f"{API_BASE_URL}/apps/{app_id}/customerReviews")
 
