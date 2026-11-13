@@ -118,6 +118,18 @@ def test_comment_stream_reads_post_ids_then_comments_per_post():
     assert [r.record.data for r in output.records] == [{"id": "c1", "message": "hi", "post_id": "1_10"}]
 
 
+def test_comment_stream_reads_responses_without_paging():
+    catalog = CatalogBuilder().with_stream("comment", SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(FEED_URL, json={"data": [{"id": "1_10"}, {"id": "1_11"}], "paging": {}})
+        m.get("https://graph.facebook.com/v26.0/1_10/comments", json={"data": [{"id": "c1", "message": "hi"}]})
+        m.get("https://graph.facebook.com/v26.0/1_11/comments", json={"data": []})
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
+    assert not output.errors
+    assert [r.record.data for r in output.records] == [{"id": "c1", "message": "hi", "post_id": "1_10"}]
+
+
 def test_rating_stream_requests_recommendation_fields():
     catalog = CatalogBuilder().with_stream("rating", SyncMode.full_refresh).build()
     with rm.Mocker() as m:
