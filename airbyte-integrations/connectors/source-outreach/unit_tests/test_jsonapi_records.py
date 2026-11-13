@@ -100,11 +100,13 @@ def _read(
     response: HttpResponse,
     *,
     state=None,
-    sync_mode: SyncMode = SyncMode.incremental,
+    sync_mode: SyncMode | None = None,
     cursor: str = _START_CURSOR,
 ) -> object:
     _mock_token(http_mocker)
     http_mocker.get(_request(stream_name, cursor), response)
+    if sync_mode is None:
+        sync_mode = SyncMode.incremental if "incremental_sync" in _STREAMS[stream_name] else SyncMode.full_refresh
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     state = state if state is not None else StateBuilder().build()
     return read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state)
