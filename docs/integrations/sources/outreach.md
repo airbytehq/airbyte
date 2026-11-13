@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.2.1 | 2026-11-13 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix long syncs failing mid-read with `401 Expired Access Token`: the connector now refreshes the access token and retries the request |
+| 1.2.1 | 2026-11-13 | [92820](https://github.com/airbytehq/airbyte/pull/92820) | Fix long syncs failing mid-read with `401 Expired Access Token`: the connector now refreshes the access token and retries the request |
 | 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
 | 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
