@@ -6,7 +6,13 @@
 
 When `join_channels` is enabled in the config, the `ChannelsRetriever` automatically joins Slack channels by making POST requests to `conversations.join` during the channels stream read. For each non-archived channel where the bot's `is_member` property is false, the connector fires a side-effect API call to join that channel before yielding the record. Archived channels are always skipped because the Slack API rejects `conversations.join` for archived channels. This means reading the channels stream can modify the Slack workspace state.
 
+Because archived channels cannot be joined, `channel_messages` and `threads` only build partitions for an archived channel when the bot is already a member (`is_member: true`); `join_channels` does not make an archived non-member channel readable. The `channels` and `channel_members` streams still list every channel.
+
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
+
+## 1a. Threads State Keeps Per-Channel Parent Cursors
+
+`ThreadsStateMigration` only rebuilds `parent_state.channel_messages` for legacy `threads` state that has no parent state. State written by the current stream already holds one `channel_messages` cursor per channel, and the migration must leave it alone: overwriting it makes every channel re-read `conversations.history` from one older point (or from `start_date`) on each sync.
 
 ## 2. Dynamic Rate Limit Policy Switching on First 429
 

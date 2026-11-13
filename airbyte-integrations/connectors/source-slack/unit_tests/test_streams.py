@@ -4,7 +4,9 @@
 
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
+from urllib.parse import parse_qs, urlparse
 
+import freezegun
 import pytest
 from requests import Response
 
@@ -1022,3 +1024,116 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _incremental_catalog(stream_name):
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+def _history_requests(requests_mock):
+    """(channel, oldest) of every conversations.history request, in the order they were sent."""
+    queries = [parse_qs(urlparse(request.url).query) for request in requests_mock.request_history if "conversations.history" in request.url]
+    return [(query["channel"][0], query["oldest"][0]) for query in queries]
+
+
+def _channel_messages_parent_state(cursor_by_channel):
+    return {
+        "use_global_cursor": False,
+        "states": [
+            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": cursor}}
+            for channel, cursor in cursor_by_channel.items()
+        ],
+        "state": {"float_ts": max(cursor_by_channel.values())},
+        "lookback_window": 0,
+        "parent_state": {},
+    }
+
+
+_SAVED_CHANNEL_CURSORS = {"airbyte-for-beginners": "1626500000.0001", "good-reads": "1626800000.0001"}
+
+
+@freezegun.freeze_time("2021-07-23T20:00:00Z")
+@pytest.mark.parametrize(
+    "threads_cursors",
+    (
+        pytest.param({"states": []}, id="interrupted_before_any_thread_cursor"),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"float_ts": "1626400000.000100", "parent_slice": {"channel": "good-reads", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1626450000"},
+                    }
+                ],
+                "state": {"float_ts": "1626450000"},
+            },
+            id="with_thread_cursors",
+        ),
+        pytest.param({"use_global_cursor": True, "state": {"float_ts": "1626450000"}}, id="global_thread_cursor"),
+    ),
+)
+def test_threads_resumes_each_channel_from_its_saved_channel_messages_cursor(requests_mock, token_config, threads_cursors):
+    """A resumed threads sync asks conversations.history for each channel from that channel's saved cursor (minus the lookback window)."""
+    token_config.pop("end_date")
+    token_config["start_date"] = "2021-07-01T00:00:00Z"
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json={"messages": []})
+    stream_state = {
+        "use_global_cursor": False,
+        "lookback_window": 0,
+        **threads_cursors,
+        "parent_state": {"channel_messages": _channel_messages_parent_state(_SAVED_CHANNEL_CURSORS)},
+    }
+    state = StateBuilder().with_stream_state("threads", stream_state).build()
+
+    output = read(get_source(token_config, "threads", state), config=token_config, catalog=_incremental_catalog("threads"), state=state)
+
+    assert output.errors == []
+    # lookback_window is 1 day (86400s): each channel resumes from its own cursor, not from start_date (1625097600).
+    assert sorted(_history_requests(requests_mock)) == [("airbyte-for-beginners", "1626413600.0001"), ("good-reads", "1626713600.0001")]
+    emitted_parent_state = output.most_recent_state.stream_state.parent_state["channel_messages"]
+    assert {s["partition"]["channel"]: s["cursor"]["float_ts"] for s in emitted_parent_state["states"]} == _SAVED_CHANNEL_CURSORS
+
+
+@freezegun.freeze_time("2021-07-23T20:00:00Z")
+@pytest.mark.parametrize(
+    "stream_name, join_channels, expected_channels",
+    (
+        ("channel_messages", True, ["C_ARCHIVED_MEMBER", "C_JOINABLE", "C_MEMBER"]),
+        ("threads", True, ["C_ARCHIVED_MEMBER", "C_JOINABLE", "C_MEMBER"]),
+        ("channel_messages", False, ["C_ARCHIVED_MEMBER", "C_MEMBER"]),
+    ),
+)
+def test_archived_channels_the_bot_is_not_in_are_not_read(requests_mock, token_config, stream_name, join_channels, expected_channels):
+    """Slack rejects conversations.join for archived channels, so join_channels cannot make them readable and they get no partitions."""
+    token_config.update({"include_archived_channels": True, "join_channels": join_channels, "channel_filter": []})
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
+        json={
+            "channels": [
+                {"id": "C_MEMBER", "name": "member", "is_member": True, "is_archived": False},
+                {"id": "C_JOINABLE", "name": "joinable", "is_member": False, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED", "name": "archived", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+    join_request = requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json={"messages": []})
+    state = StateBuilder().build()
+
+    output = read(get_source(token_config, stream_name, state), config=token_config, catalog=_incremental_catalog(stream_name), state=state)
+
+    assert output.errors == []
+    assert sorted(channel for channel, _ in _history_requests(requests_mock)) == expected_channels
+    assert [request.json() for request in join_request.request_history] == ([{"channel": "C_JOINABLE"}] if join_channels else [])
