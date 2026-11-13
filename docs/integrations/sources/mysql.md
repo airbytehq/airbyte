@@ -88,7 +88,7 @@ To fill out the required information:
 1. Enter the hostname, port number, and name for your MySQL database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#connection-via-ssh-tunnel), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
 3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling. On Airbyte Cloud, the connection must be encrypted: use one of these SSL modes, or an [SSH tunnel](#connection-via-ssh-tunnel).
-4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
+4. Select `Read Changes using Change Data Capture (CDC)` from available replication methods.
 
 <!-- env:cloud -->
 
@@ -99,11 +99,11 @@ our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
 Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `required`, `verify_ca` or `verify_identity`) or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop between Airbyte Cloud and your network. The `preferred` SSL mode falls back to plaintext when the server offers no TLS, so Airbyte Cloud accepts it only together with an SSH tunnel. A database on `localhost` or on a private network is reachable from Airbyte Cloud only through an SSH tunnel to a bastion host that can reach it. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
 
+<!-- /env:cloud -->
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
-If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows the Airbyte IP addresses listed above. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
-
-<!-- /env:cloud -->
+If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows connections from your Airbyte deployment. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
 
 </FieldAnchor>
 
