@@ -56,12 +56,8 @@ def test_incremental_blocks_traverses_filtered_parents(requests_mock, stream_sta
             ]
         ),
     )
-    old_children = requests_mock.get(
-        "https://api.notion.com/v1/blocks/old-parent/children", json=response([block("new-child", NEW)])
-    )
-    new_children = requests_mock.get(
-        "https://api.notion.com/v1/blocks/new-parent/children", json=response([block("old-child", OLD)])
-    )
+    old_children = requests_mock.get("https://api.notion.com/v1/blocks/old-parent/children", json=response([block("new-child", NEW)]))
+    new_children = requests_mock.get("https://api.notion.com/v1/blocks/new-parent/children", json=response([block("old-child", OLD)]))
     state = StateBuilder().with_stream_state("blocks", stream_state).build()
     catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
     output = read(get_source(CONFIG, state), CONFIG, catalog, state=state)
@@ -70,9 +66,7 @@ def test_incremental_blocks_traverses_filtered_parents(requests_mock, stream_sta
     assert old_children.call_count == new_children.call_count == 1
     assert sorted(record.record.data["id"] for record in output.records) == sorted(expected)
     emitted_state = output.most_recent_state.stream_state.__dict__
-    cursor_state = emitted_state.get("state") or (
-        emitted_state["states"][0]["cursor"] if "states" in emitted_state else emitted_state
-    )
+    cursor_state = emitted_state.get("state") or (emitted_state["states"][0]["cursor"] if "states" in emitted_state else emitted_state)
     cursor = cursor_state["last_edited_time"]
     assert datetime.fromisoformat(cursor) == datetime.fromisoformat(NEW)
 
@@ -85,9 +79,7 @@ def test_incremental_blocks_empty_or_inaccessible(requests_mock, status):
     )
     requests_mock.get("https://api.notion.com/v1/blocks/page-1/children", status_code=status, json=response([]))
     state = StateBuilder().with_stream_state("blocks", {"last_edited_time": BOUNDARY}).build()
-    output = read(
-        get_source(CONFIG, state), CONFIG, CatalogBuilder().with_stream("blocks", SyncMode.incremental).build(), state=state
-    )
+    output = read(get_source(CONFIG, state), CONFIG, CatalogBuilder().with_stream("blocks", SyncMode.incremental).build(), state=state)
     assert not output.errors
     assert not output.records
     emitted_state = output.most_recent_state.stream_state.__dict__
