@@ -255,6 +255,88 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "state": {"date_sent": "2022-11-13T12:11:10Z"},
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-01-01T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-13 12:11:10Z"},
+                        },
+                    ],
+                },
+                "2022-11-13 12:11:10Z",
+                id="stale_partition_cursor_with_newer_stream_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-14T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                        },
+                    ]
+                },
+                "2022-11-13 12:11:10Z",
+                id="legacy_partition_state_without_stream_cursor",
+            ),
+            pytest.param(
+                {"use_global_cursor": True, "lookback_window": 0, "state": {"date_sent": "2022-11-13 12:11:10Z"}, "parent_state": {}},
+                "2022-11-13 12:11:10Z",
+                id="stream_cursor_state",
+            ),
+        ],
+    )
+    def test_messages_resume_from_stream_cursor(self, state, expected_lower_bound, requests_mock):
+        accounts = {
+            "accounts": ACCOUNTS_JSON["accounts"]
+            + [{"sid": "AC456", "subresource_uris": {"messages": "/2010-04-01/Accounts/AC456/Messages.json"}}]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
+        message_requests = []
+
+        def _messages_callback(account_sid):
+            def _callback(request, context):
+                query = parse_qs(urlparse(request.url).query)
+                message_requests.append((account_sid, query["DateSent>"][0], query["DateSent<"][0]))
+                return {"messages": [{"sid": f"SM{account_sid}", "date_sent": "2022-11-15T10:00:00Z"}]}
+
+            return _callback
+
+        for account_sid in ("AC123", "AC456"):
+            requests_mock.get(f"{BASE}/Accounts/{account_sid}/Messages.json", json=_messages_callback(account_sid))
+
+        output = read_from_stream(
+            {**TEST_CONFIG, "start_date": "2021-01-01T00:00:00Z"},
+            "messages",
+            SyncMode.incremental,
+            StateBuilder().with_stream_state("messages", state).build(),
+        )
+
+        assert sorted(message_requests) == [
+            ("AC123", expected_lower_bound, "2022-11-16 12:03:11Z"),
+            ("AC456", expected_lower_bound, "2022-11-16 12:03:11Z"),
+        ]
+        assert sorted(record.record.data["sid"] for record in output.records) == ["SMAC123", "SMAC456"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+        assert "states" not in final_state
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")

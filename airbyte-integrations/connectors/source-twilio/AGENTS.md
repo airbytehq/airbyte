@@ -12,6 +12,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+### Messages stream-level cursor
+
+`messages` sets `global_substream_cursor: true`, so one `date_sent` cursor covers every account partition. `TwilioMessagesStateMigration` collapses older per-partition state into that cursor: it keeps the stream-level `state.date_sent` when present (the CDK only advances it after every partition finished a sync), otherwise it uses the oldest partition cursor. Per-partition cursors older than the stream-level cursor made the CDK re-read those accounts' message history.
+
 ### Future incremental stream candidates
 
 None identified yet.
