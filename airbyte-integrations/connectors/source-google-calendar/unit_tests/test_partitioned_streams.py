@@ -164,6 +164,8 @@ def test_missing_configured_calendar_fails_in_parent(stream: str, status: int, r
         assert output.records == []
         assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
         assert any("Calendar Id" in error.trace.error.message for error in output.errors)
+        if status == 410:
+            assert any("correct it or clear it" in error.trace.error.message for error in output.errors)
         http_mocker.assert_number_of_calls(parent, 1)
 
 

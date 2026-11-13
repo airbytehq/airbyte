@@ -506,13 +506,21 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: "Google Calendar could not find the requested resource. Verify the account's access to the Calendar API and, if Calendar Id is set, verify that calendar's ID and sharing permissions."
-    resource_gone:
+    calendar_deleted:
       type: HttpResponseFilter
-      # fullSyncRequired requires syncToken (not sent); string JSON-encodes the body, so match the JSON reason.
-      predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
+      # Reached only from the base requester (configured-calendar validation); child requesters skip `deleted` first.
+      # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
+      predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string }}"
       action: FAIL
       failure_type: config_error
-      error_message: "Google Calendar reports that the requested resource no longer exists or requires a full re-sync. Check the account's access and any configured Calendar Id, then reset the events stream."
+      error_message: "Google Calendar reports that the calendar was deleted or is no longer shared with the account. If Calendar Id is set, correct it or clear it to sync every listed calendar."
+    full_sync_required:
+      type: HttpResponseFilter
+      # fullSyncRequired requires syncToken, which this connector does not send.
+      predicate: "{{ 'fullSyncRequired' in response.get('error', {}) | string }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: "Google Calendar requires a full re-sync of the events stream. Reset the events stream."
     stale_position:
       type: HttpResponseFilter
       # updatedMinTooLongAgo: retention recovery re-reads once the saved cursor is older than 21 days.
@@ -574,7 +582,7 @@ definitions:
       - $ref: "#/definitions/error_filters/forbidden"
       - $ref: "#/definitions/error_filters/skip_missing_calendar"
       - $ref: "#/definitions/error_filters/skip_deleted_calendar"
-      - $ref: "#/definitions/error_filters/resource_gone"
+      - $ref: "#/definitions/error_filters/full_sync_required"
       - $ref: "#/definitions/error_filters/stale_position"
       - $ref: "#/definitions/error_filters/too_many_requests"
       - $ref: "#/definitions/error_filters/server_errors"
@@ -601,7 +609,8 @@ definitions:
         - $ref: "#/definitions/error_filters/insufficient_scope"
         - $ref: "#/definitions/error_filters/forbidden"
         - $ref: "#/definitions/error_filters/not_found"
-        - $ref: "#/definitions/error_filters/resource_gone"
+        - $ref: "#/definitions/error_filters/calendar_deleted"
+        - $ref: "#/definitions/error_filters/full_sync_required"
         - $ref: "#/definitions/error_filters/stale_position"
         - $ref: "#/definitions/error_filters/too_many_requests"
         - $ref: "#/definitions/error_filters/server_errors"

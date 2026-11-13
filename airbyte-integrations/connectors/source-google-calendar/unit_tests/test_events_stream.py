@@ -557,4 +557,4 @@ def test_410_full_sync_required_is_config_error():
 
         error = _error_trace(output)
         assert error.failure_type == FailureType.config_error
-        assert "no longer exists" in error.message and "reset the events stream" in error.message
+        assert "full re-sync" in error.message and "Reset the events stream" in error.message
