@@ -79,7 +79,7 @@ class PipelineCompletionHandlerTest {
                 partitionBytesHistogram = mockBytesHistogram1,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
-                estimatedBytesTrigger = mockk()
+                estimatedBytesTrigger = mockk(),
             )
 
         val aggregateEntry2 =
@@ -90,7 +90,7 @@ class PipelineCompletionHandlerTest {
                 partitionBytesHistogram = mockBytesHistogram2,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
-                estimatedBytesTrigger = mockk()
+                estimatedBytesTrigger = mockk(),
             )
 
         every { aggStore.getAll() } returns listOf(aggregateEntry1, aggregateEntry2)
@@ -145,7 +145,7 @@ class PipelineCompletionHandlerTest {
                 partitionBytesHistogram = mockBytesHistogram,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
-                estimatedBytesTrigger = mockk()
+                estimatedBytesTrigger = mockk(),
             )
 
         every { aggStore.getAll() } returns listOf(aggregateEntry)

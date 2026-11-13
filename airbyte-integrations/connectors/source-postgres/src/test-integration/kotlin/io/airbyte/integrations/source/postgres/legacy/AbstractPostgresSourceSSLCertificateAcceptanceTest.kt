@@ -26,19 +26,19 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
-                    PostgresTestDatabase.ContainerModifier.CERT
+                    PostgresTestDatabase.ContainerModifier.CERT,
                 )
                 .with("CREATE SCHEMA $nameSpace;")
                 .with("CREATE TABLE $nameSpace.id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO $nameSpace.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    "INSERT INTO $nameSpace.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
                 )
                 .with("CREATE TABLE $nameSpace.starships(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO $nameSpace.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                    "INSERT INTO $nameSpace.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
                 )
                 .with(
-                    "CREATE MATERIALIZED VIEW $nameSpace.testview AS select * from $nameSpace.id_and_name where id = '2';"
+                    "CREATE MATERIALIZED VIEW $nameSpace.testview AS select * from $nameSpace.id_and_name where id = '2';",
                 )
     }
 

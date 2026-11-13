@@ -9,29 +9,39 @@ This page contains the setup guide and reference information for the [Sendgrid](
 ## Prerequisites
 
 - A SendGrid account
-- A [SendGrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the required permissions
+- A [SendGrid API key](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys#create-an-api-key) with the required permissions
 - A start date in UTC format, for example `2017-01-25T00:00:00Z`
 
 ## Setup guide
 
 ### Step 1: Create a SendGrid API key
 
+Use a dedicated API key for Airbyte so you can control and revoke its access separately. Grant access only to the resources you need to sync.
+
 1. Log in to your [SendGrid account](https://app.sendgrid.com/).
 2. Navigate to **Settings** > **API Keys**.
 3. Click **Create API Key**.
-4. Choose **Restricted Access** and enable the read scopes required for the streams you want to sync:
+4. Choose **Custom Access** and configure the permissions for the streams you want to sync:
 
 | Stream | Required scope |
 | :------ | :------------ |
-| Bounces, Blocks, Spam Reports, Invalid Emails, Global Suppressions | `suppression.read` |
+| Bounces | `suppression.bounces.read` |
+| Blocks | `suppression.blocks.read` |
+| Spam Reports | `suppression.spam_reports.read` |
+| Invalid Emails | `suppression.invalid_emails.read` |
+| Global Suppressions | `suppression.unsubscribes.read` |
 | Suppression Groups, Suppression Group Members | `asm.groups.read` |
 | Templates | `templates.read` |
 | Contacts, Lists, Segments, Single Sends, Single Send Stats, Stats Automations, Campaigns | `marketing.read` |
 
-For simplicity, you can create an API key with **Full Access** to ensure all streams work correctly.
+5. Click **Create & View**, then copy the key. SendGrid displays it only once.
+
+The connection check reads Bounces, so grant `suppression.bounces.read` even if you don't select that stream. See SendGrid's [API key permissions](https://www.twilio.com/docs/sendgrid/api-reference/api-key-permissions) for the available scopes. Despite its name, `marketing.read` grants both read and write access to the Email Marketing API; a key using it isn't read-only.
 
 :::note
-This connector uses the [New Marketing Campaigns API](https://docs.sendgrid.com/ui/sending-email/how-to-send-email-with-marketing-campaigns) (`/v3/marketing/*`). If your SendGrid account uses Legacy Marketing Campaigns, the marketing streams will not work. See [Troubleshooting](#403-forbidden-errors) for details.
+
+This connector uses the [New Marketing Campaigns API](https://www.twilio.com/docs/sendgrid/ui/sending-email/how-to-send-email-with-marketing-campaigns) (`/v3/marketing/*`), not the Legacy Marketing Campaigns API. Make sure your account and key can access the endpoints for the streams you select. See [Troubleshooting](#403-forbidden-errors) for details.
+
 :::
 
 ### Step 2: Set up the Sendgrid connector in Airbyte
@@ -40,7 +50,7 @@ This connector uses the [New Marketing Campaigns API](https://docs.sendgrid.com/
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Sendgrid** from the source type dropdown.
 4. Enter your **API Key**.
-5. Enter your **Start date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). The connector only replicates data created on or after this date.
+5. Enter your **Start date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). Incremental streams use it as the initial cursor value. Full refresh streams, including Contacts, don't filter records by this date.
 6. Click **Set up source**.
 
 <HideInUI>
@@ -73,13 +83,13 @@ The Sendgrid source connector supports the following [sync modes](https://docs.a
 
 ### Contacts stream
 
-The Contacts stream uses SendGrid's [asynchronous export API](https://docs.sendgrid.com/api-reference/contacts/export-contacts). The connector initiates an export job, polls for completion, and then downloads the results. For large contact lists, this process may take several minutes.
+The Contacts stream uses SendGrid's [asynchronous export API](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts). The connector initiates an export job, polls until its status is `ready`, and then downloads and decodes the gzipped CSV results. It supports full refresh only. Export completion time depends on SendGrid's processing of the job.
 
 ## Limitations and troubleshooting
 
 ### Rate limiting
 
-The connector is restricted by SendGrid [rate limits](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits). Each API endpoint has a specific number of allowed requests per refresh period. If the connector hits a rate limit, it receives a `429` response and retries after the period indicated by the `X-RateLimit-Reset` header.
+The connector is restricted by SendGrid [rate limits](https://www.twilio.com/docs/sendgrid/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits). Each API endpoint has a specific number of allowed requests per refresh period. SendGrid returns HTTP `429` when that limit is exceeded. The connector retries rate-limited requests and configures its API budget to read `X-RateLimit-Reset` and `X-RateLimit-Remaining` response headers.
 
 ### 403 Forbidden errors
 
@@ -87,9 +97,13 @@ If you encounter 403 errors, check the following:
 
 1. **Verify API key permissions**: Ensure your API key has the required scopes for the streams you're trying to sync. See [Step 1](#step-1-create-a-sendgrid-api-key) for the specific scopes needed for each stream.
 
-2. **Legacy vs. New Marketing Campaigns**: This connector uses the New Marketing Campaigns API (`/v3/marketing/*`), which requires the `marketing.read` scope. If your SendGrid account uses Legacy Marketing Campaigns, you will receive 403 errors when syncing marketing streams. Legacy Marketing Campaigns use different API endpoints and permission scopes (`marketing_campaigns.read`) that are not compatible with this connector.
+2. **Legacy vs. New Marketing Campaigns**: The connector's marketing streams use `/v3/marketing/*` endpoints and the `marketing.read` scope. SendGrid lists `marketing_campaigns.read` separately for Legacy Marketing Campaigns; don't substitute that scope for access to the endpoints this connector uses.
 
 3. **Account type limitations**: Some SendGrid account types may not have access to all API endpoints. Verify that your SendGrid plan includes access to the features you're trying to sync.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -98,7 +112,33 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.28-rc.3 | 2026-04-08 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add concurrency_level for parallel stream processing |
+| 1.3.51 | 2026-11-10 | [91697](https://github.com/airbytehq/airbyte/pull/91697) | Update dependencies |
+| 1.3.50 | 2026-11-03 | [90744](https://github.com/airbytehq/airbyte/pull/90744) | Update dependencies |
+| 1.3.49 | 2026-10-20 | [89397](https://github.com/airbytehq/airbyte/pull/89397) | Update dependencies |
+| 1.3.48 | 2026-10-13 | [88788](https://github.com/airbytehq/airbyte/pull/88788) | Update dependencies |
+| 1.3.47 | 2026-10-06 | [88032](https://github.com/airbytehq/airbyte/pull/88032) | Update dependencies |
+| 1.3.46 | 2026-09-29 | [87325](https://github.com/airbytehq/airbyte/pull/87325) | Update dependencies |
+| 1.3.45 | 2026-09-22 | [86780](https://github.com/airbytehq/airbyte/pull/86780) | Update dependencies |
+| 1.3.44 | 2026-09-15 | [86214](https://github.com/airbytehq/airbyte/pull/86214) | Update dependencies |
+| 1.3.43 | 2026-09-08 | [85642](https://github.com/airbytehq/airbyte/pull/85642) | Update dependencies |
+| 1.3.42 | 2026-08-18 | [84757](https://github.com/airbytehq/airbyte/pull/84757) | Update dependencies |
+| 1.3.41 | 2026-08-11 | [84110](https://github.com/airbytehq/airbyte/pull/84110) | Update dependencies |
+| 1.3.40 | 2026-08-04 | [83615](https://github.com/airbytehq/airbyte/pull/83615) | Update dependencies |
+| 1.3.39 | 2026-07-28 | [83102](https://github.com/airbytehq/airbyte/pull/83102) | Update dependencies |
+| 1.3.38 | 2026-07-21 | [82574](https://github.com/airbytehq/airbyte/pull/82574) | Update dependencies |
+| 1.3.37 | 2026-07-14 | [82007](https://github.com/airbytehq/airbyte/pull/82007) | Update dependencies |
+| 1.3.36 | 2026-06-30 | [81252](https://github.com/airbytehq/airbyte/pull/81252) | Update dependencies |
+| 1.3.35 | 2026-06-23 | [80649](https://github.com/airbytehq/airbyte/pull/80649) | Update dependencies |
+| 1.3.34 | 2026-06-16 | [80013](https://github.com/airbytehq/airbyte/pull/80013) | Update dependencies |
+| 1.3.33 | 2026-06-09 | [79501](https://github.com/airbytehq/airbyte/pull/79501) | Update dependencies |
+| 1.3.32 | 2026-06-02 | [78949](https://github.com/airbytehq/airbyte/pull/78949) | Update dependencies |
+| 1.3.31 | 2026-04-28 | [77509](https://github.com/airbytehq/airbyte/pull/77509) | Update dependencies |
+| 1.3.30 | 2026-04-25 | [77009](https://github.com/airbytehq/airbyte/pull/77009) | Promoted release candidate to GA |
+| 1.3.30-rc.1 | 2026-04-16 | [76407](https://github.com/airbytehq/airbyte/pull/76407) | Increase HTTPAPIBudget rate limit from 50 to 70 req/s |
+| 1.3.29 | 2026-04-21 | [75796](https://github.com/airbytehq/airbyte/pull/75796) | Update dependencies |
+| 1.3.28 | 2026-04-14 | [76335](https://github.com/airbytehq/airbyte/pull/76335) | Promoted release candidate to GA |
+| 1.3.28-rc.5 | 2026-04-13 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add HTTPAPIBudget rate limiting (Phase 2) with concurrency=6 |
+| 1.3.28-rc.4 | 2026-04-12 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add concurrency_level for parallel stream processing (concurrency=6) |
 | 1.3.27 | 2026-03-24 | [75331](https://github.com/airbytehq/airbyte/pull/75331) | Update dependencies |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |

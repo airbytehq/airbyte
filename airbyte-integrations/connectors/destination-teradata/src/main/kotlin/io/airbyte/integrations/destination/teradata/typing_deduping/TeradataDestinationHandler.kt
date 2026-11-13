@@ -57,7 +57,7 @@ class TeradataDestinationHandler(
         jdbcDatabase,
         rawTableSchema,
         SQLDialect.DEFAULT,
-        generationHandler = generationHandler
+        generationHandler = generationHandler,
     ) {
     /**
      * Converts a JSON node into a `MinimumDestinationState` object.
@@ -73,6 +73,7 @@ class TeradataDestinationHandler(
     override fun createNamespaces(schemas: Set<String>) {
         TODO("Not yet implemented")
     }
+
     /**
      * Converts an Airbyte type to its corresponding JDBC type name.
      *
@@ -93,6 +94,7 @@ class TeradataDestinationHandler(
             }
         return type
     }
+
     /**
      * Checks if the final table is empty for the given stream ID.
      *
@@ -129,6 +131,7 @@ class TeradataDestinationHandler(
             throw se
         }
     }
+
     /**
      * Generates an SQL query to delete destination states from the destination state table.
      *
@@ -136,7 +139,7 @@ class TeradataDestinationHandler(
      * @return The SQL query for deleting destination states.
      */
     override fun getDeleteStatesSql(
-        destinationStates: Map<StreamId, MinimumDestinationState>
+        destinationStates: Map<StreamId, MinimumDestinationState>,
     ): String {
         val query =
             dslContext
@@ -166,13 +169,14 @@ class TeradataDestinationHandler(
                 .getSQL(ParamType.INLINED)
         return query
     }
+
     /**
      * Commits the given destination states to the database.
      *
      * @param destinationStates A map of stream IDs to their corresponding destination states.
      */
     override fun commitDestinationStates(
-        destinationStates: Map<StreamId, MinimumDestinationState>
+        destinationStates: Map<StreamId, MinimumDestinationState>,
     ) {
         try {
             if (destinationStates.isEmpty()) {
@@ -207,7 +211,7 @@ class TeradataDestinationHandler(
                         .columns(
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                                String::class.java
+                                String::class.java,
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
@@ -215,11 +219,11 @@ class TeradataDestinationHandler(
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                                String::class.java
+                                String::class.java,
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                                Timestamp::class.java
+                                Timestamp::class.java,
                             ),
                         )
                         .values(
@@ -246,7 +250,7 @@ class TeradataDestinationHandler(
                 .where(
                     DSL.field("TableName")
                         .eq(tableName)
-                        .and(DSL.field("DataBaseName").eq(schemaName))
+                        .and(DSL.field("DataBaseName").eq(schemaName)),
                 )
                 .getSQL(ParamType.INLINED)
 
@@ -268,7 +272,7 @@ class TeradataDestinationHandler(
                         .createTable(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                            SQLDataType.VARCHAR(256)
+                            SQLDataType.VARCHAR(256),
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
@@ -276,7 +280,7 @@ class TeradataDestinationHandler(
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                            SQLDataType.VARCHAR(256)
+                            SQLDataType.VARCHAR(256),
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
@@ -351,6 +355,7 @@ class TeradataDestinationHandler(
             return emptyMap()
         }
     }
+
     /**
      * Finds the existing table for the given stream ID.
      *
@@ -363,6 +368,7 @@ class TeradataDestinationHandler(
         } else {
             Optional.empty()
         }
+
     /**
      * Executes a list of SQL statements within a transaction.
      *
@@ -391,6 +397,7 @@ class TeradataDestinationHandler(
         private const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
         // Define a set of error codes that should be ignored
         private val ignorableErrorCodes = setOf(5612, 3807, 3598, 3803)
+
         /**
          * Converts an Airbyte Protocol type to a JDBC type name.
          *

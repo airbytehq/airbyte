@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Update ingress for version 1.7 and later
 
-Airbyte version 1.7 introduced a breaking change for ingress to the Connector Builder. If you're a Core user or Self-Managed Enterprise customer, and you're upgrading to version 1.7.0 or later, complete these steps when you upgrade. If you don't, the Connector Builder gives you 403 Forbidden errors and you can't test streams or use the Connector Builder UI.
+Airbyte version 1.7 introduced a breaking change for ingress to the Connector Builder. If you're a Core user and you're upgrading to version 1.7.0 or later, complete these steps when you upgrade. If you don't, the Connector Builder gives you 403 Forbidden errors and you can't test streams or use the Connector Builder UI.
 
 ## What changed
 
@@ -37,16 +37,6 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
-                name: airbyte-airbyte-keycloak-svc 
-                port: 
-                  number: 8180 
-            path: /auth
-            pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -92,15 +82,6 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
-          - backend:
-              service:
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 name: airbyte-airbyte-connector-builder-server-svc

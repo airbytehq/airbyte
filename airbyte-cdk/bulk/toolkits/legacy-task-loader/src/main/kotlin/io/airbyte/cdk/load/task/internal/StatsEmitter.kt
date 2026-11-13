@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.OnEndOfSync
@@ -32,7 +31,7 @@ class StatsEmitter(
     private val syncManager: SyncManager,
     private val catalog: DestinationCatalog,
     private val outputConsumer: DummyStatsMessageConsumer,
-    @Nullable @Named(STATS_FREQ_QUALIFIER) private val emissionFrequencyMillis: Long? = null
+    @Nullable @Named(STATS_FREQ_QUALIFIER) private val emissionFrequencyMillis: Long? = null,
 ) : Task {
     private val freq: Long = emissionFrequencyMillis ?: DEFAULT_DELAY_MS
 
@@ -63,14 +62,14 @@ class StatsEmitter(
                  * Problem:
                  * - Platform has no knowledge of records/bytes processed per stream
                  * - No existing protocol message exists for destination-to-platform statistics
-                 * reporting
+                 *   reporting
                  * - Progress tracking and monitoring capabilities are lost
                  *
                  * Solution: We repurpose AirbyteRecordMessage as a communication channel for
                  * statistics reporting:
                  * - Destination sends synthetic record messages containing only metadata
                  * - Platform recognizes these as statistics (not actual records) since destinations
-                 * never normally emit record messages
+                 *   never normally emit record messages
                  * - Metadata contains stream-level progress information (record count, byte count)
                  * - Enables real-time progress monitoring and platform visibility
                  *
@@ -102,19 +101,16 @@ class FrequencyFactory {
     @Singleton
     @Named(STATS_FREQ_QUALIFIER)
     fun statsEmissionFrequency(
-        @Value("\${airbyte.stats.emission-frequency-ms:$DEFAULT_DELAY_MS}") millis: Long
+        @Value("\${airbyte.stats.emission-frequency-ms:$DEFAULT_DELAY_MS}") millis: Long,
     ): Long = millis
 }
 
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system",
-)
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class DummyStatsMessageConsumer(private val consumer: OutputConsumer) :
     suspend (AirbyteMessage) -> Unit {
     private val log = KotlinLogging.logger {}
+
     override suspend fun invoke(message: AirbyteMessage) {
         consumer.accept(message)
     }
