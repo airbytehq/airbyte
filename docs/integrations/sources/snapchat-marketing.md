@@ -1,16 +1,22 @@
 # Snapchat Marketing
 
-This page guides you through setting up the [Snapchat Marketing](https://developers.snap.com/api/marketing-api/Ads-API/overview) source connector.
+This page guides you through setting up the [Snapchat Marketing](https://developers.snap.com/api/marketing-api/Ads-API) source connector.
 
 ## Prerequisites
 
-- A [Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
-- Organization Admin role in Snap Business Manager (required to create an OAuth app)
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
+
+- A [Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US) with access to the Snapchat Marketing API
+
+<!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
+- A [Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US) with access to the Snapchat Marketing API
 - Client ID
 - Client Secret
 - Refresh Token
@@ -21,18 +27,18 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 
 ### Step 1: Set up Snapchat
 
-1. [Set up a Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US) if you don't already have one.
+1. [Set up a Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US).
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
 2. [Activate access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US).
-3. Create an OAuth2 app in the **Business Details** section of [Snap Business Manager](https://business.snapchat.com/):
-   - Provide a `redirect_uri`. This can be any valid HTTPS URL you control. The `redirect_uri` receives the authorization code during the OAuth flow.
-   - Save the **Client ID** and **Client Secret**. The client secret is only displayed at creation time.
-4. Obtain a refresh token:
-   1. Open the following URL in a browser, replacing `CLIENT_ID` and `REDIRECT_URI` with your values:
+3. Create an OAuth2 app in the [Snap Business Manager](https://business.snapchat.com/):
+   - Provide a `redirect_uri`. If you don't have an endpoint that handles the OAuth callback, use any valid URL. See [this discussion](https://github.com/Snap-Kit/bitmoji-sample/issues/3) for details.
+   - Save the **Client ID** and **Client Secret**.
+4. Obtain a refresh token using the OAuth2 authorization code flow:
+   1. Open the authorize link in a browser:
 
       ```text
       https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUwerf-m
@@ -52,9 +58,9 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
         https://accounts.snapchat.com/login/oauth2/access_token
       ```
 
-   5. Use the `refresh_token` from the response when configuring the connector.
+   Use the `refresh_token` from the response when configuring the connector.
 
-For more details, see [Snapchat Marketing API Authentication](https://developers.snap.com/api/marketing-api/Ads-API/authentication).
+   For more details, see the [Snapchat authentication documentation](https://developers.snap.com/api/marketing-api/Ads-API/authentication).
 
 <!-- /env:oss -->
 
@@ -69,13 +75,14 @@ For more details, see [Snapchat Marketing API Authentication](https://developers
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Click **Authenticate your account**.
 5. Log in and authorize access to your Snapchat account.
-6. (Optional) Enter a **Start Date**. Data generated on or after this date is synced. Defaults to `2022-01-01` if left blank.
-7. (Optional) Enter an **End Date**. Data generated on or before this date is synced. If left blank, the connector syncs up to the current date.
-8. (Optional) Set the **Action Report Time**. This controls whether conversions are attributed at `conversion` time (default) or `impression` time.
-9. (Optional) Set the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
-10. (Optional) Set the **View Attribution Window**. Options: `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
-11. (Optional) Enter **Organization IDs** to sync data from specific organizations only. If left blank, the connector syncs all organizations accessible to the authenticated user.
-12. (Optional) Enter **Ad Account IDs** to sync data from specific ad accounts only. If left blank, the connector syncs all ad accounts across your organizations.
+6. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
+
+7. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced. If left blank, the connector syncs up through today.
+8. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
+9. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
+10. (Optional) Choose the **View Attribution Window**. Options: `none`, `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
+11. (Optional) Enter **Organization IDs** to limit syncing to specific organizations. If left blank, all organizations accessible to the authenticated user are synced.
+12. (Optional) Enter **Ad Account IDs** to limit syncing to specific ad accounts. If left blank, all ad accounts under the synced organizations are included.
 13. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -87,56 +94,65 @@ For more details, see [Snapchat Marketing API Authentication](https://developers
 1. Open the Airbyte UI.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
-4. Enter the **Client ID**, **Client Secret**, and **Refresh Token** from step 1.
-5. (Optional) Enter a **Start Date**. Data generated on or after this date is synced. Defaults to `2022-01-01` if left blank.
-6. (Optional) Enter an **End Date**. Data generated on or before this date is synced. If left blank, the connector syncs up to the current date.
-7. (Optional) Set the **Action Report Time**. This controls whether conversions are attributed at `conversion` time (default) or `impression` time.
-8. (Optional) Set the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
-9. (Optional) Set the **View Attribution Window**. Options: `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
-10. (Optional) Enter **Organization IDs** to sync data from specific organizations only. If left blank, the connector syncs all organizations accessible to the authenticated user.
-11. (Optional) Enter **Ad Account IDs** to sync data from specific ad accounts only. If left blank, the connector syncs all ad accounts across your organizations.
+4. Enter the **Client ID**, **Client Secret**, and **Refresh Token** from Step 1.
+5. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
+
+6. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced.
+7. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
+8. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
+9. (Optional) Choose the **View Attribution Window**. Options: `none`, `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
+10. (Optional) Enter **Organization IDs** to limit syncing to specific organizations. If left blank, all organizations accessible to the authenticated user are synced.
+11. (Optional) Enter **Ad Account IDs** to limit syncing to specific ad accounts. If left blank, all ad accounts under the synced organizations are included.
 12. Click **Set up source**.
 
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
 
-| Stream                    | Incremental | Key                                   |
-| :------------------------ | :---------- | ------------------------------------- |
-| AdAccounts                | Yes         | `id`                                  |
-| Ads                       | Yes         | `id`                                  |
-| AdSquads                  | Yes         | `id`                                  |
-| Campaigns                 | Yes         | `id`                                  |
-| Creatives                 | Yes         | `id`                                  |
-| Media                     | Yes         | `id`                                  |
-| Organizations             | Yes         | `id`                                  |
-| Segments                  | Yes         | `id`                                  |
-| AdAccounts_Stats_Hourly   | Yes         | `id`, `granularity`, `start_time`     |
-| AdAccounts_Stats_Daily    | Yes         | `id`, `granularity`, `start_time`     |
-| AdAccounts_Stats_Lifetime | No          | `id`, `granularity`                   |
-| Ads_Stats_Hourly          | Yes         | `id`, `granularity`, `start_time`     |
-| Ads_Stats_Daily           | Yes         | `id`, `granularity`, `start_time`     |
-| Ads_Stats_Lifetime        | No          | `id`, `granularity`                   |
-| AdSquads_Stats_Hourly     | Yes         | `id`, `granularity`, `start_time`     |
-| AdSquads_Stats_Daily      | Yes         | `id`, `granularity`, `start_time`     |
-| AdSquads_Stats_Lifetime   | No          | `id`, `granularity`                   |
-| Campaigns_Stats_Hourly    | Yes         | `id`, `granularity`, `start_time`     |
-| Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`     |
-| Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                   |
+| Stream                    | Incremental | Key                                 |
+|:--------------------------|:------------|-------------------------------------|
+| AdAccounts                | Yes         | `id`                                |
+| Ads                       | Yes         | `id`                                |
+| AdSquads                  | Yes         | `id`                                |
+| Campaigns                 | Yes         | `id`                                |
+| Creatives                 | Yes         | `id`                                |
+| Media                     | Yes         | `id`                                |
+| Organizations             | Yes         | `id`                                |
+| Segments                  | Yes         | `id`                                |
+| AdAccounts_Stats_Hourly   | Yes         | `id`, `granularity`, `start_time`   |
+| AdAccounts_Stats_Daily    | Yes         | `id`, `granularity`, `start_time`   |
+| AdAccounts_Stats_Lifetime | No          | `id`, `granularity`                 |
+| Ads_Stats_Hourly          | Yes         | `id`, `granularity`, `start_time`   |
+| Ads_Stats_Daily           | Yes         | `id`, `granularity`, `start_time`   |
+| Ads_Stats_Lifetime        | No          | `id`, `granularity`                 |
+| AdSquads_Stats_Hourly     | Yes         | `id`, `granularity`, `start_time`   |
+| AdSquads_Stats_Daily      | Yes         | `id`, `granularity`, `start_time`   |
+| AdSquads_Stats_Lifetime   | No          | `id`, `granularity`                 |
+| Campaigns_Stats_Hourly    | Yes         | `id`, `granularity`, `start_time`   |
+| Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`   |
+| Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                 |
 
-All streams support full refresh. Streams marked **Yes** in the Incremental column also support incremental sync.
+Start Date and End Date filter the records of the Organizations and Ad Accounts streams, but not which organizations and ad accounts the other streams read from. For example, an ad account last updated before the Start Date is left out of the Ad Accounts stream, but its campaigns and ad account stats are still synced. If a connection was missing data for some organizations or ad accounts before version 1.6.11, refresh the affected streams to backfill their history.
 
-The entity streams (AdAccounts, Ads, AdSquads, Campaigns, Creatives, Media, Organizations, Segments) use client-side filtering with a 2-day lookback window on the `updated_at` cursor to account for timezone differences between the Snapchat API and the connector.
+### Metrics in the stats streams
 
-The stats streams (hourly and daily) use server-side time-based incremental sync on `start_time`. The **Action Report Time**, **Swipe Up Attribution Window**, and **View Attribution Window** settings affect how conversion data is attributed in these streams.
+The stats streams flatten Snapchat's nested `stats` object, so each metric is a top-level field in the record.
+
+Spend metrics are reported in [micro-currency](https://developers.snap.com/api/marketing-api/Ads-API/measurement#core-metrics), so divide the value by 1,000,000 to get an amount in whole currency units. This applies to `spend`, `coupon_used_local`, and `coupon_used_usd`. `coupon_used_local` uses the currency assigned to the ad account, and `coupon_used_usd` is always in US dollars.
+
+The coupon fields are only available in the Ads, AdSquads, and Campaigns stats streams. They were added in version 1.6.0-rc.1, the release candidate for 1.6.0. The three AdAccounts stats streams return `spend` only, because Snapchat's ad account stats endpoint rejects requests for any other metric.
 
 ## Performance considerations
 
-The Snapchat Marketing API has rate limits of 20 requests per second at the app level and 10 requests per second per access token. The connector handles rate limiting automatically by retrying on HTTP 429 responses with exponential backoff.
+The Snapchat Marketing API enforces rate limits of 20 requests per second at the app level and 10 requests per second per access token. The connector handles HTTP 429 responses with automatic retries and backoff.
 
-The API returns a maximum of 1,000 items per page.
+Pagination is limited to 1,000 items per page.
 
-Syncing hourly stats streams generates large data volumes. If you don't need hourly granularity, use the daily stats streams instead.
+Syncing stats streams at hourly granularity generates large data volumes and takes longer. Daily granularity is recommended unless you need hour-level breakdowns.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -145,6 +161,40 @@ Syncing hourly stats streams generates large data volumes. If you don't need hou
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.12 | 2026-11-10 | [91723](https://github.com/airbytehq/airbyte/pull/91723) | Update dependencies |
+| 1.6.11 | 2026-11-05 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Read every organization and ad account as a parent, so Start Date and End Date no longer empty the streams under them |
+| 1.6.10 | 2026-11-04 | [90345](https://github.com/airbytehq/airbyte/pull/90345) | Simplify error handler configuration with no change in behavior |
+| 1.6.9 | 2026-11-03 | [90759](https://github.com/airbytehq/airbyte/pull/90759) | Update dependencies |
+| 1.6.8 | 2026-10-27 | [90055](https://github.com/airbytehq/airbyte/pull/90055) | Update dependencies |
+| 1.6.7 | 2026-10-21 | [89614](https://github.com/airbytehq/airbyte/pull/89614) | Report not-found organization and ad account IDs as configuration errors with actionable messages |
+| 1.6.6 | 2026-10-20 | [89417](https://github.com/airbytehq/airbyte/pull/89417) | Update dependencies |
+| 1.6.5 | 2026-10-13 | [88812](https://github.com/airbytehq/airbyte/pull/88812) | Update dependencies |
+| 1.6.4 | 2026-10-06 | [88076](https://github.com/airbytehq/airbyte/pull/88076) | Update dependencies |
+| 1.6.3 | 2026-09-29 | [87377](https://github.com/airbytehq/airbyte/pull/87377) | Update dependencies |
+| 1.6.2 | 2026-09-22 | [86830](https://github.com/airbytehq/airbyte/pull/86830) | Update dependencies |
+| 1.6.1 | 2026-09-15 | [85692](https://github.com/airbytehq/airbyte/pull/85692) | Update dependencies |
+| 1.6.0 | 2026-09-09 | [85759](https://github.com/airbytehq/airbyte/pull/85759) | Promoted release candidate to GA |
+| 1.6.0-rc.1 | 2026-08-24 | [76912](https://github.com/airbytehq/airbyte/pull/76912) | Add `coupon_used_local` and `coupon_used_usd` spend fields to ads, ad squads, and campaigns stats streams |
+| 1.5.47 | 2026-08-18 | [84742](https://github.com/airbytehq/airbyte/pull/84742) | Update dependencies |
+| 1.5.46 | 2026-08-11 | [84121](https://github.com/airbytehq/airbyte/pull/84121) | Update dependencies |
+| 1.5.45 | 2026-08-04 | [83618](https://github.com/airbytehq/airbyte/pull/83618) | Update dependencies |
+| 1.5.44 | 2026-07-28 | [83091](https://github.com/airbytehq/airbyte/pull/83091) | Update dependencies |
+| 1.5.43 | 2026-07-21 | [82576](https://github.com/airbytehq/airbyte/pull/82576) | Update dependencies |
+| 1.5.42 | 2026-07-14 | [82015](https://github.com/airbytehq/airbyte/pull/82015) | Update dependencies |
+| 1.5.41 | 2026-06-30 | [81242](https://github.com/airbytehq/airbyte/pull/81242) | Update dependencies |
+| 1.5.40 | 2026-06-23 | [80650](https://github.com/airbytehq/airbyte/pull/80650) | Update dependencies |
+| 1.5.39 | 2026-06-17 | [80208](https://github.com/airbytehq/airbyte/pull/80208) | Fix OAuth re-authentication failure caused by masked client_id/client_secret in consent URL |
+| 1.5.38 | 2026-06-16 | [80030](https://github.com/airbytehq/airbyte/pull/80030) | Update dependencies |
+| 1.5.37 | 2026-06-09 | [79506](https://github.com/airbytehq/airbyte/pull/79506) | Update dependencies |
+| 1.5.36 | 2026-06-02 | [78950](https://github.com/airbytehq/airbyte/pull/78950) | Update dependencies |
+| 1.5.35 | 2026-05-26 | [74289](https://github.com/airbytehq/airbyte/pull/74289) | Add `none` option to view_attribution_window enum to support disabling view attribution tracking |
+| 1.5.34 | 2026-04-28 | [76758](https://github.com/airbytehq/airbyte/pull/76758) | Update dependencies |
+| 1.5.33 | 2026-04-24 | [77006](https://github.com/airbytehq/airbyte/pull/77006) | Promoted release candidate to GA |
+| 1.5.33-rc.5 | 2026-04-23 | [76950](https://github.com/airbytehq/airbyte/pull/76950) | Re-enable api_budget at 100/10s with concurrency 4 for tuning iteration 5 |
+| 1.5.33-rc.4 | 2026-04-21 | [76875](https://github.com/airbytehq/airbyte/pull/76875) | Revert to concurrency 4 without api_budget for tuning iteration 4 |
+| 1.5.33-rc.3 | 2026-04-16 | [76416](https://github.com/airbytehq/airbyte/pull/76416) | Increase api_budget from 80 to 100 calls per 10s for tuning iteration 3 |
+| 1.5.33-rc.2 | 2026-04-13 | [76255](https://github.com/airbytehq/airbyte/pull/76255) | Increase default_concurrency to 5 for tuning iteration 2 |
+| 1.5.33-rc.1 | 2026-04-10 | [70866](https://github.com/airbytehq/airbyte/pull/70866) | Add HTTPAPIBudget and concurrency_level for progressive rollout tuning |
 | 1.5.32 | 2026-03-24 | [75098](https://github.com/airbytehq/airbyte/pull/75098) | Update dependencies |
 | 1.5.31 | 2026-03-10 | [74573](https://github.com/airbytehq/airbyte/pull/74573) | Update dependencies |
 | 1.5.30 | 2026-03-03 | [72736](https://github.com/airbytehq/airbyte/pull/72736) | Update dependencies |
@@ -177,7 +227,7 @@ Syncing hourly stats streams generates large data volumes. If you don't need hou
 | 1.5.3 | 2025-03-01 | [54546](https://github.com/airbytehq/airbyte/pull/54546) | Update dependencies |
 | 1.5.2 | 2025-02-15 | [54091](https://github.com/airbytehq/airbyte/pull/54091) | Update dependencies |
 | 1.5.1 | 2025-02-08 | [53569](https://github.com/airbytehq/airbyte/pull/53569) | Update dependencies |
-| 1.5.0 | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added optional filters for Organization IDs and Ad Account IDs |
+| 1.5.0 | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs |
 | 1.4.2 | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
 | 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
 | 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
@@ -190,49 +240,50 @@ Syncing hourly stats streams generates large data volumes. If you don't need hou
 | 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
 | 1.3.0 | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |
 | 1.3.0-rc.1 | 2024-10-08 | [46570](https://github.com/airbytehq/airbyte/pull/46570) | Migrate to Manifest-only |
-| 1.2.12     | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
-| 1.2.11     | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
-| 1.2.10     | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
-| 1.2.9      | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
-| 1.2.8      | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
-| 1.2.7      | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
-| 1.2.6      | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
-| 1.2.5      | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
-| 1.2.4      | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
-| 1.2.3      | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
-| 1.2.2      | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
-| 1.2.1      | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
-| 1.2.0      | 2024-07-31 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v4.1.0 |
-| 1.1.2      | 2024-07-27 | [42680](https://github.com/airbytehq/airbyte/pull/42680) | Update dependencies |
-| 1.1.1      | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
-| 1.1.0      | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
-| 1.0.3      | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
-| 1.0.2      | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
-| 1.0.1      | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |
-| 1.0.0      | 2024-06-20 | [39507](https://github.com/airbytehq/airbyte/pull/39507) | Migrate to low-code CDK and add incremental functionality to `organizations` |
-| 0.6.2      | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package |
-| 0.6.1      | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions |
-| 0.6.0      | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
-| 0.5.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 0.4.0      | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media` |
-| 0.3.2      | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
-| 0.3.0      | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
-| 0.2.0      | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema |
-| 0.1.16     | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema |
-| 0.1.15     | 2023-03-02 | [22869](https://github.com/airbytehq/airbyte/pull/22869) | Specified date formatting in specification |
-| 0.1.14     | 2023-02-10 | [22808](https://github.com/airbytehq/airbyte/pull/22808) | Enable default `AvailabilityStrategy` |
-| 0.1.13     | 2023-01-27 | [22023](https://github.com/airbytehq/airbyte/pull/22023) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 0.1.12     | 2023-01-11 | [21267](https://github.com/airbytehq/airbyte/pull/21267) | Fix parse empty error response |
-| 0.1.11     | 2022-12-23 | [20865](https://github.com/airbytehq/airbyte/pull/20865) | Handle 403 permission error |
-| 0.1.10     | 2022-12-15 | [20537](https://github.com/airbytehq/airbyte/pull/20537) | Run on CDK 0.15.0 |
-| 0.1.9      | 2022-12-14 | [20498](https://github.com/airbytehq/airbyte/pull/20498) | Fix output state when no records are read |
-| 0.1.8      | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
-| 0.1.6      | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
-| 0.1.5      | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime |
-| 0.1.4      | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.1.3      | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
-| 0.1.2      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.1      | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream_state value |
-| 0.1.0      | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
+| 1.2.12 | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
+| 1.2.11 | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
+| 1.2.9 | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
+| 1.2.8 | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
+| 1.2.7 | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
+| 1.2.6 | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
+| 1.2.5 | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
+| 1.2.4 | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
+| 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
+| 1.2.2 | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
+| 1.2.1 | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
+| 1.2.0 | 2024-07-31 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v4.1.0 |
+| 1.1.2 | 2024-07-27 | [42680](https://github.com/airbytehq/airbyte/pull/42680) | Update dependencies |
+| 1.1.1 | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
+| 1.1.0 | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
+| 1.0.3 | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
+| 1.0.2 | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
+| 1.0.1 | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |
+| 1.0.0 | 2024-06-20 | [39507](https://github.com/airbytehq/airbyte/pull/39507) | Migrate to low-code CDK and add incremental functionality to `organizations` |
+| 0.6.2 | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package |
+| 0.6.1 | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions |
+| 0.6.0 | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
+| 0.5.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.4.0 | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media` |
+| 0.3.2 | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
+| 0.3.1 | 2024-02-12 | [35170](https://github.com/airbytehq/airbyte/pull/35170) | Adopt the Airbyte Python base image |
+| 0.3.0 | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
+| 0.2.0 | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema |
+| 0.1.16 | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema |
+| 0.1.15 | 2023-03-02 | [22869](https://github.com/airbytehq/airbyte/pull/22869) | Specified date formatting in specification |
+| 0.1.14 | 2023-02-10 | [22808](https://github.com/airbytehq/airbyte/pull/22808) | Enable default `AvailabilityStrategy` |
+| 0.1.13 | 2023-01-27 | [22023](https://github.com/airbytehq/airbyte/pull/22023) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.1.12 | 2023-01-11 | [21267](https://github.com/airbytehq/airbyte/pull/21267) | Fix parse empty error response |
+| 0.1.11 | 2022-12-23 | [20865](https://github.com/airbytehq/airbyte/pull/20865) | Handle 403 permission error |
+| 0.1.10 | 2022-12-15 | [20537](https://github.com/airbytehq/airbyte/pull/20537) | Run on CDK 0.15.0 |
+| 0.1.9 | 2022-12-14 | [20498](https://github.com/airbytehq/airbyte/pull/20498) | Fix output state when no records are read |
+| 0.1.8 | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
+| 0.1.6 | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
+| 0.1.5 | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime |
+| 0.1.4 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.1.3 | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1 | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream_state value |
+| 0.1.0 | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
 
 </details>

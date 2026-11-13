@@ -31,5 +31,16 @@
         "name": "tickets"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ticket_activities"
+      },
+      "stream_state": {
+        "performed_at": "2121-10-04T00:00:00Z"
+      }
+    }
   }
 ]

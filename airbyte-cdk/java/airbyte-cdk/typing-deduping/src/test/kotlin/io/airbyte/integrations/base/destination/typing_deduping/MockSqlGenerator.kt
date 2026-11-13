@@ -13,7 +13,7 @@ internal class MockSqlGenerator : SqlGenerator {
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         throw RuntimeException()
     }
@@ -34,7 +34,7 @@ internal class MockSqlGenerator : SqlGenerator {
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val timestampFilter =
             minRawTimestamp
@@ -44,7 +44,7 @@ internal class MockSqlGenerator : SqlGenerator {
         return of(
             ("UPDATE TABLE " + stream.id.finalTableId("", finalSuffix)).toString() +
                 casting +
-                timestampFilter
+                timestampFilter,
         )
     }
 
@@ -53,7 +53,7 @@ internal class MockSqlGenerator : SqlGenerator {
             "OVERWRITE TABLE " +
                 stream.finalTableId("") +
                 " FROM " +
-                stream.finalTableId("", finalSuffix)
+                stream.finalTableId("", finalSuffix),
         )
     }
 
@@ -62,7 +62,7 @@ internal class MockSqlGenerator : SqlGenerator {
             "MIGRATE TABLE " +
                 java.lang.String.join(".", namespace, tableName) +
                 " TO " +
-                streamId!!.rawTableId("")
+                streamId!!.rawTableId(""),
         )
     }
 
@@ -70,7 +70,7 @@ internal class MockSqlGenerator : SqlGenerator {
         return of(
             "PREPARE " +
                 java.lang.String.join(".", stream.id.originalNamespace, stream.id.originalName) +
-                " FOR SOFT RESET"
+                " FOR SOFT RESET",
         )
     }
 

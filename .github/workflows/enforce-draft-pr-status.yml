@@ -7,7 +7,6 @@ name: Enforce Draft PR Status
 # Opt-out: Include "[ready]" in the PR title, or add one of these labels:
 #   - "skip-draft-status"
 #   - "auto-merge"
-#   - "auto-merge/bypass-ci-checks"
 #   - "dependencies" (Dependabot PRs)
 
 on:
@@ -21,7 +20,7 @@ jobs:
     # Skip if:
     # - PR is already a draft
     # - PR title contains "[ready]" (opt-out)
-    # - PR has opt-out label (skip-draft-status, auto-merge, auto-merge/bypass-ci-checks, dependencies)
+    # - PR has opt-out label (skip-draft-status, auto-merge, dependencies)
     # - PR is from Dependabot
     # - PR is from a whitelisted user
     if: |

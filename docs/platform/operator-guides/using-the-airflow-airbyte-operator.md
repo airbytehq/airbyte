@@ -1,98 +1,88 @@
 ---
-description: Start triggering Airbyte jobs with Apache Airflow in minutes
-products: oss-*
+description: Trigger Airbyte sync jobs with Apache Airflow
+products: all
 ---
 
-# Using the Airbyte Operator to orchestrate Airbyte Core
+# Using the Airflow Airbyte Provider
 
-Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte self-managed synchronization jobs from Apache Airflow, and this article walks you through configuring your Airflow DAG to do so.
+Airbyte is an official community provider for the Apache Airflow project. The `apache-airflow-providers-airbyte` package lets you trigger and monitor Airbyte synchronization jobs from Apache Airflow. It works with both Airbyte Cloud and Self-Managed deployments.
 
-:::note
-For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Airbyte operator is designed to work with the internal [Config API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html) rather than the newer [Airbyte API](https://reference.airbyte.com/reference/start) and is therefore not intended or designed for orchestrating Airbyte Cloud. As an alternative, it is possible to make use of [Airflow's HTTP operators](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html) with both Airbyte self-managed and Cloud. This approach is described in [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow).
-:::
+The [Airflow Airbyte provider documentation](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html) covers the full API reference and additional configuration options.
 
-The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
+## Prerequisites
 
-## 1. Set up the tools
+- An Airbyte instance, either [Cloud](https://cloud.airbyte.com/signup) or [Self-Managed](/platform/using-airbyte/getting-started/oss-quickstart).
+- An Apache Airflow instance. If you don't have one, follow the [Airflow quick start guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html).
+- `apache-airflow-providers-airbyte` version 5.0.0 or later installed in your Airflow environment.
 
-First, make sure you have Docker installed. \(We'll be using the `docker-compose` command, so your install should contain `docker-compose`.\)
+```bash
+pip install 'apache-airflow-providers-airbyte>=5.0.0'
+```
 
-### **Start Airbyte**
+## Set up the Airflow connection to Airbyte
 
-If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
+The Airflow provider authenticates with Airbyte using a Client ID and Client Secret. This is the same authentication method for both Cloud and Self-Managed deployments.
 
-For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Airflow will be responsible for manually triggering the Airbyte job.
+To create your credentials, go to **Settings > Applications** in the Airbyte UI and create a new application. For more details, see [Configuring API Access](/platform/using-airbyte/configuring-api-access).
 
-### **Start Apache Airflow**
+In the Airflow UI, go to **Admin > Connections** and create a new connection with the connection type **Airbyte**:
 
-If you don't have an Airflow instance, we recommend following this [guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up. Additionally, you will need to install the `apache-airflow-providers-airbyte` package to use Airbyte Operator on Apache Airflow. You can read more about it [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
+- **Connection Id:** A name for this connection, for example `airbyte_default`.
+- **Host:** The base URL of the Airbyte API.
+  - For Airbyte Cloud: `https://api.airbyte.com/v1/`
+  - For Self-Managed: `http://localhost:8000/api/public/v1/`
+- **Client ID:** The Client ID from your Airbyte application.
+- **Client Secret:** The Client Secret from your Airbyte application.
 
-## 2. Create a DAG in Apache Airflow to trigger your Airbyte job
+For more details on connection configuration, see the [Airflow Airbyte connection docs](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/connections.html).
 
-### Create an Airbyte connection in Apache Airflow
+## Retrieve the Airbyte connection ID
 
-Once Airflow starts, navigate to Airflow's `Connections` page as seen below. The Airflow UI can be accessed at [http://localhost:8080/](http://localhost:8080/).
+Your Airflow DAG needs the Airbyte Connection ID to know which connection to trigger.
 
-![](/.gitbook/assets/airflow_create_connection.png)
+1. Open the Airbyte UI.
+2. Go to **Connections** and select the connection you want to orchestrate.
+3. Copy the connection ID from the URL. The URL format is `https://<domain>/workspaces/<workspace-id>/connections/<connection-id>/status`.
 
-Airflow will use the Airbyte API to execute our actions. The Airbyte API uses HTTP, so we'll need to create a HTTP Connection. Airbyte is typically hosted at `localhost:8001`. Configure Airflow's HTTP connection accordingly - we've provided a screenshot example.
+For connections you plan to orchestrate with Airflow, set the sync schedule to **Manual** so Airflow controls when syncs run.
 
-![](/.gitbook/assets/airflow_edit_connection.png)
+## Create a DAG to trigger an Airbyte sync
 
-Don't forget to click save!
+### Synchronous example
 
-### Retrieving the Airbyte Connection ID
-
-Get the Airbyte Connection ID so your Airflow DAG knows which Airbyte Connection to trigger.
-
-1. Open Airbyte.
-
-2. Click **Connections** > your connection.
-
-3. Get the connection ID from the URL. The URL looks like the following example, and your connection ID appears near the end: `https://<YOUR_DOMAIN>/workspaces/<YOUR_WORKSPACE_ID>/connections/<YOUR_CONNECTION_ID>/status`.
-
-### Creating a simple Airflow DAG to run an Airbyte Sync Job
-
-Place the following file inside the `/dags` directory. Name this file `dag_airbyte_example.py`.
+The following DAG triggers an Airbyte sync and waits for it to complete:
 
 ```python
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 
-with DAG(dag_id='trigger_airbyte_job_example',
-         default_args={'owner': 'airflow'},
-         schedule_interval='@daily',
-         start_date=days_ago(1)
-    ) as dag:
+with DAG(
+    dag_id="trigger_airbyte_sync",
+    default_args={"owner": "airflow"},
+    schedule_interval="@daily",
+    start_date=days_ago(1),
+) as dag:
 
-    money_to_json = AirbyteTriggerSyncOperator(
-        task_id='airbyte_money_json_example',
-        airbyte_conn_id='airbyte_conn_example',
-        connection_id='1e3b5a72-7bfd-4808-a13c-204505490110',
-        asynchronous=False,
+    sync_connection = AirbyteTriggerSyncOperator(
+        task_id="sync_airbyte_connection",
+        connection_id="your-airbyte-connection-uuid",
         timeout=3600,
-        wait_seconds=3
+        wait_seconds=3,
     )
 ```
 
-The Airbyte Airflow Operator accepts the following parameters:
+The `AirbyteTriggerSyncOperator` accepts the following parameters:
 
-- `airbyte_conn_id`: Name of the Airflow HTTP Connection pointing at the Airbyte API. Tells Airflow where the Airbyte API is located.
-- `connection_id`: The ID of the Airbyte Connection to be triggered by Airflow.
-- `asynchronous`: Determines how the Airbyte Operator executes. When true, Airflow will monitor the Airbyte Job using an **AirbyteJobSensor**. Default value is `false`.
-- `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`. Default value is `3600` seconds.
-- `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`. Default value is `3` seconds.
+- `airbyte_conn_id`: The name of the Airflow connection pointing at the Airbyte API. Defaults to `airbyte_default`.
+- `connection_id`: The UUID of the Airbyte Connection to trigger.
+- `asynchronous`: When `True`, the operator returns the job ID immediately instead of waiting for completion. Default is `False`.
+- `timeout`: Maximum seconds to wait for the Airbyte job to complete. Only used when `asynchronous=False`. Default is `3600`.
+- `wait_seconds`: Seconds between status checks. Only used when `asynchronous=False`. Default is `3`.
 
-This code will produce the following simple DAG in the Airbyte UI: `airbyte_money_json_example`.
+### Asynchronous example
 
-Our DAG will show up in the Airflow UI shortly after we place our DAG file, and be automatically triggered shortly after.
-
-Check the Timeline tab to see if the job started syncing.
-
-### Using the `asynchronous` parameter
-
-If your Airflow instance has limited resources and/or is under load, setting the `asynchronous=True` can help. Sensors do not occupy an Airflow worker slot, so this is helps reduce Airflow load.
+If your Airflow instance has limited resources, use `asynchronous=True` with an `AirbyteJobSensor`. Sensors don't occupy a worker slot, which helps reduce Airflow load.
 
 ```python
 from airflow import DAG
@@ -100,39 +90,30 @@ from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 from airflow.providers.airbyte.sensors.airbyte import AirbyteJobSensor
 
-with DAG(dag_id='airbyte_trigger_job_example_async',
-         default_args={'owner': 'airflow'},
-         schedule_interval='@daily',
-         start_date=days_ago(1)
-    ) as dag:
+with DAG(
+    dag_id="trigger_airbyte_sync_async",
+    default_args={"owner": "airflow"},
+    schedule_interval="@daily",
+    start_date=days_ago(1),
+) as dag:
 
-    async_money_to_json = AirbyteTriggerSyncOperator(
-        task_id='airbyte_async_money_json_example',
-        airbyte_conn_id='airbyte_conn_example',
-        connection_id='1e3b5a72-7bfd-4808-a13c-204505490110',
+    trigger_sync = AirbyteTriggerSyncOperator(
+        task_id="trigger_airbyte_sync",
+        connection_id="your-airbyte-connection-uuid",
         asynchronous=True,
     )
 
-    airbyte_sensor = AirbyteJobSensor(
-        task_id='airbyte_sensor_money_json_example',
-        airbyte_conn_id='airbyte_conn_example',
-        airbyte_job_id=async_money_to_json.output
+    wait_for_sync = AirbyteJobSensor(
+        task_id="wait_for_airbyte_sync",
+        airbyte_job_id=trigger_sync.output,
     )
 
-    async_money_to_json >> airbyte_sensor
+    trigger_sync >> wait_for_sync
 ```
 
-## That's it!
+## Related resources
 
-Don't be fooled by our simple example of only one Airflow task. Airbyte is a powerful data integration platform supporting many sources and destinations. The Airbyte Airflow Operator means Airbyte can now be easily used with the Airflow ecosystem - give it a shot!
-
-## Related articles and guides
-
-For additional information about using the Airflow and Airbyte together, see the following:
-
-- [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow)
-- [A step-by-step guide to setting up and configuring Airbyte and Airflow to work together](https://airbyte.com/tutorials/how-to-use-airflow-and-airbyte-together)
-- [Build an e-commerce Analytics Stack with Airbyte, dbt, Airflow (ADA) and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/airbyte_dbt_airflow_bigquery)
-- [The difference between Airbyte and Airflow](https://airbyte.com/blog/airbyte-vs-airflow)
-- [ETL Pipelines with Airflow: the Good, the Bad and the Ugly](https://airbyte.com/blog/airflow-etl-pipelines)
-- [Automate your Data Scraping with Apache Airflow and Beautiful Soup](https://airbyte.com/tutorials/data-scraping-with-airflow-and-beautiful-soup)
+- [Airflow Airbyte provider documentation](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
+- [Airflow Airbyte connection configuration](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/connections.html)
+- [Configuring Airbyte API access](/platform/using-airbyte/configuring-api-access)
+- [Airbyte API reference](https://reference.airbyte.com/reference/start)

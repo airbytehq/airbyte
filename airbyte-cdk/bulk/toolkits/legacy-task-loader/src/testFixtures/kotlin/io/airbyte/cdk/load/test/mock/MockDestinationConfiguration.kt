@@ -34,7 +34,7 @@ class MockDestinationConfigurationFactory :
     DestinationConfigurationFactory<MockDestinationSpecification, MockDestinationConfiguration> {
 
     override fun makeWithoutExceptionHandling(
-        pojo: MockDestinationSpecification
+        pojo: MockDestinationSpecification,
     ): MockDestinationConfiguration {
         return MockDestinationConfiguration(foo = pojo.foo)
     }

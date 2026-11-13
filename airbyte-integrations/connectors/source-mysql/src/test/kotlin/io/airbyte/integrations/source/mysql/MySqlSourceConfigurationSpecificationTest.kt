@@ -9,6 +9,7 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -55,7 +56,47 @@ class MySqlSourceConfigurationSpecificationTest {
         Assertions.assertTrue(encryption is EncryptionRequired, encryption::class.toString())
     }
 
+    /**
+     * Unknown config keys must be kept by the @JsonAnySetter and be reachable through
+     * [MySqlSourceConfigurationSpecification.getAdditionalProperties], which
+     * [MySqlSourceConfiguration] reads the SSH connection options from.
+     */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_UNKNOWN_KEYS)
+    fun testUnknownKeysAreKeptAsAdditionalProperties() {
+        val pojo: MySqlSourceConfigurationSpecification = supplier.get()
+        val additionalProperties: Map<String, Any> = pojo.getAdditionalProperties()!!
+        Assertions.assertEquals("bar", additionalProperties["unknown_key"])
+        // JSON integers within the int range deserialize as Int, and SshConnectionOptions only
+        // honours Long values, hence a value beyond Int.MAX_VALUE.
+        Assertions.assertEquals(3_000_000_000L, additionalProperties["session_heartbeat_interval"])
+        val config: MySqlSourceConfiguration = MySqlSourceConfigurationFactory().make(pojo)
+        Assertions.assertEquals(
+            3_000_000_000.milliseconds,
+            config.sshConnectionOptions.sessionHeartbeatInterval,
+        )
+    }
+
     companion object {
+
+        const val CONFIG_JSON_UNKNOWN_KEYS: String =
+            """
+{
+  "host": "localhost",
+  "port": 12345,
+  "username": "FOO",
+  "password": "BAR",
+  "database": "SYSTEM",
+  "ssl_mode": {
+    "mode": "required"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "unknown_key": "bar",
+  "session_heartbeat_interval": 3000000000
+}
+"""
 
         const val CONFIG_JSON: String =
             """

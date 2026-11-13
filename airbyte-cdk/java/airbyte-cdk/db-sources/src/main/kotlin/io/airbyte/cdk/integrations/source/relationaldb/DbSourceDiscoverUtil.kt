@@ -16,6 +16,7 @@ import java.util.*
 import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Contains utilities and helper classes for discovering schemas in database sources. */
 object DbSourceDiscoverUtil {
 
@@ -31,7 +32,7 @@ object DbSourceDiscoverUtil {
     fun <DataType> logSourceSchemaChange(
         fullyQualifiedTableNameToInfo: Map<String, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
+        airbyteTypeConverter: Function<DataType, JsonSchemaType>,
     ) {
         for (airbyteStream in catalog.streams) {
             val stream = airbyteStream.stream
@@ -79,38 +80,37 @@ object DbSourceDiscoverUtil {
     fun <DataType> convertTableInfosToAirbyteCatalog(
         tableInfos: List<TableInfo<CommonField<DataType>>>,
         fullyQualifiedTableNameToPrimaryKeys: Map<String, MutableList<String>>,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
+        airbyteTypeConverter: Function<DataType, JsonSchemaType>,
     ): AirbyteCatalog {
-        val tableInfoFieldList =
-            tableInfos.map { t: TableInfo<CommonField<DataType>> ->
-                // some databases return multiple copies of the same record for a column (e.g.
-                // redshift) because
-                // they have at least once delivery guarantees. we want to dedupe these, but
-                // first we check that the
-                // records are actually the same and provide a good error message if they are
-                // not.
-                assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
-                val fields =
-                    t.fields
-                        .map { commonField: CommonField<DataType> ->
-                            toField(commonField, airbyteTypeConverter)
-                        }
-                        .distinct()
+        val tableInfoFieldList = tableInfos.map { t: TableInfo<CommonField<DataType>> ->
+            // some databases return multiple copies of the same record for a column (e.g.
+            // redshift) because
+            // they have at least once delivery guarantees. we want to dedupe these, but
+            // first we check that the
+            // records are actually the same and provide a good error message if they are
+            // not.
+            assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
+            val fields =
+                t.fields
+                    .map { commonField: CommonField<DataType> ->
+                        toField(commonField, airbyteTypeConverter)
+                    }
+                    .distinct()
 
-                val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
-                val primaryKeys =
-                    fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
-                        fullyQualifiedTableName,
-                        emptyList()
-                    )
-                TableInfo(
-                    nameSpace = t.nameSpace,
-                    name = t.name,
-                    fields = fields,
-                    primaryKeys = primaryKeys,
-                    cursorFields = t.cursorFields
+            val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
+            val primaryKeys =
+                fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
+                    fullyQualifiedTableName,
+                    emptyList(),
                 )
-            }
+            TableInfo(
+                nameSpace = t.nameSpace,
+                name = t.name,
+                fields = fields,
+                primaryKeys = primaryKeys,
+                cursorFields = t.cursorFields,
+            )
+        }
 
         val streams =
             tableInfoFieldList
@@ -123,12 +123,12 @@ object DbSourceDiscoverUtil {
                     CatalogHelpers.createAirbyteStream(
                             tableInfo.name,
                             tableInfo.nameSpace,
-                            tableInfo.fields
+                            tableInfo.fields,
                         )
                         .withSupportedSyncModes(
                             if (tableInfo.cursorFields.isEmpty())
                                 Lists.newArrayList(SyncMode.FULL_REFRESH)
-                            else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
@@ -144,7 +144,7 @@ object DbSourceDiscoverUtil {
 
     private fun <DataType> toField(
         commonField: CommonField<DataType>,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
+        airbyteTypeConverter: Function<DataType, JsonSchemaType>,
     ): Field {
         if (
             airbyteTypeConverter.apply(commonField.type) === JsonSchemaType.OBJECT &&
@@ -159,7 +159,7 @@ object DbSourceDiscoverUtil {
             return Field.of(
                 commonField.name,
                 airbyteTypeConverter.apply(commonField.type),
-                properties
+                properties,
             )
         } else {
             return Field.of(commonField.name, airbyteTypeConverter.apply(commonField.type))
@@ -169,7 +169,7 @@ object DbSourceDiscoverUtil {
     private fun <DataType> assertColumnsWithSameNameAreSame(
         nameSpace: String,
         tableName: String,
-        columns: List<CommonField<DataType>>
+        columns: List<CommonField<DataType>>,
     ) {
         columns
             .groupBy { obj: CommonField<DataType> -> obj.name }
@@ -184,8 +184,8 @@ object DbSourceDiscoverUtil {
                                 comparisonColumn.name,
                                 nameSpace,
                                 tableName,
-                                columns
-                            )
+                                columns,
+                            ),
                         )
                     }
                 }
