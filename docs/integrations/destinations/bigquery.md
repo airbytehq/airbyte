@@ -26,18 +26,16 @@ This page guides you through setting up the BigQuery destination connector.
   [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and
   the
   [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+- If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+  Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Setup guide
 
 ### Step 1: Set up a data loading method
 
-#### Using Batched Standard Inserts
+#### Using a Google Cloud Storage bucket (Recommended)
 
-You can use the BigQuery driver's built-in conversion to take `INSERT` statements and convert that to file uploads which are then loaded into BigQuery in batches. This is the simplest way to load data into BigQuery in a performant way. These staging files are managed by BigQuery and deleted automatically after the load is complete.
-
-#### Using a Google Cloud Storage bucket
-
-If you want more control of how and where your staging files are stored, you can opt to use a GCS bucket.
+This is the recommended loading method for production workloads. It uploads data to a GCS bucket, then loads it into BigQuery using a COPY job, providing better performance for large data volumes.
 
 To use a Google Cloud Storage bucket:
 
@@ -59,6 +57,10 @@ when creating a new bucket). We currently do not support buckets using customer-
 keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the
 `Encryption type` row.
 
+#### Using Batched Standard Inserts
+
+A simpler setup with no external staging required. Uses the BigQuery SDK to stream data directly. Suitable for smaller data volumes or quick testing. These staging files are managed by BigQuery and deleted automatically after the load is complete.
+
 ### Step 2: Set up the BigQuery connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source
@@ -76,14 +78,14 @@ You cannot change the location later.
 
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
-8. For **Loading Method**, select [Batched Standard Inserts](#using-batched-standard-inserts) or
-   [GCS Staging](#using-a-google-cloud-storage-bucket).
+8. For **Loading Method**, select [GCS Staging (Recommended)](#using-a-google-cloud-storage-bucket-recommended) or
+   [Batched Standard Inserts](#using-batched-standard-inserts).
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 :::note
-Be sure to copy all contents in the Account Key JSON file including the brackets.
+Be sure to copy all contents in the Account Key JSON file including the surrounding braces.
 :::
 
 11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
@@ -103,6 +105,19 @@ concurrent rate limit, making it easier to start many queries at once.
     you see networking or memory management problems with the sync (specifically on the
     destination), try decreasing the chunk size. In that case, the sync will be slower but more
     likely to succeed.
+
+12. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
+    project you entered as **Project ID**. To run them in a different project — for example to keep
+    ingestion from competing with analytics workloads for the same project quotas — enter that
+    project's ID.
+
+:::note
+Query, load, and copy jobs then run against the job project's quotas, while data still lands in
+datasets under **Project ID**. With **Legacy raw tables** enabled, the queries that inspect existing
+raw tables at sync startup still run in the **Project ID** project. The service account needs the
+[`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
+role on the job project, in addition to its existing roles on the dataset project.
+:::
 
 ## Supported sync modes
 
@@ -186,7 +201,11 @@ namespace with `n` for converted namespaces.
 
 ### Permission errors
 
-The service account does not have the proper permissions.
+The service account does not have the proper permissions. With **Legacy raw tables** turned off,
+Airbyte classifies HTTP `401` and `403` errors encountered while checking existing tables at sync
+startup as configuration errors. Check the service account's credentials and permissions before retrying.
+A `403` error with reason `rateLimitExceeded` is excluded from this classification and remains
+eligible for retry.
 
 - Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles or
   equivalent permissions as those two roles.
@@ -216,6 +235,22 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
     smaller value (for example, 5 MiB).
   - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
     possible contributing factor.
+
+### Quota exceeded for concurrent script queries per project
+
+If your sync fails with:
+
+```
+BigQueryException: Quota exceeded: Your project_and_region exceeded quota for
+concurrent script queries per project.
+```
+
+- This [quota](https://cloud.google.com/bigquery/quotas#query_jobs) is per project, so syncs share
+  it with every other workload in the same project, such as analytics queries or Dataform pipelines.
+- Set **Job Execution Project ID** to a separate project to run the connector's jobs against that
+  project's quota instead. Data continues to land in datasets under **Project ID**.
+- Alternatively, reduce the number of concurrently syncing streams or connections targeting the
+  project.
 
 ### Load job timeouts
 
@@ -250,8 +285,23 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.4-rc.1 | 2026-11-12 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
+| 3.2.3 | 2026-11-11 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
+| 3.2.2 | 2026-10-30 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
+| 3.2.1 | 2026-10-09 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
+| 3.2.0 | 2026-10-02 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
+| 3.1.2 | 2026-09-10 | [85804](https://github.com/airbytehq/airbyte/pull/85804) | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
+| 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
+| 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
+| 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
+| 3.0.23 | 2026-07-16 | [82102](https://github.com/airbytehq/airbyte/pull/82102) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
+| 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
+| 3.0.20 | 2026-06-29 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
+| 3.0.19 | 2026-05-22 | [78333](https://github.com/airbytehq/airbyte/pull/78333) | Promoting release candidate 3.0.19-rc.1 to a main version. |
+| 3.0.19-rc.1 | 2026-05-20 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
-| 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
+| 3.0.18-rc.1 | 2026-03-30 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
 | 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
