@@ -3,8 +3,24 @@
 #
 
 from importlib.metadata import version
+from pathlib import Path
 
+import pytest
+import tomllib
 from packaging.version import Version
+
+
+@pytest.mark.parametrize("filename", ["pyproject.toml", "poetry.lock"])
+def test_python_requirement_is_limited_to_python_311(filename: str) -> None:
+    with (Path(__file__).resolve().parents[1] / filename).open("rb") as file:
+        metadata = tomllib.load(file)
+
+    if filename == "pyproject.toml":
+        requirement = metadata["tool"]["poetry"]["dependencies"]["python"]
+    else:
+        requirement = metadata["metadata"]["python-versions"]
+
+    assert requirement == "^3.11,<3.12"
 
 
 def test_patched_langchain_core_and_vector_db_imports_are_available():
