@@ -888,6 +888,14 @@ definitions:
       response_filters:
         - type: HttpResponseFilter
           http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
+          error_message: >-
+            Authentication to Outreach has expired. Authentication will be retried, but if this issue persists,
+            re-authenticate to restore access to Outreach.
+        - type: HttpResponseFilter
+          http_codes:
             - 403
           action: FAIL
           failure_type: config_error

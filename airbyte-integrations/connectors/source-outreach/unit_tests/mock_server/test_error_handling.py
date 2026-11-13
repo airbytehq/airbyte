@@ -10,7 +10,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from .request_builder import OutreachRequestBuilder
-from .response_builder import error_response, page_response, resource
+from .response_builder import error_response, page_response, resource, token_response
 from .utils import given_token, read_stream, record_ids
 
 
@@ -56,6 +56,44 @@ class _Clock:
 
 
 class TestErrorHandling(TestCase):
+    @HttpMocker()
+    def test_401_refreshes_token_and_retries_with_the_new_token(self, http_mocker: HttpMocker) -> None:
+        token_request = given_token(
+            http_mocker,
+            [token_response(), HttpResponse(body='{"access_token": "new-access-token", "expires_in": 7200}', status_code=200)],
+        )
+        request = OutreachRequestBuilder.endpoint("/accounts").build(headers={"Authorization": "Bearer test-access-token"})
+        retry = OutreachRequestBuilder.endpoint("/accounts").build(headers={"Authorization": "Bearer new-access-token"})
+        http_mocker.get(
+            request,
+            error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again."),
+        )
+        http_mocker.get(retry, _accounts_page())
+
+        with _Clock():
+            output = read_stream(_STREAM, SyncMode.full_refresh)
+
+        assert not output.errors
+        assert record_ids(output) == [1]
+        http_mocker.assert_number_of_calls(token_request, 2)
+        http_mocker.assert_number_of_calls(request, 1)
+        http_mocker.assert_number_of_calls(retry, 1)
+
+    @HttpMocker()
+    def test_persistent_401_fails_as_config_error_after_one_refresh(self, http_mocker: HttpMocker) -> None:
+        token_request = given_token(http_mocker, [token_response(), token_response()])
+        request = _request()
+        expired = error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again.")
+        http_mocker.get(request, [expired, expired])
+
+        with _Clock():
+            output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        assert output.records == []
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        http_mocker.assert_number_of_calls(request, 2)
+        http_mocker.assert_number_of_calls(token_request, 2)
+
     @HttpMocker()
     def test_403_fails_as_config_error_with_the_scope_outreach_names(self, http_mocker: HttpMocker) -> None:
         # Body captured from a live 403 on a token without the stream's scope.

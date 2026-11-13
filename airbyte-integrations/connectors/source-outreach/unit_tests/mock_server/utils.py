@@ -5,7 +5,7 @@ from typing import Any, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import build_source
 
@@ -14,8 +14,10 @@ from .request_builder import OutreachRequestBuilder
 from .response_builder import token_response
 
 
-def given_token(http_mocker: HttpMocker) -> None:
-    http_mocker.post(OutreachRequestBuilder.token_request(), token_response())
+def given_token(http_mocker: HttpMocker, responses: Optional[list[HttpResponse]] = None) -> HttpRequest:
+    request = OutreachRequestBuilder.token_request()
+    http_mocker.post(request, responses or token_response())
+    return request
 
 
 def read_stream(
