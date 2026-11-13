@@ -163,7 +163,7 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 | 200 | Dataset is ready to stream. | No action needed. |
 | 202 | Dataset is not yet ready. | Wait and retry the sync later. |
 | 304 | Dataset is not ready. | Contact Infor member services to investigate. |
-| Other | Unexpected response. | The sync fails. Contact Infor member services to investigate. |
+| Other | Unexpected response. | The sync fails. Review the error message, and contact Infor member services if the error persists. |
 
 ## IP allow list
 
