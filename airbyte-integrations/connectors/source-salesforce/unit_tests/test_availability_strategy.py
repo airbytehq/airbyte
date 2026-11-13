@@ -55,3 +55,14 @@ class SalesforceAvailabilityStrategyTest(TestCase):
 
         assert is_available
         assert reason is None
+
+    def test_given_not_found_when_handle_http_error_then_skip_stream_with_reason(self) -> None:
+        availability_strategy = SalesforceAvailabilityStrategy()
+        self._stream.name = "Pricebook2History"
+        self._error.response.status_code = 404
+        self._error.response.json.return_value = [{"errorCode": "NOT_FOUND", "message": "The requested resource does not exist"}]
+
+        is_available, reason = availability_strategy.handle_http_error(self._stream, self._logger, _NO_SOURCE, self._error)
+
+        assert not is_available
+        assert reason == ("Cannot receive data for stream 'Pricebook2History', error message: 'The requested resource does not exist'")
