@@ -15,6 +15,12 @@ data:
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   externalDocumentationUrls:
+    - title: Zendesk Talk API
+      url: https://developer.zendesk.com/api-reference/voice/talk-api/introduction/
+      type: api_reference
+    - title: Zendesk Talk authentication
+      url: https://developer.zendesk.com/api-reference/voice/talk-api/introduction/#authentication
+      type: authentication_guide
     - title: Developer Updates
       url: https://support.zendesk.com/hc/en-us/sections/4405298889242-Developer-updates
     - title: Changelog
