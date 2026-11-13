@@ -278,7 +278,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                # Slices at or before the cursor are only tracked to walk through the lookback window during this
+                # sync. The cursor already covers them, so they are not persisted.
+                cursor_value = self._cursor_values.get(account_id)
+                new_state[account_id]["slices"] = sorted(
+                    {d.isoformat() for d in self._completed_slices[account_id] if not cursor_value or d > cursor_value}
+                )
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -419,10 +424,14 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            if self._cursor_values is None:
+                self._cursor_values = {}
+            # The walk starts at `cursor - lookback window`, so the first slices it passes are older than the cursor
+            # loaded from state. The cursor is checkpointed after every slice and the platform keeps the last
+            # checkpoint of an interrupted attempt, so it must never move backwards: a lower cursor makes the next
+            # attempt subtract the lookback window again and re-read a wider window.
+            current_cursor = self._cursor_values.get(account_id)
+            self._cursor_values[account_id] = max(current_cursor, ts_start) if current_cursor else ts_start
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
