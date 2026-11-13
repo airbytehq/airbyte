@@ -1,33 +1,33 @@
 # Workable
 
-This page guides you through the process of setting up the Workable source connector.
+This page guides you through the process of setting up the Workable source connector. The connector syncs jobs, candidates, pipeline stages, and external recruiters from the [Workable API](https://workable.readme.io/reference/generate-an-access-token).
 
 ## Prerequisites
 
-You can find or create a Workable access token within the [Workable Integrations Settings page](https://test-432879.workable.com/backend/settings/integrations). See [this page](https://workable.readme.io/reference/generate-an-access-token#generate-an-api-access-token) for a step-by-step guide.
+- A Workable account with permission to generate API access tokens.
+- A Workable API access token with the `r_jobs` and `r_candidates` scopes. The `jobs`, `stages`, and `recruiters` streams require `r_jobs`, and the `candidates` stream requires `r_candidates`.
+- Your Workable account subdomain. This is the `YOUR_SUBDOMAIN` part of `https://YOUR_SUBDOMAIN.workable.com`. You can also find it on the company profile settings page in Workable.
 
 ## Setup guide
 
-## Step 1: Set up the Workable connector in Airbyte
+### Step 1: Generate a Workable API access token
 
-### For Airbyte Cloud:
+1. In Workable, open the drop-down menu in the top-right corner and select **Integrations**.
+2. Click **Generate new token**.
+3. Select the `r_jobs` and `r_candidates` scopes, then generate the token.
+4. Copy the token and store it securely. Workable displays the token only once.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Workable connector and select **Workable** from the Source type dropdown.
-4. Enter your `api_token` - Workable Access Token.
-5. Enter your `account_subdomain` - Sub-domain for your organization on Workable, e.g. https://YOUR_ACCOUNT_SUBDOMAIN.workable.com.
-6. Enter your `created_after_date` - The earliest created at date from which you want to sync your Workable data.
+For more details, see Workable's guide to [generating an API access token](https://workable.readme.io/reference/generate-an-access-token#generate-an-api-access-token).
+
+### Step 2: Set up the Workable connector in Airbyte
+
+1. In Airbyte, go to **Sources** and click **New source**.
+2. Search for and select **Workable**.
+3. Enter a name for the source.
+4. For **API Key**, enter the Workable API access token you generated in Step 1.
+5. For **Account Subdomain**, enter your Workable account subdomain. Enter only the subdomain, for example `mycompany`, not the full URL.
+6. For **Start Date**, enter the date from which to sync data, in the format `YYYYMMDDTHHMMSSZ`. For example, `20221115T225616Z`. The connector sends this value to Workable as the `created_after` parameter, so only jobs and candidates created after this date are synced.
 7. Click **Set up source**.
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `api_token` - Workable Access Token.
-4. Enter your `account_subdomain` - Sub-domain for your organization on Workable, e.g. https://YOUR_ACCOUNT_SUBDOMAIN.workable.com.
-5. Enter your `created_after_date` - The earliest created at date from which you want to sync your Workable data.
-6. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -40,12 +40,19 @@ The Workable source connector supports the following [sync modes](https://docs.a
 | SSL connection    | Yes        |
 | Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
-- [Jobs](https://workable.readme.io/reference/jobs)
-- [Candidates](https://workable.readme.io/reference/job-candidates-index)
-- [Stages](https://workable.readme.io/reference/stages)
-- [Recruiters](https://workable.readme.io/reference/recruiters)
+| Stream | Endpoint | Primary key | Required scope |
+| :----- | :------- | :---------- | :------------- |
+| [jobs](https://workable.readme.io/reference/jobs) | `/spi/v3/jobs` | `id` | `r_jobs` |
+| [candidates](https://workable.readme.io/reference/job-candidates-index) | `/spi/v3/candidates` | `id` | `r_candidates` |
+| [stages](https://workable.readme.io/reference/stages) | `/spi/v3/stages` | `slug` | `r_jobs` |
+| [recruiters](https://workable.readme.io/reference/recruiters) | `/spi/v3/recruiters` | `id` | `r_jobs` |
+
+## Limitations
+
+- Workable limits account tokens to 10 requests every 10 seconds and returns HTTP 429 when you exceed this limit. See [Rate limiting](https://workable.readme.io/reference/rate-limits).
+- The connector requests up to 100 records per page, which is the maximum the Workable API allows.
 
 ## IP allow list
 
@@ -58,7 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
-| 0.2.18 | 2026-11-09 | [91459](https://github.com/airbytehq/airbyte/pull/91459) | Fix check and discover failing on page size option configuration; upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.2.18 | 2026-11-10 | [91459](https://github.com/airbytehq/airbyte/pull/91459) | Fix check and discover failing on page size option configuration; upgrade base image to `source-declarative-manifest:7.47.0` |
 | 0.2.17 | 2026-06-02 | [79074](https://github.com/airbytehq/airbyte/pull/79074) | Update dependencies |
 | 0.2.16 | 2025-05-24 | [60781](https://github.com/airbytehq/airbyte/pull/60781) | Update dependencies |
 | 0.2.15 | 2025-05-10 | [59931](https://github.com/airbytehq/airbyte/pull/59931) | Update dependencies |
