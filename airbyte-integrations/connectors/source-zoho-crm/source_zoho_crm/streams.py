@@ -48,6 +48,13 @@ class ZohoCrmStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
+    # Legacy hooks inherited from CDK 1; keeping them routes CDK 7 through its adapter so retry behavior is unchanged.
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == HTTPStatus.TOO_MANY_REQUESTS or HTTPStatus.INTERNAL_SERVER_ERROR <= response.status_code < 600
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return None
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = [] if response.status_code in EMPTY_BODY_STATUSES else response.json()["data"]
         yield from data

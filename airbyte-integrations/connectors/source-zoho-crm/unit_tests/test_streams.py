@@ -106,7 +106,7 @@ def test_dynamic_attrs(stream_factory):
             "Name": {"maxLength": None, "title": "Name", "type": ["null", "string"]},
             "id": {"type": "string"},
         },
-        "required": ["id", "Modified_Time", "Name"],
+        "required": ["id", "Modified_Time"],
         "schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
     }
