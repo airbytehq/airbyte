@@ -1,0 +1,43 @@
+data:
+  connectorType: source
+  connectorSubtype: database
+  definitionId: 54427944-6368-408d-a074-cf6d556bda0f
+  dockerRepository: airbyte/source-sap
+  dockerImageTag: 0.1.0
+  name: SAP
+  license: ELv2
+  releaseDate: "2026-09-12"
+  releaseStage: alpha
+  supportLevel: community
+  githubIssueLabel: source-sap
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sap
+  icon: sap.svg
+  supportsFileTransfer: false
+  # SAP ODP extractions can spend a long time preparing before the first packet.
+  maxSecondsBetweenMessages: 7200
+  allowedHosts:
+    # The platform's ConfigReplacer sanitizes each resolved value down to a bare
+    # hostname, so a full URL like base_url works as-is. A SAProuter string
+    # (/H/host/S/3299) does not survive that, hence the separate host field.
+    hosts:
+      - ${ashost}
+      - ${mshost}
+      - ${base_url}
+      - ${saprouter_host}
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-sap
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"
