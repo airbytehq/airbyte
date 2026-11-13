@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.13.30
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   externalDocumentationUrls:
@@ -45,6 +45,23 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 changes the `company_segments` stream. Each record now has a `company_id` field with the
+          Intercom ID of the company the segment is attached to, and the primary key changes from `id` to
+          `[company_id, id]`, so deduplicated destinations keep one row per company and segment instead of one row
+          per segment. If you sync `company_segments` in Incremental | Append + Deduped, refresh the source schema
+          after upgrading, then refresh the stream with "Refresh stream and remove records" to drop the old rows,
+          which have no `company_id`. In Incremental | Append, do the same with "Refresh stream and retain records",
+          or the saved state keeps older memberships from getting `company_id`. Full Refresh modes need no action.
+          See the [migration guide](https://docs.airbyte.com/integrations/sources/intercom-migrations#upgrading-to-100).
+        upgradeDeadline: "2026-11-30"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "company_segments"
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
