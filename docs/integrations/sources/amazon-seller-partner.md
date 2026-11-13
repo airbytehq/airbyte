@@ -185,7 +185,7 @@ The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL
 - [Vendor Forecasting Report (Fresh)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Forecasting Report (Retail)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
-- [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\) — see [Vendor Order Status](#vendor-order-status)
 - [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(full-refresh\)
 - [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(full-refresh\)
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
@@ -252,6 +252,14 @@ The Flat File V2 Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_F
 - **Timestamps.** The connector converts date-time fields such as `posted-date-time` from Amazon's format, such as `2026-09-14 22:51:31 UTC`, to ISO 8601 (`2026-09-14T22:51:31+00:00`). It passes `posted-date` through unchanged in Amazon's format. Empty date and date-time fields become `null`.
 
 Version 7.0.0 replaced the Flat File Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`), which Amazon removed on November 11, 2026, with this stream. See the [migration guide](/integrations/sources/amazon-seller-partner-migrations#upgrading-to-700).
+
+### Vendor Order Status
+
+The Vendor Order Status stream (`VendorOrdersStatus`) calls Amazon's [getPurchaseOrdersStatus](https://developer-docs.amazon.com/sp-api/reference/getpurchaseordersstatus) operation in seven-day windows and uses `purchaseOrderNumber` as its primary key.
+
+- **Cursor.** Amazon doesn't return a timestamp the connector can use as a cursor, so the connector adds a `createdBefore` field to each record and sets it to the end of the seven-day window the record was requested in. Every record from the same window has the same `createdBefore` value. The schema also contains a `changedBefore` field, which the connector never populates.
+- **Incremental syncs select purchase orders by creation date.** The connector sends `createdAfter` and `createdBefore`, which filter on when the purchase order became available, not when its status last changed. A status change on a purchase order created before the current cursor isn't picked up by incremental syncs. Run a full refresh or refresh the stream to pick up those changes.
+- **Append + Deduped requires 7.0.3 or later.** Before version 7.0.3, the stream's schema didn't declare `createdBefore`. Destinations that check the cursor against the schema, such as BigQuery, failed `Incremental | Append + Deduped` syncs with `The cursor does not exist in the schema: createdBefore`. After you upgrade, refresh the source schema in your connection so the destination sees the `createdBefore` field.
 
 ### Daily report windows
 
@@ -528,7 +536,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 7.0.3 | 2026-11-12 | [77742](https://github.com/airbytehq/airbyte/pull/77742) | Add `createdBefore` to the `VendorOrdersStatus` schema so it matches the stream's cursor, unblocking `Incremental \| Append + Deduped`. |
+| 7.0.3 | 2026-11-13 | [77742](https://github.com/airbytehq/airbyte/pull/77742) | Add `createdBefore` to the `VendorOrdersStatus` schema so it matches the stream's cursor, unblocking `Incremental \| Append + Deduped`. |
 | 7.0.2 | 2026-11-11 | [89626](https://github.com/airbytehq/airbyte/pull/89626) | Retry rate-limited (429) report document lookups for longer (30 retries / 1 hour) so report downloads no longer fail when Amazon throttles `getReportDocument`; other errors keep 5 retries / 10 minutes. |
 | 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
