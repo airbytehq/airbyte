@@ -3,9 +3,10 @@
 #
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -16,6 +17,102 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+def test_blocks_incremental_read_filters_records_older_than_state(requests_mock):
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    state = StateBuilder().with_stream_state("blocks", {"last_edited_time": "2024-01-02T00:00:00.000Z"}).build()
+    page = {"object": "page", "id": "page-1", "last_edited_time": "2024-01-03T00:00:00.000Z", "properties": {}}
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"object": "list", "results": [page], "has_more": False, "next_cursor": None},
+    )
+    blocks = [
+        {
+            "object": "block",
+            "id": block_id,
+            "type": "paragraph",
+            "last_edited_time": edited_time,
+            "has_children": False,
+            "parent": {"type": "page_id", "page_id": "page-1"},
+        }
+        for block_id, edited_time in [
+            ("older-block", "2024-01-01T00:00:00.000Z"),
+            ("newer-block", "2024-01-03T00:00:00.000Z"),
+        ]
+    ]
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json={"object": "list", "results": blocks, "has_more": False, "next_cursor": None},
+    )
+    catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == ["newer-block"]
+
+
+def test_blocks_incremental_read_roundtrips_emitted_state_with_children(requests_mock):
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    cursor_value = "2024-01-04T00:00:00.000Z"
+
+    def block(block_id, edited_time, parent_id, has_children=False):
+        return {
+            "object": "block",
+            "id": block_id,
+            "type": "paragraph",
+            "last_edited_time": edited_time,
+            "has_children": has_children,
+            "parent": {"type": "block_id", "block_id": parent_id},
+        }
+
+    def response(records):
+        return {"object": "list", "results": records, "has_more": False, "next_cursor": None}
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=response([{"object": "page", "id": "page-1", "last_edited_time": cursor_value, "properties": {}}]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=response(
+            [
+                block("older-block", "2024-01-01T00:00:00.000Z", "page-1"),
+                block("parent-block", "2024-01-03T00:00:00.000Z", "page-1", has_children=True),
+            ]
+        ),
+    )
+    children_request = requests_mock.get(
+        "https://api.notion.com/v1/blocks/parent-block/children?page_size=100",
+        [
+            {"json": response([
+                block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
+                block("cursor-child", cursor_value, "parent-block"),
+            ])},
+            {"json": response([
+                block("older-child", "2024-01-02T00:00:00.000Z", "parent-block"),
+                block("cursor-child", cursor_value, "parent-block"),
+                block("new-child", "2024-01-05T00:00:00.000Z", "parent-block"),
+            ])},
+        ],
+    )
+    catalog = CatalogBuilder().with_stream("blocks", SyncMode.incremental).build()
+    first_read = read(get_source(config), config=config, catalog=catalog)
+    assert not first_read.errors
+    first_ids = [record.record.data["id"] for record in first_read.records]
+    assert set(first_ids) == {"older-block", "parent-block", "older-child", "cursor-child"}
+    final_state = next(
+        message.state
+        for message in reversed(first_read.state_messages)
+        if message.state.stream and message.state.stream.stream_descriptor.name == "blocks"
+    )
+    state = [final_state]
+    second_read = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert not second_read.errors
+    second_ids = [record.record.data["id"] for record in second_read.records]
+    assert children_request.call_count == 2
+    assert set(second_ids) == {"cursor-child", "new-child"}
+    assert all(record.record.data["last_edited_time"] >= cursor_value for record in second_read.records)
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
