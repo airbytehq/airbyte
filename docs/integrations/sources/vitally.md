@@ -2,19 +2,18 @@
 
 ## Sync overview
 
-The Vitally source supports both Full Refresh only.
+The Vitally source supports Full Refresh only.
 
-This source can sync data for the [Vitally API](https://docs.vitally.io/pushing-data-to-vitally/rest-api).
+This source can sync data from the [Vitally REST API](https://docs.vitally.io/en/articles/9880649-rest-api-overview).
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This source syncs the following streams. Each stream uses `id` as its primary key.
 
 - [Accounts](https://docs.vitally.io/pushing-data-to-vitally/rest-api/accounts)
 - [Admins](https://docs.vitally.io/pushing-data-to-vitally/rest-api/admins)
 - [Conversations](https://docs.vitally.io/pushing-data-to-vitally/rest-api/conversations)
 - [Notes](https://docs.vitally.io/pushing-data-to-vitally/rest-api/notes)
-- [NPS Responses](https://docs.vitally.io/pushing-data-to-vitally/rest-api/nps-responses)
 - [Tasks](https://docs.vitally.io/pushing-data-to-vitally/rest-api/tasks)
 - [Users](https://docs.vitally.io/pushing-data-to-vitally/rest-api/users)
 
@@ -28,11 +27,20 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-The Vitally connector should not run into Vitally API limitations under normal usage.
+Vitally's [REST API documentation](https://docs.vitally.io/en/articles/9880649-rest-api-overview) specifies a default limit of 1,000 requests per minute. The connector requests 100 records per page and follows the `next` cursor.
+
+The connector doesn't set `sortBy`, so Vitally uses its default `updatedAt` ordering. Records that change while a sync is paginating can cause duplicates or gaps.
 
 ## Requirements
 
-- **Vitaly API key**. See the [Vitally docs](https://docs.vitally.io/pushing-data-to-vitally/rest-api#authentication) for information on how to obtain an API key.
+You need a Vitally REST API secret token. In Vitally, open **Settings** > **Integrations** under **Connectors**, select **Vitally REST API**, and enable the integration. Copy the secret token for an API key. See [Vitally's authentication documentation](https://docs.vitally.io/en/articles/9880649-rest-api-overview).
+
+Configure the following fields in Airbyte:
+
+- **Custom Subdomain**: Enter only the subdomain, not a full URL, for example `your-custom-subdomain` for `https://your-custom-subdomain.rest.vitally.io/`.
+- **Status**: Select `active`, `churned`, or `activeOrChurned` to filter the `accounts` stream.
+- **Secret Token**: Enter the REST API secret token. The connector uses it as the HTTP Basic authentication username.
+- **Basic Auth Header**: Despite its label, the connector uses this field as the HTTP Basic authentication password, not as a complete header. Vitally's documented header uses an empty password (`"basic_auth_header": ""` in JSON configuration). Don't paste Vitally's copied Basic Auth header into this field.
 
 ## IP allow list
 
@@ -45,7 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
-| 0.4.4 | 2026-06-30 | [81345](https://github.com/airbytehq/airbyte/pull/81345) | Add missing `airbyte_secret` flag to `secret_token` spec field |
+| 0.4.4 | 2026-09-30 | [81345](https://github.com/airbytehq/airbyte/pull/81345) | Add missing `airbyte_secret` flag to `secret_token` spec field |
 | 0.4.3 | 2026-06-02 | [79008](https://github.com/airbytehq/airbyte/pull/79008) | Update dependencies |
 | 0.4.2 | 2025-05-24 | [60783](https://github.com/airbytehq/airbyte/pull/60783) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [59942](https://github.com/airbytehq/airbyte/pull/59942) | Update dependencies |
