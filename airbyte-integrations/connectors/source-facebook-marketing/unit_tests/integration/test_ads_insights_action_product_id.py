@@ -24,12 +24,18 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
+from .response_builder import (
+    build_response,
+    error_reduce_amount_of_data_response,
+    error_unsupported_request_response,
+    get_account_response,
+)
 from .utils import config, encode_request_body, read_output
 
 
@@ -531,3 +537,78 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestIncrementalInterruptedSync(TestCase):
+    """A sync that fails while re-reading the lookback window must not move the saved cursor backwards."""
+
+    _LOOKBACK_DAYS = 2
+    _START_DATE = ab_datetime_parse("2023-01-01T00:00:00Z")
+    _END_DATE = ab_datetime_parse("2023-01-08T23:59:59Z")
+    _SAVED_CURSOR = "2023-01-08"
+    # The lookback window re-reads [cursor - 2 days, cursor].
+    _WINDOW = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (6, 7, 8)]
+    _REPORT_RUN_IDS = ["1571860060019506", "1571860060019507", "1571860060019508"]
+    _JOB_IDS = ["1049937379601606", "1049937379601607", "1049937379601608"]
+
+    def _read(self, state: List[AirbyteStateMessage], expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config()
+            .with_start_date(self._START_DATE)
+            .with_end_date(self._END_DATE)
+            .with_insights_lookback_window(self._LOOKBACK_DAYS),
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    def _mock_jobs_for_lookback_window(self, http_mocker: HttpMocker) -> None:
+        """Mock one report job per day of the lookback window; an unmocked earlier day fails the read."""
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id in zip(self._WINDOW, self._REPORT_RUN_IDS):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+        http_mocker.post(_job_status_request(self._REPORT_RUN_IDS).build(), _job_status_response(self._JOB_IDS))
+
+    @staticmethod
+    def _account_states(output: EntrypointOutput) -> List[Dict[str, any]]:
+        return [AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][ACCOUNT_ID] for message in output.state_messages]
+
+    def test_given_job_fails_in_lookback_window_when_read_then_cursor_does_not_move_backwards(self) -> None:
+        saved_state = StateBuilder().with_stream_state(_STREAM_NAME, {ACCOUNT_ID: {_CURSOR_FIELD: self._SAVED_CURSOR}}).build()
+
+        # First sync: the first day of the lookback window is read, then the second day's download fails.
+        with HttpMocker() as http_mocker:
+            self._mock_jobs_for_lookback_window(http_mocker)
+            http_mocker.get(
+                _get_insights_request(self._JOB_IDS[0]).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+            http_mocker.get(_get_insights_request(self._JOB_IDS[1]).build(), error_unsupported_request_response())
+
+            interrupted = self._read(saved_state, expecting_exception=True)
+            http_mocker._validate_all_matchers_called()
+
+        assert interrupted.errors, "the sync is expected to fail on the second day of the lookback window"
+        assert len(interrupted.records) == 1
+        assert self._account_states(interrupted) == [{_CURSOR_FIELD: self._SAVED_CURSOR, "slices": []}]
+
+        # Second sync resumes from the state the failed sync checkpointed and re-reads exactly the same window:
+        # the mocker only knows the three days of the window, so a request for an earlier day would fail the read.
+        resumed_state = StateBuilder().with_stream_state(_STREAM_NAME, {ACCOUNT_ID: self._account_states(interrupted)[-1]}).build()
+        with HttpMocker() as http_mocker:
+            self._mock_jobs_for_lookback_window(http_mocker)
+            for job_id in self._JOB_IDS:
+                http_mocker.get(
+                    _get_insights_request(job_id).build(),
+                    _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+                )
+
+            resumed = self._read(resumed_state)
+            http_mocker._validate_all_matchers_called()
+
+        assert resumed.errors == []
+        assert len(resumed.records) == 3
+        assert self._account_states(resumed)[-1] == {_CURSOR_FIELD: self._SAVED_CURSOR, "slices": []}
