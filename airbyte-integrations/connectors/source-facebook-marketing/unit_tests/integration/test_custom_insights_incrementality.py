@@ -50,9 +50,7 @@ def test_custom_insights_incrementality(top_level, custom, expected_incrementali
         "time_range": {"since": START_DATE[:10], "until": END_DATE[:10]},
     }
     job_request = (
-        RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
-        .with_body(encode_request_body(body))
-        .build()
+        RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID).with_body(encode_request_body(body)).build()
     )
     with HttpMocker() as http_mocker:
         http_mocker.get(get_account_request().build(), get_account_response())
