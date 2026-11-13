@@ -6,7 +6,9 @@ import pytest
 import requests
 import requests_mock as rm
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
@@ -1204,3 +1206,49 @@ def test_manifest_instantiates_custom_download_requester(config):
     # Assert report_poll_authenticator is resolved and usable
     assert download_requester.report_poll_authenticator is not None
     assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")
+
+
+EXPIRED_DOWNLOAD_XML = (
+    "<Error><Code>AuthenticationFailed</Code>"
+    "<AuthenticationErrorDetail>Signature not valid in the specified time frame.</AuthenticationErrorDetail></Error>"
+)
+
+
+@pytest.mark.parametrize("recovers", [True, False], ids=["recovers", "exhausted"])
+def test_report_download_refreshes_expired_sas_url(components_module, requests_mock, recovers):
+    requester = components_module.BingAdsReportDownloadRequester(
+        name="job download - sample_report",
+        url_base="{{download_target}}",
+        config={"developer_token": "fake_dev_token"},
+        parameters={},
+        report_poll_authenticator=_FakeAuthenticator(),
+    )
+    urls = [STALE_SAS_URL, FRESH_SAS_URL] if recovers else [STALE_SAS_URL]
+    poll = requests_mock.post(
+        POLL_URL,
+        [{"json": {"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": url}}} for url in urls],
+    )
+    expired = requests_mock.get(STALE_SAS_URL, status_code=403, text=EXPIRED_DOWNLOAD_XML)
+    fresh = requests_mock.get(FRESH_SAS_URL, text="TimePeriod,Clicks\n2024-05-05,42\n")
+
+    if recovers:
+        response = requester.send_request(stream_state={}, stream_slice=_make_stream_slice())
+        assert response.text == "TimePeriod,Clicks\n2024-05-05,42\n"
+        assert expired.call_count == 1
+        assert fresh.call_count == 1
+        assert poll.call_count == 2
+    else:
+        with pytest.raises(AirbyteTracedException) as exc:
+            requester.send_request(stream_state={}, stream_slice=_make_stream_slice())
+        assert exc.value.failure_type == FailureType.transient_error
+        assert exc.value.message == "The Bing Ads download link for stream 'sample_report' is expired."
+        assert EXPIRED_DOWNLOAD_XML in exc.value.internal_message
+        assert expired.call_count == 3
+        assert fresh.call_count == 0
+        assert poll.call_count == 3
+    for request in poll.request_history:
+        assert request.json() == {"ReportRequestId": "REQ-123"}
+        assert request.headers["CustomerAccountId"] == "ACC-1"
+        assert request.headers["CustomerId"] == "CUST-1"
+        assert request.headers["DeveloperToken"] == "fake_dev_token"
+        assert request.headers["Authorization"] == "Bearer fake_access_token"
