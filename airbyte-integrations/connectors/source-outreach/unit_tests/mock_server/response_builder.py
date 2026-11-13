@@ -29,5 +29,5 @@ def error_response(status_code: int, error_id: str, title: str, detail: str, hea
     return HttpResponse(body=json.dumps(body), status_code=status_code, headers=headers or {})
 
 
-def token_response() -> HttpResponse:
-    return HttpResponse(body=json.dumps({"access_token": "test-access-token", "expires_in": 7200}), status_code=200)
+def token_response(access_token: str = "test-access-token") -> HttpResponse:
+    return HttpResponse(body=json.dumps({"access_token": access_token, "expires_in": 7200}), status_code=200)

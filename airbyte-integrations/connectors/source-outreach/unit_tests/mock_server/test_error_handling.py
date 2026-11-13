@@ -5,12 +5,13 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+import pytest
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from .request_builder import OutreachRequestBuilder
-from .response_builder import error_response, page_response, resource
+from .response_builder import error_response, page_response, resource, token_response
 from .utils import given_token, read_stream, record_ids
 
 
@@ -30,6 +31,34 @@ def _reset_headers(seconds_until_reset: int) -> dict[str, str]:
 
 def _accounts_page() -> HttpResponse:
     return page_response([resource(1, "account", {"name": "Acme", "updatedAt": "2024-01-02T03:04:05.000Z"})])
+
+
+@pytest.mark.parametrize("persistent_401", [False, True], ids=["refresh_succeeds", "refreshed_token_rejected"])
+def test_401_refreshes_token_once_then_retries(persistent_401: bool) -> None:
+    expired_token = error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again.")
+    token_request = OutreachRequestBuilder.token_request()
+    first_request = OutreachRequestBuilder.endpoint("/accounts").build(access_token="token-A")
+    retried_request = OutreachRequestBuilder.endpoint("/accounts").build(access_token="token-B")
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(token_request, [token_response("token-A"), token_response("token-B")])
+        http_mocker.get(first_request, expired_token)
+        http_mocker.get(retried_request, expired_token if persistent_401 else _accounts_page())
+
+        output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        if persistent_401:
+            assert output.records == []
+            assert output.errors[0].trace.error.failure_type == FailureType.config_error
+            assert output.errors[0].trace.error.message == "Refreshed OAuth access token is rejected by the API."
+        else:
+            assert record_ids(output) == [1]
+            assert output.records[0].record.data["name"] == "Acme"
+            assert not output.errors
+
+        http_mocker.assert_number_of_calls(token_request, 2)
+        http_mocker.assert_number_of_calls(first_request, 1)
+        http_mocker.assert_number_of_calls(retried_request, 1)
 
 
 class _Clock:
