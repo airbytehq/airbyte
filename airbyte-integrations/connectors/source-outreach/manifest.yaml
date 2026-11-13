@@ -886,6 +886,15 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Outreach access tokens live two hours, and a long sync can send a request with a token Outreach has
+        # already expired ('expiredAccessToken'). Get a new token and retry the request. The CDK refreshes at
+        # most once per request, so a token rejected even after a refresh still fails the sync as a config error.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          error_message: >-
+            Outreach rejected the OAuth access token. Refreshing the token and retrying the request.
         - type: HttpResponseFilter
           http_codes:
             - 403

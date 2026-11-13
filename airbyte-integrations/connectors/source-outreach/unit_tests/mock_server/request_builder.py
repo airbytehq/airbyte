@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+from typing import Optional
 from urllib.parse import urlencode
 
 from airbyte_cdk.test.mock_http import HttpRequest
@@ -29,6 +30,7 @@ class OutreachRequestBuilder:
         self._path = path
         self._page_size = 1000
         self._updated_since = START_CURSOR
+        self._access_token: Optional[str] = None
 
     def with_page_size(self, page_size: int) -> "OutreachRequestBuilder":
         self._page_size = page_size
@@ -37,6 +39,13 @@ class OutreachRequestBuilder:
     def with_updated_since(self, cursor: str) -> "OutreachRequestBuilder":
         self._updated_since = cursor
         return self
+
+    def with_access_token(self, access_token: str) -> "OutreachRequestBuilder":
+        self._access_token = access_token
+        return self
+
+    def _headers(self) -> Optional[dict[str, str]]:
+        return {"Authorization": f"Bearer {self._access_token}"} if self._access_token else None
 
     def _query_params(self) -> dict[str, str]:
         return {
@@ -48,7 +57,10 @@ class OutreachRequestBuilder:
         }
 
     def build(self) -> HttpRequest:
-        return HttpRequest(f"{BASE_URL}{self._path}", query_params=self._query_params())
+        return HttpRequest(f"{BASE_URL}{self._path}", query_params=self._query_params(), headers=self._headers())
+
+    def build_next_page(self, page_after: str) -> HttpRequest:
+        return HttpRequest(self.next_page_url(page_after), headers=self._headers())
 
     def next_page_url(self, page_after: str) -> str:
         """The `links.next` URL Outreach returns: the same query plus an opaque `page[after]` cursor."""
