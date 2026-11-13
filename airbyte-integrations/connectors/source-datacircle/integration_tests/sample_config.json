@@ -1,0 +1,5 @@
+{
+  "api": "kuaishou-profile",
+  "best_plans_limit": 3,
+  "providers": ["bright-data"]
+}

@@ -1,0 +1,822 @@
+version: 7.48.0
+
+type: DeclarativeSource
+
+description: >-
+  Datacircle benchmarks the GTM APIs (LinkedIn profiles, email finders, company data, web search and more) and ranks
+  every plan on its sheet at https://datacircle.dev. This source reads its open API, with no key: every API, who is best
+  for each, every plan with its price and score, and a provider's ranks.
+
+check:
+  type: CheckStream
+  stream_names:
+    - apis
+    - plans
+
+definitions:
+  requester:
+    type: HttpRequester
+    http_method: GET
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: '{{ response.get("error") }}'
+
+  apis_stream:
+    type: DeclarativeStream
+    name: apis
+    primary_key:
+      - slug
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        url: https://api.datacircle.dev/v1/apis
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/apis'
+
+  # The APIs best_plans reads: every API, or the one the config's API names.
+  chosen_apis_stream:
+    $ref: '#/definitions/apis_stream'
+    name: chosen_apis
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        url: https://api.datacircle.dev/v1/apis
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ not config.get("api") or record["slug"] == config["api"].strip()
+            or record["api"] | lower == config["api"].strip() | lower }}
+
+  best_plans_stream:
+    type: DeclarativeStream
+    name: best_plans
+    primary_key:
+      - api_slug
+      - rank
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.datacircle.dev/v1/apis/{{ stream_partition.api_slug }}/best
+        http_method: GET
+        request_headers:
+          Accept: application/json
+        request_parameters:
+          limit: '{{ config.get("best_plans_limit") or 10 }}'
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            # An API taken off the sheet between the two calls.
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: IGNORE
+            - type: HttpResponseFilter
+              http_codes:
+                - 400
+              action: FAIL
+              failure_type: config_error
+              error_message: '{{ response.get("error") }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - plans
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/chosen_apis_stream'
+            parent_key: slug
+            partition_field: api_slug
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - api_slug
+            value: '{{ stream_partition.api_slug }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/best_plans'
+
+  plans_stream:
+    type: DeclarativeStream
+    name: plans
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        url: https://api.datacircle.dev/v1/plans
+        request_parameters:
+          api: '{{ config.get("api", "").strip() }}'
+          query: '{{ config.get("query", "").strip() }}'
+          sort: score
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - plans
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 50
+          inject_on_first_request: false
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/plans'
+
+  providers_stream:
+    type: DeclarativeStream
+    name: providers
+    primary_key:
+      - slug
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.datacircle.dev/v1/providers/{{ stream_partition.provider_slug }}
+        http_method: GET
+        request_headers:
+          Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: '{{ response.get("error") }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: provider_slug
+        values: '{{ config.get("providers") or [] }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/providers'
+
+streams:
+  - $ref: '#/definitions/apis_stream'
+  - $ref: '#/definitions/best_plans_stream'
+  - $ref: '#/definitions/plans_stream'
+  - $ref: '#/definitions/providers_stream'
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # The API answers at most 60 calls a minute from one address.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 55
+          interval: PT1M
+      matchers: []
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/datacircle
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required: []
+    additionalProperties: true
+    properties:
+      api:
+        type: string
+        title: API
+        description: >-
+          Sync one API only, by its name or its slug as the apis stream gives them (linkedin-profile, email-finder).
+          The plans and best_plans streams then read that API's plans alone. Every API when left empty.
+        examples:
+          - linkedin-profile
+          - email-finder
+        order: 0
+      query:
+        type: string
+        title: Search words
+        description: >-
+          Sync only the plans whose provider or plan name holds every one of these words, ignoring case and accents.
+        examples:
+          - bright data
+        order: 1
+      best_plans_limit:
+        type: integer
+        title: Best plans per API
+        description: How many plans the best_plans stream reads for each API, best first, from 1 to 50.
+        default: 10
+        minimum: 1
+        maximum: 50
+        order: 2
+      providers:
+        type: array
+        title: Providers
+        description: >-
+          The providers the providers stream reads, each by its slug: its name in lowercase letters and digits, the rest
+          a hyphen (bright-data for Bright Data). Left empty, that stream reads none.
+        items:
+          type: string
+        examples:
+          - - bright-data
+        order: 3
+
+schemas:
+  apis:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      api:
+        type: string
+      slug:
+        type: string
+      plans:
+        type:
+        - 'null'
+        - integer
+      providers:
+        type:
+        - 'null'
+        - integer
+      sheetPage: &id001
+        type:
+        - 'null'
+        - string
+      bestPage: *id001
+      best:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          provider:
+            type:
+            - 'null'
+            - string
+          plan:
+            type:
+            - 'null'
+            - string
+          score:
+            type:
+            - 'null'
+            - number
+          perThousand:
+            type:
+            - 'null'
+            - number
+  best_plans:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      api_slug:
+        type: string
+      provider: &id002
+        type:
+        - 'null'
+        - string
+      api: &id003
+        type:
+        - 'null'
+        - string
+      website: &id004
+        type:
+        - 'null'
+        - string
+      pricingPage: &id005
+        type:
+        - 'null'
+        - string
+      pitch: &id006
+        type:
+        - 'null'
+        - string
+      strengths: &id007
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      aggregators: &id008
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+      waterfall: &id009
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+      freshness: &id010
+        type:
+        - 'null'
+        - string
+      fieldFreshness: &id011
+        type:
+        - 'null'
+        - object
+      history: &id012
+        type:
+        - 'null'
+        - string
+      countries: &id013
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      fullFamilyTree: &id014
+        type:
+        - 'null'
+        - boolean
+      publicOnly: &id015
+        type:
+        - 'null'
+        - boolean
+      checks: &id016
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      searchesIn: &id017
+        type:
+        - 'null'
+        - string
+      keep: &id018
+        type:
+        - 'null'
+        - string
+      use: &id019
+        type:
+        - 'null'
+        - string
+      plan: &id020
+        type:
+        - 'null'
+        - string
+      who: &id021
+        type:
+        - 'null'
+        - string
+      auth: &id022
+        type:
+        - 'null'
+        - string
+      billing: &id023
+        type:
+        - 'null'
+        - string
+      charged: &id024
+        type:
+        - 'null'
+        - string
+      topUp: &id025
+        type:
+        - 'null'
+        - boolean
+      pay: &id026
+        type:
+        - 'null'
+        - number
+      currency: &id027
+        type:
+        - 'null'
+        - string
+      exchangeRate: &id028
+        type:
+        - 'null'
+        - number
+      termMonths: &id029
+        type:
+        - 'null'
+        - integer
+      score: &id030
+        type:
+        - 'null'
+        - number
+      from: &id031
+        type:
+        - 'null'
+        - integer
+      graduated: &id032
+        type:
+        - 'null'
+        - boolean
+      units: &id033
+        type:
+        - 'null'
+        - number
+      unit: &id034
+        type:
+        - 'null'
+        - string
+      renews: &id035
+        type:
+        - 'null'
+        - string
+      expires: &id036
+        type:
+        - 'null'
+        - string
+      ends: &id037
+        type:
+        - 'null'
+        - string
+      calls: &id038
+        type:
+        - 'null'
+        - number
+      monthlyCap: &id039
+        type:
+        - 'null'
+        - integer
+        - string
+      perThousand: &id040
+        type:
+        - 'null'
+        - number
+      listPerThousand: &id041
+        type:
+        - 'null'
+        - number
+      overagePerThousand: &id042
+        type:
+        - 'null'
+        - number
+      unitsCap: &id043
+        type:
+        - 'null'
+        - string
+      addons: &id044
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+      notFoundPerThousand: &id045
+        type:
+        - 'null'
+        - number
+      catchAllPerThousand: &id046
+        type:
+        - 'null'
+        - number
+      bounceRefund: &id047
+        type:
+        - 'null'
+        - string
+      repeatFree: &id048
+        type:
+        - 'null'
+        - string
+      alsoPaysFor: &id049
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      sharesBudgetWith: &id050
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      startPerCall: &id051
+        type:
+        - 'null'
+        - number
+      startPerCallMax: &id052
+        type:
+        - 'null'
+        - number
+      startUnits: &id053
+        type:
+        - 'null'
+        - number
+      startUnitsMax: &id054
+        type:
+        - 'null'
+        - number
+      minimumUnits: &id055
+        type:
+        - 'null'
+        - number
+      minimumPerCall: &id056
+        type:
+        - 'null'
+        - number
+      perThousandFrom: &id057
+        type:
+        - 'null'
+        - integer
+      monthlyFee: &id058
+        type:
+        - 'null'
+        - number
+      monthlyFeePer: &id059
+        type:
+        - 'null'
+        - string
+      extras: &id060
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+      costUnits: &id061
+        type:
+        - 'null'
+        - number
+      per: &id062
+        type:
+        - 'null'
+        - string
+      resultsPerPage: &id063
+        type:
+        - 'null'
+        - integer
+      resultsCap: &id064
+        type:
+        - 'null'
+        - integer
+        - string
+      perSecond: &id065
+        type:
+        - 'null'
+        - number
+      perWindow: &id066
+        type:
+        - 'null'
+        - object
+      perDay: &id067
+        type:
+        - 'null'
+        - integer
+      limitsCountedIn: &id068
+        type:
+        - 'null'
+        - string
+      concurrent: &id069
+        type:
+        - 'null'
+        - integer
+        - string
+      batch: &id070
+        type:
+        - 'null'
+        - integer
+        - string
+      minBatch: &id071
+        type:
+        - 'null'
+        - integer
+      answer: &id072
+        type:
+        - 'null'
+        - string
+      call: &id073
+        type:
+        - 'null'
+        - string
+      method: &id074
+        type:
+        - 'null'
+        - string
+      path: &id075
+        type:
+        - 'null'
+        - string
+      send: &id076
+        type:
+        - 'null'
+        - string
+      fields: &id077
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      docsBehind: &id078
+        type:
+        - 'null'
+        - string
+      latencyMs: &id079
+        type:
+        - 'null'
+        - integer
+      docs: &id080
+        type:
+        - 'null'
+        - string
+      readFrom: &id081
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      checked: &id082
+        type:
+        - 'null'
+        - string
+      page: &id083
+        type:
+        - 'null'
+        - string
+      rank: &id084
+        type:
+        - 'null'
+        - integer
+  plans:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties: &id085
+      provider: *id002
+      api: *id003
+      website: *id004
+      pricingPage: *id005
+      pitch: *id006
+      strengths: *id007
+      aggregators: *id008
+      waterfall: *id009
+      freshness: *id010
+      fieldFreshness: *id011
+      history: *id012
+      countries: *id013
+      fullFamilyTree: *id014
+      publicOnly: *id015
+      checks: *id016
+      searchesIn: *id017
+      keep: *id018
+      use: *id019
+      plan: *id020
+      who: *id021
+      auth: *id022
+      billing: *id023
+      charged: *id024
+      topUp: *id025
+      pay: *id026
+      currency: *id027
+      exchangeRate: *id028
+      termMonths: *id029
+      score: *id030
+      from: *id031
+      graduated: *id032
+      units: *id033
+      unit: *id034
+      renews: *id035
+      expires: *id036
+      ends: *id037
+      calls: *id038
+      monthlyCap: *id039
+      perThousand: *id040
+      listPerThousand: *id041
+      overagePerThousand: *id042
+      unitsCap: *id043
+      addons: *id044
+      notFoundPerThousand: *id045
+      catchAllPerThousand: *id046
+      bounceRefund: *id047
+      repeatFree: *id048
+      alsoPaysFor: *id049
+      sharesBudgetWith: *id050
+      startPerCall: *id051
+      startPerCallMax: *id052
+      startUnits: *id053
+      startUnitsMax: *id054
+      minimumUnits: *id055
+      minimumPerCall: *id056
+      perThousandFrom: *id057
+      monthlyFee: *id058
+      monthlyFeePer: *id059
+      extras: *id060
+      costUnits: *id061
+      per: *id062
+      resultsPerPage: *id063
+      resultsCap: *id064
+      perSecond: *id065
+      perWindow: *id066
+      perDay: *id067
+      limitsCountedIn: *id068
+      concurrent: *id069
+      batch: *id070
+      minBatch: *id071
+      answer: *id072
+      call: *id073
+      method: *id074
+      path: *id075
+      send: *id076
+      fields: *id077
+      docsBehind: *id078
+      latencyMs: *id079
+      docs: *id080
+      readFrom: *id081
+      checked: *id082
+      page: *id083
+      rank: *id084
+  providers:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      provider:
+        type: string
+      slug:
+        type: string
+      website: *id001
+      apis:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            api:
+              type:
+              - 'null'
+              - string
+            slug:
+              type:
+              - 'null'
+              - string
+            rank:
+              type:
+              - 'null'
+              - integer
+            sheetPage: *id001
+            bestPage: *id001
+            plans:
+              type:
+              - 'null'
+              - array
+              items:
+                type: object
+                additionalProperties: true
+                properties: *id085
