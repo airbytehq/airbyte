@@ -18,13 +18,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 _API = "https://api.customer.io/v1"
 _UNAUTHORIZED_MESSAGE = (
-    "Customer.io rejected the App API key. Enter a valid App API key (not a Track API key), "
+    "Customer.io rejected the API key. Enter a private API key (sk_...) or an existing "
+    "App API key (not a public or Track API key), "
     "select the Region your Customer.io account is hosted in (US or EU), and if your account "
     "restricts API access by IP address, add the Airbyte IP addresses to the allowlist."
 )
 _FORBIDDEN_MESSAGE = (
-    "Customer.io denied this App API key access to the requested data. Use an App API key "
-    "whose scope includes this data, and if your account restricts API access by IP address, "
+    "Customer.io denied this API key access to the requested data. Use a private API key "
+    "(sk_...) or an existing App API key (not a public or Track API key) whose scope includes "
+    "this data, and if your account restricts API access by IP address, "
     "add the Airbyte IP addresses to the allowlist."
 )
 _PRIOR_CURSOR = 1701390800  # 2023-12-01T00:33:20Z
