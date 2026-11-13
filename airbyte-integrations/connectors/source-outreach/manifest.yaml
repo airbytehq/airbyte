@@ -888,6 +888,14 @@ definitions:
       response_filters:
         - type: HttpResponseFilter
           http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
+          error_message: >-
+            Outreach rejected the access token: {{ ((response.get('errors') or [{}])[0].get('detail') or 'the access token is invalid or expired.')[:300] }}
+            Re-authenticate the source if the refreshed token is still rejected.
+        - type: HttpResponseFilter
+          http_codes:
             - 403
           action: FAIL
           failure_type: config_error

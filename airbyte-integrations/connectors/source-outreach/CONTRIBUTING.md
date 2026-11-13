@@ -36,6 +36,7 @@ Outreach returns errors as `{"errors": [{"id", "title", "detail"}]}`
 
 | Status | Action | Source |
 | :----- | :----- | :----- |
+| 401 | Refresh the OAuth access token and retry once; if the refreshed token is rejected, fail as a configuration error | `expiredAccessToken`. Manifest filter; CDK refresh-and-retry action |
 | 403 | Fail as a configuration error. The message quotes `errors[0].detail`, which names the missing OAuth scope | `unauthorizedOauthScope`, seen on a live request with a token that lacks the scope. Manifest filter |
 | 404 | Fail as a system error | `resourceNotFound`. No list endpoint documents a benign 404. CDK default |
 | 422 | Fail as a system error | CDK default for an unmapped status |
