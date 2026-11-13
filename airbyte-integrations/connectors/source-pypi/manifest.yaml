@@ -26,6 +26,11 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [info, requires_dist]
+              value: "{{ record['info']['requires_dist'] or [] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -768,6 +773,11 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [info, requires_dist]
+            value: "{{ record['info']['requires_dist'] or [] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
