@@ -42,6 +42,8 @@ The Amplitude source connector supports the following streams:
 
 If there are more endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
+<!-- env:oss -->
+
 ## Supported sync modes
 
 The Amplitude source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
