@@ -83,6 +83,28 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(TwilioStateMigration):
+    """Resume messages from global progress without replaying stale account partitions.
+
+    Partition-only checkpoints retain their individual cursors for the transition
+    read until the CDK establishes a global checkpoint. Empty reads keep their
+    per-account progress rather than inventing a global starting point.
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and ("states" in stream_state or "state" in stream_state)
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated = copy.deepcopy(stream_state)
+        if migrated.get("state", {}).get("date_sent"):
+            migrated.pop("states", None)
+            migrated["use_global_cursor"] = True
+        else:
+            super().migrate(migrated)
+            migrated["use_global_cursor"] = False
+        return migrated
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
