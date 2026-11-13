@@ -279,3 +279,79 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2023-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": [], "color": "default"},
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def _read_blocks(requests_mock, page_blocks, nested_blocks, state):
+    requests_mock.register_uri(
+        "POST",
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": "2024-07-02T00:00:00.000Z", "properties": {}}]),
+    )
+    requests_mock.register_uri("GET", "https://api.notion.com/v1/blocks/page-1/children?page_size=100", json=_list_response(page_blocks))
+    requests_mock.register_uri("GET", "https://api.notion.com/v1/blocks/block-a/children?page_size=100", json=_list_response(nested_blocks))
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", state).build()
+    return read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_saved_state(requests_mock):
+    """
+    The blocks stream is client-side incremental on `last_edited_time`, but its CustomRetriever is not wired to the
+    CDK's client-side record filter, so every block used to be emitted on every sync. The second read must only emit
+    blocks edited at or after the saved cursor (inclusive bound, so the block exactly at the cursor is re-emitted),
+    while still walking the children of unchanged blocks to find edited nested blocks.
+    """
+    first = _read_blocks(
+        requests_mock,
+        page_blocks=[_block("block-a", "2023-01-01T00:00:00.000Z", has_children=True), _block("block-b", "2024-06-01T00:00:00.000Z")],
+        nested_blocks=[_block("block-a1", "2023-02-01T00:00:00.000Z")],
+        state={},
+    )
+    assert [r.record.data["id"] for r in first.records] == ["block-a1", "block-a", "block-b"]
+    first_state = first.state_messages[-1].state.stream.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2024-06-01T00:00:00.000000Z"}
+
+    second = _read_blocks(
+        requests_mock,
+        page_blocks=[
+            _block("block-a", "2023-01-01T00:00:00.000Z", has_children=True),
+            _block("block-b", "2024-06-01T00:00:00.000Z"),
+            _block("block-c", "2024-07-01T00:00:00.000Z"),
+        ],
+        nested_blocks=[_block("block-a1", "2024-07-02T00:00:00.000Z")],
+        state=first_state,
+    )
+    assert [r.record.data["id"] for r in second.records] == ["block-a1", "block-b", "block-c"]
+    # block-a is unchanged but its children are still fetched on both reads to find edited nested blocks
+    assert [req.path for req in requests_mock.request_history].count("/v1/blocks/block-a/children") == 2
+    assert second.state_messages[-1].state.stream.stream_state.__dict__["state"] == {"last_edited_time": "2024-07-02T00:00:00.000000Z"}
