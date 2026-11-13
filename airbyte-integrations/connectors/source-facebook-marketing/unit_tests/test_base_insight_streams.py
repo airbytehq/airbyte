@@ -199,6 +199,52 @@ class TestBaseInsightsStream:
 
         assert stream.request_params()["filtering"] == [{"field": "ad.effective_status", "operator": "IN", "value": ["ACTIVE", "ARCHIVED"]}]
 
+    @pytest.mark.parametrize("completion_order", [[0, 1, 2, 3, 4], [4, 2, 0, 3, 1]])
+    @pytest.mark.parametrize("with_records", [False, True])
+    @freeze_time("2026-11-12")
+    def test_lookback_cursor_is_monotonic(self, mocker, api, completion_order, with_records):
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=["account", "other"],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 21),
+            insights_lookback_window=3,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat()} for account_id in ["account", "other"]}
+        dates = list(stream._date_intervals("account"))
+        assert dates == [cursor + timedelta(days=i) for i in range(-3, 2)]
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+        previous_cursor = cursor.isoformat()
+        for index in completion_order:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(dates[index], dates[index])
+            job.get_result.return_value = [record] if with_records else []
+            assert len(list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": "account"}))) == int(
+                with_records
+            )
+            state = stream.state
+            assert state["account"]["date_start"] >= previous_cursor
+            assert state["other"]["date_start"] == cursor.isoformat()
+            previous_cursor = state["account"]["date_start"]
+
+        assert stream.state["account"]["date_start"] == "2026-09-21"
+
+    @pytest.mark.parametrize("cursor", [None, "2026-09-20"])
+    def test_state_prunes_stale_slices(self, api, cursor):
+        stream = AdsInsights(
+            api=api,
+            account_ids=["account"],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=3,
+        )
+        slices = ["2026-09-19", "2026-09-20", "2026-09-22"]
+        stream.state = {"account": {"date_start": cursor, "slices": slices}}
+
+        assert stream.state["account"]["slices"] == (["2026-09-22"] if cursor else slices)
+
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed
@@ -397,6 +443,10 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        for account_id in some_config["account_ids"]:
+            account_state = result_state[account_id]
+            if account_state.get("date_start"):
+                account_state["slices"] = [s for s in account_state["slices"] if s > account_state["date_start"]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
