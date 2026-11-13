@@ -40,6 +40,7 @@ const config: Config = {
   themes: [
     "@docusaurus/theme-mermaid",
     "@saucelabs/theme-github-codeblock",
+    "docusaurus-theme-openapi-docs",
   ],
   title: "Airbyte Docs",
   tagline:
@@ -180,6 +181,7 @@ const config: Config = {
         routeBasePath: "/developers",
         sidebarPath: "./sidebar-developers.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        docItemComponent: "@theme/ApiItem",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
@@ -199,6 +201,25 @@ const config: Config = {
           plugins.productInformation,
           plugins.addButtonToTitle,
         ],
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "public-api",
+        docsPluginId: "developers",
+        config: {
+          "public-api": {
+            specPath: "src/data/public_api_spec.json",
+            outputDir: "../docs/developers/api-reference",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: true,
+              sidebarCollapsible: true,
+            },
+          },
+        },
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),

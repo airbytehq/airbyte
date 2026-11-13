@@ -1,3 +1,5 @@
+const { loadPublicApiSidebar } = require("./src/scripts/public-api/sidebar-generator");
+
 module.exports = {
   developers: [
     {
@@ -9,7 +11,27 @@ module.exports = {
         id: "README",
       },
       items: [
-        "api-documentation",
+        {
+          type: "category",
+          label: "API documentation",
+          link: {
+            type: "doc",
+            id: "api-documentation",
+          },
+          items: [
+            {
+              type: "category",
+              label: "API Reference",
+              link: {
+                type: "doc",
+                id: "api-reference/airbyte-api",
+              },
+              items: loadPublicApiSidebar().items.filter(
+                (item) => item.id !== "api-reference/airbyte-api",
+              ),
+            },
+          ],
+        },
         {
           type: "category",
           label: "Terraform Provider",
