@@ -24,6 +24,8 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
@@ -46,6 +48,7 @@ class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val s3Client: S3Client,
+    private val credentialsProvider: AwsCredentialsProvider,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     private val describeTableCache = ConcurrentHashMap<TableName, LinkedHashMap<String, String>>()
@@ -239,18 +242,25 @@ class RedshiftAirbyteClient(
     }
 
     /**
-     * Executes a Redshift COPY command to load data from S3. Logging is suppressed because the
-     * generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
+     * Executes a Redshift COPY command to load data from S3. Credentials are resolved per call so
+     * temporary (OIDC/STS) credentials are refreshed before they expire. Logging is suppressed
+     * because the generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
      */
     suspend fun copyFromS3(
         tableName: TableName,
         s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
         region: String,
     ) {
+        val credentials = credentialsProvider.resolveCredentials()
         execute(
-            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
+            sqlGenerator.copyFromS3(
+                tableName,
+                s3Path,
+                credentials.accessKeyId(),
+                credentials.secretAccessKey(),
+                (credentials as? AwsSessionCredentials)?.sessionToken(),
+                region,
+            ),
             logStatement = false,
         )
     }

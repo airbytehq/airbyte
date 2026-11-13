@@ -560,18 +560,23 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         """
             .trimMargin()
 
-    /** Generates a Redshift COPY command to load gzip CSV data from S3 */
+    /**
+     * Generates a Redshift COPY command to load gzip CSV data from S3. [sessionToken] is required
+     * for temporary credentials (e.g. from OIDC web identity) and null for long-lived keys.
+     */
     fun copyFromS3(
         tableName: TableName,
         s3Path: String,
         accessKeyId: String,
         secretAccessKey: String,
+        sessionToken: String?,
         region: String,
-    ): String =
-        """
+    ): String {
+        val token = sessionToken?.let { ";token=$it" } ?: ""
+        return """
             |COPY ${getFullyQualifiedName(tableName)}
             |FROM '$s3Path'
-            |CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
+            |CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey$token'
             |CSV GZIP
             |REGION '$region'
             |TIMEFORMAT 'auto'
@@ -581,6 +586,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |NULL AS '$NULL_SENTINEL';
         """
             .trimMargin()
+    }
 
     // ================================================================
     // Internal helpers
