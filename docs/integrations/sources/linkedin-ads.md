@@ -255,7 +255,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 6.3.0 | 2026-11-13 | [0](https://github.com/airbytehq/airbyte/pull/0) | Add incremental lead form responses with a vendor-side time filter. |
+| 6.3.0 | 2026-11-13 | [92992](https://github.com/airbytehq/airbyte/pull/92992) | Add incremental lead form responses with a vendor-side time filter. |
 | 6.2.11 | 2026-11-10 | [86483](https://github.com/airbytehq/airbyte/pull/86483) | Replace YAML anchors with declarative `$ref` for the shared analytics property list (no functional change) |
 | 6.2.10 | 2026-11-10 | [91628](https://github.com/airbytehq/airbyte/pull/91628) | Update dependencies |
 | 6.2.9 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
