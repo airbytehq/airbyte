@@ -33,6 +33,8 @@ acceptance_tests:
             bypass_reason: Stories available only 24 hours
           - name: story_insights
             bypass_reason: Stories available only 24 hours, so do the insights
+          - name: story_navigation_insights
+            bypass_reason: Stories available only 24 hours, so do the insights
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

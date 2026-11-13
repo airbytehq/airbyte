@@ -81,6 +81,7 @@ The following streams are available:
 - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
 - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Engagement metrics for currently published stories.
+- [Story Navigation Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Navigation actions (forward, back, exit, next story) for currently published stories, from the `navigation` metric broken down by `story_navigation_action_type`.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -119,6 +120,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2026-11-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add `story_navigation_insights` stream with story navigation breakdown (`tap_forward`, `tap_back`, `tap_exit`, `swipe_forward`) |
 | 4.2.51 | 2026-11-10 | [91590](https://github.com/airbytehq/airbyte/pull/91590) | Update dependencies |
 | 4.2.50 | 2026-11-03 | [90622](https://github.com/airbytehq/airbyte/pull/90622) | Update dependencies |
 | 4.2.49 | 2026-10-27 | [89921](https://github.com/airbytehq/airbyte/pull/89921) | Update dependencies |
