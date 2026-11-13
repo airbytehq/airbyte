@@ -2,7 +2,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # TikTok Marketing Migration Guide
 
-## Upgrading to 6.0.0
+## Upgrading to 5.5.0
 
 :::danger Preserve existing sandbox data
 
@@ -10,7 +10,7 @@ Create a new connection that writes to separate destination tables or paths. Reu
 
 :::
 
-Version 6.0.0 removes **Sandbox Access Token** authentication. TikTok [announced that sandbox accounts will be deprecated by December 1, 2026](https://business-api.tiktok.com/portal/docs/sandbox-accounts/v1.3) and recommends using a production test account instead.
+Version 5.5.0 removes **Sandbox Access Token** authentication. TikTok [announced that sandbox accounts will be deprecated by December 1, 2026](https://business-api.tiktok.com/portal/docs/sandbox-accounts/v1.3) and recommends using a production test account instead.
 
 This change affects every stream in a source configured with **Sandbox Access Token** (`credentials.auth_type: sandbox_access_token`). Existing production **OAuth2.0** sources require no configuration changes, schema refresh, or data clearing. Their stream schemas, primary keys, and incremental state are unchanged.
 
@@ -20,7 +20,7 @@ If you upgrade a sandbox source without migrating, its connection checks and syn
 
 ### Migration steps
 
-If you use sandbox authentication, complete these steps before upgrading to 6.0.0 and ahead of TikTok's December 1, 2026 sandbox deprecation:
+If you use sandbox authentication, complete these steps before upgrading to 5.5.0 and ahead of TikTok's December 1, 2026 sandbox deprecation:
 
 #### Step 1: Identify affected sources and connections
 
