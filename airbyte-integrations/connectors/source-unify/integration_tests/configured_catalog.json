@@ -1,0 +1,235 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "company",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "person",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "opportunity",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "event",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "timestamp": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["timestamp"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "sequence_enrollment",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "started_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "ended_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "sequence_enrollment_step",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "started_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "ended_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "object_definitions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "provider": {
+              "type": ["null", "string"]
+            },
+            "api_name": {
+              "type": ["null", "string"]
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["api_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["api_name"]]
+    }
+  ]
+}
