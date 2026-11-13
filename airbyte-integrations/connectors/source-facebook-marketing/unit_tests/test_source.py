@@ -171,9 +171,7 @@ class TestSourceFacebookMarketing:
 
     @pytest.mark.parametrize("include_incrementality", [False, True])
     @pytest.mark.parametrize("custom_incrementality", [None, False, True])
-    def test_custom_insights_incrementality_request_params(
-        self, api, config, fb_marketing, include_incrementality, custom_incrementality
-    ):
+    def test_custom_insights_incrementality_request_params(self, api, config, fb_marketing, include_incrementality, custom_incrementality):
         config["include_incrementality"] = include_incrementality
         insight = {"name": "test", "fields": ["account_id"], "breakdowns": [], "action_breakdowns": []}
         if custom_incrementality is not None:
