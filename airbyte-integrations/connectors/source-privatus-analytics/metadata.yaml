@@ -1,0 +1,39 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "privatusanalytics.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-privatus-analytics
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7c04a544-b4e9-41a0-9015-a90216cd80bc
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-privatus-analytics
+  githubIssueLabel: source-privatus-analytics
+  icon: icon.svg
+  license: ELv2
+  name: Privatus Analytics
+  releaseDate: 2026-10-26
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/privatus-analytics
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Privatus Analytics API reference
+      url: https://privatusanalytics.com/docs/api
+      type: api_reference

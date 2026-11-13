@@ -1,0 +1,903 @@
+version: 7.39.1
+
+type: DeclarativeSource
+
+description: >-
+  Your website numbers live in one place and your other business data lives
+  somewhere else, so it is hard to see the whole picture. This source copies
+  your Privatus Analytics stats into your warehouse: your sites, visitors and
+  pageviews for every day, your top pages, where visitors came from, and your
+  goals and events. Then you can join your traffic with sales, sign-ups or ad
+  spend in one place.
+
+check:
+  type: CheckStream
+  stream_names:
+    - workspaces
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://privatusanalytics.com
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 8
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Privatus Analytics did not accept the API token. Make a new token
+            in Privatus Analytics under Workspace settings, then API tokens, and
+            paste it again.
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            The API token cannot read this workspace or site. Use a token from a
+            member who can view the site.
+        - type: HttpResponseFilter
+          http_codes:
+            - 429
+          action: RATE_LIMITED
+          error_message: >-
+            The hourly API limit for your plan was reached. The sync waits and
+            tries again.
+
+  workspaces_stream:
+    type: DeclarativeStream
+    name: workspaces
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /workspaces.json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: false
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workspaces"
+
+  sites_stream:
+    type: DeclarativeStream
+    name: sites
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /workspaces/{{ stream_partition.workspace_id }}/sites.json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ not config.get('site_ids') or record['id'] in config.get('site_ids') }}
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: false
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: workspace_id
+            stream:
+              $ref: "#/definitions/workspaces_stream"
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - snippet
+          - - ingest_key_prefix
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/sites"
+
+  site_partitions:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        partition_field: site_id
+        stream:
+          $ref: "#/definitions/sites_stream"
+
+  daily_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    step: P1D
+    cursor_granularity: P1D
+    lookback_window: "P{{ config.get('lookback_days', 2) }}D"
+
+  breakdown_stream:
+    type: DeclarativeStream
+    incremental_sync:
+      $ref: "#/definitions/daily_cursor"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /sites/{{ stream_partition.site_id }}/breakdown/{{ parameters.dimension }}.json
+        request_parameters:
+          period: custom
+          from: "{{ stream_interval.start_time }}"
+          to: "{{ stream_interval.start_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - rows
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+          inject_on_first_request: false
+      partition_router:
+        $ref: "#/definitions/site_partitions"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - site_id
+            value: "{{ stream_partition.site_id }}"
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+
+streams:
+  - $ref: "#/definitions/workspaces_stream"
+
+  - $ref: "#/definitions/sites_stream"
+
+  - type: DeclarativeStream
+    name: goals
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /sites/{{ stream_partition.site_id }}/goals.json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: false
+      partition_router:
+        $ref: "#/definitions/site_partitions"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - site_id
+            value: "{{ stream_partition.site_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/goals"
+
+  - type: DeclarativeStream
+    name: daily_stats
+    primary_key:
+      - site_id
+      - date
+    incremental_sync:
+      $ref: "#/definitions/daily_cursor"
+      step: P30D
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /sites/{{ stream_partition.site_id }}/stats/timeseries.json
+        request_parameters:
+          period: custom
+          interval: day
+          from: "{{ stream_interval.start_time }}"
+          to: "{{ stream_interval.end_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - series
+      partition_router:
+        $ref: "#/definitions/site_partitions"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - site_id
+            value: "{{ stream_partition.site_id }}"
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ record['date'][:10] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/daily_stats"
+
+  - $ref: "#/definitions/breakdown_stream"
+    name: pages
+    primary_key:
+      - site_id
+      - date
+      - value
+    $parameters:
+      dimension: page
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pages"
+
+  - $ref: "#/definitions/breakdown_stream"
+    name: referrers
+    primary_key:
+      - site_id
+      - date
+      - value
+    $parameters:
+      dimension: referrer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/referrers"
+
+  - $ref: "#/definitions/breakdown_stream"
+    name: goal_conversions
+    primary_key:
+      - site_id
+      - date
+      - goal_id
+    $parameters:
+      dimension: goal
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/goal_conversions"
+
+  - $ref: "#/definitions/breakdown_stream"
+    name: events
+    primary_key:
+      - site_id
+      - date
+      - value
+    $parameters:
+      dimension: event
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        title: API token
+        description: >-
+          Your Privatus Analytics API token. Open Workspace settings, then API
+          tokens, and make a new token. It starts with pat_. A token reads one
+          workspace.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          The first day to copy, in the form YYYY-MM-DD. Days are counted in
+          each site's own time zone.
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2026-01-01"
+        order: 1
+      site_ids:
+        type: array
+        title: Site IDs
+        description: >-
+          Only copy these sites, for example pa_AB12CD34EF. Leave it empty to
+          copy every site in the workspace.
+        items:
+          type: string
+        order: 2
+      lookback_days:
+        type: integer
+        title: Days to read again
+        description: >-
+          How many recent days each sync reads again. Today is not over yet, so
+          its numbers still grow. Reading the last few days again keeps them
+          right.
+        default: 2
+        minimum: 0
+        maximum: 30
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    workspaces: false
+    sites: false
+    goals: false
+    daily_stats: false
+    pages: false
+    referrers: false
+    goal_conversions: false
+    events: false
+  testedStreams:
+    workspaces:
+      streamHash: null
+    sites:
+      streamHash: null
+    goals:
+      streamHash: null
+    daily_stats:
+      streamHash: null
+    pages:
+      streamHash: null
+    referrers:
+      streamHash: null
+    goal_conversions:
+      streamHash: null
+    events:
+      streamHash: null
+  assist: {}
+
+schemas:
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Workspace ID, for example ws_7Q2K9XH3AB.
+      name:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      plan:
+        type:
+          - string
+          - "null"
+      plan_events:
+        type:
+          - integer
+          - "null"
+      benchmarks:
+        type:
+          - boolean
+          - "null"
+      subscription_status:
+        type:
+          - string
+          - "null"
+      trial_ends_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      role:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+  sites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Site ID used in the tracking script, for example pa_AB12CD34EF.
+      workspace_id:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      extra_domains:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      multi_domain_mode:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      honor_dnt:
+        type:
+          - boolean
+          - "null"
+      honor_gpc:
+        type:
+          - boolean
+          - "null"
+      pii_scrubber:
+        type:
+          - boolean
+          - "null"
+      redaction_rules:
+        type:
+          - array
+          - "null"
+      allowed_params:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      path_masks:
+        type:
+          - array
+          - "null"
+      retention_months:
+        type:
+          - integer
+          - "null"
+      bot_filtering:
+        type:
+          - boolean
+          - "null"
+      traffic_rule_modes:
+        type:
+          - object
+          - "null"
+      vitals_sample_rate:
+        type:
+          - integer
+          - "null"
+      conversion_denominator:
+        type:
+          - string
+          - "null"
+      public_dashboard:
+        type:
+          - boolean
+          - "null"
+      public_indexable:
+        type:
+          - boolean
+          - "null"
+      verified_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      first_event_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      last_event_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      domain_rating:
+        type:
+          - number
+          - object
+          - "null"
+      favorite:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+  goals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      site_id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+        description: page, event, scroll, time and so on.
+      match_type:
+        type:
+          - string
+          - "null"
+      pattern:
+        type:
+          - string
+          - "null"
+      hostname:
+        type:
+          - string
+          - "null"
+      event_name:
+        type:
+          - string
+          - "null"
+      conditions:
+        type:
+          - array
+          - "null"
+      scroll_threshold:
+        type:
+          - integer
+          - "null"
+      time_threshold_seconds:
+        type:
+          - integer
+          - "null"
+      value_mode:
+        type:
+          - string
+          - "null"
+      fixed_value_minor:
+        type:
+          - integer
+          - "null"
+      count_mode:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      archived_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      stats:
+        type:
+          - object
+          - "null"
+        description: Completions and conversions over the last 30 days.
+        additionalProperties: true
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+  daily_stats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      site_id:
+        type: string
+      date:
+        type: string
+        format: date
+        description: The day, in the site's time zone.
+      visitors:
+        type:
+          - integer
+          - "null"
+      visits:
+        type:
+          - integer
+          - "null"
+      pageviews:
+        type:
+          - integer
+          - "null"
+      views_per_visit:
+        type:
+          - number
+          - "null"
+      bounce_rate:
+        type:
+          - number
+          - "null"
+        description: Percent of visits that saw one page only.
+      visit_duration:
+        type:
+          - integer
+          - "null"
+        description: Middle (median) visit length in milliseconds.
+      revenue:
+        type:
+          - number
+          - "null"
+  pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      site_id:
+        type: string
+      date:
+        type: string
+        format: date
+      value:
+        type: string
+        description: The page path.
+      pageviews:
+        type:
+          - integer
+          - "null"
+      visits:
+        type:
+          - integer
+          - "null"
+      time_on_page:
+        type:
+          - integer
+          - "null"
+        description: Average time on the page in milliseconds.
+      scroll_depth:
+        type:
+          - number
+          - "null"
+      share:
+        type:
+          - number
+          - "null"
+        description: Percent of all pageviews that day.
+  referrers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      site_id:
+        type: string
+      date:
+        type: string
+        format: date
+      value:
+        type: string
+        description: The referring domain. Empty means direct visits or no referrer.
+      visitors:
+        type:
+          - integer
+          - "null"
+      visits:
+        type:
+          - integer
+          - "null"
+      pageviews:
+        type:
+          - integer
+          - "null"
+      views_per_visit:
+        type:
+          - number
+          - "null"
+      bounce_rate:
+        type:
+          - number
+          - "null"
+      visit_duration:
+        type:
+          - integer
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      share:
+        type:
+          - number
+          - "null"
+  goal_conversions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      site_id:
+        type: string
+      date:
+        type: string
+        format: date
+      goal_id:
+        type: string
+      value:
+        type:
+          - string
+          - "null"
+        description: The goal name.
+      completions:
+        type:
+          - integer
+          - "null"
+      conversions:
+        type:
+          - integer
+          - "null"
+        description: Visits that completed the goal at least once.
+      conversion_rate:
+        type:
+          - number
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      share:
+        type:
+          - number
+          - "null"
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      site_id:
+        type: string
+      date:
+        type: string
+        format: date
+      value:
+        type: string
+        description: The event name.
+      completions:
+        type:
+          - integer
+          - "null"
+      visits:
+        type:
+          - integer
+          - "null"
+      conversion_rate:
+        type:
+          - number
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      share:
+        type:
+          - number
+          - "null"
