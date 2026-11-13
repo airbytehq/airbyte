@@ -308,8 +308,7 @@ class TestIncrementalTwilioStream:
         """
         accounts = {
             "accounts": [
-                {"sid": sid, "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"}}
-                for sid in ("AC111", "AC222")
+                {"sid": sid, "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"}} for sid in ("AC111", "AC222")
             ]
         }
         requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
