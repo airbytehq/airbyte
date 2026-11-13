@@ -1,0 +1,32 @@
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
+package io.airbyte.integrations.source.redis
+
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.Stream
+import jakarta.inject.Singleton
+import java.time.OffsetDateTime
+
+@Singleton
+class RedisMetaFieldDecorator : MetaFieldDecorator {
+    override val globalCursor: DataOrMetaField? = null
+    override val globalMetaFields: Set<MetaField> = emptySet()
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode,
+    ) {}
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload,
+    ) {}
+}
