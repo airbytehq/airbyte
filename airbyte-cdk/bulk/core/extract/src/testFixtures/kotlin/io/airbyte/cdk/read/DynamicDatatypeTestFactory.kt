@@ -55,7 +55,7 @@ class DynamicDatatypeTestFactory<
 
     private fun dynamicTests(
         actual: DiscoverAndReadAll<DB, CS, C, F, T>,
-        testCase: T
+        testCase: T,
     ): List<DynamicTest> {
         val streamTests: List<DynamicTest> =
             if (!testCase.isStream) emptyList()
@@ -131,11 +131,16 @@ interface DatatypeTestOperations<
 > {
     val withGlobal: Boolean
     val globalCursorMetaField: MetaField
+
     fun streamConfigSpec(container: DB): CS
+
     fun globalConfigSpec(container: DB): CS
+
     val configFactory: F
     val testCases: Map<String, T>
+
     fun createStreams(config: C)
+
     fun populateStreams(config: C)
 }
 
@@ -206,12 +211,12 @@ class DiscoverAndReadAll<
                 CliRunner.source("read", globalConfigSpec, globalConfiguredCatalog).run()
             Assertions.assertNotEquals(
                 emptyList<AirbyteStateMessage>(),
-                globalInitialReadOutput.states()
+                globalInitialReadOutput.states(),
             )
             globalCheckpoint = globalInitialReadOutput.states().last()
             Assertions.assertEquals(
                 emptyList<AirbyteRecordMessage>(),
-                globalInitialReadOutput.records()
+                globalInitialReadOutput.records(),
             )
             Assertions.assertEquals(emptyList<AirbyteLogMessage>(), globalInitialReadOutput.logs())
         }
@@ -224,20 +229,20 @@ class DiscoverAndReadAll<
                         "read",
                         globalConfigSpec,
                         globalConfiguredCatalog,
-                        listOf(globalCheckpoint)
+                        listOf(globalCheckpoint),
                     )
                     .run()
             Assertions.assertNotEquals(
                 emptyList<AirbyteStateMessage>(),
-                globalSubsequentReadOutput.states()
+                globalSubsequentReadOutput.states(),
             )
             Assertions.assertNotEquals(
                 emptyList<AirbyteRecordMessage>(),
-                globalSubsequentReadOutput.records()
+                globalSubsequentReadOutput.records(),
             )
             Assertions.assertEquals(
                 emptyList<AirbyteLogMessage>(),
-                globalSubsequentReadOutput.logs()
+                globalSubsequentReadOutput.logs(),
             )
             globalMessages = globalSubsequentReadOutput.messages()
             globalMessagesByStream = byStream(globalConfiguredCatalog, globalMessages)
@@ -280,7 +285,7 @@ class DiscoverAndReadAll<
 
     private fun byStream(
         configuredCatalog: ConfiguredAirbyteCatalog,
-        messages: List<AirbyteMessage>
+        messages: List<AirbyteMessage>,
     ): Map<String, BufferingOutputConsumer> {
         val result: Map<String, BufferingOutputConsumer> =
             configuredCatalog.streams.associate {

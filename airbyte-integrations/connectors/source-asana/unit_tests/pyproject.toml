@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-asana-tests"
+version = "1.8.0"
+description = "Behavioral tests for source-asana"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "7.45.0"
+pytest = "^8"
+requests-mock = "^1"
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:This class is experimental*"]

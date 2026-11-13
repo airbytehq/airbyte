@@ -24,7 +24,7 @@ class TypingDedupingFinalTableOperations(
         finalTableName: TableName,
         columnNameMapping: ColumnNameMapping,
         finalTableSuffix: String,
-        replace: Boolean
+        replace: Boolean,
     ) {
         logger.info {
             "Creating final table for stream ${stream.mappedDescriptor.toPrettyString()} with name ${finalTableName.toPrettyString()}"
@@ -35,8 +35,8 @@ class TypingDedupingFinalTableOperations(
                 finalTableName,
                 columnNameMapping,
                 finalTableSuffix,
-                replace = replace
-            )
+                replace = replace,
+            ),
         )
     }
 
@@ -50,7 +50,7 @@ class TypingDedupingFinalTableOperations(
             "Executing soft reset for stream ${stream.mappedDescriptor.toPrettyString()} on tables ${tableNames.toPrettyString()}"
         }
         databaseHandler.execute(
-            sqlGenerator.prepareTablesForSoftReset(stream, tableNames, columnNameMapping)
+            sqlGenerator.prepareTablesForSoftReset(stream, tableNames, columnNameMapping),
         )
         typeAndDedupe(
             stream,
@@ -63,8 +63,8 @@ class TypingDedupingFinalTableOperations(
             sqlGenerator.overwriteFinalTable(
                 stream,
                 tableNames.finalTableName!!,
-                finalTableSuffix = SOFT_RESET_SUFFIX
-            )
+                finalTableSuffix = SOFT_RESET_SUFFIX,
+            ),
         )
     }
 
@@ -84,8 +84,8 @@ class TypingDedupingFinalTableOperations(
             sqlGenerator.overwriteFinalTable(
                 stream,
                 finalTableName,
-                finalTableSuffix = finalTableSuffix
-            )
+                finalTableSuffix = finalTableSuffix,
+            ),
         )
     }
 
@@ -94,7 +94,7 @@ class TypingDedupingFinalTableOperations(
         tableNames: TableNames,
         columnNameMapping: ColumnNameMapping,
         maxProcessedTimestamp: Instant?,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     ) {
         try {
             logger.info {
