@@ -41,16 +41,12 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  channels:history
  channels:join
  channels:read
- files:read
+ groups:history
  groups:read
- links:read
- reactions:read
- remote_files:read
- team:read
- usergroups:read
  users:read
- users.profile:read
 ```
+
+The `groups:history` and `groups:read` scopes are required only if you plan to sync private channels. You can omit them if you only need public channel data.
 
 6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
 7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
@@ -130,13 +126,13 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 - [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 - [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history): Replicates messages from non-archived, public and private channels that the Slack App is a member of.
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history): Replicates messages from public and private channels that the Slack App is a member of. Archived channels are excluded by default but can be included with the **Include archived channels** option.
 - [Users](https://api.slack.com/methods/users.list)
 - [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
 ## Performance considerations
 
-The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits). When a request is rate-limited with HTTP 429, the connector automatically respects the `Retry-After` header returned by the Slack API and waits the specified duration before retrying.
+The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits). The connector handles rate limiting automatically, whether Slack responds with an HTTP 429 status code or a `{"ok": false, "error": "ratelimited"}` response body. In both cases, the connector respects the `Retry-After` header and waits before retrying.
 
 We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration settings.
 
@@ -164,9 +160,10 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
-###### Rate Limits for Channel Messages and Threads streams: 
+##### Rate limits for Channel Messages and Threads streams
 
 **OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
+
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
 - [`conversations.history`](https://api.slack.com/methods/conversations.history)
 
