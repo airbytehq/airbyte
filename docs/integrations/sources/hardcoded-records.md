@@ -6,9 +6,9 @@ This connector doesn't connect to any external system and doesn't need credentia
 
 ## Configuration
 
-| Field | Required | Default | Description |
-| :--- | :--- | :--- | :--- |
-| Count | No | 1000 | The number of records to emit for each stream. The minimum value is 1. |
+| Field | Spec default | Description |
+| :--- | :--- | :--- |
+| **Count** | 1000 | The number of records to emit for each stream. The minimum value is 1. Include `count` in your configuration: the connection check reads this field directly, even though the spec marks it as optional. |
 
 ## Supported sync modes
 
@@ -158,6 +158,8 @@ The following examples show the record that each stream emits.
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.49 | 2026-11-03 | [90588](https://github.com/airbytehq/airbyte/pull/90588) | Update dependencies |
+| 0.0.48 | 2026-10-27 | [78746](https://github.com/airbytehq/airbyte/pull/78746) | Update dependencies |
 | 0.0.47 | 2026-10-21 | [89548](https://github.com/airbytehq/airbyte/pull/89548) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
 | 0.0.46 | 2025-10-21 | [68285](https://github.com/airbytehq/airbyte/pull/68285) | Update dependencies |
 | 0.0.45 | 2025-10-14 | [67921](https://github.com/airbytehq/airbyte/pull/67921) | Update dependencies |

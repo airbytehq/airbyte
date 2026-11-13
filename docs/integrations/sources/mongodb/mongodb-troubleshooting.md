@@ -1,0 +1,123 @@
+# Troubleshooting MongoDB Sources
+
+## Connector Limitations
+
+### MongoDB Oplog and Change Streams
+
+[MongoDB's Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/). This has retention limitations. Syncs that run less frequently than the retention period of the Oplog may encounter issues with missing data.
+
+We recommend adjusting the Oplog size for your MongoDB cluster to ensure it holds at least 24 hours of changes. For optimal results, we suggest expanding it to maintain a week's worth of data. To adjust your Oplog size, see the corresponding tutorials for [MongoDB Atlas](https://www.mongodb.com/docs/atlas/cluster-additional-settings/#set-oplog-size) (fully-managed) and [MongoDB shell](https://www.mongodb.com/docs/manual/tutorial/change-oplog-size/) (self-hosted).
+
+If a sync fails with "Saved offset is not valid", the change stream position saved by the previous sync is no longer in the oplog. (A different message, "The saved change stream position cannot be read by the server", means the saved state is corrupt or was taken from another cluster; the only remedy is to refresh or clear the connection.) The **Invalid CDC position behavior** setting decides what happens: with "Fail sync" (the default) the sync fails until you refresh the connection (a new initial snapshot, keeping or removing the existing records) or clear it, with "Re-sync data" the connector takes a new initial snapshot by itself. To prevent it from happening again:
+
+1. Increase the Oplog retention period.
+2. Increase the Oplog size.
+3. Increase the Airbyte sync frequency.
+
+Every incremental sync logs the oplog's size and time window before it reads the change stream, and where the saved position stands in that window, for example:
+
+```text
+Oplog: 1.2 GB used of 40.0 GB, 1,203,400 entries, 2026-10-18T06:00:12Z to 2026-10-19T07:20:29Z (window 25.3 h). Saved position 2026-10-19T02:00:00Z is 20.0 h inside the window.
+```
+
+A saved position reported as "OLDER than the oldest entry" is the sign that the next sync will fail with "Saved offset is not valid". The line needs read access to the `local` database (for example the `clusterMonitor` role); without it the sync logs a warning and continues. Sharded clusters reached through `mongos` have one oplog per shard, which the connector does not read.
+
+You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to verify the current of your Oplog. The expect output is:
+
+```yaml
+configured oplog size: 10.10546875MB
+log length start to end: 94400 (26.22hrs)
+oplog first event time: Mon Mar 19 2012 13:50:38 GMT-0400 (EDT)
+oplog last event time: Wed Oct 03 2012 14:59:10 GMT-0400 (EDT)
+now: Wed Oct 03 2012 15:00:21 GMT-0400 (EDT)
+```
+
+When importing a large MongoDB collection for the first time, the import duration might exceed the Oplog retention period. The Oplog is crucial for incremental updates, and an invalid resume token will require the MongoDB collection to be re-imported to ensure no source updates were missed.
+
+### MongoDB CDC Limitations
+
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC (Change Data Capture) syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. This typically occurs during incremental syncs when change stream events include the full document content.
+
+If you encounter this error, you have several options to resolve it:
+
+1. Switch the affected stream to Full Refresh sync mode instead of Incremental mode. Full Refresh does not use change streams and is not subject to this limitation.
+2. Restructure large documents in your MongoDB collection to stay under the 16MB limit.
+3. Deselect streams containing documents that exceed the size limit.
+
+For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
+
+## How update events are captured
+
+For an update event, Airbyte reads the document's current state when the event is processed (MongoDB's `updateLookup`).
+If a document is updated several times in quick succession, or several times between two syncs, the records for those
+events can all show the same final version of the document: **intermediate document states are not captured.** A document
+that was deleted before the event could be read is emitted as a delete.
+
+### Supported MongoDB Clusters
+
+- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: Full Refresh works, Incremental fails when the change stream is opened, with a message saying that Incremental syncs need a replica set or a sharded cluster.
+- Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
+- Views and time series collections are not discovered and cannot be synced: MongoDB has no change streams for them, and a time series collection has no `_id` index to resume a snapshot from. Sync the underlying collection of a view instead. Capped and clustered collections have not been validated with this connector.
+- Empty collections are excluded from schema discovery.
+- All documents in a collection should use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types is read in full by an uninterrupted sync, but a sync resuming after a checkpoint on one type does not sync the documents of the other types. The connector warns with "The \_id fields in this collection are not consistently typed, which may lead to data loss" and the types it found; make the type consistent or exclude the collection.
+- Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
+
+### Schema Discovery & Enforcement
+
+- Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
+- When running with Schema Enforced set to `false`, discovery only determines the type of `_id`; the rest of the document is synced as one JSON object. See more in [Schema Enforcement](/integrations/sources/mongodb#schema-enforcement).
+
+### Schema discovery performance impact
+
+Because MongoDB collections are [schemaless](https://www.mongodb.com/docs/manual/data-modeling/), documents in the same collection can have different fields and data types. The connector attempts to infer a schema by sampling documents, but no sample size can guarantee a complete or stable schema. New fields can be added to documents at any time, and a schema derived from today's sample may not represent tomorrow's data. Keep this inherent limitation in mind when choosing between schema-enforced and schemaless modes.
+
+When schema enforcement is enabled, the Discover phase executes a [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) aggregation pipeline against every collection in each configured database. These pipelines run **concurrently** using parallel threads, one per collection. Each pipeline samples up to 10,000 documents by default, then processes them through `$project`, `$unwind`, and `$group` stages to extract field names and types.
+
+On clusters with hundreds of collections, this means hundreds of simultaneous aggregation queries hitting the database at once. The `$sample` stage performs a [random collection scan](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/#behavior), which can be I/O-intensive on large collections. Combined with the downstream aggregation stages, this can exhaust available CPU and memory on your MongoDB nodes.
+
+#### Recommended approaches
+
+These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
+
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb#schema-enforcement) for configuration details.
+
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb#configuration-parameters) configuration parameter.
+
+#### Other alternatives
+
+These approaches do not reduce the discovery workload itself, but can help isolate it from your production traffic.
+
+1. **Direct reads to a secondary node.** Add [`readPreference=secondary`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondary) or [`readPreference=secondaryPreferred`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondaryPreferred) to your MongoDB [connection string](https://www.mongodb.com/docs/manual/reference/connection-string/). This routes the discovery queries to a secondary replica set member instead of the primary, protecting your primary node from the additional load.
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondaryPreferred
+   ```
+
+2. **Use MongoDB Atlas analytics nodes.** If you use MongoDB Atlas (M10 tier or above), you can provision [analytics nodes](https://www.mongodb.com/docs/atlas/reference/replica-set-tags/) that are isolated from your operational workload. Direct Airbyte's reads to an analytics node by adding [read preference tags](https://www.mongodb.com/docs/manual/core/read-preference-tags/) to your connection string:
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondary&readPreferenceTags=nodeType:ANALYTICS
+   ```
+
+   This fully isolates the discovery workload from your production traffic.
+
+3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
+
+4. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
+
+### Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
+#### Self Hosted MongoDB
+
+Airbyte does not support self-signed TLS certificates.
+
+#### AWS DocumentDB
+
+The Airbyte connector does not support custom SSL certificates, which DocumentDB requires.

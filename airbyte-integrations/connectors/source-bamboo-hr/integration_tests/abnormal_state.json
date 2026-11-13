@@ -1,5 +1,16 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "time_off_requests_stream" },
+      "stream_state": { "created": "2099-01-01" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "timesheet_entries" },
+      "stream_state": { "start": "2099-01-01" }
+    }
   }
-}
+]

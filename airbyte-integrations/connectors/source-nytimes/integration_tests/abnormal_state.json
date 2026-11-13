@@ -1,5 +1,13 @@
-{
-  "archive": {
-    "pub_date": "2999-12-31T23:59:59+0000"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "archive"
+      },
+      "stream_state": {
+        "pub_date": "2999-12-31T23:59:59+0000"
+      }
+    }
   }
-}
+]

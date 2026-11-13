@@ -1,0 +1,24 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "synthetic-event",
+      "object": "event",
+      "api_version": "2025-01-27",
+      "created": 1,
+      "data": {
+        "object": {
+          "id": "synthetic-customer",
+          "object": "customer",
+          "created": 1
+        }
+      },
+      "livemode": false,
+      "pending_webhooks": 0,
+      "request": null,
+      "type": "customer.updated"
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/events"
+}

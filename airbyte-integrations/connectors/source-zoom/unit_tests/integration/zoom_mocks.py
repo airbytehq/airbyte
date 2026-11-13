@@ -28,18 +28,31 @@ from unit_tests.conftest import get_source
 
 
 BASE_URL = "https://api.zoom.us/v2"
-PAGE_SIZE = "30"
+PAGE_SIZE = "300"
 USER_ID = "u1"
 
 CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": "https://zoom.us/oauth/token",
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": "https://zoom.us/oauth/token",
+    }
 }
 
-WEBINAR_1 = {"id": 81111111111, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "Webinar one"}
-WEBINAR_2 = {"id": 82222222222, "uuid": "/abc//d==", "topic": "Webinar two"}
+WEBINAR_1 = {
+    "id": 81111111111,
+    "uuid": "wPUYIy/pR2mPs5r9no2GmA==",
+    "topic": "Webinar one",
+    "created_at": "2026-09-01T10:00:00Z",
+}
+WEBINAR_2 = {
+    "id": 82222222222,
+    "uuid": "/abc//d==",
+    "topic": "Webinar two",
+    "created_at": "2026-10-10T10:00:00Z",
+}
 WEBINARS = [WEBINAR_1, WEBINAR_2]
 ENCODED_UUIDS = {
     WEBINAR_1["uuid"]: "wPUYIy%252FpR2mPs5r9no2GmA%253D%253D",
@@ -51,16 +64,6 @@ _TOKEN_REQUEST = HttpRequest(
     query_params={"grant_type": "account_credentials", "account_id": "test_account_id"},
 )
 _WEBINARS_NEXT_PAGE_TOKEN = "webinars-page-2"
-
-# Pre-existing drift: `AddFields` injects `webinar_id` from `stream_partition.parent_id` (an int) while these
-# schemas declare it `["null", "string"]`. Fixing it changes the emitted type, so it is a separate, breaking change.
-# Remove a stream from this map once its schema and `AddFields` agree.
-KNOWN_SCHEMA_DRIFT = {
-    "webinar_registrants": {"webinar_id"},
-    "webinar_polls": {"webinar_id"},
-    "webinar_registration_questions": {"webinar_id"},
-    "webinar_tracking_sources": {"webinar_id"},
-}
 
 
 def json_response(body: Any, status_code: int = 200) -> HttpResponse:
@@ -91,8 +94,13 @@ def mock_token(http_mocker: HttpMocker) -> None:
     http_mocker.post(_TOKEN_REQUEST, json_response({"access_token": "test_access_token", "expires_in": 3599}))
 
 
-def mock_users(http_mocker: HttpMocker) -> None:
-    http_mocker.get(request("/users", paginated_query()), json_response({"users": [{"id": USER_ID}], "next_page_token": ""}))
+def mock_users(http_mocker: HttpMocker, users: Optional[List[Dict[str, Any]]] = None) -> HttpRequest:
+    users_request = request("/users", paginated_query())
+    http_mocker.get(
+        users_request,
+        json_response({"users": users if users is not None else [{"id": USER_ID}], "next_page_token": ""}),
+    )
+    return users_request
 
 
 def mock_webinar_parents(http_mocker: HttpMocker) -> None:
@@ -118,13 +126,21 @@ def mock_webinars_parent_error(http_mocker: HttpMocker, response: HttpResponse) 
     return parent_request
 
 
-def read_stream(stream_name: str, expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+def read_stream(
+    stream_name: str,
+    expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS,
+    config: Optional[Dict[str, Any]] = None,
+    sync_mode: SyncMode = SyncMode.full_refresh,
+    state: Optional[List[Any]] = None,
+) -> EntrypointOutput:
+    read_config = config if config is not None else CONFIG
+    read_state = state if state is not None else StateBuilder().build()
+    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     return read(
-        get_source(config=CONFIG),
-        config=CONFIG,
+        get_source(config=read_config, state=read_state),
+        config=read_config,
         catalog=catalog,
-        state=StateBuilder().build(),
+        state=read_state,
         expected_outcome=expected_outcome,
     )
 
@@ -132,7 +148,7 @@ def read_stream(stream_name: str, expected_outcome: ExpectedOutcome = ExpectedOu
 @lru_cache(maxsize=None)
 def _stream_schema_validators() -> Dict[str, Draft7Validator]:
     catalog = discover(get_source(config=CONFIG), CONFIG).catalog.catalog
-    return {stream.name: Draft7Validator(stream.json_schema) for stream in catalog.streams}
+    return {stream.name: Draft7Validator(stream.json_schema, format_checker=Draft7Validator.FORMAT_CHECKER) for stream in catalog.streams}
 
 
 def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:
@@ -140,23 +156,25 @@ def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:
 
 
 def assert_records_match_schema(output: EntrypointOutput, stream_name: str) -> None:
-    """Every record validates against the discovered schema, except the fields listed in `KNOWN_SCHEMA_DRIFT`."""
+    """Every record validates against the discovered schema."""
     validator = _stream_schema_validators()[stream_name]
-    known_drift = KNOWN_SCHEMA_DRIFT.get(stream_name, set())
-    drifted_fields = set()
     for record in records_data(output):
-        for error in validator.iter_errors(record):
-            field = error.absolute_path[0] if error.absolute_path else None
-            assert field in known_drift, f"{stream_name} record does not match its schema: {error.message}"
-            drifted_fields.add(field)
-    if output.records:
-        assert drifted_fields == known_drift, f"{stream_name} no longer drifts on {known_drift - drifted_fields}; update KNOWN_SCHEMA_DRIFT"
+        errors = list(validator.iter_errors(record))
+        assert not errors, f"{stream_name} record does not match its schema: {[error.message for error in errors]}"
 
 
 def assert_completed_without_errors(output: EntrypointOutput, stream_name: str) -> None:
     assert output.errors == []
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
     assert_records_match_schema(output, stream_name)
+
+
+def assert_failed_with_config_error(output: EntrypointOutput, stream_name: str) -> None:
+    assert output.records == []
+    assert AirbyteStreamStatus.INCOMPLETE in output.get_stream_statuses(stream_name)
+    assert AirbyteStreamStatus.COMPLETE not in output.get_stream_statuses(stream_name)
+    assert output.errors, "expected an error trace message"
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
 
 
 _WEBINAR_PLAN_MISSING = zoom_error(
