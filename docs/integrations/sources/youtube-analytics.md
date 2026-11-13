@@ -66,6 +66,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Supported Streams
 
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - Available YouTube report types (full refresh only).
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
@@ -140,6 +141,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.1.0 | 2026-11-13 | TBD | Connection check now lists YouTube report types instead of reading the retired channel_annotations_a1 report, so setup succeeds before any report file exists; adds the report_types stream. |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |

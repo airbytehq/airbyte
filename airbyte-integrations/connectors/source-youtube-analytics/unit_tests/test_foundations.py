@@ -88,6 +88,75 @@ def _page_tokens(history, path: str) -> List[Optional[str]]:
     return [request.qs.get("pagetoken", [None])[0] for request in history if request.method == "GET" and request.path == path]
 
 
+@pytest.mark.parametrize("content_owner_id", [None, "owner-1"])
+def test_check_succeeds_without_report_files_or_creating_jobs(config, content_owner_id):
+    if content_owner_id:
+        config = {**config, "content_owner_id": content_owner_id}
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        report_types = mocker.get(f"{_API}/reportTypes", json={"reportTypes": [{"id": _STREAM, "name": "Basic"}]})
+        mocker.get(f"{_API}/jobs", json={"jobs": []})
+        create_job = mocker.post(f"{_API}/jobs", json={"id": _JOB_ID})
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": []})
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED
+    assert not create_job.called
+    assert report_types.called
+    assert report_types.last_request.qs.get("onbehalfofcontentowner") == ([content_owner_id] if content_owner_id else None)
+
+
+def test_report_types_listing_follows_next_page_token(config):
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/reportTypes",
+            json=_paged(
+                {
+                    None: {"reportTypes": [{"id": _STREAM, "name": "Basic"}], "nextPageToken": "types-page-2"},
+                    "types-page-2": {"reportTypes": [{"id": "channel_cards_a1", "name": "Cards", "systemManaged": False}]},
+                }
+            ),
+        )
+
+        output = _read(config, stream="report_types")
+        tokens = _page_tokens(mocker.request_history, "/v1/reporttypes")
+
+    assert output.errors == []
+    assert [record.record.data["id"] for record in output.records] == [_STREAM, "channel_cards_a1"]
+    assert tokens == [None, "types-page-2"]
+
+
+def test_report_types_empty_listing_reads_cleanly(config):
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(f"{_API}/reportTypes", json={})
+
+        output = _read(config, stream="report_types")
+
+    assert output.errors == []
+    assert output.records == []
+
+
+@pytest.mark.parametrize(
+    "body, message",
+    [
+        ({"json": {"error": {"code": 403, "message": "The caller does not have permission"}}}, "The caller does not have permission"),
+        ({"text": "Forbidden"}, "see the YouTube Reporting API error"),
+    ],
+)
+def test_check_report_types_denied_access(config, body, message):
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(f"{_API}/reportTypes", status_code=403, **body)
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.FAILED
+    assert f"The YouTube Reporting API denied access: {message}." in status.message
+
+
 def test_jobs_listing_follows_next_page_token_and_does_not_create_a_duplicate_job(config):
     """The stream's job is on page 2 of `jobs.list`: it must be found, not re-created."""
     with requests_mock.Mocker() as mocker:
