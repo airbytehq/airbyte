@@ -641,6 +641,9 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      # One cursor for all accounts: an account's own cursor only advances when that account returns
+      # records, so a stale per-account cursor must never decide where the next sync resumes.
+      global_substream_cursor: true
       cursor_granularity: PT0.000001S
       start_datetime:
         type: MinMaxDatetime
@@ -650,6 +653,11 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioGlobalCursorStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:

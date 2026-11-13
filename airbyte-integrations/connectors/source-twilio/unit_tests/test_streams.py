@@ -1003,3 +1003,118 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+_MESSAGES_ACCOUNTS = ("AC123", "AC456")
+_MESSAGES_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "date_created": "2022-01-01T00:00:00Z",
+            "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"},
+        }
+        for sid in _MESSAGES_ACCOUNTS
+    ]
+}
+
+
+def _messages_partition(sid):
+    return {"subresource_uri": f"/2010-04-01/Accounts/{sid}/Messages.json", "parent_slice": {}}
+
+
+def _mock_messages(requests_mock, records_by_account):
+    """Serve each account's messages only in the window containing their `date_sent`; return the requested windows per account."""
+    windows = {sid: [] for sid in _MESSAGES_ACCOUNTS}
+    requests_mock.get(f"{BASE}/Accounts.json", json=_MESSAGES_ACCOUNTS_JSON)
+
+    def register(sid):
+        def callback(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            assert set(query) == {"DateSent>", "DateSent<", "PageSize"}
+            assert query["PageSize"] == ["1000"]
+            lower, upper = query["DateSent>"][0], query["DateSent<"][0]
+            windows[sid].append((lower, upper))
+            in_window = [
+                record
+                for record in records_by_account.get(sid, [])
+                if lower <= datetime.strptime(record["date_sent"], "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d %H:%M:%SZ") <= upper
+            ]
+            return {"messages": in_window}
+
+        requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=callback)
+
+    for sid in _MESSAGES_ACCOUNTS:
+        register(sid)
+    return windows
+
+
+def _read_messages(state_value):
+    state = StateBuilder().with_stream_state("messages", state_value).build()
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2022-10-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+    assert not output.errors
+    return output
+
+
+class TestMessagesGlobalCursor:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_stale_partition_cursor_does_not_override_global_cursor(self, requests_mock):
+        """A per-account cursor far behind the stream-level cursor must not make the sync re-read old messages."""
+        windows = _mock_messages(
+            requests_mock,
+            {
+                "AC123": [
+                    {"sid": "SM-old", "date_sent": "Thu, 20 Oct 2022 10:00:00 +0000"},
+                    {"sid": "SM-overlap", "date_sent": "Mon, 14 Nov 2022 23:30:00 +0000"},
+                    {"sid": "SM-new", "date_sent": "Tue, 15 Nov 2022 10:00:00 +0000"},
+                ],
+                "AC456": [{"sid": "SM-other", "date_sent": "Wed, 16 Nov 2022 09:00:00 +0000"}],
+            },
+        )
+
+        output = _read_messages(
+            {
+                "use_global_cursor": False,
+                "states": [{"partition": _messages_partition("AC123"), "cursor": {"date_sent": "2022-10-05 00:00:00Z"}}],
+                "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                "lookback_window": 3600,
+            }
+        )
+
+        # Both accounts resume from the global cursor minus the stored one-hour lookback, in a single window.
+        expected_window = ("2022-11-14 23:00:00Z", "2022-11-16 12:03:11Z")
+        assert windows == {"AC123": [expected_window], "AC456": [expected_window]}
+        assert sorted(message.record.data["sid"] for message in output.records) == ["SM-new", "SM-other", "SM-overlap"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert "states" not in final_state
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-16 09:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_per_partition_state_without_global_cursor_resumes_per_partition_then_switches_to_global(self, requests_mock):
+        """State that has no stream-level cursor yet keeps its per-account resume points for one more sync."""
+        windows = _mock_messages(requests_mock, {"AC123": [{"sid": "SM-new", "date_sent": "Tue, 15 Nov 2022 10:00:00 +0000"}]})
+
+        first = _read_messages({"states": [{"partition": _messages_partition("AC123"), "cursor": {"date_sent": "2022-11-13 12:11:10Z"}}]})
+
+        # Slices are read concurrently, so request order within an account is not deterministic.
+        assert {sid: sorted(account_windows) for sid, account_windows in windows.items()} == {
+            "AC123": [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
+            "AC456": [("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"), ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z")],
+        }
+        assert [message.record.data["sid"] for message in first.records] == ["SM-new"]
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert first_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+
+        for account_windows in windows.values():
+            account_windows.clear()
+        second = _read_messages(first_state)
+
+        # AC456 never returned a record, so its own cursor is still the start date; the global cursor wins.
+        # `DateSent>` is inclusive at the cursor, so the record sitting exactly on it is emitted again.
+        expected_window = ("2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z")
+        assert windows == {"AC123": [expected_window], "AC456": [expected_window]}
+        assert [message.record.data["sid"] for message in second.records] == ["SM-new"]
+        second_state = second.most_recent_state.stream_state.__dict__
+        assert "states" not in second_state
+        assert second_state["use_global_cursor"] is True
+        assert second_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}

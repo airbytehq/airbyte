@@ -83,6 +83,50 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Collapse per-partition state into the stream-level (global) cursor for streams that set
+    `global_substream_cursor: true`.
+
+    The CDK keeps using any per-partition cursor found in the incoming state, even for a stream configured
+    with a global cursor. A partition's cursor only advances when that partition returns records, so it can
+    sit far behind the global cursor and make the next sync re-read old data. The global cursor is only
+    committed once every partition has been read to the end of a sync, so (together with the stored
+    `lookback_window`) it is a safe resume point for all partitions.
+
+    State without a global cursor (`state`) is left untouched: the next sync still resumes per partition,
+    emits a global cursor, and is migrated on the sync after that.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-02-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 00:00:00Z" },
+        "lookback_window": 120
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2022-11-15 00:00:00Z" },
+        "lookback_window": 120
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated = {key: value for key, value in stream_state.items() if key != "states"}
+        migrated["use_global_cursor"] = True
+        return migrated
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state and "states" in stream_state and stream_state.get("state"))
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
