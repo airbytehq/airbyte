@@ -1,0 +1,1136 @@
+version: 6.3.0
+
+type: DeclarativeSource
+
+description: >-
+  Source connector for the Robinhood trading platform. Syncs account data,
+  positions, orders, dividends, instruments, quotes, fundamentals, and
+  portfolio information via Robinhood's API. Authentication requires a
+  pre-generated access token obtained through Robinhood's OAuth2 flow.
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['access_token'] }}"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "https://api.robinhood.com"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Accept: "application/json"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  # Paginator for endpoints that return { next, previous, results }
+  url_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('next', '') }}"
+      stop_condition: "{{ not response.get('next') }}"
+    page_token_option:
+      type: RequestPath
+
+  # --- Tier 1 Streams ---
+
+  accounts_stream:
+    type: DeclarativeStream
+    name: accounts
+    description: "Core account info: buying power, cash, margin balances, account type."
+    primary_key:
+      - account_number
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/accounts/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/accounts"
+
+  positions_stream:
+    type: DeclarativeStream
+    name: positions
+    description: "Current and historical stock positions held in the account."
+    primary_key:
+      - url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/positions/"
+        request_parameters:
+          nonzero: "true"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/positions"
+
+  portfolios_stream:
+    type: DeclarativeStream
+    name: portfolios
+    description: "Portfolio-level aggregates: equity, market value, extended hours value."
+    primary_key:
+      - url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/portfolios/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/portfolios"
+
+  orders_stream:
+    type: DeclarativeStream
+    name: orders
+    description: "Full order history: buys, sells, status, execution details, timestamps."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/orders/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_at[gte]
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/orders"
+
+  instruments_stream:
+    type: DeclarativeStream
+    name: instruments
+    description: "Security metadata: ticker, name, symbol, tradability, type, country."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/instruments/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/instruments"
+
+  dividends_stream:
+    type: DeclarativeStream
+    name: dividends
+    description: "Dividend history: amounts, pay dates, instruments, state."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/dividends/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/dividends"
+
+  watchlists_stream:
+    type: DeclarativeStream
+    name: watchlists
+    description: "User's watchlists showing what securities they are tracking."
+    primary_key:
+      - url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/watchlists/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/watchlists"
+
+  options_positions_stream:
+    type: DeclarativeStream
+    name: options_positions
+    description: "Current options positions held in the account."
+    primary_key:
+      - url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/options/positions/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/options_positions"
+
+  options_orders_stream:
+    type: DeclarativeStream
+    name: options_orders
+    description: "Options order history."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/options/orders/"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/url_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/options_orders"
+
+streams:
+  - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/positions_stream"
+  - $ref: "#/definitions/portfolios_stream"
+  - $ref: "#/definitions/orders_stream"
+  - $ref: "#/definitions/instruments_stream"
+  - $ref: "#/definitions/dividends_stream"
+  - $ref: "#/definitions/watchlists_stream"
+  - $ref: "#/definitions/options_positions_stream"
+  - $ref: "#/definitions/options_orders_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/robinhood
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Robinhood Source Spec
+    type: object
+    additionalProperties: true
+    properties:
+      access_token:
+        type: string
+        title: Access Token
+        description: >-
+          Robinhood API access token for authentication. You can obtain this
+          by logging in through Robinhood's OAuth2 flow using a library such
+          as robin_stocks. The token must be refreshed when it expires.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SS.ffffffZ. Only
+          data updated after this date will be replicated for incremental
+          streams such as orders.
+        examples:
+          - "2023-01-01T00:00:00.000000Z"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$"
+        order: 1
+    required:
+      - access_token
+
+schemas:
+  accounts:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      url:
+        type:
+          - string
+          - "null"
+      portfolio:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+      account_number:
+        type: string
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      deactivated:
+        type:
+          - boolean
+          - "null"
+      deposit_halted:
+        type:
+          - boolean
+          - "null"
+      withdrawal_halted:
+        type:
+          - boolean
+          - "null"
+      only_position_closing_trades:
+        type:
+          - boolean
+          - "null"
+      buying_power:
+        type:
+          - string
+          - "null"
+      cash:
+        type:
+          - string
+          - "null"
+      cash_available_for_withdrawal:
+        type:
+          - string
+          - "null"
+      cash_held_for_orders:
+        type:
+          - string
+          - "null"
+      uncleared_deposits:
+        type:
+          - string
+          - "null"
+      unsettled_funds:
+        type:
+          - string
+          - "null"
+      unsettled_debit:
+        type:
+          - string
+          - "null"
+      sma:
+        type:
+          - string
+          - "null"
+      sma_held_for_orders:
+        type:
+          - string
+          - "null"
+      sweep_enabled:
+        type:
+          - boolean
+          - "null"
+      nummus_enabled:
+        type:
+          - boolean
+          - "null"
+      max_ach_early_access_amount:
+        type:
+          - string
+          - "null"
+      positions:
+        type:
+          - string
+          - "null"
+      margin_balances:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      cash_balances:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+
+  positions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      url:
+        type: string
+      instrument:
+        type:
+          - string
+          - "null"
+      instrument_id:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - string
+          - "null"
+      account_number:
+        type:
+          - string
+          - "null"
+      average_buy_price:
+        type:
+          - string
+          - "null"
+      pending_average_buy_price:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      intraday_average_buy_price:
+        type:
+          - string
+          - "null"
+      intraday_quantity:
+        type:
+          - string
+          - "null"
+      shares_available_for_exercise:
+        type:
+          - string
+          - "null"
+      shares_held_for_buys:
+        type:
+          - string
+          - "null"
+      shares_held_for_sells:
+        type:
+          - string
+          - "null"
+      shares_held_for_stock_grants:
+        type:
+          - string
+          - "null"
+      shares_held_for_options_collateral:
+        type:
+          - string
+          - "null"
+      shares_held_for_options_events:
+        type:
+          - string
+          - "null"
+      shares_pending_from_options_events:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+
+  portfolios:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      url:
+        type: string
+      account:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      market_value:
+        type:
+          - string
+          - "null"
+      equity:
+        type:
+          - string
+          - "null"
+      extended_hours_market_value:
+        type:
+          - string
+          - "null"
+      extended_hours_equity:
+        type:
+          - string
+          - "null"
+      extended_hours_portfolio_equity:
+        type:
+          - string
+          - "null"
+      last_core_market_value:
+        type:
+          - string
+          - "null"
+      last_core_equity:
+        type:
+          - string
+          - "null"
+      last_core_portfolio_equity:
+        type:
+          - string
+          - "null"
+      excess_margin:
+        type:
+          - string
+          - "null"
+      excess_maintenance:
+        type:
+          - string
+          - "null"
+      excess_margin_with_uncleared_deposits:
+        type:
+          - string
+          - "null"
+      excess_maintenance_with_uncleared_deposits:
+        type:
+          - string
+          - "null"
+      withdrawable_amount:
+        type:
+          - string
+          - "null"
+      unwithdrawable_deposits:
+        type:
+          - string
+          - "null"
+      unwithdrawable_grants:
+        type:
+          - string
+          - "null"
+
+  orders:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - string
+          - "null"
+      instrument:
+        type:
+          - string
+          - "null"
+      instrument_id:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      cumulative_quantity:
+        type:
+          - string
+          - "null"
+      average_price:
+        type:
+          - string
+          - "null"
+      fees:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      side:
+        type:
+          - string
+          - "null"
+      time_in_force:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      stop_price:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      reject_reason:
+        type:
+          - string
+          - "null"
+      cancel:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      last_transaction_at:
+        type:
+          - string
+          - "null"
+      extended_hours:
+        type:
+          - boolean
+          - "null"
+      override_day_trade_checks:
+        type:
+          - boolean
+          - "null"
+      override_dtbp_checks:
+        type:
+          - boolean
+          - "null"
+      response_category:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      executions:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+
+  instruments:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      quote:
+        type:
+          - string
+          - "null"
+      fundamentals:
+        type:
+          - string
+          - "null"
+      splits:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      market:
+        type:
+          - string
+          - "null"
+      simple_name:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tradeable:
+        type:
+          - boolean
+          - "null"
+      tradability:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      bloomberg_unique:
+        type:
+          - string
+          - "null"
+      margin_initial_ratio:
+        type:
+          - string
+          - "null"
+      maintenance_ratio:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      day_trade_ratio:
+        type:
+          - string
+          - "null"
+      list_date:
+        type:
+          - string
+          - "null"
+      min_tick_size:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      tradable_chain_id:
+        type:
+          - string
+          - "null"
+      rhs_tradability:
+        type:
+          - string
+          - "null"
+      fractional_tradability:
+        type:
+          - string
+          - "null"
+      default_collar_fraction:
+        type:
+          - string
+          - "null"
+      ipo_access_status:
+        type:
+          - string
+          - "null"
+      ipo_access_cob_deadline:
+        type:
+          - string
+          - "null"
+      ipo_s1_url:
+        type:
+          - string
+          - "null"
+      ipo_roadshow_url:
+        type:
+          - string
+          - "null"
+      is_spac:
+        type:
+          - boolean
+          - "null"
+      is_test:
+        type:
+          - boolean
+          - "null"
+      ipo_access_supports_dsp:
+        type:
+          - boolean
+          - "null"
+      all_day_tradability:
+        type:
+          - string
+          - "null"
+      internal_halt_reason:
+        type:
+          - string
+          - "null"
+      internal_halt_details:
+        type:
+          - string
+          - "null"
+      internal_halt_sessions:
+        type:
+          - string
+          - "null"
+      internal_halt_start_time:
+        type:
+          - string
+          - "null"
+      internal_halt_end_time:
+        type:
+          - string
+          - "null"
+      internal_halt_source:
+        type:
+          - string
+          - "null"
+
+  dividends:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - string
+          - "null"
+      instrument:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      rate:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      withholding:
+        type:
+          - string
+          - "null"
+      record_date:
+        type:
+          - string
+          - "null"
+      payable_date:
+        type:
+          - string
+          - "null"
+      paid_at:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      nra_withholding:
+        type:
+          - string
+          - "null"
+      drip_enabled:
+        type:
+          - boolean
+          - "null"
+
+  watchlists:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      url:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+
+  options_positions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      url:
+        type: string
+      account:
+        type:
+          - string
+          - "null"
+      option:
+        type:
+          - string
+          - "null"
+      average_price:
+        type:
+          - string
+          - "null"
+      chain_id:
+        type:
+          - string
+          - "null"
+      chain_symbol:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      option_id:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      pending_buy_quantity:
+        type:
+          - string
+          - "null"
+      pending_sell_quantity:
+        type:
+          - string
+          - "null"
+      pending_expired_quantity:
+        type:
+          - string
+          - "null"
+      pending_assignment_quantity:
+        type:
+          - string
+          - "null"
+      pending_exercise_quantity:
+        type:
+          - string
+          - "null"
+      intraday_average_open_price:
+        type:
+          - string
+          - "null"
+      intraday_quantity:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      trade_value_multiplier:
+        type:
+          - string
+          - "null"
+
+  options_orders:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      chain_id:
+        type:
+          - string
+          - "null"
+      chain_symbol:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      response_category:
+        type:
+          - string
+          - "null"
+      cancel_url:
+        type:
+          - string
+          - "null"
+      canceled_quantity:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      premium:
+        type:
+          - string
+          - "null"
+      processed_premium:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      processed_quantity:
+        type:
+          - string
+          - "null"
+      pending_quantity:
+        type:
+          - string
+          - "null"
+      time_in_force:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - string
+          - "null"
+      opening_strategy:
+        type:
+          - string
+          - "null"
+      closing_strategy:
+        type:
+          - string
+          - "null"
+      stop_price:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      legs:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
