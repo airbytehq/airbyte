@@ -8,8 +8,11 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Dict, List, Optional, Union
 from unittest import TestCase
+from urllib.parse import parse_qs
 
 import freezegun
+import pytest
+from facebook_business.api import FacebookAdsApi
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -243,6 +246,46 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@pytest.mark.parametrize(
+    "top_level,custom,expected",
+    [(True, None, True), (True, False, True), (False, True, True), (False, None, False), (False, False, False)],
+)
+def test_custom_insights_incrementality_attribution_window(requests_mock, top_level, custom, expected):
+    config_builder = config()
+    custom_insight = {"name": "incrementality", "fields": ["actions"], "breakdowns": ["product_id"]}
+    if custom is not None:
+        custom_insight["include_incrementality"] = custom
+    config_builder.build().update(include_incrementality=top_level, custom_insights=[custom_insight])
+    base_url = f"https://graph.facebook.com/{FacebookAdsApi.API_VERSION}"
+    requests_mock.get(f"{base_url}/act_{ACCOUNT_ID}/", json={"id": f"act_{ACCOUNT_ID}", "timezone_name": "UTC"})
+    requests_mock.get(
+        f"{base_url}/act_{ACCOUNT_ID}/insights",
+        json={},
+        headers={"x-fb-ads-insights-throttle": json.dumps({"app_id_util_pct": 0, "acc_id_util_pct": 0})},
+    )
+    job_start = requests_mock.post(f"{base_url}/act_{ACCOUNT_ID}/insights", json={"report_run_id": _REPORT_RUN_ID})
+    requests_mock.post(
+        f"{base_url}/",
+        json=[
+            {
+                "code": 200,
+                "body": json.dumps(
+                    {"id": _JOB_ID, "account_id": ACCOUNT_ID, "async_status": Status.COMPLETED, "async_percent_completion": 100}
+                ),
+            }
+        ],
+    )
+    requests_mock.get(f"{base_url}/{_JOB_ID}/insights", json={"data": []})
+
+    output = read_output(config_builder, "customincrementality", SyncMode.full_refresh)
+
+    assert not output.records
+    assert job_start.call_count == 1
+    windows = json.loads(parse_qs(job_start.last_request.text)["action_attribution_windows"][0])
+    assert ("incrementality" in windows) is expected
 
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
