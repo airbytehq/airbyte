@@ -886,6 +886,15 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Outreach access tokens last two hours. A request can still reach Outreach after its token expired
+        # (`401 expiredAccessToken`), which ended long syncs mid-read. Get a new token and retry the request once;
+        # the CDK fails as a config error if the new token is rejected too.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          error_message: >-
+            Outreach rejected the access token: {{ ((response.get('errors') or [{}])[0].get('detail') or 'Unauthorized.')[:300] }}
         - type: HttpResponseFilter
           http_codes:
             - 403
