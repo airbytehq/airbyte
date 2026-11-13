@@ -1,0 +1,64 @@
+version: 6.60.0
+
+type: DeclarativeSource
+
+description: Conetor para integração da ferramenta de Marketing Automation.
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+  dynamic_streams_check_configs: []
+
+streams:
+  - type: DeclarativeStream
+    name: contacts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://yam.com.br/api/contacts
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config['password'] }}"
+          username: "{{ config['username'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://devdocs.mautic.org/en/5.x/rest_api/contacts.html
+  testedStreams:
+    contacts:
+      isStale: false
+      hasRecords: true
+      streamHash: 279206a74f58df6ffda055af5f3222811b6b3f87
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema: {}
