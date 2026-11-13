@@ -177,7 +177,13 @@ class H2SourceOperations :
             is From -> if (namespace == null) "FROM $name" else "FROM $namespace.$name"
             is FromSample -> {
                 val innerFrom: String = From(name, namespace).sql()
-                val innerWhere = "WHERE MOD(ROWNUM(), $sampleRateInv) = 0 "
+                val samplingCondition = "MOD(ROWNUM(), $sampleRateInv) = 0"
+                val innerWhere =
+                    if (where is Where) {
+                        "WHERE ${(where as Where).clause.sql()} AND $samplingCondition"
+                    } else {
+                        "WHERE $samplingCondition"
+                    }
                 val innerLimit = "LIMIT $sampleSize"
                 "FROM (SELECT * $innerFrom $innerWhere $innerLimit)"
             }
@@ -212,7 +218,14 @@ class H2SourceOperations :
             is Limit -> "LIMIT $n"
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        from.bindings() + where.bindings()
+
+    fun FromNode.bindings(): List<SelectQuery.Binding> =
+        when (this) {
+            is FromSample -> where?.bindings() ?: emptyList()
+            else -> emptyList()
+        }
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
