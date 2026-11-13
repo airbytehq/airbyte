@@ -100,7 +100,7 @@ The `completions`, `conversation_messages`, and `conversation_messages_log` stre
 
 **End Time** is exclusive and refers to midnight UTC at the start of that day. If you leave **End Time** blank, the connector uses midnight UTC at the start of the current day, so it doesn't sync the current day's data until a sync runs after that day ends in UTC. If you set **End Time** to a fixed date, incremental syncs stop picking up new data after that date.
 
-The `users`, `invites`, `current_users`, and `historical_users` streams always return the full current list and ignore the date range.
+The `users`, `invites`, `current_users`, and `historical_users` streams ignore the configured date range.
 
 ## Limitations and troubleshooting
 
