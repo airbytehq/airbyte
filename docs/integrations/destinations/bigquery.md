@@ -202,7 +202,7 @@ namespace with `n` for converted namespaces.
 
 The service account does not have the proper permissions. With **Legacy raw tables** turned off,
 Airbyte classifies HTTP `401` and `403` errors encountered while checking existing tables at sync
-startup as configuration errors. Correct the service account's permissions before retrying.
+startup as configuration errors. Check the service account's credentials and permissions before retrying.
 A `403` error with reason `rateLimitExceeded` is excluded from this classification and remains
 eligible for retry.
 
@@ -289,7 +289,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 3.2.2 | 2026-10-30 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
 | 3.2.1 | 2026-10-09 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
 | 3.2.0 | 2026-10-02 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
-| 3.1.2 | 2026-09-10 |[85804](https://github.com/airbytehq/airbyte/pull/85804 | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
+| 3.1.2 | 2026-09-10 | [85804](https://github.com/airbytehq/airbyte/pull/85804) | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
 | 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
 | 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
