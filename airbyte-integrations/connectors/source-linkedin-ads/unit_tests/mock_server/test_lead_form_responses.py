@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import logging
 from datetime import datetime, timezone
 from unittest import TestCase
 
@@ -194,7 +195,8 @@ class TestLeadFormResponsesStream(TestCase):
 
         Given: No prior state
         When: Running an incremental sync
-        Then: All records should be returned (same as full refresh)
+        Then: The request is unfiltered (no submittedAtTimeRange) and the cursor
+              advances to the latest submittedAt seen
         """
         config = ConfigBuilder().build()
 
@@ -218,31 +220,60 @@ class TestLeadFormResponsesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 2
+        last_state = output.state_messages[-1].state.stream.stream_state.__dict__
+        partition_state = next(s for s in last_state["states"] if s["partition"]["account_id"] == 111111111)
+        assert partition_state["cursor"] == {"submittedAt": "1717200000000"}
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker):
         """
-        Test incremental sync with prior state (subsequent sync).
+        Test incremental sync with prior per-partition state (subsequent sync).
 
-        Given: Prior state with a cursor value
+        Given: Per-partition cursor state for two accounts
         When: Running an incremental sync
-        Then: Only records newer than the cursor should be returned (client-side filtering)
+        Then: Each partition request carries submittedAtTimeRange=(start:<cursor>,end:<now>)
+              and the cursor state advances
         """
         config = ConfigBuilder().build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"submittedAt": "2024-06-01T00:00:00+0000"}).build()
-
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "states": [
+                        {"partition": {"account_id": 111111111, "parent_slice": {}}, "cursor": {"submittedAt": "1704067200000"}},
+                        {"partition": {"account_id": 222222222, "parent_slice": {}}, "cursor": {"submittedAt": "1717200000000"}},
+                    ]
+                },
+            )
+            .build()
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_form_responses_endpoint(111111111).build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
-                    _create_lead_form_response_record("resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JAN_2024),
-                    _create_lead_form_response_record("resp-1002", 111111111, "form-2", submitted_at=_TIMESTAMP_JUN_2024),
+                    _create_account_record(111111111, "Account 1"),
+                    _create_account_record(222222222, "Account 2"),
                 ]
+            ),
+        )
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.lead_form_responses_endpoint(
+                111111111, submitted_at_start=1704067200000, submitted_at_end=1718452800000
+            ).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_lead_form_response_record("resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JUN_2024)]
+            ),
+        )
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.lead_form_responses_endpoint(
+                222222222, submitted_at_start=1717200000000, submitted_at_end=1718452800000
+            ).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_lead_form_response_record("resp-2001", 222222222, "form-2", submitted_at=_TIMESTAMP_JUN_2024)]
             ),
         )
 
@@ -250,6 +281,65 @@ class TestLeadFormResponsesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog, state=state)
 
-        # Client-side incremental filtering should return only newer records
-        # The stream completes without errors
+        assert len(output.records) == 2
+        record_ids = [record.record.data["id"] for record in output.records]
+        assert "resp-1001" in record_ids
+        assert "resp-2001" in record_ids
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_incremental_sync_lookback_window(self, http_mocker: HttpMocker):
+        """
+        Test incremental sync with a lookback window.
+
+        Given: Prior cursor state and a 2-day lookback window
+        When: Running an incremental sync
+        Then: The submittedAtTimeRange start is shifted back by the lookback window
+        """
+        config = ConfigBuilder().with_lookback_window(2).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {"states": [{"partition": {"account_id": 111111111, "parent_slice": {}}, "cursor": {"submittedAt": "1717200000000"}}]},
+            )
+            .build()
+        )
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.lead_form_responses_endpoint(
+                111111111, submitted_at_start=1717027200000, submitted_at_end=1718452800000
+            ).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_lead_form_response_record("resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JUN_2024)]
+            ),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        assert len(output.records) == 1
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    def test_discover_supports_incremental(self):
+        """
+        Test that discovery reports incremental support for lead_form_responses.
+
+        Given: A valid config
+        When: Running discover
+        Then: lead_form_responses supports incremental sync with submittedAt as the cursor
+        """
+        config = ConfigBuilder().build()
+
+        source = get_source(config=config)
+        catalog = source.discover(logger=logging.getLogger("airbyte"), config=config)
+
+        stream = next(s for s in catalog.streams if s.name == _STREAM_NAME)
+        assert SyncMode.incremental in stream.supported_sync_modes
+        assert stream.default_cursor_field == ["submittedAt"]
