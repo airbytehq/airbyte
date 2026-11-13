@@ -176,7 +176,7 @@ class FlexibleDecoder(Decoder):
             )
         if response.status_code == 202:
             self.logger.error("Dataset is not ready - try again later")
-            raise AirbyteTracedException(message="Dataset is not ready, try again later", failure_type=FailureType.config_error)
+            raise AirbyteTracedException(message="Dataset is not ready, try again later", failure_type=FailureType.transient_error)
         if response.status_code != 200:
             self.logger.error("Unexpected status code: %s", response.status_code)
             raise AirbyteTracedException(
@@ -186,6 +186,8 @@ class FlexibleDecoder(Decoder):
 
         content_type = response.headers.get("Content-Type", "").lower()
 
+        # The export is served from S3 as a file download whose Content-Type varies
+        # (e.g. "binary/octet-stream"), so match loosely on json / octet-stream.
         is_jsonl = any(
             ct in content_type
             for ct in (
@@ -193,7 +195,7 @@ class FlexibleDecoder(Decoder):
                 "application/x-jsonlines",
                 "application/x-jsonl+json",
                 "application/jsonl",
-                "application/octet-stream",
+                "octet-stream",
             )
         )
 

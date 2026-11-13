@@ -184,7 +184,7 @@ class ClickhouseSqlGenerator(
 
     /**
      * TODO: this is really a schema validation function and should probably run on startup long
-     * before we go to create a table.
+     *   before we go to create a table.
      */
     internal fun flattenPks(
         primaryKey: List<List<String>>,

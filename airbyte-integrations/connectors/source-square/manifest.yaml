@@ -147,11 +147,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: labor/shifts/search
+          path: /labor/timecards/search
           http_method: POST
           request_headers:
             Content-Type: application/json
-            Square-Version: "2022-10-19"
+            Square-Version: "2025-05-21"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -181,7 +181,30 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - shifts
+              - timecards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('team_member_id') is not none }}"
+          fields:
+            - path:
+                - employee_id
+              value: "{{ record.get('team_member_id') }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1748,7 +1771,24 @@ schemas:
         type:
           - "null"
           - string
+      declared_cash_tip_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
       employee_id:
+        description: >-
+          Deprecated by Square in favor of `team_member_id`. Square's Timecards
+          API no longer returns it, so the connector populates it from
+          `team_member_id`.
         type:
           - "null"
           - string
@@ -1802,6 +1842,14 @@ schemas:
                 type:
                   - "null"
                   - string
+          job_id:
+            type:
+              - "null"
+              - string
+          tip_eligible:
+            type:
+              - "null"
+              - boolean
           title:
             type:
               - "null"
