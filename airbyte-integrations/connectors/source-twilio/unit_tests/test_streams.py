@@ -35,6 +35,8 @@ ACCOUNTS_JSON = {
     ],
 }
 
+MESSAGES_URI = "/2010-04-01/Accounts/AC123/Messages.json"
+
 ALERTS_LIMIT_ERROR_JSON = {"message": "Invalid page and pageSize combination, data is limited to 10,000 results", "status": 400}
 ALERTS_INVALID_START_DATE_JSON = {"message": "Invalid StartDate", "status": 400}
 ALERTS_SPLIT_FAILURE_MESSAGE = (
@@ -253,6 +255,58 @@ class TestIncrementalTwilioStream:
         assert accounts_matcher.called, "Accounts endpoint was not called"
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "incoming_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": MESSAGES_URI, "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-01-01 00:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                },
+                "2022-11-15 00:00:00Z",
+                id="stale_partition_cursor_with_newer_global_cursor",
+            ),
+            pytest.param(
+                {"states": [{"partition": {"subresource_uri": MESSAGES_URI}, "cursor": {"date_sent": "2022-11-14T00:00:00Z"}}]},
+                "2022-11-14 00:00:00Z",
+                id="legacy_partition_state_without_global_cursor",
+            ),
+            pytest.param(
+                {"use_global_cursor": True, "lookback_window": 0, "state": {"date_sent": "2022-11-15 00:00:00Z"}},
+                "2022-11-15 00:00:00Z",
+                id="global_cursor_state",
+            ),
+        ],
+    )
+    def test_messages_incremental_resumes_from_global_cursor(self, incoming_state, expected_lower_bound, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        windows = []
+
+        def _messages(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            windows.append((query["DateSent>"][0], query["DateSent<"][0]))
+            return {"messages": [{"sid": "SM1", "date_sent": "Tue, 15 Nov 2022 10:00:00 +0000"}], "next_page_uri": None}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+        state = StateBuilder().with_stream_state("messages", incoming_state).build()
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert windows == [(expected_lower_bound, "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
