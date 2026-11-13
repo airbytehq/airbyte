@@ -56,3 +56,26 @@ def test_generate_streams(mock_survey_cto, source, config):
 def test_streams(mock_generate_streams, source, config):
     streams = source.streams(config)
     assert len(streams) == 2
+
+
+def test_stream_initialization(config):
+    stream = SurveyctoStream(config=config, form_id="form_id_1", schema={"type": "object"})
+
+    assert stream.name == "form_id_1"
+    assert stream.path() == "form_id_1"
+    assert stream.request_params(stream_state={}) == {"date": config["start_date"]}
+
+
+@pytest.mark.parametrize(
+    "incoming_state, expected_date",
+    [
+        pytest.param({}, "Jan 09, 2022 00:00:00 AM", id="empty_state_falls_back_to_start_date"),
+        pytest.param({"SubmissionDate": "Feb 01, 2022 00:00:00 AM"}, "Feb 01, 2022 00:00:00 AM", id="existing_state"),
+    ],
+)
+def test_state_setter(config, incoming_state, expected_date):
+    stream = SurveyctoStream(config=config, form_id="form_id_1", schema={"type": "object"})
+
+    stream.state = incoming_state
+
+    assert stream.request_params(stream_state=incoming_state) == {"date": expected_date}

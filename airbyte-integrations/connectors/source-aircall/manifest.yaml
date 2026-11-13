@@ -12,7 +12,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  # A saved num_workers of 1 still runs on 2 workers, the CDK's lowest safe level.
+  default_concurrency: "{{ [config.get('num_workers') or 2, 2] | max }}"
   max_concurrency: 4
 
 definitions:
@@ -40,6 +41,8 @@ definitions:
       $ref: "#/definitions/error_handler"
   # The reference only calls X-AircallApi-Reset a timestamp: its first 10 digits are epoch seconds
   # whether Aircall sends seconds or milliseconds. Resets come within a minute; a later one is a bad header.
+  # Aircall sends X-AircallApi-Reset only on 429, so every backoff list follows it with an exponential strategy
+  # for 5xx responses (checked live 2026-11-13).
   backoff_strategy:
     type: WaitUntilTimeFromHeader
     header: X-AircallApi-Reset
@@ -147,10 +150,28 @@ definitions:
       error_message: >-
         Ignoring {{ request_url }}: Aircall has no result of this type for
         this call (HTTP 404).
+  # A user with no active Power Dialer campaign answers 404 with Aircall's {"message": "NOT_FOUND"} body on
+  # both dialer campaign routes (checked live 2026-11-13). Matching the body keeps a retired route from being
+  # skipped silently.
+  dialer_campaign_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - $ref: "#/definitions/backoff_strategy"
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        predicate: "{{ response is mapping and response.get('error') == 'Not Found' and response.get('message') == 'NOT_FOUND' }}"
+        error_message: >-
+          Ignoring {{ request_url }}: this user has no active Power Dialer
+          campaign (HTTP 404).
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
       - $ref: "#/definitions/backoff_strategy"
+      - type: ExponentialBackoffStrategy
     response_filters:
       - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/forbidden"
@@ -193,6 +214,7 @@ definitions:
         type: DefaultErrorHandler
         backoff_strategies:
           - $ref: "#/definitions/backoff_strategy"
+          - type: ExponentialBackoffStrategy
         response_filters:
           - $ref: "#/definitions/response_filters/gateway_forbidden"
           - $ref: "#/definitions/response_filters/conversation_intelligence_not_enabled"
@@ -517,6 +539,7 @@ definitions:
             type: DefaultErrorHandler
             backoff_strategies:
               - $ref: "#/definitions/backoff_strategy"
+              - type: ExponentialBackoffStrategy
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
               - $ref: "#/definitions/response_filters/unauthorized"
@@ -583,6 +606,7 @@ definitions:
             type: DefaultErrorHandler
             backoff_strategies:
               - $ref: "#/definitions/backoff_strategy"
+              - type: ExponentialBackoffStrategy
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
               # Engagements come newest first and stop at 10,000 per conversation (no date filter).
@@ -712,6 +736,7 @@ definitions:
             type: DefaultErrorHandler
             backoff_strategies:
               - $ref: "#/definitions/backoff_strategy"
+              - type: ExponentialBackoffStrategy
             response_filters:
               - $ref: "#/definitions/response_filters/trackers_not_enabled"
               - $ref: "#/definitions/response_filters/unauthorized"
@@ -769,6 +794,7 @@ definitions:
             type: DefaultErrorHandler
             backoff_strategies:
               - $ref: "#/definitions/backoff_strategy"
+              - type: ExponentialBackoffStrategy
             response_filters:
               - $ref: "#/definitions/response_filters/whatsapp_not_configured"
               - $ref: "#/definitions/response_filters/unauthorized"
@@ -851,6 +877,61 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_numbers"
+    dialer_campaigns:
+      type: DeclarativeStream
+      name: dialer_campaigns
+      primary_key:
+        - user_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_partition['user_id'] }}/dialer_campaign
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/dialer_campaign_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          $ref: "#/definitions/streams/user_numbers/retriever/partition_router"
+      transformations:
+        $ref: "#/definitions/streams/user_numbers/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dialer_campaigns"
+    dialer_campaign_phone_numbers:
+      type: DeclarativeStream
+      name: dialer_campaign_phone_numbers
+      primary_key:
+        - user_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_partition['user_id'] }}/dialer_campaign/phone_numbers
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/dialer_campaign_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - numbers
+        partition_router:
+          $ref: "#/definitions/streams/user_numbers/retriever/partition_router"
+      transformations:
+        $ref: "#/definitions/streams/user_numbers/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dialer_campaign_phone_numbers"
     call_transcriptions:
       type: DeclarativeStream
       name: call_transcriptions
@@ -1034,6 +1115,8 @@ streams:
   - $ref: "#/definitions/streams/sms_templates"
   - $ref: "#/definitions/streams/whatsapp_templates"
   - $ref: "#/definitions/streams/user_numbers"
+  - $ref: "#/definitions/streams/dialer_campaigns"
+  - $ref: "#/definitions/streams/dialer_campaign_phone_numbers"
   - type: ConditionalStreams
     condition: "{{ config.get('include_conversation_intelligence', false) }}"
     streams:
@@ -1144,6 +1227,8 @@ metadata:
     sms_templates: false
     whatsapp_templates: false
     user_numbers: false
+    dialer_campaigns: false
+    dialer_campaign_phone_numbers: false
     call_transcriptions: false
     call_sentiments: false
     call_topics: false
@@ -2506,6 +2591,56 @@ schemas:
           - object
         additionalProperties: true
     title: WhatsApp Templates Schema
+  dialer_campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      user_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      # The reference types number_id as a string; live responses send an integer, or null without a number.
+      number_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  dialer_campaign_phone_numbers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      user_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      # Digits without the leading "+" (checked live 2026-11-13).
+      number:
+        type:
+          - "null"
+          - string
+      called:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
   user_numbers:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

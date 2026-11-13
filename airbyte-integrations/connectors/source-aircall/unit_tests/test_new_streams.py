@@ -31,6 +31,8 @@ _NEW_STREAMS = {
     "sms_templates": [["id"]],
     "whatsapp_templates": [["number_id"], ["id"]],
     "user_numbers": [["user_id"], ["id"]],
+    "dialer_campaigns": [["user_id"], ["id"]],
+    "dialer_campaign_phone_numbers": [["user_id"], ["id"]],
 }
 _KEY_FIELD_TYPES = {
     "conversations": {"id": "integer", "last_engagement_at": "string"},
@@ -41,6 +43,8 @@ _KEY_FIELD_TYPES = {
     "sms_templates": {"id": "integer"},
     "whatsapp_templates": {"id": "string", "number_id": "integer"},
     "user_numbers": {"id": "number", "user_id": "integer", "priority": "integer", "created_at": "string"},
+    "dialer_campaigns": {"id": "integer", "user_id": "integer", "number_id": "integer", "created_at": "string"},
+    "dialer_campaign_phone_numbers": {"id": "integer", "user_id": "integer", "number": "string", "called": "boolean"},
 }
 
 
@@ -148,7 +152,16 @@ def test_new_streams_declare_keys_sync_modes_and_key_field_types() -> None:
     assert streams["conversation_engagements"].default_cursor_field == ["created_at"]
     for name in ("conversations", "conversation_engagements"):
         assert [mode.value for mode in streams[name].supported_sync_modes] == ["full_refresh", "incremental"]
-    for name in ("campaigns", "campaign_outcomes", "trackers", "sms_templates", "whatsapp_templates", "user_numbers"):
+    for name in (
+        "campaigns",
+        "campaign_outcomes",
+        "trackers",
+        "sms_templates",
+        "whatsapp_templates",
+        "user_numbers",
+        "dialer_campaigns",
+        "dialer_campaign_phone_numbers",
+    ):
         assert [mode.value for mode in streams[name].supported_sync_modes] == ["full_refresh"]
 
 
@@ -584,3 +597,67 @@ def test_user_numbers_read_each_user_paginate_and_carry_user_id() -> None:
         assert [error.message for error in Draft7Validator(schema).iter_errors(record)] == []
         for request in (first, second, other):
             http_mocker.assert_number_of_calls(request, 1)
+
+
+# Live responses of the test account (2026-11-13): GET /v1/users/{id}/dialer_campaign and .../dialer_campaign/phone_numbers.
+_DIALER_CAMPAIGN = {"id": 8120349, "number_id": 1427754, "created_at": "2026-11-13T06:25:14.000Z"}
+_DIALER_NUMBERS = {
+    "numbers": [
+        {"id": 388333587, "number": "33612345678", "called": False, "created_at": "2026-11-13T06:25:35.000Z"},
+        {"id": 388333588, "number": "442071838750", "called": True, "created_at": "2026-11-13T06:25:35.000Z"},
+    ]
+}
+# A user without an active Power Dialer campaign (live, both routes).
+_NO_CAMPAIGN = {
+    "error": "Not Found",
+    "message": "NOT_FOUND",
+    "errors": [{"status": 404, "title": "Not Found", "detail": "NOT_FOUND"}],
+    "troubleshoot": "",
+    "success": False,
+}
+_DIALER_STREAMS = {
+    "dialer_campaigns": ("/dialer_campaign", _DIALER_CAMPAIGN),
+    "dialer_campaign_phone_numbers": ("/dialer_campaign/phone_numbers", _DIALER_NUMBERS),
+}
+
+
+@pytest.mark.parametrize("stream_name", list(_DIALER_STREAMS))
+def test_dialer_campaign_streams_read_each_user_and_skip_users_without_a_campaign(stream_name: str) -> None:
+    suffix, body = _DIALER_STREAMS[stream_name]
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_v2_request("/users"), _json({"users": [{"id": 7}, {"id": 8}]}))
+        with_campaign, without_campaign = _request(f"/users/7{suffix}"), _request(f"/users/8{suffix}")
+        http_mocker.get(with_campaign, _json(body))
+        http_mocker.get(without_campaign, _json(_NO_CAMPAIGN, 404))
+
+        output = _read(stream_name)
+
+        assert output.errors == []
+        records = [record.record.data for record in output.records]
+        expected = [body] if stream_name == "dialer_campaigns" else body["numbers"]
+        assert records == [{**record, "user_id": 7} for record in expected]
+        schema = next(stream.json_schema for stream in get_source(_CONFIG).discover(None, _CONFIG).streams if stream.name == stream_name)
+        assert [error.message for record in records for error in Draft7Validator(schema).iter_errors(record)] == []
+        assert any(
+            "https://api.aircall.io/v1/users/8" in log.log.message and "no active Power Dialer campaign" in log.log.message
+            for log in output.logs
+        )
+        for request in (with_campaign, without_campaign):
+            http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize("stream_name", list(_DIALER_STREAMS))
+@pytest.mark.parametrize("body", [{"message": "Not Found"}, {"error": "NotFound", "troubleshoot": "x"}], ids=["gateway", "other_app_body"])
+def test_dialer_campaign_404_with_another_body_fails(stream_name: str, body: dict) -> None:
+    # A retired or renamed route answers 404 without Aircall's NOT_FOUND body; skipping it would hide the outage.
+    suffix, _ = _DIALER_STREAMS[stream_name]
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_v2_request("/users"), _json({"users": [{"id": 7}]}))
+        http_mocker.get(_request(f"/users/7{suffix}"), _json(body, 404))
+
+        output = _read(stream_name, expecting_exception=True)
+
+        assert output.records == []
+        error = output.errors[0].trace.error
+        assert error.failure_type == FailureType.system_error
+        assert "404" in error.message
