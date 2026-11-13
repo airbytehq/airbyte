@@ -56,6 +56,42 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-11-12")
+    @pytest.mark.parametrize("empty_result", [False, True])
+    def test_interrupted_lookback_preserves_cursor(self, mocker, api, async_manager_mock, empty_result):
+        account_id = "123"
+        cursor = "2026-11-01"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 11, 12),
+            insights_lookback_window=28,
+        )
+        record = mocker.Mock()
+        record.export_all_data.return_value = {"date_start": "2026-10-04"}
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.interval = DateInterval(date(2026, 10, 4), date(2026, 10, 4))
+        job.get_result.return_value = [] if empty_result else [record]
+
+        def completed_jobs():
+            yield job
+            raise RuntimeError("Sync interrupted")
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        slices = stream.stream_slices(
+            sync_mode=SyncMode.incremental,
+            stream_state={account_id: {stream.cursor_field: cursor}, "time_increment": 1},
+        )
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+
+        assert stream.state[account_id][stream.cursor_field] == cursor
+        assert stream.state[account_id]["slices"] == []
+        assert stream._next_cursor_values[account_id] == date(2026, 10, 5)
+        with pytest.raises(RuntimeError, match="Sync interrupted"):
+            next(slices)
+        assert stream.state[account_id][stream.cursor_field] == cursor
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
