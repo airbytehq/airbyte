@@ -37,9 +37,7 @@ def test_check_succeeds_before_youtube_has_generated_any_report(jobs_response: D
     """A new source has no report files for up to 48 hours; setup must not depend on them."""
     config_builder = ConfigBuilder()
     jobs_request = YoutubeAnalyticsRequestBuilder.jobs_endpoint()
-    reports_request = YoutubeAnalyticsRequestBuilder.reports_endpoint(_EXISTING_JOB["id"]).with_created_after(
-        "1990-01-01T00:00:00.000000Z"
-    )
+    reports_request = YoutubeAnalyticsRequestBuilder.reports_endpoint(_EXISTING_JOB["id"]).with_created_after("1990-01-01T00:00:00.000000Z")
     if content_owner_id:
         config_builder = config_builder.with_content_owner_id(content_owner_id)
         jobs_request = jobs_request.with_on_behalf_of_content_owner(content_owner_id)
@@ -84,7 +82,9 @@ def test_check_fails_with_the_no_channel_message_when_youtube_rejects_the_accoun
         )
         http_mocker.get(
             jobs_request,
-            HttpResponse(body=json.dumps({"error": {"code": 401, "message": "Unauthorized", "status": "UNAUTHENTICATED"}}), status_code=401),
+            HttpResponse(
+                body=json.dumps({"error": {"code": 401, "message": "Unauthorized", "status": "UNAUTHENTICATED"}}), status_code=401
+            ),
         )
 
         status = _check(config)
