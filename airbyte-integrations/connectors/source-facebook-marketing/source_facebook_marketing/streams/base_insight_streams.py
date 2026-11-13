@@ -43,6 +43,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     INCREMENTALITY_WINDOW = "incrementality"
 
+    EV_ACTION_ATTRIBUTION_WINDOWS = [
+        "1d_ev",
+    ]
+
     breakdowns = []
     action_breakdowns = [
         "action_type",
@@ -84,6 +88,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         insights_job_timeout: int = 60,
         level: str = "ad",
         include_incrementality: bool = False,
+        include_engaged_view: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -117,8 +122,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.level = level
         self.entity_prefix = level
 
+        windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS)
         if include_incrementality:
-            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
+            windows.append(self.INCREMENTALITY_WINDOW)
+        if include_engaged_view:
+            windows.extend(self.EV_ACTION_ATTRIBUTION_WINDOWS)
+        self.action_attribution_windows = windows
 
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
@@ -188,6 +197,20 @@ class AdsInsights(FBMarketingIncrementalStream):
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
         return record
 
+    @cached_property
+    def _should_rename_results(self) -> bool:
+        """Stream-level part of the 'results' -> 'objective_results' rename decision, computed once instead of per record."""
+        if not self._custom_fields:
+            return False
+
+        properties = self.get_json_schema().get("properties", {})
+
+        has_objective_results_in_schema = "objective_results" in properties
+        has_objective_results_in_fields = "objective_results" in self._custom_fields
+        has_results_in_fields = "results" in self._custom_fields
+
+        return has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+
     def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Transform 'results' field to 'objective_results' in API responses.
@@ -201,19 +224,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         See: https://github.com/airbytehq/oncall/issues/10126
         """
-        if not self._custom_fields:
-            return record
-
-        schema = self.get_json_schema()
-        properties = schema.get("properties", {})
-
-        has_objective_results_in_schema = "objective_results" in properties
-        has_objective_results_in_fields = "objective_results" in self._custom_fields
-        has_results_in_fields = "results" in self._custom_fields
-
-        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
-
-        if should_rename and "results" in record and "objective_results" not in record:
+        if self._should_rename_results and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
 
         return record
@@ -254,7 +265,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
+        if job.interval.start <= self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
 
     @property
@@ -264,10 +275,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._cursor_values:
             for account_id in self._account_ids:
-                if account_id in self._cursor_values and self._cursor_values[account_id]:
-                    new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
+                cursor_value = self._cursor_values.get(account_id)
+                if cursor_value:
+                    new_state[account_id] = {self.cursor_field: cursor_value.isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -275,7 +290,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = (self._cursor_values or {}).get(account_id)
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -309,10 +328,13 @@ class AdsInsights(FBMarketingIncrementalStream):
             )
             for account_id in self._account_ids
         }
-        self._completed_slices = {
-            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
-            for account_id in self._account_ids
-        }
+        self._completed_slices = {}
+        for account_id in self._account_ids:
+            cursor_value = self._cursor_values.get(account_id)
+            completed_slices = {ab_datetime_parse(value).date() for value in transformed_state.get(account_id, {}).get("slices", [])}
+            self._completed_slices[account_id] = {
+                slice_date for slice_date in completed_slices if cursor_value is None or slice_date > cursor_value
+            }
 
         self._next_cursor_values = self._get_start_date()
 
@@ -402,16 +424,17 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Walk completed contiguous slices and advance the cursor without regressing it."""
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            cursor_value = (self._cursor_values or {}).get(account_id)
+            self._cursor_values = {
+                **(self._cursor_values or {}),
+                account_id: max(cursor_value, ts_start) if cursor_value is not None else ts_start,
+            }
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
@@ -437,19 +460,71 @@ class AdsInsights(FBMarketingIncrementalStream):
                 job_timeout=self.insights_job_timeout,
                 primary_key=self.primary_key,
                 object_breakdowns=self.object_breakdowns,
+                stream_name=self.name,
             )
 
     def check_breakdowns(self, account_id: str):
         """
         Making call to check "action_breakdowns" and "breakdowns" combinations
         https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+
+        Uses a three-tier fallback to avoid blocking setup when a high-cardinality
+        breakdown (for example `product_id`) trips Facebook's synchronous data-volume
+        limit ("Please reduce the amount of data you're asking for"):
+
+        1. First attempt uses the default params (no `time_range`) — preserves the
+           original validation behavior for every user who is not affected by the bug.
+        2. On a "reduce the amount of data" error, retry constrained to a single day
+           (`today`) so Facebook still validates the breakdown combination itself.
+        3. If the second call also returns "reduce the amount of data", log a warning
+           and return. Real syncs use async jobs with per-day slicing and handle large
+           result sets fine, so a volume-limited validation call must not block setup.
+
+        Any other `FacebookRequestError` is re-raised so truly invalid breakdown
+        combinations still fail the connection check.
         """
         params = {
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
         }
-        self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+            return
+        except FacebookRequestError as e:
+            if not self._is_reduce_data_error(e):
+                raise
+
+        today = date.today().strftime("%Y-%m-%d")
+        retry_params = {**params, "time_range": {"since": today, "until": today}}
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=retry_params, is_async=False)
+        except FacebookRequestError as e:
+            if not self._is_reduce_data_error(e):
+                raise
+            logger.warning(
+                "Breakdown validation exceeded Facebook API data-volume limit for account %s even after "
+                "constraining to a single day. This is expected for high-cardinality breakdowns (e.g. "
+                "product_id) and does not indicate an invalid breakdown combination. The actual sync uses "
+                "async jobs which handle large result sets.",
+                account_id,
+            )
+
+    @staticmethod
+    def _is_reduce_data_error(error: FacebookRequestError) -> bool:
+        """Match Facebook's synchronous-call data-volume-limit error by message.
+
+        Facebook does not publish a stable `error_subcode` for this case, and the real
+        payloads observed in the oncall issue (airbytehq/oncall#11482) and the public
+        issue airbytehq/airbyte#38025 contain only `code: 1` / `code: 100` with no
+        subcode. The message text is what every affected user actually sees, so we
+        match on it. If Facebook ever introduces a stable subcode, add it here.
+
+        Extracts the message via `api_error_message()` with `get_message()` as a fallback,
+        consistent with how `streams/common.py` and `streams/streams.py` read error text.
+        """
+        message = error.api_error_message() or error.get_message() or ""
+        return "reduce the amount of data" in message.lower()
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
@@ -572,6 +647,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
+        return self._json_schema
+
+    @cached_property
+    def _json_schema(self) -> Mapping[str, Any]:
+        # get_json_schema() is called for every record, so load and resolve the schema files only once.
+        # The result depends only on settings fixed in __init__ (custom fields, breakdowns, level).
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
         schema = loader.get_schema("ads_insights")
         if self._custom_fields:
@@ -610,7 +691,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
         """
         if self._custom_fields:
-            return self._custom_fields
+            excluded_fields = self._fields_excluded_from_api_request()
+            return [field for field in self._custom_fields if field not in excluded_fields]
 
         if self._fields:
             return self._fields
@@ -621,14 +703,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         )
         self._fields = list(schema.get("properties", {}).keys())
 
-        # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
-        removable_keys = list(self.breakdowns if self.breakdowns else [])
-        # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
-        removable_keys.append("wish_bid")
-        for removable_key in removable_keys:
-            try:
-                self._fields.remove(removable_key)
-            except ValueError:
-                pass
+        excluded_fields = self._fields_excluded_from_api_request()
+        self._fields = [field for field in self._fields if field not in excluded_fields]
 
         return self._fields
+
+    def _fields_excluded_from_api_request(self) -> set[str]:
+        object_breakdown_ids = {self.object_breakdowns[breakdown] for breakdown in self.breakdowns if breakdown in self.object_breakdowns}
+        return set(self.breakdowns) | object_breakdown_ids | {"wish_bid"}

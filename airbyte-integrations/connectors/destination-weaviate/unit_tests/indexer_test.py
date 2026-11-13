@@ -10,7 +10,7 @@ from destination_weaviate.config import NoAuth, TokenAuth, WeaviateIndexingConfi
 from destination_weaviate.indexer import WeaviateIndexer, WeaviatePartialBatchError
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode
+from airbyte_cdk.models import AirbyteRecordMessage, DestinationSyncMode
 
 
 class TestWeaviateIndexer(unittest.TestCase):

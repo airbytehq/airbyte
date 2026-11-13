@@ -24,17 +24,30 @@ import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
 import io.airbyte.cdk.load.component.OUT_OF_RANGE_TIMESTAMP
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableOperationsTestHarness
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
+import javax.sql.DataSource
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -48,54 +61,58 @@ class SnowflakeDataCoercionTest(
     override val opsClient: TableOperationsClient,
     override val testClient: TestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
+    private val dataSource: DataSource,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : DataCoercionSuite {
     override val columnNameMapping = SnowflakeComponentTestFixtures.testMapping
     override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#integers"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#integers",
     )
     override fun `handle integer values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle integer values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#numbers"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#numbers",
     )
     override fun `handle number values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampTz"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampTz",
     )
     override fun `handle timestamptz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timestamptz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampNtz"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampNtz",
     )
     override fun `handle timestampntz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -105,7 +122,7 @@ class SnowflakeDataCoercionTest(
     override fun `handle timetz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timetz values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -115,19 +132,19 @@ class SnowflakeDataCoercionTest(
     override fun `handle timentz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#date"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#date",
     )
     override fun `handle date values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -139,22 +156,79 @@ class SnowflakeDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#string"
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#string",
     )
     override fun `handle string values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
+
+    @Test
+    fun `trim leading and trailing whitespace in string values by default`() = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(StringType, nullable = true),
+            StringValue(" hello   "),
+            "hello",
+            null,
+        )
+    }
+
+    @Test
+    fun `preserve leading and trailing whitespace in string values when trim space is disabled`() =
+        runTest {
+            val trimSpaceDisabledConfig = snowflakeConfiguration.copy(trimSpace = false)
+            val trimSpaceDisabledSqlGenerator =
+                SnowflakeDirectLoadSqlGenerator(
+                    uuidGenerator = UUIDGenerator(),
+                    config = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                )
+            val trimSpaceDisabledClient =
+                SnowflakeAirbyteClient(
+                    dataSource = dataSource,
+                    sqlGenerator = trimSpaceDisabledSqlGenerator,
+                    snowflakeConfiguration = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                    metaColumnRepairEnabled = false,
+                )
+            val trimSpaceDisabledTestClient =
+                SnowflakeTestTableOperationsClient(
+                    client = trimSpaceDisabledClient,
+                    dataSource = dataSource,
+                    sqlGenerator = trimSpaceDisabledSqlGenerator,
+                    snowflakeConfiguration = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                    snowflakeRecordFormatter = snowflakeRecordFormatter,
+                )
+            val trimSpaceDisabledHarness =
+                TableOperationsTestHarness(
+                    trimSpaceDisabledClient,
+                    trimSpaceDisabledTestClient,
+                    schemaFactory,
+                    airbyteMetaColumnMapping,
+                )
+
+            trimSpaceDisabledHarness.testValueCoercion(
+                coercer,
+                columnNameMapping,
+                FieldType(StringType, nullable = true),
+                StringValue(" hello   "),
+                " hello   ",
+                null,
+            )
+        }
 
     @ParameterizedTest
     @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#objects")
     override fun `handle object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -164,7 +238,7 @@ class SnowflakeDataCoercionTest(
     override fun `handle empty object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle empty object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -174,7 +248,7 @@ class SnowflakeDataCoercionTest(
     override fun `handle schemaless object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle schemaless object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -184,7 +258,7 @@ class SnowflakeDataCoercionTest(
     override fun `handle array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle array values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -194,21 +268,21 @@ class SnowflakeDataCoercionTest(
     override fun `handle schemaless array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     /**
-     * We don't have special handling for legacy unions, so don't bother implementing [`handle
-     * legacy union values`].
+     * We don't have special handling for legacy unions, so don't bother implementing
+     * [`handle legacy union values`].
      */
     @ParameterizedTest
     @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnionFixtures#unions")
     override fun `handle union values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -218,7 +292,7 @@ class SnowflakeDataCoercionTest(
     override fun `handle unknown values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle unknown values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -247,7 +321,7 @@ class SnowflakeDataCoercionTest(
                                     // convert to bigdecimal
                                     it.toBigDecimal()
                                 }
-                            }
+                            },
                     )
                 }
                 .toArgs()
@@ -268,12 +342,12 @@ class SnowflakeDataCoercionTest(
                         LARGEST_POSITIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("1.79769313486232e308"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         LARGEST_NEGATIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("-1.79769313486232e308"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         // 1234567890.1234567 -> 1234567890.12346
                         // this one preserves the DESTINATION_FIELD_SIZE_LIMITATION reason,
@@ -287,23 +361,23 @@ class SnowflakeDataCoercionTest(
                         SMALLEST_POSITIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("1.401298464E-45"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         SMALLEST_NEGATIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("-1.401298464E-45"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         // 3.4028234663852886E+38 -> 3.40282346638529E+38
                         LARGEST_POSITIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("3.40282346638529E+38"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         LARGEST_NEGATIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("-3.40282346638529E+38"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         // 4.9E-324 -> 4.940656458E-324
                         // (this looks like snowflake is basically doing BigDecimal(4.9e-324) rather
@@ -312,12 +386,12 @@ class SnowflakeDataCoercionTest(
                         SMALLEST_POSITIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("4.940656458E-324"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         SMALLEST_NEGATIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("-4.940656458E-324"),
-                                changeReason = null
+                                changeReason = null,
                             )
                         // convert to bigdecimal + kill unnecessary decimal points (e.g. use `1`
                         // instead of `1.0`) but otherwise leave the value unchanged
@@ -326,7 +400,7 @@ class SnowflakeDataCoercionTest(
                                 outputValue =
                                     (it.outputValue as Double?)?.let {
                                         BigDecimal.valueOf(it).stripTrailingZeros()
-                                    }
+                                    },
                             )
                     }
                 }
@@ -348,7 +422,8 @@ class SnowflakeDataCoercionTest(
                 .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
                 .map { fixture ->
                     fixture.copy(
-                        outputValue = fixture.outputValue?.let { LocalDateTime.parse(it as String) }
+                        outputValue =
+                            fixture.outputValue?.let { LocalDateTime.parse(it as String) },
                     )
                 }
                 .toArgs()

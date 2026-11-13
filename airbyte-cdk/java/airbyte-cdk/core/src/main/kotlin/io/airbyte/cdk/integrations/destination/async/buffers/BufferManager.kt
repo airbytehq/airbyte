@@ -40,9 +40,9 @@ constructor(
 
     /**
      * @param maxMemory the amount of estimated memory we allow for all buffers. The
-     * GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
-     * released back once flushing finishes. This number should be large enough we don't block
-     * reading unnecessarily, but small enough we apply back pressure before OOMing.
+     *   GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
+     *   released back once flushing finishes. This number should be large enough we don't block
+     *   reading unnecessarily, but small enough we apply back pressure before OOMing.
      */
     init {
         logger.info {
@@ -83,7 +83,7 @@ constructor(
 
         for ((key, queue) in buffers) {
             messages.add(
-                "Queue `${key.name}`, num records: ${queue.size()}, num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}"
+                "Queue `${key.name}`, num records: ${queue.size()}, num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}",
             )
         }
 

@@ -8,43 +8,32 @@ This page contains the setup guide and reference information for the [BambooHR](
 
 ## Prerequisites
 
-- BambooHR Account
-- BambooHR [API key](https://documentation.bamboohr.com/docs)
+- A BambooHR account with access to the data you want to sync.
+- A BambooHR API key. API requests run with the permissions of the user who generated the key, so use a user who can view the employees, time off, and time tracking data you want to sync.
+- Your BambooHR company subdomain. If you access BambooHR at `https://mycompany.bamboohr.com`, your subdomain is `mycompany`.
 
-## Setup Guide
+### Generate an API key
 
-## Step 1: Set up the BambooHR connector in Airbyte
+1. Log in to BambooHR.
+2. Click your name in the lower-left corner of any page to open the user menu.
+3. Click **API Keys**. This option appears only if your user has sufficient permissions.
+4. Create a new API key, then copy it and store it securely.
 
-<!-- env:cloud -->
+For more information, see the [BambooHR API documentation](https://documentation.bamboohr.com/docs/getting-started).
 
-**For Airbyte Cloud:**
+## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the BambooHR connector and select **BambooHR** from the Source type dropdown.
-4. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
-5. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
-6. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-7. (Optional) Enter a `Start date` to define the start period for getting data for TimeOff Requests. The default start_date will be 30 days from today's date. 
-8. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-9. Click **Set up source**
+1. In Airbyte, go to **Sources** and click **New source**.
+2. Select **BambooHR** from the list of sources.
+3. Enter a name for the source.
+4. For **api_key**, enter your BambooHR API key.
+5. For **subdomain**, enter your BambooHR company subdomain.
+6. (Optional) For **custom_reports_fields**, enter a comma-separated list of [BambooHR field names](https://documentation.bamboohr.com/docs/list-of-field-names) to request in the `custom_reports_stream` stream, for example `firstName,lastName,department`. The connector requests only the fields you list, so enter every field you want in that stream.
+7. (Optional) For **employee_fields**, enter a comma-separated list of BambooHR field names to request in the `employees` stream. Defaults to `firstName,lastName`.
+8. (Optional) For **Start date**, enter the UTC date and time from which to sync the `time_off_requests_stream` and `timesheet_entries` streams, in the format `YYYY-MM-DDTHH:MM:SSZ`. If you leave this blank, the connector syncs data starting about 31 days before the current date.
+9. Click **Set up source**.
 
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-
-**For Airbyte OSS:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
-4. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
-5. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-6. (Optional) Enter a `Start date` to define the start period for getting data for TimeOff Requests. The default start_date will be 30 days from today's date. 
-7. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-8. Click **Set up source**
-
-<!-- /env:oss -->
+The **custom_reports_include_default_fields** option appears in the configuration form, but the current connector version doesn't use it. To include fields in the `custom_reports_stream` stream, list them in **custom_reports_fields**.
 
 <HideInUI>
 
@@ -56,33 +45,43 @@ The BambooHR source connector supports the following [sync modes](https://docs.a
 | :------------------------ | :--------- |
 | Full Refresh Sync         | Yes        |
 | Incremental - Append Sync | Yes        |
-| SSL connection            | Yes        |
 | Namespaces                | No         |
 
-## Supported Streams
+## Supported streams
 
-- [Custom Reports](https://documentation.bamboohr.com/reference/request-custom-report-1)
+| Stream | BambooHR endpoint | Primary key | Incremental | Notes |
+| :----- | :---------------- | :---------- | :---------- | :---- |
+| `custom_reports_stream` | [Request a custom report](https://documentation.bamboohr.com/reference/request-custom-report) | None | No | One record per employee, containing the fields listed in **custom_reports_fields**. |
+| `employees_directory_stream` | [Get employee directory](https://documentation.bamboohr.com/reference/get-employees-directory) | `id` | No | Returns only employees and fields that your company shares in its Company Directory settings. |
+| `employees` | [Get employee](https://documentation.bamboohr.com/reference/get-employee) | None | Yes | Requests each employee from `employees_directory_stream` with the fields listed in **employee_fields**. Every sync reads all employees. |
+| `meta_fields_stream` | [Get a list of fields](https://documentation.bamboohr.com/reference/list-fields) | None | No | Lists the fields available in your BambooHR account. Use it to find field names for **custom_reports_fields** and **employee_fields**. |
+| `time_off_requests_stream` | [Get time off requests](https://documentation.bamboohr.com/reference/list-time-off-requests-v1) | None | Yes | Cursor field: `created`. Each incremental sync re-reads the previous 365 days to capture updated requests. |
+| `timesheet_entries` | [Get timesheet entries](https://documentation.bamboohr.com/reference/list-timesheet-entries) | `id` | Yes | Cursor field: `start`. |
 
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
 
 <details>
 <summary>
 Expand to see details about BambooHR connector limitations and troubleshooting.
 </summary>
 
-### Connector limitations
+### Rate limiting
 
-#### Rate limiting
+BambooHR doesn't publish fixed rate limits, but it may throttle requests it considers too frequent. When that happens, BambooHR returns an HTTP `429` response with a `Retry-After` header, and the connector retries the request. For more information, see the BambooHR [technical overview](https://documentation.bamboohr.com/docs/api-details).
 
-BambooHR has the [rate limits](https://documentation.bamboohr.com/docs/api-details), but the connector should not run into API limitations under normal usage.
+### Permissions errors
 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+If a stream fails with an HTTP `403` error, the user who generated the API key lacks permission to access that data. Use an API key from a user with the required access. The `employees_directory_stream` stream, and the `employees` stream that depends on it, also return `403` if the Company Directory isn't shared with the API key user's access level.
 
-### Troubleshooting
+### Connection check
 
-- Check out common troubleshooting issues for the BambooHR source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+The connector checks the connection by reading `meta_fields_stream`. If the check fails with an HTTP `404` error, verify your subdomain.
 
 </details>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -91,6 +90,8 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.10.0 | 2026-11-10 | [91540](https://github.com/airbytehq/airbyte/pull/91540) | Expand declared fields and improve timesheet and time-off incremental sync reliability. |
+| 0.9.4 | 2026-11-10 | [91320](https://github.com/airbytehq/airbyte/pull/91320) | Upgrade base image to source-declarative-manifest 7.47.0 |
 | 0.9.3 | 2025-05-24 | [60660](https://github.com/airbytehq/airbyte/pull/60660) | Update dependencies |
 | 0.9.2 | 2025-05-10 | [59340](https://github.com/airbytehq/airbyte/pull/59340) | Update dependencies |
 | 0.9.1 | 2025-04-26 | [58243](https://github.com/airbytehq/airbyte/pull/58243) | Update dependencies |
@@ -98,7 +99,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 | 0.8.3 | 2025-04-12 | [57604](https://github.com/airbytehq/airbyte/pull/57604) | Update dependencies |
 | 0.8.2 | 2025-04-05 | [57190](https://github.com/airbytehq/airbyte/pull/57190) | Update dependencies |
 | 0.8.1 | 2025-03-29 | [56627](https://github.com/airbytehq/airbyte/pull/56627) | Update dependencies |
-| 0.8.0 | 2025-02-28 | [54688](https://github.com/airbytehq/airbyte/pull/54688) | Add customers stream |
+| 0.8.0 | 2025-03-25 | [54688](https://github.com/airbytehq/airbyte/pull/54688) | Add employees stream |
 | 0.7.3 | 2025-03-22 | [56137](https://github.com/airbytehq/airbyte/pull/56137) | Update dependencies |
 | 0.7.2 | 2025-03-08 | [55362](https://github.com/airbytehq/airbyte/pull/55362) | Update dependencies |
 | 0.7.1 | 2025-03-01 | [54842](https://github.com/airbytehq/airbyte/pull/54842) | Update dependencies |

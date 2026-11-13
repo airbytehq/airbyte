@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -130,11 +131,51 @@ class PartFactoryTest {
                     launch {
                         assert(!assembler.isComplete)
                         assembler.add(it)
-                    }
+                    },
                 )
             }
             jobs.forEach { it.join() }
         }
         assert(assembler.isComplete)
+    }
+
+    @Test
+    fun `a second final part is rejected and the first final index is kept`() {
+        val factory = PartFactory("key", 1)
+        val assembler = PartBookkeeper()
+        // 200 parts: the final index sits outside the Integer cache (-128..127), so the
+        // bookkeeper must not rely on boxed-Int identity.
+        (1..200).forEach { assembler.add(factory.nextPart(byteArrayOf(it.toByte()), it == 200)) }
+        assert(assembler.isComplete)
+
+        // An empty duplicate final part reaches the final-index check (no part index to clash).
+        val duplicateFinal =
+            Part(key = "key", fileNumber = 1, partIndex = 200, bytes = null, isFinal = true)
+        val e = assertThrows<IllegalStateException> { assembler.add(duplicateFinal) }
+        assert(e.message == "Final part 200 already seen for key")
+        assert(assembler.isComplete)
+    }
+
+    @Test
+    fun `concurrent final parts are reduced to exactly one accepted`() = runTest {
+        val assembler = PartBookkeeper()
+        val finalPart =
+            Part(key = "key", fileNumber = 1, partIndex = 300, bytes = null, isFinal = true)
+        val rejected = AtomicInteger(0)
+        withContext(Dispatchers.IO) {
+            (1..64)
+                .map {
+                    launch {
+                        try {
+                            assembler.add(finalPart)
+                        } catch (e: IllegalStateException) {
+                            check(e.message == "Final part 300 already seen for key")
+                            rejected.incrementAndGet()
+                        }
+                    }
+                }
+                .forEach { it.join() }
+        }
+        assert(rejected.get() == 63)
     }
 }

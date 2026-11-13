@@ -1809,6 +1809,249 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
+    reservations_fees:
+      type: DeclarativeStream
+      name: reservations_fees
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/reservations/{{ stream_partition.reservation_id }}/fees
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ response.status == 409 and response.detail == 'Invalid
+                      page provided' }}
+                    http_codes: []
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    predicate: "{{ response.status == 429 }}"
+                    http_codes: []
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - fees
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/reservations"
+              parent_key: id
+              partition_field: reservation_id
+      primary_key:
+        - reservation_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reservations_fees"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reservation_id
+              value: "{{ stream_partition.reservation_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+    reservations_tags:
+      type: DeclarativeStream
+      name: reservations_tags
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/reservations/{{ stream_partition.reservation_id }}/tags
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ response.status == 409 and response.detail == 'Invalid
+                      page provided' }}
+                    http_codes: []
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    predicate: "{{ response.status == 429 }}"
+                    http_codes: []
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - tags
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/reservations"
+              parent_key: id
+              partition_field: reservation_id
+      primary_key:
+        - reservation_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reservations_tags"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reservation_id
+              value: "{{ stream_partition.reservation_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+    housekeeping_zones:
+      type: DeclarativeStream
+      name: housekeeping_zones
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/housekeeping/zones
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ response.status == 409 and response.detail == 'Invalid
+                      page provided' }}
+                    http_codes: []
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    predicate: "{{ response.status == 429 }}"
+                    http_codes: []
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - zones
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/housekeeping_zones"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
     nodes_types:
       type: DeclarativeStream
       name: nodes_types
@@ -2366,6 +2609,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: pms/reservations
           http_method: GET
+          use_cache: false
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -5941,9 +6185,6 @@ definitions:
             field_path:
               - _embedded
               - units
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['lodgingTypeId'] != None }}"
       primary_key:
         - id
       schema_loader:
@@ -6462,9 +6703,6 @@ definitions:
             field_path:
               - _embedded
               - unitTypes
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['lodgingTypeId'] != None }}"
       primary_key:
         - id
       schema_loader:
@@ -6663,6 +6901,7 @@ streams:
   - $ref: "#/definitions/streams/housekeeping_clean_types"
   - $ref: "#/definitions/streams/housekeeping_task_list"
   - $ref: "#/definitions/streams/housekeeping_work_orders"
+  - $ref: "#/definitions/streams/housekeeping_zones"
   - $ref: "#/definitions/streams/lodging_types"
   - $ref: "#/definitions/streams/maintenance_problems"
   - $ref: "#/definitions/streams/maintenance_work_orders"
@@ -6681,7 +6920,9 @@ streams:
   - $ref: "#/definitions/streams/reservations_cancellation_policies"
   - $ref: "#/definitions/streams/reservations_cancellation_reasons"
   - $ref: "#/definitions/streams/reservations_discount_reasons"
+  - $ref: "#/definitions/streams/reservations_fees"
   - $ref: "#/definitions/streams/reservations_guarantee_policies"
+  - $ref: "#/definitions/streams/reservations_tags"
   - $ref: "#/definitions/streams/reservations_types"
   - $ref: "#/definitions/streams/reservations_v2"
   - $ref: "#/definitions/streams/reviews"
@@ -6698,13 +6939,13 @@ streams:
   - $ref: "#/definitions/streams/units_bed_types"
   - $ref: "#/definitions/streams/units_blocks"
   - $ref: "#/definitions/streams/units_channel"
-  - $ref: "#/definitions/streams/units_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_daily_pricing_parent"
+  - $ref: "#/definitions/streams/units_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_taxes"
   - $ref: "#/definitions/streams/units_taxes_parent"
   - $ref: "#/definitions/streams/units_types"
-  - $ref: "#/definitions/streams/units_types_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_types_daily_pricing_parent"
+  - $ref: "#/definitions/streams/units_types_daily_pricing_v2"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/users_pii_redacted"
 
@@ -6719,6 +6960,7 @@ spec:
     properties:
       api_key:
         type: string
+        airbyte_secret: true
         order: 1
         title: API Key
       api_secret:
@@ -7276,6 +7518,9 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
   autoImportSchema:
+    housekeeping_zones: false
+    reservations_fees: false
+    reservations_tags: false
     tags: false
     nodes: false
     roles: false
@@ -7355,6 +7600,169 @@ metadata:
     reservations_cancellation_policies: false
 
 schemas:
+  housekeeping_zones:
+    type: object
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - 'null'
+      type:
+        type:
+          - string
+          - 'null'
+      isActive:
+        type:
+          - boolean
+          - 'null'
+      createdBy:
+        type:
+          - string
+          - 'null'
+      createdAt:
+        type:
+          - string
+          - 'null'
+      updatedBy:
+        type:
+          - string
+          - 'null'
+      updatedAt:
+        type:
+          - string
+          - 'null'
+    additionalProperties: true
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+  reservations_fees:
+    type: object
+    properties:
+      id:
+        type: number
+      chargeId:
+        type:
+          - number
+          - 'null'
+      chargeInline:
+        type:
+          - object
+          - 'null'
+        properties:
+          id:
+            type:
+              - number
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+          displayName:
+            type:
+              - string
+              - 'null'
+          realizedAt:
+            type:
+              - string
+              - 'null'
+          allowFeeRemoval:
+            type:
+              - boolean
+              - 'null'
+        additionalProperties: true
+      quantity:
+        type:
+          - number
+          - 'null'
+      chargeOwner:
+        type:
+          - boolean
+          - 'null'
+      unitValue:
+        type:
+          - number
+          - 'null'
+      value:
+        type:
+          - number
+          - 'null'
+      displayAs:
+        type:
+          - string
+          - 'null'
+      createdAt:
+        type:
+          - string
+          - 'null'
+      createdBy:
+        type:
+          - string
+          - 'null'
+      updatedAt:
+        type:
+          - string
+          - 'null'
+      updatedBy:
+        type:
+          - string
+          - 'null'
+      reservation_id:
+        type: number
+    additionalProperties: true
+    $schema: http://json-schema.org/schema#
+    required:
+      - reservation_id
+      - id
+  reservations_tags:
+    type: object
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - 'null'
+      color:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      relatedTo:
+        type:
+          - string
+          - 'null'
+      bookingDotComType:
+        type:
+          - string
+          - 'null'
+      createdAt:
+        type:
+          - string
+          - 'null'
+      createdBy:
+        type:
+          - string
+          - 'null'
+      updatedAt:
+        type:
+          - string
+          - 'null'
+      updatedBy:
+        type:
+          - string
+          - 'null'
+      reservation_id:
+        type: number
+    additionalProperties: true
+    $schema: http://json-schema.org/schema#
+    required:
+      - reservation_id
+      - id
   tags:
     type: object
     $schema: http://json-schema.org/schema#

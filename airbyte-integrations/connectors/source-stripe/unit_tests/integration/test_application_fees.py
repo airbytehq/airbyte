@@ -192,6 +192,16 @@ class FullRefreshTest(TestCase):
         assert_stream_did_not_run(output, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
+    def test_given_http_status_404_when_read_then_stream_did_not_run(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(
+            _application_fees_request().with_any_query_params().build(),
+            a_response_with_status(404),
+        )
+        output = self._read(_config())
+        assert_stream_did_not_run(output, _STREAM_NAME, "Data was not found. Error message: No such application fee")
+        assert output.errors == []
+
+    @HttpMocker()
     def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),

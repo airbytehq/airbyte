@@ -27,7 +27,7 @@ class StateStore(
 
     private enum class Mode {
         GLOBAL,
-        STREAM
+        STREAM,
     }
 
     private val mode = AtomicReference<Mode?>(null)
@@ -172,7 +172,7 @@ class StateStore(
                             sb.append("\n  • Waiting for index $expected (head is ${head.id})")
                         !histogramStore.isComplete(head) ->
                             sb.append(
-                                "\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(head)}"
+                                "\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(head)}",
                             )
                         else -> sb.append("\n  • Head is complete and ready to flush")
                     }
@@ -189,13 +189,13 @@ class StateStore(
                 val after = mode.get()
                 if (after != desired) {
                     error(
-                        "Mixed state types in a single sync are not allowed. Existing=$after, incoming=$desired"
+                        "Mixed state types in a single sync are not allowed. Existing=$after, incoming=$desired",
                     )
                 }
             }
         } else if (cur != desired) {
             error(
-                "Mixed state types in a single sync are not allowed. Existing=$cur, incoming=$desired"
+                "Mixed state types in a single sync are not allowed. Existing=$cur, incoming=$desired",
             )
         }
     }

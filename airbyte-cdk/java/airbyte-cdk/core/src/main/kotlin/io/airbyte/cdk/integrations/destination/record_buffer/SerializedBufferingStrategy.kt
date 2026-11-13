@@ -12,6 +12,7 @@ import java.util.*
 import org.apache.commons.io.FileUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Buffering Strategy used to convert [io.airbyte.protocol.models.AirbyteRecordMessage] into a
  * stream of bytes to more readily save and transmit information
@@ -30,7 +31,7 @@ class SerializedBufferingStrategy
 (
     private val onCreateBuffer: BufferCreateFunction,
     private val catalog: ConfiguredAirbyteCatalog,
-    private val onStreamFlush: FlushBufferFunction
+    private val onStreamFlush: FlushBufferFunction,
 ) : BufferingStrategy {
     private var allBuffers: MutableMap<AirbyteStreamNameNamespacePair, SerializableBuffer> =
         HashMap()
@@ -48,7 +49,7 @@ class SerializedBufferingStrategy
         stream: AirbyteStreamNameNamespacePair,
         message: AirbyteMessage,
         generationId: Long,
-        syncId: Long
+        syncId: Long,
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
@@ -107,7 +108,7 @@ class SerializedBufferingStrategy
 
     private fun flushSingleBuffer(
         stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
+        buffer: SerializableBuffer,
     ) {
         LOGGER.info {
             "Flushing buffer of stream ${stream.name} (${FileUtils.byteCountToDisplaySize(buffer.byteCount)})"
@@ -161,7 +162,7 @@ class SerializedBufferingStrategy
 
         ConnectorExceptionUtil.logAllAndThrowFirst(
             "Exceptions thrown while closing buffers: ",
-            exceptionsThrown
+            exceptionsThrown,
         )
     }
 }
