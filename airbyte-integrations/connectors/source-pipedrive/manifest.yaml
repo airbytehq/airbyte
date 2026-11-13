@@ -1155,23 +1155,26 @@ definitions:
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
               - $ref: "#/definitions/error_filters/oauth_token_rejected"
-              # These statuses are ignored before any base filters can classify them.
+              # Pipedrive's documented "Feature is not enabled" answer, skipped whatever the body. A 404 or 410 is not
+              # documented for this endpoint, so a retirement fails through `gone` or `not_found` instead of emptying it.
               - type: HttpResponseFilter
                 action: IGNORE
-                http_codes: [404, 410, 415]
-                error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
+                http_codes: [415]
+                error_message: "The legacy Teams feature is not enabled for this Pipedrive company ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/payment_required"
+              - $ref: "#/definitions/error_filters/gone"
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
               - $ref: "#/definitions/error_filters/gateway_error_retry"
               - $ref: "#/definitions/error_filters/client_error"
+              - $ref: "#/definitions/error_filters/not_found"
               - $ref: "#/definitions/error_filters/html_error_page"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [403]
-                error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
+                error_message: "The legacy Teams feature is disabled for this Pipedrive company, or the connected user cannot see teams ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
         record_selector:
           type: RecordSelector
           extractor:
@@ -2369,6 +2372,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
+      user_restrictions:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -2500,11 +2511,13 @@ schemas:
         type:
           - "null"
           - object
-        items:
+        properties:
           pipeline_ids:
             type:
               - "null"
               - array
+            items:
+              type: integer
           show_in_all:
             type:
               - "null"
@@ -2530,6 +2543,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      seasonality:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       type:
         type:
           - object
@@ -2551,7 +2566,7 @@ schemas:
                   - "null"
                 items:
                   type:
-                    - number
+                    - integer
                     - "null"
               pipeline_id:
                 type:
@@ -2559,7 +2574,7 @@ schemas:
                   - "null"
                 items:
                   type:
-                    - number
+                    - integer
                     - "null"
       assignee:
         type:
@@ -2573,7 +2588,7 @@ schemas:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
       duration:
         type:
@@ -2585,10 +2600,12 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           start:
             type:
               - string
               - "null"
+            format: date
       expected_outcome:
         type:
           - object
@@ -2619,7 +2636,7 @@ schemas:
         type: boolean
       owner_id:
         type:
-          - number
+          - integer
           - "null"
       report_ids:
         type:
@@ -2832,6 +2849,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       visible_to:
         type:
           - "null"
@@ -2870,6 +2889,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archive_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visible_to:
         type:
           - "null"
@@ -2929,6 +2954,8 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          type: string
       next_activity_id:
         type:
           - "null"
@@ -3411,6 +3438,16 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -3993,6 +4030,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -4382,6 +4425,20 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       autocomplete:
         type:
           - "null"
@@ -4678,6 +4735,18 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
       created_by_user_id:
         type:
           - "null"
@@ -5173,10 +5242,14 @@ schemas:
         type: string
       add_time:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       all_messages_sent_flag:
         type: integer
       archived_flag:
-        type: integer
+        type:
+          - integer
+          - "null"
       deal_id:
         type:
           - integer
@@ -5188,11 +5261,18 @@ schemas:
       deleted_flag:
         type: integer
       drafts_parties:
-        type: array
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
       external_deleted_flag:
         type: integer
       first_message_timestamp:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       first_message_to_me_flag:
         type: integer
       folders:
@@ -5212,13 +5292,21 @@ schemas:
       id:
         type: integer
       last_message_received_timestamp:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       last_message_sent_timestamp:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       last_message_timestamp:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       mail_link_tracking_enabled_flag:
         type: integer
       parties:
@@ -5240,9 +5328,13 @@ schemas:
                     - integer
                     - "null"
                 linked_person_id:
-                  type: integer
+                  type:
+                    - integer
+                    - "null"
                 linked_person_name:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                 mail_message_party_id:
                   type: integer
                 message_time:
@@ -5265,9 +5357,13 @@ schemas:
                     - integer
                     - "null"
                 linked_person_id:
-                  type: integer
+                  type:
+                    - integer
+                    - "null"
                 linked_person_name:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                 mail_message_party_id:
                   type: integer
                 message_time:
@@ -5285,13 +5381,17 @@ schemas:
           - string
           - "null"
       snippet_sent:
-        type: string
+        type:
+          - string
+          - "null"
       subject:
         type: string
       synced_flag:
         type: integer
       update_time:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       user_id:
         type: integer
   call_logs:
@@ -5319,6 +5419,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       from_phone_number:
         type:
           - "null"
@@ -5355,6 +5457,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       subject:
         type:
           - "null"
@@ -5406,6 +5510,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       new_value:
         type:
           - "null"
@@ -5444,6 +5550,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       deal_id:
         type:
           - "null"
@@ -5478,6 +5585,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       created_by_user_id:
         type:
           - "null"
@@ -5544,10 +5653,14 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       archive_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       board_id:
         type:
           - "null"
@@ -5573,6 +5686,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       health_status:
         type:
           - "null"
@@ -5617,6 +5731,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       status:
         type:
           - "null"
@@ -5625,6 +5740,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       title:
         type:
           - "null"
@@ -5633,15 +5750,27 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
   tasks:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      last_updated_by_id:
+        type:
+          - "null"
+          - integer
+      marked_as_done_by_id:
+        type:
+          - "null"
+          - integer
       add_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       assignee_ids:
         type:
           - "null"
@@ -5662,6 +5791,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       id:
         type:
           - "null"
@@ -5678,6 +5808,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       parent_task_id:
         type:
           - "null"
@@ -5694,6 +5826,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       title:
         type:
           - "null"
@@ -5702,3 +5835,5 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone

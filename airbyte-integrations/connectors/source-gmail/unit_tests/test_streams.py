@@ -981,9 +981,27 @@ def test_messages_details_parent_follows_next_page_token(base_config, requests_m
     second_params = parse_qs(urlparse(list_calls[1].url).query)
     assert "pageToken" not in first_params
     assert second_params["pageToken"] == ["page-2"]
-    assert first_params["maxResults"] == second_params["maxResults"] == ["100"]
+    assert first_params["maxResults"] == second_params["maxResults"] == ["500"]
     assert first_params["q"] == second_params["q"]
     assert sorted(record.record.data["id"] for record in output.records) == ["m1", "m2"]
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "list_url", "response_key"),
+    [
+        ("messages", _MESSAGES_LIST_URL, "messages"),
+        ("threads", _THREADS_LIST_URL, "threads"),
+        ("drafts", _DRAFTS_LIST_URL, "drafts"),
+    ],
+)
+def test_list_streams_request_500_items_per_page(stream_name, list_url, response_key, base_config, requests_mock):
+    requests_mock.get(list_url, json={response_key: [{"id": "stub"}]})
+
+    _read_stream(stream_name, SyncMode.full_refresh, base_config)
+
+    list_calls = [request for request in _gmail_calls(requests_mock, list_url) if urlparse(request.url).path == urlparse(list_url).path]
+    assert len(list_calls) == 1
+    assert parse_qs(urlparse(list_calls[0].url).query)["maxResults"] == ["500"]
 
 
 @pytest.mark.parametrize("include_spam_and_trash, expected", [(False, "False"), (True, "True")])

@@ -48,9 +48,9 @@ class TestWebinarPolls(TestCase):
         output = read_stream(_STREAM)
 
         assert_completed_without_errors(output, _STREAM)
-        assert sorted(records_data(output), key=lambda r: r["id"]) == [
-            {**_poll(webinar["id"]), "webinar_id": webinar["id"]} for webinar in WEBINARS
-        ]
+        records = records_data(output)
+        assert all(isinstance(record["webinar_id"], int) for record in records)
+        assert sorted(records, key=lambda r: r["id"]) == [{**_poll(webinar["id"]), "webinar_id": webinar["id"]} for webinar in WEBINARS]
         for webinar in WEBINARS:
             http_mocker.assert_number_of_calls(_POLLS_REQUESTS[webinar["id"]], 1)
 
