@@ -8,59 +8,57 @@ This page contains the setup guide and reference information for the [Airtable](
 
 ## Prerequisites
 
-- An active Airtable account
-- [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with the following scopes:
-  - `data.records:read`
-  - `data.recordComments:read`
-  - `schema.bases:read`
+- An active Airtable account with at least read-only access to the bases you want to sync
+- One of the following:
+  - On Airbyte Cloud, an Airtable account you can authorize with OAuth
+  - A [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with access to those bases and the following scopes:
+    - `data.records:read`
+    - `schema.bases:read`
 
 ## Setup guide
 
 ### Step 1: Set up Airtable
 
-<!-- env:oss -->
+Create a Personal Access Token. Airbyte Open Source requires one. On Airbyte Cloud, skip this step if you plan to authenticate with OAuth.
 
-#### For Airbyte Open Source:
-
-1. Go to https://airtable.com/create/tokens to create new token.
+1. Go to https://airtable.com/create/tokens and click **Create new token**. Give the token a name.
    ![Generate new Token](/.gitbook/assets/source/airtable/generate_new_token.png)
-2. Add following scopes:
+2. Add the following scopes:
 
    - `data.records:read`
-   - `data.recordComments:read`
    - `schema.bases:read`
 
    ![Add Scopes](/.gitbook/assets/source/airtable/add_scopes.png)
 
-3. Select required bases or allow access to all available and press the `Create Token` button.
+3. Select the bases you want to sync or allow access to all available bases, then click **Create token**.
    ![Add Bases](/.gitbook/assets/source/airtable/add_bases.png)
-4. Save token from the popup window.
-<!-- /env:oss -->
+4. Copy the token from the popup window and store it securely. Airtable only shows it once.
 
 ### Step 2: Set up Airtable connector in Airbyte
 
 <!-- env:cloud -->
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Airtable from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Airtable** from the **Source type** dropdown.
 4. Enter a name for the Airtable connector.
 5. You can use OAuth or a Personal Access Token to authenticate your Airtable account. We recommend using OAuth for Airbyte Cloud.
 
-   - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
-   - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
-     :::info
-     When using OAuth, you may see a `400` or `401` error causing a failed sync. If this occurs, re-authenticate your Airtable connector by clicking **Authenticate your Airtable account** again in the connector settings.
-     :::
+   - To authenticate using OAuth, select **OAuth2.0** from the **Authentication** dropdown and click **Authenticate your Airtable account**. Sign in with Airtable, grant access to the bases or workspaces you want to sync, and authorize your account.
+   - To authenticate using a Personal Access Token, select **Personal Access Token** from the **Authentication** dropdown and enter the token you created in Step 1.
+
+   :::info
+   When using OAuth, you may see a `400` or `401` error causing a failed sync. If this occurs, re-authenticate your Airtable connector by clicking **Authenticate your Airtable account** again in the connector settings.
+   :::
 
 6. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
@@ -73,8 +71,8 @@ This page contains the setup guide and reference information for the [Airtable](
 
 The Airtable connector provides the following optional configuration settings:
 
-- **Number of Concurrent Threads**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
-- **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
+- **Number of Concurrent Threads**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when there is I/O wait time, but don't bypass Airtable's rate limits. The connector uses request throttling and retries, but other integrations sharing the same base or account can still cause rate limit errors.
+- **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in table stream names to ensure uniqueness (default: disabled). This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes table stream names and requires a full refresh of those streams. It doesn't change the name of `base_collaborators`.
 
 ### Note on changed table names and deleted tables
 
@@ -82,12 +80,15 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
+All streams support the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+
+Table streams also support:
+
 - [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key for table streams)
 
 Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
 
@@ -99,14 +100,20 @@ This source syncs all tables from your Airtable bases using the Metadata API. If
 
 The `base_collaborators` stream lists the people added directly to each base, one record per person per base, with `base_id`, `base_name`, `userId`, `email`, `permissionLevel`, `createdTime`, and `grantedByUserId`. It reads Airtable's [Get base collaborators](https://airtable.com/developers/web/api/get-base-collaborators) endpoint with the `schema.bases:read` scope the connector already uses. Workspace members who weren't added to the base directly, and groups, aren't included. Records contain collaborator email addresses.
 
+This stream is available starting in version 4.8.0 and supports Full Refresh only. Its source-defined primary key is the combination of `base_id` and `userId`. Use Full Refresh - Overwrite to reflect removed collaborators and current permission levels; Full Refresh - Append retains earlier snapshots.
+
+If you're upgrading an existing connection, refresh the source schema and select `base_collaborators` to start syncing it.
+
 ### Performance considerations
 
 Airtable enforces the following [rate limits](https://airtable.com/developers/web/api/rate-limits):
 
 - 5 requests per second per base
-- 50 requests per second across all requests from a given user or service account
+- 50 requests per second across all traffic using Personal Access Tokens from a given user or service account
 
 If either limit is exceeded, the API returns a `429` status code and requests must wait 30 seconds before retrying. The connector handles this automatically with built-in backoff and retry logic.
+
+Airtable also applies [monthly API call limits](https://support.airtable.com/docs/managing-api-call-limits-in-airtable) to Free and Team workspaces. Check your workspace's API usage if requests fail or are throttled despite staying below the per-second rate limits.
 
 ## Data type map
 
@@ -166,8 +173,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
 | 4.8.1 | 2026-11-10 | [89120](https://github.com/airbytehq/airbyte/pull/89120) | Update dependencies |
-| 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
-| 4.7.0 | 2026-10-15 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
+| 4.8.0 | 2026-11-05 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
+| 4.7.0 | 2026-11-03 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
 | 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
 | 4.6.42 | 2026-10-06 | [87744](https://github.com/airbytehq/airbyte/pull/87744) | Update dependencies |
 | 4.6.41 | 2026-09-29 | [87090](https://github.com/airbytehq/airbyte/pull/87090) | Update dependencies |
