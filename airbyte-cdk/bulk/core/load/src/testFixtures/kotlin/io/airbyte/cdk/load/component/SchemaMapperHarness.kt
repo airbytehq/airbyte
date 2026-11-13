@@ -66,8 +66,9 @@ class SchemaMapperHarness(
         val tableName = tableSchemaMapper.toFinalTableName(columnNameTestStreamDescriptor)
         val inputToFinalColumnNames =
             inputSchema.keys.associateWith { tableSchemaMapper.toColumnName(it) }
-        val finalSchema =
-            mappedTypes.mapKeys { (fieldName, _) -> tableSchemaMapper.toColumnName(fieldName) }
+        val finalSchema = mappedTypes.mapKeys { (fieldName, _) ->
+            tableSchemaMapper.toColumnName(fieldName)
+        }
         validateCreateTableWithNameAndSchema(
             tableName,
             StreamTableSchema(
@@ -100,7 +101,7 @@ class SchemaMapperHarness(
                 stream,
                 tableName,
                 ColumnNameMapping(emptyMap()),
-                replace = true
+                replace = true,
             )
         }
     }

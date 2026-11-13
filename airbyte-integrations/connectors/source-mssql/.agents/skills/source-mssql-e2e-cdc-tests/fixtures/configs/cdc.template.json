@@ -1,0 +1,19 @@
+{
+  "host": "source-mssql-db-backend",
+  "port": 1433,
+  "database": "CdcTest",
+  "username": "sa",
+  "password": "Test_password_1",
+  "schemas": ["dbo"],
+  "ssl_method": {
+    "ssl_method": "unencrypted"
+  },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "initial_waiting_seconds": 5,
+    "initial_load_timeout_hours": 1
+  }
+}

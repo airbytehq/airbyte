@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import requests
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import (
     NoAuth,
@@ -53,10 +54,6 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
-    def __init__(self, channel_filter: List[str] = None, **kwargs):
-        self.channel_filter = channel_filter or []
-        super().__init__(**kwargs)
-
     def path(self, **kwargs) -> str:
         return "conversations.join"
 
@@ -65,11 +62,20 @@ class JoinChannelsStream(HttpStream):
         Override to simply indicate that the specific channel was joined successfully.
         This method should not return any data, but should return an empty iterable.
         """
-        is_ok = response.json().get("ok", False)
+        response_json = response.json()
+        is_ok = response_json.get("ok", False)
         if is_ok:
             self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
         else:
-            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response.json()}")
+            error_code = response_json.get("error", "")
+            if error_code == "missing_scope":
+                needed = response_json.get("needed", "unknown")
+                raise AirbyteTracedException(
+                    message=f"OAuth scope '{needed}' is required but not granted.",
+                    internal_message=f"conversations.join for channel '{stream_slice['channel_name']}' returned missing_scope: needed={needed}, response={response_json}",
+                    failure_type=FailureType.config_error,
+                )
+            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response_json}")
         return []
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
@@ -108,7 +114,7 @@ class ChannelsRetriever(SimpleRetriever):
         """
         if record.get("is_archived"):
             return False  # Slack API rejects conversations.join for archived channels
-        return config["join_channels"] and not record.get("is_member")
+        return config.get("join_channels", False) and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
         channel_id: str = channel.get("id")
@@ -119,8 +125,7 @@ class ChannelsRetriever(SimpleRetriever):
     def join_channels_stream(self, config) -> JoinChannelsStream:
         token = config["credentials"].get("api_token") or config["credentials"].get("access_token")
         authenticator = TokenAuthenticator(token)
-        channel_filter = config["channel_filter"]
-        return JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
+        return JoinChannelsStream(authenticator=authenticator)
 
     def join_channel(self, config: Mapping[str, Any], record: Mapping[str, Any]):
         list(
@@ -171,7 +176,7 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return bool(stream_state) and "channel_messages" not in stream_state.get("parent_state", {})
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

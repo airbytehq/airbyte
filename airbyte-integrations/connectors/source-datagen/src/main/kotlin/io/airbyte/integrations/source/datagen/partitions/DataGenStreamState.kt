@@ -11,7 +11,7 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 
 class DataGenStreamState(
     val sharedState: DataGenSharedState,
-    val streamFeedBootstrap: StreamFeedBootstrap
+    val streamFeedBootstrap: StreamFeedBootstrap,
 ) {
     val stream: Stream
         get() = streamFeedBootstrap.feed

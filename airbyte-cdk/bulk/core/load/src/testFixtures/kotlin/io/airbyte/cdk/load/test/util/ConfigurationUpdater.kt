@@ -9,6 +9,7 @@ interface ConfigurationUpdater {
 
     /**
      * May modify one or more entry in the provided configuration.
+     *
      * @param config The connector configuration.
      * @return The potentially modified configuration.
      */
@@ -32,8 +33,9 @@ data class DefaultNamespaceResult(val updatedConfig: String, val actualDefaultNa
  */
 object FakeConfigurationUpdater : ConfigurationUpdater {
     override fun update(config: String): String = config
+
     override fun setDefaultNamespace(
         config: String,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): DefaultNamespaceResult = DefaultNamespaceResult(config, null)
 }

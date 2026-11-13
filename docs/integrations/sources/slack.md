@@ -71,7 +71,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 3. Find and click **Slack**.
 4. Click **Authenticate your Slack account**. Log in and authorize Airbyte to access your Slack account.
 <FieldAnchor field="join_channels">
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages. This feature requires the `channels:join` OAuth scope.
 </FieldAnchor>
 <FieldAnchor field="start_date">
 6. **Start Date**: Any data before this date will not be extracted.
@@ -102,7 +102,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 2. Click **New source**.
 3. Find and click **Slack**.
 4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the Bot Token from Step 1.
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages. This feature requires the `channels:join` OAuth scope.
 6. **Start Date**: Any data before this date will not be extracted.
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
@@ -191,6 +191,9 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 </HideInUI>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -199,6 +202,31 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.28 | 2026-11-10 | [88808](https://github.com/airbytehq/airbyte/pull/88808) | Update dependencies |
+| 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
+| 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
+| 3.2.25 | 2026-09-28 | [86496](https://github.com/airbytehq/airbyte/pull/86496) | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |
+| 3.2.24 | 2026-09-22 | [86814](https://github.com/airbytehq/airbyte/pull/86814) | Update dependencies |
+| 3.2.23 | 2026-09-15 | [86208](https://github.com/airbytehq/airbyte/pull/86208) | Update dependencies |
+| 3.2.22 | 2026-09-08 | [85654](https://github.com/airbytehq/airbyte/pull/85654) | Update dependencies |
+| 3.2.21 | 2026-08-27 | [83796](https://github.com/airbytehq/airbyte/pull/83796) | Fix sync failure when the optional `channel_filter` config field is not set |
+| 3.2.20 | 2026-08-18 | [84839](https://github.com/airbytehq/airbyte/pull/84839) | Accept fractional epoch cursor values for the `threads` stream |
+| 3.2.19 | 2026-08-18 | [84762](https://github.com/airbytehq/airbyte/pull/84762) | Update dependencies |
+| 3.2.18 | 2026-08-11 | [84106](https://github.com/airbytehq/airbyte/pull/84106) | Update dependencies |
+| 3.2.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 3.2.16 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 3.2.14 — 3.2.15 is built on SDM 7.23.7, which breaks bundled custom components |
+| 3.2.15 | 2026-07-28 | [83082](https://github.com/airbytehq/airbyte/pull/83082) | Update dependencies |
+| 3.2.14 | 2026-07-21 | [82582](https://github.com/airbytehq/airbyte/pull/82582) | Update dependencies |
+| 3.2.13 | 2026-07-14 | [82022](https://github.com/airbytehq/airbyte/pull/82022) | Update dependencies |
+| 3.2.12 | 2026-06-30 | [81255](https://github.com/airbytehq/airbyte/pull/81255) | Update dependencies |
+| 3.2.11 | 2026-06-23 | [80627](https://github.com/airbytehq/airbyte/pull/80627) | Update dependencies |
+| 3.2.10 | 2026-06-16 | [80042](https://github.com/airbytehq/airbyte/pull/80042) | Update dependencies |
+| 3.2.9 | 2026-06-09 | [79480](https://github.com/airbytehq/airbyte/pull/79480) | Update dependencies |
+| 3.2.8 | 2026-06-02 | [78986](https://github.com/airbytehq/airbyte/pull/78986) | Update dependencies |
+| 3.2.7 | 2026-04-30 | [77628](https://github.com/airbytehq/airbyte/pull/77628) | Improve threads_ignore_no_replies filter to also check thread_ts, reducing unnecessary conversations.replies API calls |
+| 3.2.6 | 2026-04-30 | [77607](https://github.com/airbytehq/airbyte/pull/77607) | Improve error handling for Slack API ok=false responses: add catch-all for unrecognized errors and expand error code coverage |
+| 3.2.5 | 2026-04-29 | [77601](https://github.com/airbytehq/airbyte/pull/77601) | Surface missing OAuth scope as config error instead of silently failing channel joins |
+| 3.2.4 | 2026-04-28 | [77531](https://github.com/airbytehq/airbyte/pull/77531) | Use RATE_LIMITED action for rate-limit filters, add failure_type classification, and remove generic ok=false catch-all in favor of default HTTP status handling |
 | 3.2.3 | 2026-04-28 | [77450](https://github.com/airbytehq/airbyte/pull/77450) | Update dependencies |
 | 3.2.2 | 2026-04-27 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
 | 3.2.1 | 2026-04-27 | [76981](https://github.com/airbytehq/airbyte/pull/76981) | Remove unused OAuth scopes (`im:history`, `mpim:history`, `im:read`, `mpim:read`) not exercised by any stream. New OAuth installs see a narrower consent screen; existing tokens are unaffected. |

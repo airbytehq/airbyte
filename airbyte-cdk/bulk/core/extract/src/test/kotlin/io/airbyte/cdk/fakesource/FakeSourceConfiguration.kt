@@ -47,8 +47,8 @@ class FakeSourceConfigurationFactory :
             sshConnectionOptions = sshConnectionOptions,
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             maxConcurrency = 1,
-            checkpointTargetInterval = Duration.parse(pojo.timeout).takeIf { it.isPositive }
-                    ?: Duration.ofDays(100L),
+            checkpointTargetInterval =
+                Duration.parse(pojo.timeout).takeIf { it.isPositive } ?: Duration.ofDays(100L),
         )
     }
 }
