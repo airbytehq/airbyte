@@ -135,7 +135,7 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 1. Log in to your `Zuora acccount`.
 2. In the top right corner of the Zuora dashboard, select `Settings` &gt; `Administration Settings`.
 3. Select `Manage User Roles`.
-4. Select `Add new role` to create a new role, and fill in neccessary information up to the form.
+4. Select `Add new role` to create a new role, and fill in necessary information up to the form.
 
 ### Assign the role to a user
 
