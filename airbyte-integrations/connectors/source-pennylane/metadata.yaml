@@ -17,14 +17,30 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9e4a306-4e3b-4387-a01d-c00d03d8c28c
-  dockerImageTag: 0.3.53
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-pennylane
   githubIssueLabel: source-pennylane
   icon: icon.svg
+  maxSecondsBetweenMessages: 3600
   license: ELv2
   name: Pennylane
   releaseDate: 2024-08-21
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+  suggestedStreams:
+    streams:
+      - customer_invoices
+      - supplier_invoices
+      - customers
+      - suppliers
+      - products
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pennylane
   tags:
@@ -34,6 +50,27 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Pennylane API documentation
-      url: https://pennylane.com/api/
+    - title: Pennylane API reference (v2)
+      url: https://pennylane.readme.io/reference
       type: api_reference
+    - title: Pennylane API reference (v1)
+      url: https://pennylane.readme.io/v1.0/reference
+      type: api_reference
+    - title: Pennylane API changelog
+      url: https://pennylane.readme.io/changelog
+      type: api_release_history
+    - title: Pennylane API v2 vs v1
+      url: https://pennylane.readme.io/docs/api-v2-vs-v1
+      type: api_deprecations
+    - title: Rate limiting (v1)
+      url: https://pennylane.readme.io/v1.0/docs/rate-limiting-1
+      type: rate_limits
+    - title: Rate limiting (v2)
+      url: https://pennylane.readme.io/docs/rate-limiting-1
+      type: rate_limits
+    - title: Create a Company API Token
+      url: https://pennylane.readme.io/docs/generating-my-api-token
+      type: authentication_guide
+    - title: API scopes (v1)
+      url: https://pennylane.readme.io/v1.0/docs/v1-scopes
+      type: permissions_scopes

@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.4.0 | 2026-11-13 | [91541](https://github.com/airbytehq/airbyte/pull/91541) | Paginate on `current_page`/`total_pages` instead of stopping on a short page. Add missing `customer_invoices` and `customers` fields, suggested streams, and a 1-hour heartbeat timeout (`maxSecondsBetweenMessages: 3600`) |
 | 0.3.53 | 2026-11-10 | [91670](https://github.com/airbytehq/airbyte/pull/91670) | Update dependencies |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
