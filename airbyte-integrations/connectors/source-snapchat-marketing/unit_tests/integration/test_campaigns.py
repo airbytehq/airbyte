@@ -102,6 +102,33 @@ class TestCampaigns(TestCase):
         ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
         assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
 
+    @HttpMocker()
+    def test_read_records_when_ad_account_updated_before_start_date(self, http_mocker: HttpMocker) -> None:
+        """An ad account last updated before start_date must not hide its campaigns (#47834).
+
+        The organization and ad account fixtures were last updated on 2024-01-15, before the configured start_date.
+        """
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.campaigns_endpoint(AD_ACCOUNT_ID).build(),
+            campaigns_response(campaign_id=CAMPAIGN_ID, ad_account_id=AD_ACCOUNT_ID, updated_at="2024-06-15T10:00:00.000Z"),
+        )
+
+        output = _read(config_builder=config().with_start_date("2024-06-01").with_end_date("2024-06-30"), sync_mode=SyncMode.incremental)
+
+        assert [record.record.data["id"] for record in output.records] == [CAMPAIGN_ID]
+
 
 class TestCampaignsSubstreamMultipleParents(TestCase):
     @HttpMocker()

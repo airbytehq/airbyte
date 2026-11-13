@@ -104,15 +104,23 @@ class PostgresBeanFactory {
     fun emptyPostgresDataSource(): DataSource {
         return object : DataSource {
             override fun getConnection(): Connection? = null
+
             override fun getConnection(username: String, password: String): Connection? =
                 getConnection()
+
             override fun getLogWriter(): PrintWriter =
                 PrintWriter(System.out.writer(StandardCharsets.UTF_8))
+
             override fun setLogWriter(out: PrintWriter) {}
+
             override fun setLoginTimeout(seconds: Int) {}
+
             override fun getLoginTimeout(): Int = 0
+
             override fun getParentLogger(): Logger = Logger.getGlobal()
+
             override fun <T : Any> unwrap(iface: Class<T>): T? = null
+
             override fun isWrapperFor(iface: Class<*>): Boolean = false
         }
     }
@@ -164,7 +172,7 @@ class PostgresBeanFactory {
     }
 
     private fun buildSslConnectionParams(
-        sslMode: io.airbyte.integrations.destination.postgres.spec.SslMode?
+        sslMode: io.airbyte.integrations.destination.postgres.spec.SslMode?,
     ): Map<String, String> {
         return when (sslMode) {
             is SslModeVerifyCa -> {
@@ -176,8 +184,8 @@ class PostgresBeanFactory {
                             PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE to
                                 sslMode.caCertificate,
                             PostgresSslConnectionUtils.PARAM_CLIENT_KEY_PASSWORD to
-                                (sslMode.clientKeyPassword ?: "")
-                        )
+                                (sslMode.clientKeyPassword ?: ""),
+                        ),
                     )
                 PostgresSslConnectionUtils.obtainConnectionOptions(sslModeJson)
             }
@@ -193,8 +201,8 @@ class PostgresBeanFactory {
                                 sslMode.clientCertificate,
                             PostgresSslConnectionUtils.PARAM_CLIENT_KEY to sslMode.clientKey,
                             PostgresSslConnectionUtils.PARAM_CLIENT_KEY_PASSWORD to
-                                (sslMode.clientKeyPassword ?: "")
-                        )
+                                (sslMode.clientKeyPassword ?: ""),
+                        ),
                     )
                 PostgresSslConnectionUtils.obtainConnectionOptions(sslModeJson)
             }
@@ -204,7 +212,7 @@ class PostgresBeanFactory {
                 mapOf(
                     PostgresSslConnectionUtils.PARAM_SSL to
                         PostgresSslConnectionUtils.TRUE_STRING_VALUE,
-                    PostgresSslConnectionUtils.PARAM_SSLMODE to sslMode.mode
+                    PostgresSslConnectionUtils.PARAM_SSLMODE to sslMode.mode,
                 )
             }
         }

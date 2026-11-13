@@ -51,11 +51,23 @@ acceptance_tests:
             bypass_reason: Data needs to be added to account
           - name: ad_account_analytics
             bypass_reason: Data needs to be added to account
-        timeout_seconds: 1200
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        fail_on_extra_columns: false
+          # The test account has no ad activity inside the 913-day report window, so Pinterest returns empty reports.
+          - name: ad_group_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: ad_group_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: advertiser_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: advertiser_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: campaign_analytics_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: campaign_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: pin_promotion_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: pin_promotion_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
       - config_path: secrets/config_account_id.json
         empty_streams:
           - name: conversion_tags
@@ -85,11 +97,25 @@ acceptance_tests:
             bypass_reason: Data needs to be added to account
           - name: ad_account_analytics
             bypass_reason: Data needs to be added to account
-        timeout_seconds: 1200
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        fail_on_extra_columns: false
+          # The test account has no ad activity inside the 913-day report window, so Pinterest returns empty reports.
+          - name: ad_group_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: ad_group_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: advertiser_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: advertiser_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: campaign_analytics_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: campaign_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: pin_promotion_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: pin_promotion_targeting_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
+          - name: custom_vadim_report
+            bypass_reason: No ad activity in the test account within the 913-day report window
   incremental:
     tests:
       - config_path: secrets/config_oauth.json

@@ -208,6 +208,11 @@ interface TableOperationsSuite {
                 stream = stream,
             )
 
+            assertEquals(0L, client.countTable(testTable))
+            assert(client.tableIsEmpty(testTable)) {
+                "freshly created table ${testTable.namespace}.${testTable.name} should be empty."
+            }
+
             val records1 =
                 listOf(
                     mapOf(
@@ -244,6 +249,9 @@ interface TableOperationsSuite {
             val count1 = client.countTable(testTable)
 
             assertEquals(records1.size, count1?.toInt())
+            assert(!client.tableIsEmpty(testTable)) {
+                "table ${testTable.namespace}.${testTable.name} should not be empty after inserting records."
+            }
 
             val records2 =
                 listOf(

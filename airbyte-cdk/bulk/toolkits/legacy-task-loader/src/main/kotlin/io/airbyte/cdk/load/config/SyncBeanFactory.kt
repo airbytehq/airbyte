@@ -44,7 +44,7 @@ class SyncBeanFactory {
     @Named("queueMemoryManager")
     fun queueMemoryMananger(
         config: DestinationConfiguration,
-        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager,
     ): ReservationManager {
         val recordQueueBytes =
             config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
@@ -61,7 +61,7 @@ class SyncBeanFactory {
         outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit,
         timeProvider: TimeProvider,
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-        namespaceMapper: NamespaceMapper
+        namespaceMapper: NamespaceMapper,
     ): CheckpointManager =
         CheckpointManager(
             catalog,
@@ -69,7 +69,7 @@ class SyncBeanFactory {
             outputConsumer,
             timeProvider,
             dataChannelMedium == DataChannelMedium.SOCKET,
-            namespaceMapper
+            namespaceMapper,
         )
 
     /* ********************

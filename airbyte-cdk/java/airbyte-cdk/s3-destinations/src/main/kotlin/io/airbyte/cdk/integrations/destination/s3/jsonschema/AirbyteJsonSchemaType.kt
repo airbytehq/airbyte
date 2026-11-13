@@ -130,7 +130,7 @@ enum class AirbyteJsonSchemaType {
                                     "time_without_timezone" -> TIME_WITHOUT_TIMEZONE
                                     else ->
                                         throw IllegalArgumentException(
-                                            "Unknown time format: $airbyteType"
+                                            "Unknown time format: $airbyteType",
                                         )
                                 }
                             }
@@ -141,7 +141,7 @@ enum class AirbyteJsonSchemaType {
                                     "timestamp_without_timezone" -> TIMESTAMP_WITHOUT_TIMEZONE
                                     else ->
                                         throw IllegalArgumentException(
-                                            "Unknown date-time format: $airbyteType"
+                                            "Unknown date-time format: $airbyteType",
                                         )
                                 }
                             }
@@ -205,7 +205,7 @@ enum class AirbyteJsonSchemaType {
         fun getMatchingValueForType(value: JsonNode, options: ArrayNode): ObjectNode {
             return getMatchingValueForType(
                 value,
-                options.elements().asSequence().map { it as ObjectNode }.toList()
+                options.elements().asSequence().map { it as ObjectNode }.toList(),
             )
         }
 
@@ -243,7 +243,7 @@ enum class AirbyteJsonSchemaType {
                     .toList()
             if (matching.isEmpty()) {
                 throw IllegalArgumentException(
-                    "Union type ${value::class}(value redacted) does not match any options: $optionsAsList"
+                    "Union type ${value::class}(value redacted) does not match any options: $optionsAsList",
                 )
             }
             return matching.first()
