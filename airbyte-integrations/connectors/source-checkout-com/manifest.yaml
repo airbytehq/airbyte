@@ -1,0 +1,2395 @@
+version: 7.45.0
+type: DeclarativeSource
+description: Sync disputes, payments, payment actions, financial actions, reports and workflows from the Checkout.com API.
+check:
+  type: CheckStream
+  stream_names:
+    - disputes
+definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - &id001
+        type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+          - 403
+        error_message:
+          Checkout.com rejected the credentials (HTTP {{ response.status_code if response is defined else '' }}).
+          Check that they belong to the selected environment and have the scope this stream needs (disputes:view, payments:search,
+          gateway:payment-details, reports:view, flow:workflows, financial-actions:view).
+      - &id002
+        type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+    backoff_strategies: &id003
+      - type: ExponentialBackoffStrategy
+        factor: 5
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - credentials
+      - auth_type
+    authenticators:
+      oauth:
+        type: OAuthAuthenticator
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        grant_type: client_credentials
+        token_refresh_endpoint:
+          https://{{ config['account_prefix'] ~ '.' if config.get('account_prefix') else '' }}access.{{
+          'sandbox.' if config.get('environment') == 'sandbox' else '' }}checkout.com/connect/token
+      secret_key:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['secret_key'] }}"
+  base_requester:
+    type: HttpRequester
+    url_base:
+      https://{{ config['account_prefix'] ~ '.' if config.get('account_prefix') else '' }}api.{{ 'sandbox.' if config.get('environment')
+      == 'sandbox' else '' }}checkout.com
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      $ref: "#/definitions/error_handler"
+streams:
+  - type: DeclarativeStream
+    name: disputes
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /disputes
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: skip
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
+          inject_on_first_request: false
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_update
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P30D
+      cursor_granularity: PT0S
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - last_update
+            value:
+              "{{ format_datetime(record['last_update'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('last_update') else None
+              }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          entity_id:
+            type:
+              - "null"
+              - string
+          sub_entity_id:
+            type:
+              - "null"
+              - string
+          processing_channel:
+            type:
+              - "null"
+              - string
+          segment_id:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - number
+          currency:
+            type:
+              - "null"
+              - string
+          reason_code:
+            type:
+              - "null"
+              - string
+          payment_id:
+            type:
+              - "null"
+              - string
+          payment_action_id:
+            type:
+              - "null"
+              - string
+          payment_reference:
+            type:
+              - "null"
+              - string
+          payment_arn:
+            type:
+              - "null"
+              - string
+          payment_mcc:
+            type:
+              - "null"
+              - string
+          payment_method:
+            type:
+              - "null"
+              - string
+          evidence_required_by:
+            type:
+              - "null"
+              - string
+            format: date-time
+          received_on:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_update:
+            type:
+              - "null"
+              - string
+            format: date-time
+          resolved_reason:
+            type:
+              - "null"
+              - string
+          is_ce_candidate:
+            type:
+              - "null"
+              - boolean
+          _links:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              self:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href: {}
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: payments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /payments/search
+        http_method: POST
+        request_body_json:
+          query: "{{ config.get('payments_query') or 'amount:>=0' }}"
+          limit: 1000
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - *id001
+            - *id002
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              predicate: "{{ 'next' in response.get('_links', {}) or response.get('data', []) | length >= 1000 }}"
+              error_message:
+                A Checkout.com payments search window held more than 1,000 payments. Lower the payments search window
+                so every window fits in a single page; no payments were skipped.
+          backoff_strategies: *id003
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: requested_on
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: PT{{ config.get('payments_window_minutes', 60) }}M
+      cursor_granularity: PT0S
+      start_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: to
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - requested_on
+            value:
+              "{{ format_datetime(record['requested_on'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('requested_on') else
+              None }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          requested_on:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          source:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties: {}
+              id:
+                type:
+                  - "null"
+                  - string
+              billing_address:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  address_line1:
+                    type:
+                      - "null"
+                      - string
+                  address_line2:
+                    type:
+                      - "null"
+                      - string
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+                  zip:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+              phone:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  country_code:
+                    type:
+                      - "null"
+                      - string
+                  number:
+                    type:
+                      - "null"
+                      - string
+              expiry_month:
+                type:
+                  - "null"
+                  - integer
+              expiry_year:
+                type:
+                  - "null"
+                  - integer
+              name:
+                type:
+                  - "null"
+                  - string
+              scheme:
+                type:
+                  - "null"
+                  - string
+              scheme_local:
+                type:
+                  - "null"
+                  - string
+              local_schemes:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              last4:
+                type:
+                  - "null"
+                  - string
+              fingerprint:
+                type:
+                  - "null"
+                  - string
+              bin:
+                type:
+                  - "null"
+                  - string
+              card_type:
+                type:
+                  - "null"
+                  - string
+              card_category:
+                type:
+                  - "null"
+                  - string
+              card_wallet_type:
+                type:
+                  - "null"
+                  - string
+              issuer:
+                type:
+                  - "null"
+                  - string
+              issuer_country:
+                type:
+                  - "null"
+                  - string
+              product_id:
+                type:
+                  - "null"
+                  - string
+              product_type:
+                type:
+                  - "null"
+                  - string
+              avs_check:
+                type:
+                  - "null"
+                  - string
+              cvv_check:
+                type:
+                  - "null"
+                  - string
+              payment_account_reference:
+                type:
+                  - "null"
+                  - string
+              encrypted_card_number:
+                type:
+                  - "null"
+                  - string
+              account_update_status:
+                type:
+                  - "null"
+                  - string
+              account_update_failure_code:
+                type:
+                  - "null"
+                  - string
+              account_holder:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+              iban:
+                type:
+                  - "null"
+                  - string
+              bic:
+                type:
+                  - "null"
+                  - string
+              amount:
+                type:
+                  - "null"
+                  - integer
+              purpose:
+                type:
+                  - "null"
+                  - string
+              account_holder_name:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              language:
+                type:
+                  - "null"
+                  - string
+              user_defined_field1:
+                type:
+                  - "null"
+                  - string
+              user_defined_field2:
+                type:
+                  - "null"
+                  - string
+              user_defined_field3:
+                type:
+                  - "null"
+                  - string
+              user_defined_field4:
+                type:
+                  - "null"
+                  - string
+              user_defined_field5:
+                type:
+                  - "null"
+                  - string
+              card_token:
+                type:
+                  - "null"
+                  - string
+              ptlf:
+                type:
+                  - "null"
+                  - string
+              knet_payment_id:
+                type:
+                  - "null"
+                  - string
+              knet_result:
+                type:
+                  - "null"
+                  - string
+              inquiry_result:
+                type:
+                  - "null"
+                  - string
+              bank_reference:
+                type:
+                  - "null"
+                  - string
+              knet_transaction_id:
+                type:
+                  - "null"
+                  - string
+              auth_code:
+                type:
+                  - "null"
+                  - string
+              auth_response_code:
+                type:
+                  - "null"
+                  - string
+              post_date:
+                type:
+                  - "null"
+                  - string
+              avr:
+                type:
+                  - "null"
+                  - string
+              error:
+                type:
+                  - "null"
+                  - string
+              error_text:
+                type:
+                  - "null"
+                  - string
+              payment_reference:
+                type:
+                  - "null"
+                  - string
+              service_supplier_id:
+                type:
+                  - "null"
+                  - string
+              p24_descriptor:
+                type:
+                  - "null"
+                  - string
+              qpay_status:
+                type:
+                  - "null"
+                  - string
+              status_message:
+                type:
+                  - "null"
+                  - string
+              confirmation_id:
+                type:
+                  - "null"
+                  - string
+              pun:
+                type:
+                  - "null"
+                  - string
+          destination:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          amount:
+            type:
+              - "null"
+              - integer
+          amount_requested:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          payment_type:
+            type:
+              - "null"
+              - string
+          payment_plan:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              amount_variability:
+                type:
+                  - "null"
+                  - string
+              days_between_payments:
+                type:
+                  - "null"
+                  - integer
+              total_number_of_payments:
+                type:
+                  - "null"
+                  - integer
+              current_payment_number:
+                type:
+                  - "null"
+                  - integer
+              expiry:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              start_date:
+                type:
+                  - "null"
+                  - string
+              amount:
+                type:
+                  - "null"
+                  - integer
+              financing:
+                type:
+                  - "null"
+                  - boolean
+          reference:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          approved:
+            type:
+              - "null"
+              - boolean
+          expires_on:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          balances:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              total_authorized:
+                type:
+                  - "null"
+                  - integer
+              total_voided:
+                type:
+                  - "null"
+                  - integer
+              available_to_void:
+                type:
+                  - "null"
+                  - integer
+              total_captured:
+                type:
+                  - "null"
+                  - integer
+              available_to_capture:
+                type:
+                  - "null"
+                  - integer
+              total_refunded:
+                type:
+                  - "null"
+                  - integer
+              available_to_refund:
+                type:
+                  - "null"
+                  - integer
+          3ds:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              downgraded:
+                type:
+                  - "null"
+                  - boolean
+              enrolled:
+                type:
+                  - "null"
+                  - string
+              signature_valid:
+                type:
+                  - "null"
+                  - string
+              authentication_response:
+                type:
+                  - "null"
+                  - string
+              authentication_status_reason:
+                type:
+                  - "null"
+                  - string
+              cryptogram:
+                type:
+                  - "null"
+                  - string
+              xid:
+                type:
+                  - "null"
+                  - string
+              eci:
+                type:
+                  - "null"
+                  - string
+              version:
+                type:
+                  - "null"
+                  - string
+              exemption:
+                type:
+                  - "null"
+                  - string
+              exemption_applied:
+                type:
+                  - "null"
+                  - string
+              challenged:
+                type:
+                  - "null"
+                  - boolean
+              upgrade_reason:
+                type:
+                  - "null"
+                  - string
+              trusted_listing:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+                  source:
+                    type:
+                      - "null"
+                      - string
+          authentication:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              experience:
+                type:
+                  - "null"
+                  - string
+          risk:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              flagged:
+                type:
+                  - "null"
+                  - boolean
+              score:
+                type:
+                  - "null"
+                  - number
+          customer:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              summary:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  registration_date:
+                    type:
+                      - "null"
+                      - string
+                  first_transaction_date:
+                    type:
+                      - "null"
+                      - string
+                  last_payment_date:
+                    type:
+                      - "null"
+                      - string
+                  total_order_count:
+                    type:
+                      - "null"
+                      - integer
+                  last_payment_amount:
+                    type:
+                      - "null"
+                      - number
+                  is_premium_customer:
+                    type:
+                      - "null"
+                      - boolean
+                  is_returning_customer:
+                    type:
+                      - "null"
+                      - boolean
+                  lifetime_value:
+                    type:
+                      - "null"
+                      - number
+          billing_descriptor:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              reference:
+                type:
+                  - "null"
+                  - string
+              local_descriptors:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    character_set:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties: {}
+          shipping:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              address:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  address_line1:
+                    type:
+                      - "null"
+                      - string
+                  address_line2:
+                    type:
+                      - "null"
+                      - string
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+                  zip:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+              phone:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  country_code:
+                    type:
+                      - "null"
+                      - string
+                  number:
+                    type:
+                      - "null"
+                      - string
+          payment_ip:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          sender:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              reference:
+                type:
+                  - "null"
+                  - string
+              first_name:
+                type:
+                  - "null"
+                  - string
+              last_name:
+                type:
+                  - "null"
+                  - string
+              address:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  address_line1:
+                    type:
+                      - "null"
+                      - string
+                  address_line2:
+                    type:
+                      - "null"
+                      - string
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+                  zip:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+              company_name:
+                type:
+                  - "null"
+                  - string
+          amount_allocations:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                reference:
+                  type:
+                    - "null"
+                    - string
+                commission:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    percentage:
+                      type:
+                        - "null"
+                        - number
+          recipient:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              dob:
+                type:
+                  - "null"
+                  - string
+              account_number:
+                type:
+                  - "null"
+                  - string
+              address:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  address_line1:
+                    type:
+                      - "null"
+                      - string
+                  address_line2:
+                    type:
+                      - "null"
+                      - string
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+                  zip:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+              zip:
+                type:
+                  - "null"
+                  - string
+              first_name:
+                type:
+                  - "null"
+                  - string
+              last_name:
+                type:
+                  - "null"
+                  - string
+          processing:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              preferred_scheme:
+                type:
+                  - "null"
+                  - string
+              app_id:
+                type:
+                  - "null"
+                  - string
+              airline_data:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    ticket:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        number:
+                          type:
+                            - "null"
+                            - string
+                        issue_date:
+                          type:
+                            - "null"
+                            - string
+                        issuing_carrier_code:
+                          type:
+                            - "null"
+                            - string
+                        travel_package_indicator:
+                          type:
+                            - "null"
+                            - string
+                        travel_agency_name:
+                          type:
+                            - "null"
+                            - string
+                        travel_agency_code:
+                          type:
+                            - "null"
+                            - string
+                    passenger:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          first_name:
+                            type:
+                              - "null"
+                              - string
+                          last_name:
+                            type:
+                              - "null"
+                              - string
+                          date_of_birth:
+                            type:
+                              - "null"
+                              - string
+                          address:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              country:
+                                type:
+                                  - "null"
+                                  - string
+                    flight_leg_details:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          flight_number:
+                            type:
+                              - "null"
+                              - string
+                          carrier_code:
+                            type:
+                              - "null"
+                              - string
+                          class_of_travelling:
+                            type:
+                              - "null"
+                              - string
+                          departure_airport:
+                            type:
+                              - "null"
+                              - string
+                          departure_date:
+                            type:
+                              - "null"
+                              - string
+                          departure_time:
+                            type:
+                              - "null"
+                              - string
+                          arrival_airport:
+                            type:
+                              - "null"
+                              - string
+                          stop_over_code:
+                            type:
+                              - "null"
+                              - string
+                          fare_basis_code:
+                            type:
+                              - "null"
+                              - string
+              accommodation_data:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    booking_reference:
+                      type:
+                        - "null"
+                        - string
+                    check_in_date:
+                      type:
+                        - "null"
+                        - string
+                    check_out_date:
+                      type:
+                        - "null"
+                        - string
+                    address:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        address_line1:
+                          type:
+                            - "null"
+                            - string
+                        zip:
+                          type:
+                            - "null"
+                            - string
+                    state:
+                      type:
+                        - "null"
+                        - string
+                    country:
+                      type:
+                        - "null"
+                        - string
+                    city:
+                      type:
+                        - "null"
+                        - string
+                    number_of_rooms:
+                      type:
+                        - "null"
+                        - integer
+                    guests:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          first_name:
+                            type:
+                              - "null"
+                              - string
+                          last_name:
+                            type:
+                              - "null"
+                              - string
+                          date_of_birth:
+                            type:
+                              - "null"
+                              - string
+                    room:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          rate:
+                            type:
+                              - "null"
+                              - string
+                          number_of_nights_at_room_rate:
+                            type:
+                              - "null"
+                              - string
+                    property_phone:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          country_code:
+                            type:
+                              - "null"
+                              - string
+                          number:
+                            type:
+                              - "null"
+                              - string
+                    customer_service_phone:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          country_code:
+                            type:
+                              - "null"
+                              - string
+                          number:
+                            type:
+                              - "null"
+                              - string
+              partner_customer_id:
+                type:
+                  - "null"
+                  - string
+              partner_payment_id:
+                type:
+                  - "null"
+                  - string
+              partner_code:
+                type:
+                  - "null"
+                  - string
+              failure_code:
+                type:
+                  - "null"
+                  - string
+              partner_response_code:
+                type:
+                  - "null"
+                  - string
+              tax_amount:
+                type:
+                  - "null"
+                  - number
+              locale:
+                type:
+                  - "null"
+                  - string
+              retrieval_reference_number:
+                type:
+                  - "null"
+                  - string
+              partner_order_id:
+                type:
+                  - "null"
+                  - string
+              partner_status:
+                type:
+                  - "null"
+                  - string
+              partner_transaction_id:
+                type:
+                  - "null"
+                  - string
+              partner_error_codes:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              partner_merchant_advice_code:
+                type:
+                  - "null"
+                  - string
+              partner_error_message:
+                type:
+                  - "null"
+                  - string
+              partner_authorization_code:
+                type:
+                  - "null"
+                  - string
+              partner_authorization_response_code:
+                type:
+                  - "null"
+                  - string
+              partner_fraud_status:
+                type:
+                  - "null"
+                  - string
+              pan_type_processed:
+                type:
+                  - "null"
+                  - string
+              fallback_source_used:
+                type:
+                  - "null"
+                  - boolean
+              custom_payment_method_ids:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              aft:
+                type:
+                  - "null"
+                  - boolean
+              merchant_category_code:
+                type:
+                  - "null"
+                  - string
+              scheme_merchant_id:
+                type:
+                  - "null"
+                  - string
+              scheme:
+                type:
+                  - "null"
+                  - string
+              scheme_transaction_link_id:
+                type:
+                  - "null"
+                  - string
+          items:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                sub_type:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  type:
+                    - "null"
+                    - integer
+                unit_price:
+                  type:
+                    - "null"
+                    - integer
+                reference:
+                  type:
+                    - "null"
+                    - string
+                commodity_code:
+                  type:
+                    - "null"
+                    - string
+                unit_of_measure:
+                  type:
+                    - "null"
+                    - string
+                total_amount:
+                  type:
+                    - "null"
+                    - number
+                tax_rate:
+                  type:
+                    - "null"
+                    - number
+                tax_amount:
+                  type:
+                    - "null"
+                    - number
+                tax_exempt:
+                  type:
+                    - "null"
+                    - boolean
+                discount_amount:
+                  type:
+                    - "null"
+                    - number
+                wxpay_goods_id:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+                image_url:
+                  type:
+                    - "null"
+                    - string
+                service_ends_on:
+                  type:
+                    - "null"
+                    - string
+                purchase_country:
+                  type:
+                    - "null"
+                    - string
+                foreign_retailer_amount:
+                  type:
+                    - "null"
+                    - integer
+          metadata:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          eci:
+            type:
+              - "null"
+              - string
+          scheme_id:
+            type:
+              - "null"
+              - string
+          actions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties: {}
+                type:
+                  type:
+                    - "null"
+                    - string
+                response_code:
+                  type:
+                    - "null"
+                    - string
+                response_summary:
+                  type:
+                    - "null"
+                    - string
+          retry:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              enabled:
+                type:
+                  - "null"
+                  - boolean
+              attempts_made:
+                type:
+                  - "null"
+                  - integer
+              max_attempts:
+                type:
+                  - "null"
+                  - integer
+              ends_on:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties: {}
+              next_attempt_on:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties: {}
+          cko_network_token_available:
+            type:
+              - "null"
+              - boolean
+          instruction:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              purpose:
+                type:
+                  - "null"
+                  - string
+          _links:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              self:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+              actions:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+              authorize:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+              void:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+              capture:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+              refund:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: payment_actions
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /payments/{{ stream_partition['payment_id'] }}/actions
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: id
+            partition_field: payment_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          type:
+            type:
+              - "null"
+              - string
+          processed_on:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          amount:
+            type:
+              - "null"
+              - integer
+          approved:
+            type:
+              - "null"
+              - boolean
+          auth_code:
+            type:
+              - "null"
+              - string
+          response_code:
+            type:
+              - "null"
+              - string
+          response_summary:
+            type:
+              - "null"
+              - string
+          authorization_type:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          amount_allocations:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          processing:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              retrieval_reference_number:
+                type:
+                  - "null"
+                  - string
+              acquirer_reference_number:
+                type:
+                  - "null"
+                  - string
+              acquirer_transaction_id:
+                type:
+                  - "null"
+                  - string
+              capture_action_id:
+                type:
+                  - "null"
+                  - string
+          items:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          metadata:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          payment_id:
+            type:
+              - "null"
+              - string
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+    primary_key:
+      - id
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - payment_id
+            value: "{{ stream_partition['payment_id'] }}"
+  - type: DeclarativeStream
+    name: financial_actions
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /financial-actions
+        request_parameters:
+          payment_id: "{{ stream_partition['payment_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: id
+            partition_field: payment_id
+      paginator: &id004
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pagination_token
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value:
+            "{{ response.get('_links', {}).get('next', {}).get('href', '').split('pagination_token=')[-1].split('&')[0]
+            if 'pagination_token=' in response.get('_links', {}).get('next', {}).get('href', '') else '' }}"
+          stop_condition:
+            "{{ 'pagination_token=' not in response.get('_links', {}).get('next', {}).get('href', '')
+            }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          payment_id:
+            type:
+              - "null"
+              - string
+          action_id:
+            type:
+              - "null"
+              - string
+          action_type:
+            type:
+              - "null"
+              - string
+          entity_id:
+            type:
+              - "null"
+              - string
+          sub_entity_id:
+            type:
+              - "null"
+              - string
+          currency_account_id:
+            type:
+              - "null"
+              - string
+          payment_method:
+            type:
+              - "null"
+              - string
+          processing_channel_id:
+            type:
+              - "null"
+              - string
+          mid:
+            type:
+              - "null"
+              - string
+          response_code:
+            type:
+              - "null"
+              - string
+          response_description:
+            type:
+              - "null"
+              - string
+          region:
+            type:
+              - "null"
+              - string
+          card_type:
+            type:
+              - "null"
+              - string
+          card_category:
+            type:
+              - "null"
+              - string
+          issuer_country:
+            type:
+              - "null"
+              - string
+          merchant_category_code:
+            type:
+              - "null"
+              - string
+          fx_trade_id:
+            type:
+              - "null"
+              - string
+          acquirer_reference_number:
+            type:
+              - "null"
+              - string
+          account_funding_transaction:
+            type:
+              - "null"
+              - boolean
+          scheme_fx_adjustment_eligible:
+            type:
+              - "null"
+              - boolean
+          processed_on:
+            type:
+              - "null"
+              - string
+            format: date-time
+          requested_on:
+            type:
+              - "null"
+              - string
+            format: date-time
+          breakdown:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                breakdown_type:
+                  type:
+                    - "null"
+                    - string
+                fx_rate_applied:
+                  type:
+                    - "null"
+                    - number
+                holding_currency:
+                  type:
+                    - "null"
+                    - string
+                holding_currency_amount:
+                  type:
+                    - "null"
+                    - number
+                processing_currency:
+                  type:
+                    - "null"
+                    - string
+                processing_currency_amount:
+                  type:
+                    - "null"
+                    - number
+                transaction_currency:
+                  type:
+                    - "null"
+                    - string
+                transaction_currency_amount:
+                  type:
+                    - "null"
+                    - number
+                processing_to_transaction_currency_fx_rate:
+                  type:
+                    - "null"
+                    - number
+                transaction_to_holding_currency_fx_rate:
+                  type:
+                    - "null"
+                    - number
+                fee_detail:
+                  type:
+                    - "null"
+                    - string
+                reserve_rate:
+                  type:
+                    - "null"
+                    - string
+                reserve_release_date:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                reserve_deducted_date:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                tax_fx_rate:
+                  type:
+                    - "null"
+                    - number
+                scheme_fx_adjustment_processing_currency:
+                  type:
+                    - "null"
+                    - string
+                scheme_fx_adjustment_rate_applied:
+                  type:
+                    - "null"
+                    - number
+                entity_country_tax_currency:
+                  type:
+                    - "null"
+                    - string
+                tax_currency_amount:
+                  type:
+                    - "null"
+                    - number
+          bin:
+            type:
+              - "null"
+              - string
+          issuing_bank:
+            type:
+              - "null"
+              - string
+          payment_type:
+            type:
+              - "null"
+              - string
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+    primary_key:
+      - action_id
+  - type: DeclarativeStream
+    name: reports
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /reports
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator: *id004
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_on
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P30D
+      cursor_granularity: PT0S
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: created_after
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: created_before
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - created_on
+            value:
+              "{{ format_datetime(record['created_on'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('created_on') else None
+              }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          created_on:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_modified_on:
+            type:
+              - "null"
+              - string
+            format: date-time
+          type:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          account:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              client_id:
+                type:
+                  - "null"
+                  - string
+              entity_id:
+                type:
+                  - "null"
+                  - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          from:
+            type:
+              - "null"
+              - string
+            format: date-time
+          to:
+            type:
+              - "null"
+              - string
+            format: date-time
+          files:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                filename:
+                  type:
+                    - "null"
+                    - string
+                format:
+                  type:
+                    - "null"
+                    - string
+                _links:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    self:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        href:
+                          type:
+                            - "null"
+                            - string
+          _links:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              self:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  href:
+                    type:
+                      - "null"
+                      - string
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: workflows
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /workflows
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          _links:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - credentials
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authentication
+        type: object
+        order: 0
+        oneOf:
+          - title: OAuth (access key)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: oauth
+                order: 0
+              client_id:
+                title: Access key ID
+                type: string
+                airbyte_secret: true
+                order: 1
+                description: Access key ID (starts with ack_) from Developers > Keys in the Checkout.com Dashboard.
+              client_secret:
+                title: Access key secret
+                type: string
+                airbyte_secret: true
+                order: 2
+          - title: Secret API key
+            type: object
+            required:
+              - auth_type
+              - secret_key
+            properties:
+              auth_type:
+                type: string
+                const: secret_key
+                order: 0
+              secret_key:
+                title: Secret key
+                type: string
+                airbyte_secret: true
+                order: 1
+                description: Secret API key (sk_... or sk_sbox_...).
+      environment:
+        title: Environment
+        type: string
+        enum:
+          - production
+          - sandbox
+        default: production
+        order: 1
+      account_prefix:
+        title: Account prefix
+        type: string
+        order: 2
+        description:
+          The unique prefix of your base URL (the part before .api.checkout.com), shown in the Dashboard under
+          Developers > Overview. Leave empty to use the global api.checkout.com host.
+      start_date:
+        title: Start date
+        type: string
+        format: date-time
+        order: 3
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
+        description:
+          UTC date and time to start syncing from. Defaults to 90 days ago, which is the payments search default
+          lookback.
+      payments_window_minutes:
+        title: Payments search window (minutes)
+        type: integer
+        minimum: 1
+        maximum: 1440
+        default: 60
+        order: 4
+        description:
+          Payments are read through the search API one time window at a time, up to 1,000 payments per window.
+          Lower this if a sync fails because a window held more than 1,000 payments.
+      payments_query:
+        title: Payments search query
+        type: string
+        order: 5
+        default: amount:>=0
+        description:
+          Optional search query to limit which payments are synced, e.g. processing_channel_id:'pc_...'. The default
+          matches every payment.
