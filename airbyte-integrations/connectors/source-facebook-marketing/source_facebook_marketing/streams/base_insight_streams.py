@@ -278,7 +278,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._slices_for_state(account_id)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -286,7 +286,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._slices_for_state(account_id)
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -324,8 +324,23 @@ class AdsInsights(FBMarketingIncrementalStream):
             account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
             for account_id in self._account_ids
         }
+        # Slices at or before the cursor are already covered by it. Dropping them keeps stale entries from a previous
+        # attempt from standing in for slices that this sync re-reads inside the lookback window.
+        for account_id in self._account_ids:
+            self._completed_slices[account_id] = self._slices_after_cursor(account_id)
 
         self._next_cursor_values = self._get_start_date()
+
+    def _slices_after_cursor(self, account_id: str) -> set[date]:
+        """Completed slices that are not yet covered by the account's cursor."""
+        cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+        completed_slices = self._completed_slices.get(account_id, set())
+        if cursor_value is None:
+            return set(completed_slices)
+        return {slice_start for slice_start in completed_slices if slice_start > cursor_value}
+
+    def _slices_for_state(self, account_id: str) -> List[str]:
+        return sorted(slice_start.isoformat() for slice_start in self._slices_after_cursor(account_id))
 
     def _get_end_date_for_account(self, account_id: str) -> date:
         """Compute the effective end date for a specific account based on its timezone.
@@ -413,16 +428,24 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state.
+
+        A sync starts `insights_lookback_window` days before the cursor, so the first slices that complete are older than the
+        cursor loaded from state. The cursor must not follow them down: every slice is checkpointed, and if an interrupted
+        attempt persisted a lowered cursor, the next attempt would subtract the lookback window from it again and re-read an
+        ever wider window. The cursor therefore only moves once the contiguous completed slices pass it.
+        """
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
+            if not self._cursor_values:
                 self._cursor_values = {account_id: ts_start}
+                continue
+            cursor_value = self._cursor_values.get(account_id)
+            if cursor_value is None or ts_start > cursor_value:
+                self._cursor_values[account_id] = ts_start
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs

@@ -300,8 +300,8 @@ class TestBaseInsightsStream:
                 {
                     AdsInsights.cursor_field: "2010-10-03",
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-05",
+                        "2010-10-06",
                     ],
                     "time_increment": 1,
                 },
@@ -309,8 +309,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,
@@ -342,14 +342,37 @@ class TestBaseInsightsStream:
                     }
                 },
             ),
-            # New format - nested with account_id
+            # Slices at or before the cursor are already covered by it and are dropped from state
             (
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
                             "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-03",
+                            "2010-10-05",
+                        ],
+                    },
+                    "time_increment": 1,
+                },
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [
+                            "2010-10-05",
+                        ],
+                    },
+                    "time_increment": 1,
+                },
+            ),
+            # New format - nested with account_id
+            (
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,

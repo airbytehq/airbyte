@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,57 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_when_rereading_lookback_window_then_checkpointed_cursor_never_moves_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        The platform persists whatever checkpoint was emitted last before an attempt is interrupted. If a checkpoint emitted
+        while the lookback window is re-read carries a cursor lower than the input one, the next attempt subtracts the lookback
+        window from that lower cursor and the re-read window grows with every interruption.
+        """
+        lookback_window = 2
+        input_cursor = "2023-01-07"
+        # lookback window re-read (01-05, 01-06), the cursor day itself (01-07) and the new days (01-08, 01-09)
+        days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (5, 6, 7, 8, 9)]
+        report_run_ids = [f"157186006001950{index}" for index in range(len(days))]
+        job_ids = [f"104993737960160{index}" for index in range(len(days))]
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+
+        config_ = config().with_start_date(ab_datetime_parse("2023-01-01T00:00:00Z")).with_end_date(days[-1])
+        config_.build()["insights_lookback_window"] = lookback_window
+
+        def _stream_state(cursor: str, slices: List[str]) -> Dict[str, any]:
+            return {ACCOUNT_ID: {_CURSOR_FIELD: cursor, "slices": slices}, "time_increment": 1}
+
+        def _checkpoints(output: EntrypointOutput) -> List[Dict[str, any]]:
+            return [AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"] for message in output.state_messages]
+
+        output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, _stream_state(input_cursor, [])).build())
+
+        assert len(output.records) == len(days)
+        # one checkpoint per slice: the cursor holds at the input value until the re-read passes it
+        assert _checkpoints(output) == [
+            _stream_state("2023-01-07", []),
+            _stream_state("2023-01-07", []),
+            _stream_state("2023-01-07", []),
+            _stream_state("2023-01-08", []),
+            _stream_state("2023-01-09", []),
+        ]
+
+        # An attempt interrupted after its first slice resumes from that checkpoint. HttpMocker only knows the job requests for
+        # 01-05..01-09, so this read fails if the connector asks for anything older than `input cursor - lookback window`.
+        resumed_output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, _checkpoints(output)[0]).build())
+
+        assert len(resumed_output.records) == len(days)
+        assert _checkpoints(resumed_output)[-1] == _stream_state("2023-01-09", [])
