@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';

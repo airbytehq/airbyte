@@ -37,6 +37,13 @@ jobs:
             java:
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
+              # Shared JVM build configuration (compiler, plugins, dependency versions)
+              - 'build.gradle'
+              - 'settings.gradle'
+              - 'gradle.properties'
+              - 'gradle/wrapper/**'
+              - 'buildSrc/**'
+              - 'spotbugs-exclude-filter-file.xml'
 
   # Detect changes in base, extract, and load CDK packages.
   # If code changed in a package, we verify the version was bumped
