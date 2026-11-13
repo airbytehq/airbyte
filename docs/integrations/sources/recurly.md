@@ -38,7 +38,7 @@ The Recurly source connector supports the following sync modes:
 - Full Refresh
 - Incremental
 
-All streams except Export Dates support incremental syncs. Most streams use `updated_at` as the cursor. The Account Notes stream uses `created_at`.
+The Export Dates, Gift Cards, External Subscriptions, External Subscription Payment Phases, and Usage Records streams support Full Refresh only. All other streams support incremental syncs. Most incremental streams use `updated_at` as the cursor. The Account Notes stream uses `created_at`.
 
 For a first sync or a reset, leaving **Start Date** empty starts date-filtered streams five years before the sync runs. To retrieve older history, enter an explicit start date. Subsequent incremental syncs resume from their saved progress rather than rereading five years of history. Export Dates is not filtered by these dates.
 
@@ -46,6 +46,7 @@ Account Coupon Redemptions, Account Notes, and Billing Infos only revisit accoun
 
 ## Supported Streams
 
+- [Account Acquisitions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_acquisition)
 - [Accounts](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_accounts)
 - [Account Coupon Redemptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_coupon_redemptions)
 - [Account Notes](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_notes)
@@ -64,6 +65,24 @@ Account Coupon Redemptions, Account Notes, and Billing Infos only revisit accoun
 - [Transactions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_transactions)
 - [Unique Coupons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_unique_coupon_codes)
 - Unique Coupons Parent: a helper stream containing bulk coupons, used to find the individual codes synced by Unique Coupons. It does not contain the individual codes itself.
+- [External Subscriptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscriptions)
+- [External Subscription Payment Phases](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
+- [Gift Cards](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_gift_cards)
+- [Items](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_items)
+- [Usage Records](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_usage)
+
+The Usage Records stream includes both billed and unbilled usage.
+
+Some streams only return data when the matching feature is enabled on your Recurly site:
+
+| Stream | Required Recurly feature |
+| :----- | :----------------------- |
+| Gift Cards | Gift cards |
+| External Subscriptions, External Subscription Payment Phases | External subscriptions |
+| Usage Records | Usage-based billing |
+| Items | Item catalog, which also requires Credit Invoices |
+
+If Recurly reports that your site lacks the required feature for one of these streams or for Account Acquisitions, the connector logs a message, skips the stream, and the sync continues.
 
 The Account Coupon Redemptions, Account Notes, Billing Infos, and Shipping Addresses streams make one request per account, so they can take longer to sync on sites with many accounts.
 
@@ -78,6 +97,8 @@ The connector only uses the US API endpoint, `https://v3.recurly.com`. You canno
 Recurly limits API requests over a sliding five-minute window. By default, production sites allow 5,000 GET requests and sandbox sites allow 2,000 requests in that window. The connector paces its requests to stay within the limit for the site type you select with **Use Sandbox Environment**. See [Recurly API limits](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits).
 
 Recurly applies the limit to the whole site, but the connector only tracks its own requests. If other connections or integrations use the same Recurly site, the connector can still receive HTTP 429 responses. The connector retries rate-limited and server error responses up to five times with exponential backoff.
+
+The Usage Records stream reads every subscription on every sync, then makes one API request per subscription add-on. On large sites, it can be slow and use a large share of the rate limit. Enable this stream only when you need usage records. If your connection automatically propagates new streams after a schema refresh, check that Usage Records wasn't selected unintentionally.
 
 ### Authentication errors
 
@@ -96,6 +117,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 2.0.0 | 2026-11-12 | [91302](https://github.com/airbytehq/airbyte/pull/91302) | Corrected `subscriptions.coupon_redemptions` to an array and added date-time format to coupon and external-account timestamps. See the [migration guide](/integrations/sources/recurly-migrations#upgrading-to-200) |
+| 1.4.0 | 2026-11-12 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
 | 1.3.71 | 2026-11-10 | [91303](https://github.com/airbytehq/airbyte/pull/91303) | Pace requests to Recurly's published rate limits, retry rate-limited and server error responses with exponential backoff, show actionable API key errors, and accept start and end dates saved without the trailing `Z` |
 | 1.3.70 | 2026-11-10 | [91708](https://github.com/airbytehq/airbyte/pull/91708) | Update dependencies |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |

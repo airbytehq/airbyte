@@ -2,54 +2,52 @@
 
 ## Overview
 
-The Postmarkapp source can sync data from the [Postmarkapp API](https://postmarkapp.com/developer)
+The Postmarkapp source syncs data from the [Postmark API](https://postmarkapp.com/developer). It reads delivery statistics, message streams, outbound messages, and bounces for one Postmark server, plus the domains and servers in your Postmark account.
 
-## Requirements
+## Prerequisites
 
-Postmarkapp requires an API key to make request and retrieve data. You can find your API key in the [Postmarkapp dashboard](https://account.postmarkapp.com/servers/9708911/credentials).
+The connector requires two Postmark API tokens. Both are required, because some streams use server-level endpoints and others use account-level endpoints.
 
-## Streams
+- **Server API token** (`X-Postmark-Server-Token`): In Postmark, open the server you want to sync and go to the **API Tokens** tab. The server-level streams read data for this server only.
+- **Account API token** (`X-Postmark-Account-Token`): In Postmark, go to the **API Tokens** tab of your account. Only the account owner can access this token.
 
-Current supported streams:
-
-Server-API
-
-- [Bounces: Deliverystats](https://postmarkapp.com/developer/api/bounce-api#delivery-stats): Lets you access all reports regarding your bounces for a specific server. Bounces are available for 45 days after a bounce.
-- [Message-Streams](https://postmarkapp.com/developer/api/message-streams-api#list-message-streams): Lets you manage message streams for a specific server. Please note: A Server may have up to 10 Streams, including the default ones. Default Streams cannot be deleted, and Servers can only have 1 Inbound Stream.
-- [Outbound stats](https://account.postmarkapp.com/servers/9708911/credentials): Lets you get all of the statistics of your outbound emails for a specific server. These statistics are stored permantently and do not expire. All stats use EST timezone
-
-Account-API
-
-- [Servers](https://postmarkapp.com/developer/api/servers-api): Lets you manage servers for a specific account.
-- [Domains](https://postmarkapp.com/developer/api/domains-api): Gets a list of domains containing an overview of the domain and authentication status.
-- [Sender signatures](https://postmarkapp.com/developer/api/signatures-api): Gets a list of sender signatures containing brief details associated with your account.
+For details, see [Postmark API authentication](https://postmarkapp.com/developer/api/overview#authentication).
 
 ## Setup guide
 
-## Step 1: Set up the Postmarkapp connector in Airbyte
+1. In Airbyte, go to **Sources** and click **New source**.
+2. Select **Postmarkapp** from the list of sources.
+3. Enter a name for the source.
+4. In **X-Postmark-Server-Token**, enter your server API token.
+5. In **X-Postmark-Account-Token**, enter your account API token.
+6. Click **Set up source**. Airbyte tests the connection by reading the `message-streams` stream.
 
-### For Airbyte Cloud:
+## Supported streams
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, select **Postmarkapp** from the Source type dropdown.
-4. Click **Set up source**.
+| Stream | Postmark endpoint | Token used | Primary key |
+| :----- | :---------------- | :--------- | :---------- |
+| `deliverystats` | [Get delivery stats](https://postmarkapp.com/developer/api/bounce-api#delivery-stats) | Server | `Name` |
+| `message-streams` | [List message streams](https://postmarkapp.com/developer/api/message-streams-api#list-message-streams) | Server | `ID` |
+| `messages` | [Outbound message search](https://postmarkapp.com/developer/api/messages-api#outbound-message-search) | Server | `MessageID` |
+| `bounces` | [Get bounces](https://postmarkapp.com/developer/api/bounce-api#bounces) | Server | `ID` |
+| `domains` | [List domains](https://postmarkapp.com/developer/api/domains-api#list-domains) | Account | `ID` |
+| `servers` | [List servers](https://postmarkapp.com/developer/api/servers-api#list-servers) | Account | `ID` |
 
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source (Postmarkapp).
-3. Click **Set up source**.
+The `deliverystats` stream returns one record per bounce type, with the count of bounces of that type for the server.
 
 ## Supported sync modes
-
-The Postmarkapp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 | Namespaces        | No         |
+
+## Limitations
+
+- **Message retention**: Postmark keeps outbound messages and bounces only for your server's retention period, which is 45 days by default and configurable from 7 to 365 days. The `messages` and `bounces` streams can't return records older than that.
+- **10,000-record search limit**: The Postmark outbound message search and bounce search endpoints return at most 10,000 records per search. The connector doesn't filter these searches by date, so if a server has more than 10,000 retained messages or bounces, the `messages` and `bounces` streams can't read all of them.
+- **Pagination**: The connector requests 500 records per page, the maximum Postmark allows.
 
 ## IP allow list
 
@@ -62,6 +60,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.11 | 2026-11-13 | [91434](https://github.com/airbytehq/airbyte/pull/91434) | Upgrade to `source-declarative-manifest` 7.47.0 and fix offset pagination so every stream starts at the first record and stops on a short page |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |
