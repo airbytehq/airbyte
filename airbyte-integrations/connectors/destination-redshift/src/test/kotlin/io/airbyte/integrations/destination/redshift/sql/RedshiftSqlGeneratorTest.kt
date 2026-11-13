@@ -26,6 +26,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 internal class RedshiftSqlGeneratorTest {
 
@@ -80,6 +83,24 @@ internal class RedshiftSqlGeneratorTest {
             }
         return mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
     }
+
+    private fun typeChangeSql(
+        columnName: String,
+        oldType: String,
+        newType: String,
+    ): String =
+        sqlGenerator.matchSchemas(
+            TableName(namespace = "ns", name = "tbl"),
+            columnsToAdd = emptyMap(),
+            columnsToModify =
+                mapOf(
+                    columnName to
+                        ColumnTypeChange(
+                            originalType = ColumnType(oldType, true),
+                            newType = ColumnType(newType, true),
+                        ),
+                ),
+        )
 
     // ================================================================
     // DDL: Namespace & Table lifecycle
@@ -694,7 +715,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `matchSchemas generic type change uses CAST`() {
+    fun `matchSchemas bigint to decimal uses TRY_CAST`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
@@ -711,12 +732,186 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" decimal(38,9);"""))
-        assertTrue(sql.contains("""CAST("num_col" AS decimal(38,9))"""))
+        assertTrue(sql.contains("""TRY_CAST("num_col" AS decimal(38,9))"""))
         assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
         assertTrue(sql.contains(""""num_col" IS NOT NULL"""))
         assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "num_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
+    }
+
+    @Test
+    fun `matchSchemas VARCHAR to BOOLEAN maps boolean literals instead of CAST`() {
+        val columnName = "properties_hs_has_call_notes"
+        val sql =
+            typeChangeSql(
+                columnName,
+                RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.BOOLEAN.typeName,
+            )
+
+        assertTrue(
+            sql.contains(
+                """SET "_airbyte_tmp_$columnName" = CASE WHEN LOWER(TRIM("$columnName")) IN ('true', 't', 'yes', 'y', '1') THEN TRUE WHEN LOWER(TRIM("$columnName")) IN ('false', 'f', 'no', 'n', '0') THEN FALSE END;""",
+            ),
+        )
+        assertFalse(sql.contains("""CAST("$columnName" AS boolean)"""))
+        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
+        assertTrue(sql.contains("""DROP COLUMN "$columnName";"""))
+        assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_$columnName" TO "$columnName";"""))
+    }
+
+    @Test
+    fun `matchSchemas BOOLEAN to VARCHAR uses CASE`() {
+        val sql =
+            typeChangeSql(
+                "bool_col",
+                RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.VARCHAR.typeName,
+            )
+
+        assertTrue(
+            sql.contains(
+                """CASE WHEN "bool_col" THEN 'true' WHEN NOT "bool_col" THEN 'false' END""",
+            ),
+        )
+    }
+
+    @Test
+    fun `matchSchemas BOOLEAN to decimal uses CASE cast`() {
+        val sql =
+            typeChangeSql(
+                "bool_col",
+                RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.NUMERIC.typeName,
+            )
+
+        assertTrue(
+            sql.contains(
+                """CAST(CASE WHEN "bool_col" THEN 1 WHEN NOT "bool_col" THEN 0 END AS decimal(38,9))""",
+            ),
+        )
+    }
+
+    @Test
+    fun `matchSchemas decimal to BOOLEAN compares against zero`() {
+        val sql =
+            typeChangeSql(
+                "num_col",
+                RedshiftDataType.NUMERIC.typeName,
+                RedshiftDataType.BOOLEAN.typeName,
+            )
+
+        assertTrue(sql.contains("""SET "_airbyte_tmp_num_col" = ("num_col" <> 0);"""))
+    }
+
+    @Test
+    fun `matchSchemas timestamp to SUPER casts through VARCHAR`() {
+        val sql =
+            typeChangeSql(
+                "ts_col",
+                RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.SUPER.typeName,
+            )
+
+        assertTrue(
+            sql.contains(
+                """CAST(CAST("ts_col" AS varchar(65535)) AS super)""",
+            ),
+        )
+    }
+
+    @Test
+    fun `matchSchemas timestamp to TIMETZ casts through TIMESTAMPTZ`() {
+        val sql =
+            typeChangeSql(
+                "ts_col",
+                RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.TIMETZ.typeName,
+            )
+
+        assertTrue(sql.contains("""CAST(CAST("ts_col" AS timestamptz) AS timetz)"""))
+    }
+
+    @Test
+    fun `matchSchemas TIMESTAMPTZ to TIME casts through TIMESTAMP`() {
+        val sql =
+            typeChangeSql(
+                "tstz_col",
+                RedshiftDataType.TIMESTAMPTZ.typeName,
+                RedshiftDataType.TIME.typeName,
+            )
+
+        assertTrue(sql.contains("""CAST(CAST("tstz_col" AS timestamp) AS time)"""))
+    }
+
+    @Test
+    fun `matchSchemas VARCHAR to bigint uses TRY_CAST`() {
+        val sql =
+            typeChangeSql(
+                "text_col",
+                RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.BIGINT.typeName,
+            )
+
+        assertTrue(sql.contains("""TRY_CAST("text_col" AS bigint)"""))
+    }
+
+    @Test
+    fun `matchSchemas varchar lengths use the same conversion rules`() {
+        val varcharToBigint =
+            typeChangeSql(
+                "text_col",
+                RedshiftDataType.VARCHAR_36.typeName,
+                RedshiftDataType.BIGINT.typeName,
+            )
+        val booleanToVarchar =
+            typeChangeSql(
+                "bool_col",
+                RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.VARCHAR_36.typeName,
+            )
+
+        assertTrue(varcharToBigint.contains("""TRY_CAST("text_col" AS bigint)"""))
+        assertTrue(
+            booleanToVarchar.contains(
+                """CASE WHEN "bool_col" THEN 'true' WHEN NOT "bool_col" THEN 'false' END""",
+            ),
+        )
+    }
+
+    @Test
+    fun `matchSchemas unsupported type changes use NULL and record typecast error`() {
+        listOf(
+                RedshiftDataType.DATE.typeName to RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.BIGINT.typeName to RedshiftDataType.TIMESTAMP.typeName,
+            )
+            .forEach { (oldType, newType) ->
+                val sql = typeChangeSql("c", oldType, newType)
+
+                assertTrue(sql.contains("""SET "_airbyte_tmp_c" = CAST(NULL AS $newType);"""))
+                assertTrue(sql.contains("DESTINATION_TYPECAST_ERROR"))
+                assertTrue(sql.contains("""DROP COLUMN "c";"""))
+                assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_c" TO "c";"""))
+            }
+    }
+
+    @ParameterizedTest(name = "{0} -> {1}")
+    @MethodSource("typePairs")
+    fun `matchSchemas generates five statements for each type pair`(
+        oldType: String,
+        newType: String,
+    ) {
+        val sql = typeChangeSql("c", oldType, newType)
+
+        assertEquals(5, Regex("(?m)^(?:ALTER TABLE|UPDATE) ").findAll(sql).count())
+        assertTrue(sql.contains("""UPDATE "ns"."tbl" SET "_airbyte_tmp_c" = """))
+        val updateExpression =
+            sql.substringAfter("""SET "_airbyte_tmp_c" = """).substringBefore(";").trim()
+        assertTrue(updateExpression.isNotEmpty())
+        if ((oldType to newType) in PLAIN_CAST_ERRORS) {
+            assertFalse(sql.contains("""= CAST("c" AS $newType)"""))
+        }
     }
 
     // ================================================================
@@ -877,6 +1072,74 @@ internal class RedshiftSqlGeneratorTest {
             val dedup = """"_airbyte_dedup_ns_staging""""
             assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
             assertFalse(sql.contains("DROP TABLE IF EXISTS $dedup CASCADE;"))
+        }
+    }
+
+    companion object {
+        private val NORMALIZED_TYPES =
+            listOf(
+                RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.NUMERIC.typeName,
+                RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.DATE.typeName,
+                RedshiftDataType.TIME.typeName,
+                RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName,
+                RedshiftDataType.SUPER.typeName,
+            )
+
+        private val TEMPORAL_TYPES =
+            listOf(
+                RedshiftDataType.DATE.typeName,
+                RedshiftDataType.TIME.typeName,
+                RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName,
+            )
+
+        private val PLAIN_CAST_ERRORS = buildSet {
+            add(RedshiftDataType.VARCHAR.typeName to RedshiftDataType.BOOLEAN.typeName)
+            add(RedshiftDataType.BOOLEAN.typeName to RedshiftDataType.VARCHAR.typeName)
+            add(RedshiftDataType.BOOLEAN.typeName to RedshiftDataType.NUMERIC.typeName)
+            add(RedshiftDataType.NUMERIC.typeName to RedshiftDataType.BOOLEAN.typeName)
+            TEMPORAL_TYPES.forEach { temporalType ->
+                add(RedshiftDataType.BOOLEAN.typeName to temporalType)
+                add(RedshiftDataType.BIGINT.typeName to temporalType)
+                add(RedshiftDataType.NUMERIC.typeName to temporalType)
+                add(temporalType to RedshiftDataType.BOOLEAN.typeName)
+                add(temporalType to RedshiftDataType.BIGINT.typeName)
+                add(temporalType to RedshiftDataType.NUMERIC.typeName)
+            }
+            add(RedshiftDataType.DATE.typeName to RedshiftDataType.TIME.typeName)
+            add(RedshiftDataType.DATE.typeName to RedshiftDataType.TIMETZ.typeName)
+            add(RedshiftDataType.TIME.typeName to RedshiftDataType.DATE.typeName)
+            add(RedshiftDataType.TIME.typeName to RedshiftDataType.TIMESTAMP.typeName)
+            add(RedshiftDataType.TIME.typeName to RedshiftDataType.TIMESTAMPTZ.typeName)
+            add(RedshiftDataType.TIMETZ.typeName to RedshiftDataType.DATE.typeName)
+            add(RedshiftDataType.TIMETZ.typeName to RedshiftDataType.TIMESTAMP.typeName)
+            add(RedshiftDataType.TIMETZ.typeName to RedshiftDataType.TIMESTAMPTZ.typeName)
+            add(RedshiftDataType.TIMETZ.typeName to RedshiftDataType.SUPER.typeName)
+            add(RedshiftDataType.TIMESTAMP.typeName to RedshiftDataType.TIMETZ.typeName)
+            add(RedshiftDataType.TIMESTAMPTZ.typeName to RedshiftDataType.TIME.typeName)
+            listOf(
+                    RedshiftDataType.DATE.typeName,
+                    RedshiftDataType.TIME.typeName,
+                    RedshiftDataType.TIMESTAMP.typeName,
+                    RedshiftDataType.TIMESTAMPTZ.typeName,
+                )
+                .forEach { temporalType ->
+                    add(temporalType to RedshiftDataType.SUPER.typeName)
+                }
+        }
+
+        @JvmStatic
+        fun typePairs(): List<Arguments> = NORMALIZED_TYPES.flatMap { oldType ->
+            NORMALIZED_TYPES.filter { it != oldType }
+                .map { newType ->
+                    Arguments.of(oldType, newType)
+                }
         }
     }
 }
