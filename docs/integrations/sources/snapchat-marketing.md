@@ -169,6 +169,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.12 | 2026-11-10 | [91723](https://github.com/airbytehq/airbyte/pull/91723) | Update dependencies |
 | 1.6.11 | 2026-11-05 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Read every organization and ad account as a parent, so Start Date and End Date no longer empty the streams under them |
 | 1.6.10 | 2026-11-04 | [90345](https://github.com/airbytehq/airbyte/pull/90345) | Simplify error handler configuration with no change in behavior |
 | 1.6.9 | 2026-11-03 | [90759](https://github.com/airbytehq/airbyte/pull/90759) | Update dependencies |

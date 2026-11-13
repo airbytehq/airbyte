@@ -5,7 +5,7 @@ import json
 import pytest
 from _helpers import ORGANIZATION_URI, collection, list_request, mock_user, read_stream, request
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import FailureType, Level, SyncMode, Type
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
 
@@ -54,20 +54,82 @@ def test_event_type_memberships_fans_out_by_event_type_and_pages() -> None:
             http.assert_number_of_calls(target, 1)
 
 
-def test_group_relationships_pages_for_organization() -> None:
-    first = request("group_relationships", {"count": "100", "organization": ORGANIZATION_URI})
-    second = request("group_relationships", {"count": "100", "organization": ORGANIZATION_URI, "page_token": "next"})
+def test_group_relationships_pages_for_each_group() -> None:
+    groups = [f"https://api.calendly.com/groups/{name}" for name in ["a", "b"]]
+    first = request("group_relationships", {"count": "100", "group": groups[0]})
+    second = request("group_relationships", {"count": "100", "group": groups[0], "page_token": "next"})
+    other = request("group_relationships", {"count": "100", "group": groups[1]})
     with HttpMocker() as http:
         user = mock_user(http)
+        parents = [list_request("groups"), list_request("groups", "groups-next")]
+        http.get(parents[0], collection([{"uri": groups[0]}], "groups-next"))
+        http.get(parents[1], collection([{"uri": groups[1]}]))
         http.get(first, collection([{"uri": "https://api.calendly.com/group_relationships/1"}], "next"))
         http.get(second, collection([{"uri": "https://api.calendly.com/group_relationships/2"}]))
+        http.get(other, collection([{"uri": "https://api.calendly.com/group_relationships/3"}]))
 
         output = read_stream("group_relationships", sync_mode=SyncMode.full_refresh)
 
         assert not output.errors
-        assert len(output.records) == 2
-        for target in [user, first, second]:
+        assert sorted(r.record.data["uri"] for r in output.records) == [
+            f"https://api.calendly.com/group_relationships/{i}" for i in [1, 2, 3]
+        ]
+        assert output.get_stream_statuses("group_relationships")[-1].value == "COMPLETE"
+        for target in [user, *parents, first, second, other]:
             http.assert_number_of_calls(target, 1)
+
+
+def test_group_relationships_without_groups_completes_empty() -> None:
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("groups"), collection([]))
+        output = read_stream("group_relationships", sync_mode=SyncMode.full_refresh)
+        assert not output.errors
+        assert not output.records
+        assert any(
+            s.trace.stream_status.status.value == "COMPLETE" for s in output.get_message_by_types([Type.TRACE]) if s.trace.stream_status
+        )
+
+
+def test_group_relationships_deleted_group_is_skipped() -> None:
+    groups = [f"https://api.calendly.com/groups/{name}" for name in ["deleted", "present"]]
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("groups"), collection([{"uri": uri} for uri in groups]))
+        deleted = request("group_relationships", {"count": "100", "group": groups[0]})
+        present = request("group_relationships", {"count": "100", "group": groups[1]})
+        http.get(deleted, HttpResponse(body='{"message":"gone"}', status_code=404))
+        uri = "https://api.calendly.com/group_relationships/present"
+        http.get(present, collection([{"uri": uri}]))
+        output = read_stream("group_relationships", sync_mode=SyncMode.full_refresh)
+        assert not output.errors
+        assert [r.record.data["uri"] for r in output.records] == [uri]
+        assert output.get_stream_statuses("group_relationships")[-1].value == "COMPLETE"
+        assert not any(entry.log.level == Level.ERROR for entry in output.logs)
+        assert any(
+            entry.log.level == Level.INFO and "https://api.calendly.com/group_relationships" in entry.log.message for entry in output.logs
+        )
+        for target in [deleted, present]:
+            http.assert_number_of_calls(target, 1)
+
+
+@pytest.mark.parametrize("endpoint", ["groups", "group_relationships"])
+def test_group_relationships_permission_denied_still_fails(endpoint: str) -> None:
+    with HttpMocker() as http:
+        mock_user(http)
+        group = "https://api.calendly.com/groups/a"
+        parent = list_request("groups")
+        if endpoint == "group_relationships":
+            http.get(parent, collection([{"uri": group}]))
+            target = request(endpoint, {"count": "100", "group": group})
+        else:
+            target = parent
+        message = "You do not have permission to access this resource."
+        http.get(target, HttpResponse(body=json.dumps({"message": message}), status_code=403))
+        output = read_stream("group_relationships", sync_mode=SyncMode.full_refresh)
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message in output.errors[0].trace.error.message
+        http.assert_number_of_calls(target, 1)
 
 
 def test_user_availability_schedules_are_unpaginated_per_member() -> None:

@@ -1068,7 +1068,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":red_circle: *Hydra Auto-Merge aborted*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\nThe Devin eval passed but the autopilot/merge phase failed, so the PR was not merged."
+                  text: ":red_circle: *Hydra Auto-Merge aborted* <!subteam^S0BJ4K3LC4X|@oc-hydra>\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\nThe Devin eval passed but the autopilot/merge phase failed, so the PR was not merged."
               - type: context
                 elements:
                   - type: mrkdwn
