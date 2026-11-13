@@ -333,38 +333,86 @@ def test_custom_report_name_conversion(test_name, config, custom_report_config, 
     assert custom_stream.name == expected_name
 
 
+REPORT_SUBMIT_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit"
+ACCOUNT_NOT_AUTHORIZED_MESSAGE = (
+    "The authenticated Bing Ads user lacks access to at least one account in the report request "
+    "(error 2003, AccountNotAuthorized). Grant that user access to the account in Microsoft Advertising."
+)
+# The fault body the Reporting API sends with HTTP 400: the cause is in OperationErrors[].Code.
+ACCOUNT_NOT_AUTHORIZED_FAULT = {
+    "OperationErrors": [
+        {
+            "Code": 2003,
+            "ErrorCode": "AccountNotAuthorized",
+            "Details": "",
+            "Message": (
+                "The specified report request contains at least one account which you have insufficient privileges to access. "
+                "Please submit a report request for accounts that you are authorized to access."
+            ),
+        }
+    ],
+    "BatchErrors": [],
+    "TrackingId": "00000000-0000-0000-0000-000000000000",
+    "Type": "ApiFaultDetail",
+}
+REQUIRED_COLUMNS_FAULT = {
+    "OperationErrors": [
+        {
+            "Code": 2015,
+            "ErrorCode": "ReportingServiceRequiredColumnsNotSelected",
+            "Details": "",
+            "Message": "The list of columns to include in the report must contain all required columns.",
+        }
+    ],
+    "BatchErrors": [],
+    "TrackingId": "00000000-0000-0000-0000-000000000000",
+    "Type": "ApiFaultDetail",
+}
+
+
+def _read_errors(requests_mock, config, stream_name, fault):
+    requests_mock.post(REPORT_SUBMIT_URL, status_code=400, json=fault)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+    output = read(get_source(config), config, catalog)
+    assert output.errors, "Expected error trace messages but got none"
+    return [message.trace.error for message in output.errors]
+
+
+@freeze_time("2024-01-01")
+def test_report_account_not_authorized_is_config_error(mock_auth_token, mock_user_query, mock_account_query, requests_mock):
+    errors = _read_errors(requests_mock, TEST_CONFIG, "account_performance_report_daily", ACCOUNT_NOT_AUTHORIZED_FAULT)
+
+    assert errors[0].failure_type == FailureType.config_error
+    assert errors[0].message == ACCOUNT_NOT_AUTHORIZED_MESSAGE
+
+
+@freeze_time("2024-01-01")
+def test_report_other_bad_request_stays_system_error(mock_auth_token, mock_user_query, mock_account_query, requests_mock):
+    errors = _read_errors(requests_mock, TEST_CONFIG, "account_performance_report_daily", REQUIRED_COLUMNS_FAULT)
+
+    assert all(error.message != ACCOUNT_NOT_AUTHORIZED_MESSAGE for error in errors)
+    assert any(error.failure_type == FailureType.system_error and "Bad request" in error.message for error in errors)
+
+
 @freeze_time("2024-01-01")
 @pytest.mark.parametrize(
-    "status_code,response_body,expected_failure_type",
+    "fault,expected_message_start",
     [
-        pytest.param(
-            403,
-            {"error": "UserIsNotAuthorized"},
-            FailureType.config_error,
-            id="http_403_classified_as_config_error",
-        ),
-        pytest.param(
-            400,
-            {"error": "The specified report request contains at least one account which you have insufficient privileges to access"},
-            FailureType.config_error,
-            id="http_400_insufficient_privileges_classified_as_config_error",
-        ),
+        pytest.param(ACCOUNT_NOT_AUTHORIZED_FAULT, ACCOUNT_NOT_AUTHORIZED_MESSAGE, id="account_not_authorized"),
+        pytest.param(REQUIRED_COLUMNS_FAULT, "Reporting Columns are invalid.", id="other_bad_request_keeps_invalid_columns_message"),
     ],
 )
-def test_report_creation_auth_errors_classified_as_config_error(
-    status_code, response_body, expected_failure_type, mock_auth_token, mock_user_query, mock_account_query, requests_mock
+def test_custom_report_bad_request_messages(
+    fault, expected_message_start, mock_auth_token, mock_user_query, mock_account_query, requests_mock
 ):
-    stream_name = "account_performance_report_daily"
-    requests_mock.post(
-        "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit",
-        status_code=status_code,
-        json=response_body,
-    )
+    custom_report = {
+        "name": "custom_account_report",
+        "reporting_object": "AccountPerformanceReportRequest",
+        "report_columns": ["AccountId", "TimePeriod", "Impressions"],
+        "report_aggregation": "Daily",
+    }
+    config = {**TEST_CONFIG, "custom_reports": [custom_report]}
+    errors = _read_errors(requests_mock, config, custom_report["name"], fault)
 
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    source = get_source(TEST_CONFIG)
-    output = read(source, TEST_CONFIG, catalog)
-
-    assert output.errors, "Expected error trace messages but got none"
-    error_trace = output.errors[0].trace.error
-    assert error_trace.failure_type == expected_failure_type
+    assert errors[0].failure_type == FailureType.config_error
+    assert errors[0].message.startswith(expected_message_start)
