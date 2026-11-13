@@ -67,7 +67,7 @@ class ClickHouseWriter(
                 )
             else ->
                 throw SystemErrorException(
-                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
+                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}",
                 )
         }
     }

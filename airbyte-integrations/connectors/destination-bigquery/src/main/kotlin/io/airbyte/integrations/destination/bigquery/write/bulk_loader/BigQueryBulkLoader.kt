@@ -101,7 +101,7 @@ class BigQueryBulkLoader(
             // This should be impossible: the load job uses the default setting of maxBadRecords=0,
             // so the job is supposed to fail if there were any bad records.
             throw RuntimeException(
-                "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
+                "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}",
             )
         }
 
@@ -204,7 +204,7 @@ class BigQueryBulkLoaderFactory(
         }
 
         throw RuntimeException(
-            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers."
+            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers.",
         )
     }
 }

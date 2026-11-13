@@ -76,6 +76,14 @@ interface ArchiveUploader {
         metadata: Map<String, String> = emptyMap(),
     )
 
+    fun startStreaming(
+        key: String,
+        contentType: String,
+        metadata: Map<String, String>,
+        directory: Path? = null,
+    ): StreamingArchiveUpload =
+        throw UnsupportedOperationException("Streaming archive upload is not supported")
+
     fun close()
 }
 
@@ -113,7 +121,7 @@ internal constructor(
     )
 
     constructor(
-        configuration: FusionConfiguration
+        configuration: FusionConfiguration,
     ) : this(configuration, createClients(configuration))
 
     private val lock = Any()
@@ -121,6 +129,10 @@ internal constructor(
     private val poisoned = AtomicBoolean()
     private val transfers = mutableSetOf<Transfer>()
     private val slots = Semaphore(4)
+    private val streamingParts = Semaphore(8)
+    private val streamingBudget = StreamingArchiveDiskBudget()
+    private val streaming = mutableSetOf<StreamingArchiveUpload>()
+    private val log = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     private val cleanupWorkers = Executors.newFixedThreadPool(4) { daemon(it, "fusion-s3-cleanup") }
     private val shutdownHook =
         if (installShutdownHook) Thread({ close() }, "fusion-s3-shutdown") else null
@@ -189,37 +201,80 @@ internal constructor(
         }
     }
 
+    @SuppressFBWarnings(
+        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
+        justification =
+            "Kotlin generates null checks for the captured lateinit session, which is assigned before registration and return.",
+    )
+    override fun startStreaming(
+        key: String,
+        contentType: String,
+        metadata: Map<String, String>,
+        directory: Path?,
+    ): StreamingArchiveUpload =
+        synchronized(lock) {
+            checkAvailable()
+            lateinit var session: StreamingS3ArchiveUpload
+            session =
+                StreamingS3ArchiveUpload(
+                    client,
+                    bucket,
+                    key,
+                    contentType,
+                    metadata,
+                    directory,
+                    budget = streamingBudget,
+                    globalParts = streamingParts,
+                    cleanupWorkers = cleanupWorkers,
+                    cleanupTimeout = cleanupTimeout,
+                    bodyFactory = bodyFactory,
+                    checkAvailable = ::checkAvailable,
+                    onUnsafe = { error ->
+                        poisoned.set(true)
+                        log.error(error) {
+                            "Fusion streaming archive cleanup failed: key=$key retained_spool_bytes=${streamingBudget.retainedBytes()}"
+                        }
+                    },
+                    onClosed = { synchronized(lock) { streaming.remove(session) } },
+                )
+            streaming.add(session)
+            session
+        }
+
     private fun checkAvailable() {
         check(!closed.get()) { "Archive uploader is closed" }
         check(!poisoned.get()) { "Archive uploader disabled after a file reader cleanup failure" }
     }
 
     override fun close() {
+        val activeStreaming: List<StreamingArchiveUpload>
         val active =
             synchronized(lock) {
                 if (!closed.compareAndSet(false, true)) return
+                activeStreaming = streaming.toList()
                 transfers.toList()
             }
         active.forEach { it.future.get()?.cancel(true) }
         // A daemon and a deadline also bound SDK/provider shutdown, including a stuck HTTP close.
         val closer = Executors.newSingleThreadExecutor { daemon(it, "fusion-s3-close") }
-        val result =
-            closer.submit {
-                var failure: Throwable? = null
-                fun attempt(block: () -> Unit) {
-                    try {
-                        block()
-                    } catch (t: Throwable) {
-                        if (failure == null) failure = t else failure!!.addSuppressed(t)
-                    }
+        val result = closer.submit {
+            var failure: Throwable? = null
+            fun attempt(block: () -> Unit) {
+                try {
+                    block()
+                } catch (t: Throwable) {
+                    val previous = failure
+                    if (previous == null) failure = t else previous.addSuppressed(t)
                 }
-                active.forEach { transfer ->
-                    attempt { transfer.body.stop(cleanupWorkers, cleanupTimeout) }
-                }
-                ownedResources.forEach { resource -> attempt { resource.close() } }
-                cleanupWorkers.shutdown()
-                failure?.let { throw it }
             }
+            activeStreaming.forEach { session -> attempt { session.close() } }
+            active.forEach { transfer ->
+                attempt { transfer.body.stop(cleanupWorkers, cleanupTimeout) }
+            }
+            ownedResources.forEach { resource -> attempt { resource.close() } }
+            cleanupWorkers.shutdown()
+            failure?.let { throw it }
+        }
         closer.shutdown()
         try {
             result.get(cleanupTimeout.toMillis(), TimeUnit.MILLISECONDS)
@@ -263,7 +318,7 @@ internal constructor(
                         .connectionTimeout(Duration.ofSeconds(10))
                         .connectionAcquisitionTimeout(Duration.ofSeconds(10))
                         .readTimeout(Duration.ofMinutes(2))
-                        .writeTimeout(Duration.ofMinutes(2))
+                        .writeTimeout(Duration.ofMinutes(2)),
                 )
                 .multipartEnabled(true)
                 .multipartConfiguration {
@@ -290,7 +345,7 @@ internal constructor(
                 val base =
                     if (config.accessKeyId != null && config.secretAccessKey != null) {
                         StaticCredentialsProvider.create(
-                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey)
+                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey),
                         )
                     } else {
                         DefaultCredentialsProvider.builder().build().also { resources.add(it) }
@@ -304,7 +359,7 @@ internal constructor(
                         .httpClientBuilder(
                             UrlConnectionHttpClient.builder()
                                 .connectionTimeout(Duration.ofSeconds(10))
-                                .socketTimeout(Duration.ofMinutes(2))
+                                .socketTimeout(Duration.ofMinutes(2)),
                         )
                         .build()
                         .also { resources.add(it) }
@@ -388,7 +443,7 @@ internal class ArchiveFileBody(
     override fun subscribe(subscriber: Subscriber<in ByteBuffer>) = wholeFile.subscribe(subscriber)
 
     override fun splitCloseable(
-        configuration: AsyncRequestBodySplitConfiguration
+        configuration: AsyncRequestBodySplitConfiguration,
     ): SdkPublisher<CloseableAsyncRequestBody> {
         val partSize = configuration.chunkSizeInBytes()
         require(partSize > 0) { "Multipart part size must be positive" }
@@ -455,7 +510,7 @@ internal class ArchiveFileBody(
                                     }
 
                                     override fun cancel() = subscription.cancel()
-                                }
+                                },
                             )
                         }
 
@@ -470,7 +525,7 @@ internal class ArchiveFileBody(
                             requestClose(subscription)
                             subscriber.onComplete()
                         }
-                    }
+                    },
                 )
         } catch (t: Exception) {
             subscriber.onSubscribe(
@@ -478,7 +533,7 @@ internal class ArchiveFileBody(
                     override fun request(n: Long) = Unit
 
                     override fun cancel() = Unit
-                }
+                },
             )
             subscriber.onError(t)
         }
@@ -488,7 +543,7 @@ internal class ArchiveFileBody(
         if (subscription.closing.compareAndSet(false, true)) scheduleClose()
     }
 
-    private fun scheduleClose() =
+    private fun scheduleClose() {
         synchronized(closeSchedulingLock) {
             if (streamCloser.isShutdown) return
             closeRequests++
@@ -531,6 +586,7 @@ internal class ArchiveFileBody(
                 }
             }
         }
+    }
 
     fun stop(cleanupWorkers: ExecutorService, timeout: Duration) {
         val task =
@@ -550,14 +606,18 @@ internal class ArchiveFileBody(
                                 streamCloser.awaitTermination(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
-                                )
-                            ) { "Archive stream close executor did not terminate" }
+                                ),
+                            ) {
+                                "Archive stream close executor did not terminate"
+                            }
                             check(
                                 reader.awaitTermination(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
-                                )
-                            ) { "Archive file reader executor did not terminate" }
+                                ),
+                            ) {
+                                "Archive file reader executor did not terminate"
+                            }
                             synchronized(lock) { closeFailure }?.let { throw it }
                         }
                         .also { cleanup = it }
@@ -609,7 +669,7 @@ private suspend fun <T> CompletableFuture<T>.awaitUpload(): T =
             if (error == null) continuation.resume(value)
             else
                 continuation.resumeWithException(
-                    if (error is CompletionException) error.cause ?: error else error
+                    if (error is CompletionException) error.cause ?: error else error,
                 )
         }
     }

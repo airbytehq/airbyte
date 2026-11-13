@@ -239,7 +239,7 @@ class BigqueryCopyMetadataCheckpointTest {
                     mapOf(
                         Operation.PROPERTY to "write",
                         "airbyte.destination.core.data-channel.medium" to medium.name,
-                    )
+                    ),
                 )
                 .build()
         private val checkpointQueue =
@@ -252,11 +252,7 @@ class BigqueryCopyMetadataCheckpointTest {
 
         init {
             val output = mockk<OutputConsumer>(relaxed = true)
-            every { output.accept(any<AirbyteMessage>()) } answers
-                {
-                    emitted.add(firstArg())
-                    Unit
-                }
+            every { output.accept(any<AirbyteMessage>()) } answers { emitted.add(firstArg()) }
             context.registerSingleton(DestinationCatalog::class.java, catalog)
             context.registerSingleton(SyncManager::class.java, sync)
             context.registerSingleton(BigqueryConfiguration::class.java, configuration)
@@ -289,7 +285,7 @@ class BigqueryCopyMetadataCheckpointTest {
             CheckpointKey(
                 CheckpointIndex(index),
                 CheckpointId(
-                    if (medium == DataChannelMedium.SOCKET) "source-$index" else index.toString()
+                    if (medium == DataChannelMedium.SOCKET) "source-$index" else index.toString(),
                 ),
             )
 

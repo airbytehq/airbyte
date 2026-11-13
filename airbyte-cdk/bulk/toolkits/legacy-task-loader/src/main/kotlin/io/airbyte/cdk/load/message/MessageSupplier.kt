@@ -21,7 +21,9 @@ abstract class ChannelMessage<T> : Message<T> {
     val channel = Channel<T>(Channel.UNLIMITED)
 
     override suspend fun publish(message: T) = channel.send(message)
+
     override suspend fun get(): T? = channel.tryReceive().getOrNull()
+
     override suspend fun close() {
         channel.close()
     }

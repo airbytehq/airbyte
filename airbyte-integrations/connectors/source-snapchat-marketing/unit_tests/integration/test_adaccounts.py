@@ -6,9 +6,9 @@ from http import HTTPStatus
 from typing import List, Optional
 from unittest import TestCase
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -61,6 +61,37 @@ class TestAdaccounts(TestCase):
         output = _read(config_builder=config())
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == AD_ACCOUNT_ID
+
+    @HttpMocker()
+    def test_read_records_with_configured_ad_account_404_raises_config_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        ad_account_request = RequestBuilder.adaccounts_by_id_endpoint(AD_ACCOUNT_ID).build()
+        http_mocker.get(
+            ad_account_request,
+            HttpResponse(
+                body='{"request_status":"ERROR","request_id":"x","error_code":"E3003","display_message":"Resource can not be found"}',
+                status_code=404,
+            ),
+        )
+
+        output = _read(config_builder=config().with_ad_account_ids([AD_ACCOUNT_ID]), expecting_exception=True)
+
+        assert not output.records
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and "Ad Account IDs" in error.trace.error.message
+            and AD_ACCOUNT_ID in error.trace.error.message
+            for error in output.errors
+        )
+        http_mocker.assert_number_of_calls(ad_account_request, 1)
 
     @HttpMocker()
     def test_read_records_with_pagination(self, http_mocker: HttpMocker) -> None:
@@ -124,6 +155,75 @@ class TestAdaccounts(TestCase):
             expected_error_prefix in msg for msg in log_messages
         ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
         assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
+
+    @HttpMocker()
+    def test_read_records_when_organization_updated_before_start_date(self, http_mocker: HttpMocker) -> None:
+        """An organization last updated before start_date must not hide its ad accounts (#47834).
+
+        The organization fixture was last updated on 2024-01-15, before the configured start_date.
+        """
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID, updated_at="2024-06-15T10:00:00.000Z"),
+        )
+
+        output = _read(config_builder=config().with_start_date("2024-06-01").with_end_date("2024-06-30"), sync_mode=SyncMode.incremental)
+
+        assert [record.record.data["id"] for record in output.records] == [AD_ACCOUNT_ID]
+
+    @HttpMocker()
+    def test_read_records_when_organization_updated_after_end_date(self, http_mocker: HttpMocker) -> None:
+        """An organization last updated after end_date must not hide its ad accounts.
+
+        The ad account fixture was last updated on 2024-01-15, inside the configured window.
+        """
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID, updated_at="2024-03-01T10:00:00.000Z"),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
+        )
+
+        output = _read(config_builder=config(), sync_mode=SyncMode.incremental)
+
+        assert [record.record.data["id"] for record in output.records] == [AD_ACCOUNT_ID]
+
+    @HttpMocker()
+    def test_start_date_still_filters_adaccounts_stream(self, http_mocker: HttpMocker) -> None:
+        """Start Date still applies to the adaccounts stream's own records, while every organization is read as a parent.
+
+        The organization and ad account fixtures were last updated on 2024-01-15, before the configured start_date.
+        """
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
+        )
+
+        output = _read(config_builder=config().with_start_date("2024-06-01").with_end_date("2024-06-30"), sync_mode=SyncMode.incremental)
+
+        assert output.records == []
 
 
 class TestAdaccountsSubstreamMultipleParents(TestCase):

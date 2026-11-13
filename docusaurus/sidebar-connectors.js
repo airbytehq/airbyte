@@ -6,6 +6,9 @@ const {
   DESTINATIONS_DOCS,
   ENTERPRISE_CONNECTORS_DOCS,
 } = require("./src/scripts/constants");
+const {
+  getChangelogPages,
+} = require("./src/scripts/connector-changelog-pages");
 
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
@@ -66,6 +69,15 @@ function getFilenamesInDir(prefix, dir, excludes) {
         key: `${prefix}${filename}`,
       };
     });
+}
+
+function getChangelogSidebarItems(docId) {
+  return getChangelogPages(docId).map(({ id, label }) => ({
+    type: "doc",
+    id,
+    label,
+    key: id,
+  }));
 }
 
 function loadConnectorRegistry() {
@@ -179,29 +191,49 @@ const sourcePostgres = {
       id: "sources/postgres/postgres-troubleshooting",
       key: "sources-postgres-troubleshooting",
     },
+    ...getChangelogSidebarItems("sources/postgres"),
+  ],
+};
+
+const sourceHubspot = {
+  type: "category",
+  label: "HubSpot",
+  key: "sources-hubspot-category",
+  link: {
+    type: "doc",
+    id: "sources/hubspot",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "sources/hubspot-migrations",
+      key: "sources-hubspot-migrations",
+    },
+    ...getChangelogSidebarItems("sources/hubspot"),
   ],
 };
 
 const sourceMongoDB = {
   type: "category",
   label: "Mongo DB",
-  key: "sources-mongodb-v2-category",
+  key: "sources-mongodb-category",
   link: {
     type: "doc",
-    id: "sources/mongodb-v2",
+    id: "sources/mongodb",
   },
   items: [
     {
       type: "doc",
       label: "Migration Guide",
-      id: "sources/mongodb-v2-migrations",
-      key: "sources-mongodb-v2-migrations",
+      id: "sources/mongodb-migrations",
+      key: "sources-mongodb-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
-      id: "sources/mongodb-v2/mongodb-v2-troubleshooting",
-      key: "sources-mongodb-v2-troubleshooting",
+      id: "sources/mongodb/mongodb-troubleshooting",
+      key: "sources-mongodb-troubleshooting",
     },
   ],
 };
@@ -245,13 +277,15 @@ function getSourceConnectors(registry) {
   const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
     "postgres",
-    "mongodb-v2",
+    "hubspot",
+    "mongodb",
     "mssql",
     "mysql",
   ]);
 
   const specialSources = [
     sourcePostgres,
+    sourceHubspot,
     sourceMongoDB,
     sourceMysql,
     sourceMssql,
