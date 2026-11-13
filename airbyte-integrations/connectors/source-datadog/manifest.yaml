@@ -2,8 +2,6 @@ version: 6.33.4
 
 type: DeclarativeSource
 
-description: removed `is_read_only` attribute from dashboards stream schema
-
 check:
   type: CheckStream
   stream_names:
@@ -16,14 +14,17 @@ definitions:
       name: audit_logs
       primary_key:
         - id
+      $parameters:
+        required_permission: audit_logs_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/audit/events
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
         record_selector:
           type: RecordSelector
           extractor:
@@ -36,12 +37,22 @@ definitions:
             type: RequestOption
             field_name: page[cursor]
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
+            page_size: 1000
             cursor_value: >-
-              {{ last_record['meta']['page']['after'] if last_record else None
-              }}
-            stop_condition: "{{ 'page' not in last_record['meta'] }}"
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - $ref: "#/definitions/sync_date_from_timestamp"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -51,20 +62,50 @@ definitions:
       name: dashboards
       primary_key:
         - id
+      $parameters:
+        required_permission: dashboards_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/dashboard
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - dashboards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: deleted
+          values:
+            - "false"
+            - "true"
+          request_option:
+            type: RequestOption
+            field_name: filter[deleted]
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - deleted
+              value: "{{ stream_partition['deleted'] == 'true' }}"
+              value_type: boolean
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -74,14 +115,14 @@ definitions:
       name: downtimes
       primary_key:
         - id
+      $parameters:
+        required_permission: monitors_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/downtime
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -102,8 +143,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/teams
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -126,14 +165,14 @@ definitions:
       name: incidents
       primary_key:
         - id
+      $parameters:
+        required_permission: incident_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/incidents
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -146,14 +185,13 @@ definitions:
             type: RequestOption
             field_name: page[offset]
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response.get("meta", {}).get("pagination",
-              {}).get("next_offset", {}) }}
-            stop_condition: >-
-              {{ not response.get("meta", {}).get("pagination",
-              {}).get("next_offset", {}) }}
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -163,6 +201,8 @@ definitions:
       name: logs
       primary_key:
         - id
+      $parameters:
+        required_permission: logs_read_data
       retriever:
         type: SimpleRetriever
         requester:
@@ -171,21 +211,24 @@ definitions:
           http_method: GET
           request_parameters:
             filter[query]: "{{ config['query'] }}"
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Too many requests, retrying...
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 400
+                error_message: >-
+                  {%- set errors = response.get('errors') if response is mapping else none -%}
+                  {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+                  if errors is sequence and errors is not mapping else ''))[:300] -%}
+                  Datadog rejected the log search query{{ ': ' ~ details if details
+                  else '' }}. Check the Query field.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -195,48 +238,25 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 1000
-            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+            page_size: "{{ config.get('max_records_per_request', 5000) }}"
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: sync_date
-        lookback_window: P31D
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ config['start_date'] or day_delta(-30,
-            format='%Y-%m-%dT%H:%M:%SZ') }}
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: filter[from]
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: filter[to]
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ config['end_date'] or day_delta(-1, format='%Y-%m-%dT%H:%M:%SZ')
-            }}
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: P1M
-        cursor_granularity: PT0.000001S
+        $ref: "#/definitions/timestamp_cursor"
       transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - sync_date
-              value: "{{ record['attributes']['timestamp'] }}"
+        - $ref: "#/definitions/sync_date_from_timestamp"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -246,20 +266,54 @@ definitions:
       name: metrics
       primary_key:
         - id
+      $parameters:
+        required_permission: metrics_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/metrics
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          request_parameters:
+            window[seconds]: "5184000"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: transient_error
+                http_codes:
+                  - 410
+                error_message: >-
+                  The page cursor of the Datadog metrics list is expired. The
+                  next sync reads the list from the first page.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('pagination') or
+              {}).get('next_cursor') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not ((response.get('meta') or
+              {}).get('pagination') or {}).get('next_cursor') }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -269,14 +323,14 @@ definitions:
       name: monitors
       primary_key:
         - id
+      $parameters:
+        required_permission: monitors_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/monitor
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -291,20 +345,50 @@ definitions:
       name: service_level_objectives
       primary_key:
         - id
+      $parameters:
+        required_permission: slos_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/slo
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: deleted
+          values:
+            - "false"
+            - "true"
+          request_option:
+            type: RequestOption
+            field_name: is_deleted
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - deleted
+              value: "{{ stream_partition['deleted'] == 'true' }}"
+              value_type: boolean
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -312,20 +396,49 @@ definitions:
     synthetic_tests:
       type: DeclarativeStream
       name: synthetic_tests
+      $parameters:
+        required_permission: synthetics_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/synthetics/tests
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Synthetic Monitoring is not active for this Datadog account.
+                  Deselect the synthetic_tests stream or activate Synthetic
+                  Monitoring in Datadog.
+              - $ref: "#/definitions/missing_permission_filter"
+              - $ref: "#/definitions/rejected_keys_filter"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - tests
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -335,14 +448,14 @@ definitions:
       name: users
       primary_key:
         - id
+      $parameters:
+        required_permission: user_access_read
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/users
           http_method: GET
-          request_headers:
-            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -369,6 +482,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.{{ config['site'] }}/api/
+    request_headers:
+      DD-APPLICATION-KEY: "{{ config['application_key'] }}"
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -376,6 +491,85 @@ definitions:
         type: RequestOption
         field_name: DD-API-KEY
         inject_into: header
+    error_handler:
+      $ref: "#/definitions/error_handler"
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: X-RateLimit-Reset
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/missing_permission_filter"
+      - $ref: "#/definitions/rejected_keys_filter"
+  missing_permission_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    predicate: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else '') -%}
+      {{ 'Failed permission authorization checks' in details }}
+    error_message: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else ''))[:300] -%}
+      {%- set permission = parameters.get('required_permission') -%}
+      The Application Key lacks {{ 'the ' ~ permission ~ ' permission' if permission
+      else 'a permission that this stream requires' }}{{ ': ' ~ details if details
+      else '' }}. Grant {{ permission if permission else 'the missing permission' }}
+      to the Application Key in Datadog.
+  rejected_keys_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes:
+      - 401
+      - 403
+    error_message: >-
+      {%- set errors = response.get('errors') if response is mapping else none -%}
+      {%- set details = (errors if errors is string else (errors | select('string') | join(', ')
+      if errors is sequence and errors is not mapping else ''))[:300] -%}
+      Datadog rejected the API Key or the Application Key{{ ': ' ~ details if details
+      else '' }}. Check that both keys are complete and valid and belong to the
+      selected Site.
+  timestamp_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: sync_date
+    lookback_window: P1D
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ config['start_date'] or day_delta(-30,
+        format='%Y-%m-%dT%H:%M:%SZ') }}
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: filter[from]
+      inject_into: request_parameter
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ config['end_date'] or now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    step: P1M
+    cursor_granularity: PT0.000001S
+  window_end_bound: >-
+    {{ format_datetime(str_to_datetime(stream_interval['end_time']) +
+    duration('PT0.000001S'), '%Y-%m-%dT%H:%M:%S.%fZ') }}
+  sync_date_from_timestamp:
+    type: AddFields
+    fields:
+      - path:
+          - sync_date
+        value: "{{ record['attributes']['timestamp'] }}"
 
 streams:
   - $ref: "#/definitions/streams/audit_logs"
@@ -389,6 +583,79 @@ streams:
   - $ref: "#/definitions/streams/service_level_objectives"
   - $ref: "#/definitions/streams/synthetic_tests"
   - $ref: "#/definitions/streams/users"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/audit/events$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/dashboard$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/downtime$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/incidents$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 300
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/logs/events$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/metrics$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/monitor$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: PT10S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/slo$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 12000
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v1/synthetics/tests$
 
 spec:
   type: Spec
@@ -414,16 +681,16 @@ spec:
       query:
         type: string
         description: >-
-          The search query. This just applies to Incremental syncs. If empty,
-          it'll collect all logs.
+          The search query. This applies to the logs stream in every sync mode.
+          If empty, it'll collect all logs.
         order: 2
         title: Query
       start_date:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated. This just applies to Incremental
-          syncs.
+          this date will not be replicated. This applies to the logs and
+          audit_logs streams in every sync mode.
         order: 3
         title: Start date
         default: "2023-12-01T00:00:00Z"
@@ -439,6 +706,10 @@ spec:
           - us5.datadoghq.com
           - datadoghq.eu
           - ddog-gov.com
+          - us2.ddog-gov.com
+          - ap1.datadoghq.com
+          - ap2.datadoghq.com
+          - uk1.datadoghq.com
         order: 4
         title: Site
         default: datadoghq.com
@@ -446,9 +717,9 @@ spec:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Data after this
-          date will  not be replicated. An empty value will represent the
-          current datetime for each  execution. This just applies to Incremental
-          syncs.
+          date will not be replicated. An empty value means the time of the
+          sync. This applies to the logs and audit_logs streams in every sync
+          mode.
         order: 5
         title: End date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -456,7 +727,9 @@ spec:
           - "2022-10-01T00:00:00Z"
       max_records_per_request:
         type: integer
-        description: Maximum number of records to collect per request.
+        description: >-
+          Maximum number of records to collect per request. This is the page
+          size of the logs stream.
         order: 6
         title: Max records per requests
         default: 5000
@@ -495,6 +768,16 @@ spec:
         order: 7
         title: Queries
         default: []
+      num_workers:
+        type: integer
+        description: >-
+          How many streams and slices are read at the same time. Lower it if
+          syncs hit Datadog rate limits.
+        order: 8
+        title: Number of concurrent workers
+        default: 3
+        maximum: 10
+        minimum: 2
     additionalProperties: true
 
 metadata:
@@ -619,6 +902,11 @@ schemas:
               - "null"
             description: JSON object of attributes from Audit Logs events.
             additionalProperties: true
+          message:
+            type:
+              - string
+              - "null"
+            description: Message of the event.
           service:
             type:
               - string
@@ -671,6 +959,14 @@ schemas:
         description: Creation date of the dashboard.
         format: date-time
         readOnly: true
+      deleted:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Whether the dashboard is deleted. The connector sets it from the
+          request that returned the record.
+        readOnly: true
       deleted_at:
         type:
           - string
@@ -683,6 +979,15 @@ schemas:
           - string
           - "null"
         description: Dashboard identifier.
+        readOnly: true
+      is_read_only:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Whether this dashboard is read-only. If true, only the author and
+          admins can make changes to it. Datadog has deprecated this property in
+          favor of the Restriction Policies API, but still returns it.
         readOnly: true
       layout_type:
         type:
@@ -1186,6 +1491,11 @@ schemas:
               - string
               - "null"
             description: The name of the application or service generating the log events.
+          source:
+            type:
+              - string
+              - "null"
+            description: Source of your log.
           status:
             type:
               - string
@@ -1262,11 +1572,19 @@ schemas:
             type:
               - string
               - "null"
+          id:
+            type:
+              - integer
+              - "null"
           name:
             type:
               - string
               - "null"
       deleted:
+        type:
+          - string
+          - "null"
+      draft_status:
         type:
           - string
           - "null"
@@ -1284,11 +1602,23 @@ schemas:
             - "null"
           additionalProperties: true
           properties:
+            active:
+              type:
+                - boolean
+                - "null"
             end:
               type:
                 - integer
                 - "null"
+            groups:
+              type:
+                - array
+                - "null"
             id:
+              type:
+                - integer
+                - "null"
+            monitor_id:
               type:
                 - integer
                 - "null"
@@ -1728,6 +2058,10 @@ schemas:
             type:
               - string
               - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
       groups:
         type:
           - array
@@ -1778,6 +2112,11 @@ schemas:
             type:
               - string
               - "null"
+      sli_specification:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
       tags:
         type:
           - array
@@ -1901,7 +2240,7 @@ schemas:
         type:
           - string
           - "null"
-        description: Creation date of the Synthetic test.
+        description: Modification date of the Synthetic test.
         format: date-time
         readOnly: true
       monitor_id:
@@ -1992,6 +2331,13 @@ schemas:
         description: Attributes of user object returned by the API.
         additionalProperties: true
         properties:
+          allowed_login_methods:
+            type:
+              - array
+              - "null"
+            description: Login methods allowed for the user.
+            items:
+              type: string
           created_at:
             type:
               - string
@@ -2018,6 +2364,24 @@ schemas:
               - string
               - "null"
             description: URL of the user's icon.
+          is_access_configurable_bot:
+            type:
+              - boolean
+              - "null"
+            description: Whether the user is an access-configurable bot.
+          last_login_time:
+            type:
+              - string
+              - "null"
+            description: >-
+              Time of the user's most recent login. Null if the user has never
+              logged in.
+            format: date-time
+          mfa_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether multi-factor authentication is enabled for the user.
           modified_at:
             type:
               - string
@@ -2044,6 +2408,11 @@ schemas:
               - string
               - "null"
             description: Title of the user.
+          uuid:
+            type:
+              - string
+              - "null"
+            description: UUID of the user.
           verified:
             type:
               - boolean
