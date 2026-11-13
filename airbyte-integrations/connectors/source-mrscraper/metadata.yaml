@@ -1,0 +1,47 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.app.mrscraper.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-mrscraper
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 654fc9a3-b1f8-40e7-a3d7-ab152a4bc6bb
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-mrscraper
+  githubIssueLabel: source-mrscraper
+  icon: icon.svg
+  license: MIT
+  name: MrScraper
+  releaseDate: 2026-10-05
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mrscraper
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://docs.mrscraper.com/docs/api/overview
+      type: api_reference
+    - title: Authentication
+      url: https://docs.mrscraper.com/docs/api/authentication
+      type: authentication_guide
+    - title: Pagination
+      url: https://docs.mrscraper.com/docs/api/pagination
+      type: other
