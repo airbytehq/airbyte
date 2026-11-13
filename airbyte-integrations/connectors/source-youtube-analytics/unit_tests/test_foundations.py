@@ -339,3 +339,36 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
         "credentials",
         "client_id",
     ]
+
+
+def test_check_passes_for_an_account_whose_retired_annotations_report_has_no_files(config):
+    """YouTube no longer generates `channel_annotations_a1` files, so its job lists no reports.
+
+    `check` must probe a report type YouTube still generates and leave the retired one alone.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "annotations-job", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": "channel_basic_a3"},
+                ]
+            },
+        )
+        create_job = mocker.post(f"{_API}/jobs", json={"id": "unexpected"})
+        # The API returns {} rather than {"reports": []} when a job has no report files.
+        retired_reports = mocker.get(f"{_API}/jobs/annotations-job/reports", json={})
+        basic_reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        download = mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.message is None
+    assert status.status == Status.SUCCEEDED
+    assert not retired_reports.called
+    assert not create_job.called
+    assert basic_reports.call_count == 1
+    assert basic_reports.last_request.qs == {"createdafter": ["1990-01-01t00:00:00.000000z"]}
+    assert download.call_count == 1
