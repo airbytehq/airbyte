@@ -19,6 +19,10 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 
 - **No API date filter (2 streams):** `scorecards`, `users` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 
+## Answered scorecards review method
+
+`POST /v2/stats/activity/scorecards` returns only manually reviewed scorecards unless `filter.reviewMethod` is sent. Gong documents `MANUAL` as the default and accepts `MANUAL`, `AUTOMATIC` (scored by Gong AI) and `BOTH`; records carry `reviewMethod` (`MANUAL` or `AUTOMATIC`), and `reviewerUserId` is null on `AUTOMATIC` ones. The `scorecards_review_method` config field (default `MANUAL`) is sent as `filter.reviewMethod` and merges with the cursor's `filter.reviewFromDate`. Changing it keeps the `reviewTime` cursor, so older scorecards of the newly selected method need a stream refresh.
+
 ## Error handling
 
 All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.rate_limit_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
