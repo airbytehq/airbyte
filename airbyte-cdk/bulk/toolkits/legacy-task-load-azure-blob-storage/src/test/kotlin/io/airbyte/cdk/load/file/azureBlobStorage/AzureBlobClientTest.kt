@@ -12,6 +12,10 @@ import com.azure.core.util.polling.SyncPoller
 import com.azure.storage.blob.BlobClient
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.blob.batch.BlobBatch
+import com.azure.storage.blob.batch.BlobBatchClient
+import com.azure.storage.blob.batch.BlobBatchClientBuilder
+import com.azure.storage.blob.batch.BlobBatchStorageException
 import com.azure.storage.blob.models.BlobCopyInfo
 import com.azure.storage.blob.models.BlobItem
 import com.azure.storage.blob.models.BlobProperties
@@ -22,11 +26,14 @@ import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfig
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.unmockkConstructor
 import io.mockk.verify
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -45,7 +52,7 @@ class AzureBlobClientTest {
 
     @BeforeEach
     fun setup() {
-        serviceClient = mockk()
+        serviceClient = mockk(relaxed = true)
         containerClient = mockk()
         blobConfig =
             AzureBlobStorageClientConfiguration(
@@ -65,6 +72,13 @@ class AzureBlobClientTest {
                 serviceClient = serviceClient,
                 blobConfig = blobConfig,
             )
+    }
+
+    @AfterEach
+    fun tearDown() {
+        try {
+            unmockkConstructor(BlobBatchClientBuilder::class)
+        } catch (_: Exception) {}
     }
 
     @Test
@@ -384,4 +398,139 @@ class AzureBlobClientTest {
                 runBlocking { azureBlobClient.startStreamingUpload(key, emptyMap()) }
             }
         }
+
+    private fun setupBatchDeleteMocks(): Pair<BlobBatchClient, BlobBatch> {
+        val batchClient = mockk<BlobBatchClient>()
+        val batch = mockk<BlobBatch>()
+
+        mockkConstructor(BlobBatchClientBuilder::class)
+        every { anyConstructed<BlobBatchClientBuilder>().buildClient() } returns batchClient
+        every { batchClient.blobBatch } returns batch
+        every { batch.deleteBlob(any<String>(), any(), any(), any()) } returns mockk()
+
+        return Pair(batchClient, batch)
+    }
+
+    @Test
+    fun `delete keys - batch delete succeeds`() = runBlocking {
+        val keys = setOf("blob1", "blob2")
+        val (batchClient, batch) = setupBatchDeleteMocks()
+        every { batchClient.submitBatch(batch) } just runs
+
+        azureBlobClient.delete(keys)
+
+        verify(exactly = 1) { batchClient.submitBatch(batch) }
+    }
+
+    @Test
+    fun `delete keys - empty set does nothing`() = runBlocking {
+        azureBlobClient.delete(emptySet())
+        // No exception, no interactions
+    }
+
+    @Test
+    fun `delete keys - batch 403 BlobStorageException falls back to sequential delete`() =
+        runBlocking {
+            val keys = setOf("blob1", "blob2")
+            val httpResponse = mockk<HttpResponse>()
+            every { httpResponse.request } returns null
+            every { httpResponse.statusCode } returns 403
+
+            val (batchClient, batch) = setupBatchDeleteMocks()
+            every { batchClient.submitBatch(batch) } throws
+                BlobStorageException("AuthenticationFailed", httpResponse, null)
+
+            // Set up per-blob delete mocks for the fallback path
+            val blobClient1 = mockk<BlobClient>()
+            val blobClient2 = mockk<BlobClient>()
+            every { containerClient.getBlobClient("blob1") } returns blobClient1
+            every { containerClient.getBlobClient("blob2") } returns blobClient2
+            every { blobClient1.delete() } just runs
+            every { blobClient2.delete() } just runs
+
+            azureBlobClient.delete(keys)
+
+            // Verify fallback to per-blob delete
+            verify(exactly = 1) { blobClient1.delete() }
+            verify(exactly = 1) { blobClient2.delete() }
+        }
+
+    @Test
+    fun `delete keys - batch 403 BlobBatchStorageException falls back to sequential delete`() =
+        runBlocking {
+            val keys = setOf("blob1", "blob2")
+
+            val (batchClient, batch) = setupBatchDeleteMocks()
+
+            val batchSubException = mockk<BlobStorageException> { every { statusCode } returns 403 }
+            val batchException =
+                mockk<BlobBatchStorageException> {
+                    every { batchExceptions } returns listOf(batchSubException)
+                }
+            every { batchClient.submitBatch(batch) } throws batchException
+
+            // Set up per-blob delete mocks for the fallback path
+            val blobClient1 = mockk<BlobClient>()
+            val blobClient2 = mockk<BlobClient>()
+            every { containerClient.getBlobClient("blob1") } returns blobClient1
+            every { containerClient.getBlobClient("blob2") } returns blobClient2
+            every { blobClient1.delete() } just runs
+            every { blobClient2.delete() } just runs
+
+            azureBlobClient.delete(keys)
+
+            verify(exactly = 1) { blobClient1.delete() }
+            verify(exactly = 1) { blobClient2.delete() }
+        }
+
+    @Test
+    fun `delete keys - batch non-403 BlobStorageException rethrows`(): Unit = runBlocking {
+        val keys = setOf("blob1")
+        val httpResponse = mockk<HttpResponse>()
+        every { httpResponse.request } returns null
+        every { httpResponse.statusCode } returns 500
+
+        val (batchClient, batch) = setupBatchDeleteMocks()
+        every { batchClient.submitBatch(batch) } throws
+            BlobStorageException("InternalError", httpResponse, null)
+
+        assertThrows(BlobStorageException::class.java) {
+            runBlocking { azureBlobClient.delete(keys) }
+        }
+    }
+
+    @Test
+    fun `delete keys - batch non-403 BlobBatchStorageException rethrows`(): Unit = runBlocking {
+        val keys = setOf("blob1")
+
+        val (batchClient, batch) = setupBatchDeleteMocks()
+
+        val batchSubException = mockk<BlobStorageException> { every { statusCode } returns 500 }
+        val batchException =
+            mockk<BlobBatchStorageException> {
+                every { batchExceptions } returns listOf(batchSubException)
+            }
+        every { batchClient.submitBatch(batch) } throws batchException
+
+        assertThrows(BlobBatchStorageException::class.java) {
+            runBlocking { azureBlobClient.delete(keys) }
+        }
+    }
+
+    @Test
+    fun `delete keys - batch 404 BlobBatchStorageException is ignored`() = runBlocking {
+        val keys = setOf("blob1")
+
+        val (batchClient, batch) = setupBatchDeleteMocks()
+
+        val batchSubException = mockk<BlobStorageException> { every { statusCode } returns 404 }
+        val batchException =
+            mockk<BlobBatchStorageException> {
+                every { batchExceptions } returns listOf(batchSubException)
+            }
+        every { batchClient.submitBatch(batch) } throws batchException
+
+        // Should not throw — 404 is silently ignored
+        azureBlobClient.delete(keys)
+    }
 }

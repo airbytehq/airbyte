@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.11 — 2026-11-13
+
+[#78500](https://github.com/airbytehq/airbyte/pull/78500) - Fix: fallback from batch delete to sequential per-blob delete on 403 for SAS-authenticated Azure Blob Storage destinations.
+
 ### 1.1.10 — 2026-11-05
 
 [#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.
