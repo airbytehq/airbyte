@@ -526,14 +526,14 @@ definitions:
               'post_video_social_actions',
               ])
             }}
-  # Parent for the comment stream: post ids only, so the per-post comment requests are not
-  # preceded by a full ~60-field post read. Not exposed in `streams`.
+  # Parent for the comment stream: post ids and updated_time only, so the per-post comment requests
+  # are not preceded by a full ~60-field post read. Not exposed in `streams`.
   post_id_stream:
     $ref: "#/definitions/base_stream"
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_facebook_pages/schemas/post.json"
-    # Only ids are read, so the inherited date transformation has nothing to convert.
+    # The cursor parses updated_time in Meta's own format, so the inherited date transformation is not needed.
     transformations: []
     $parameters:
       name: "post_ids"
@@ -546,7 +546,22 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          fields: "id"
+          fields: "id,updated_time"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_time
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
 
   # One request per post, so a Page with many posts uses many calls; filter=stream returns
   # replies as well as top-level comments. https://developers.facebook.com/docs/graph-api/reference/post/comments/
@@ -567,6 +582,7 @@ definitions:
             stream: "#/definitions/post_id_stream"
             parent_key: id
             partition_field: post_id
+            incremental_dependency: true
       requester:
         $ref: "#/definitions/requester"
         url: "https://graph.facebook.com/v26.0/{{ stream_partition['post_id'] }}/comments"
@@ -582,6 +598,21 @@ definitions:
             value: "{{ stream_partition['post_id'] }}"
             # Post ids look like 1_10, which Python would otherwise read as the integer 110.
             value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_time
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      global_substream_cursor: true
 
   # Recommendation nodes have no id of their own, so this stream has no primary key.
   # https://developers.facebook.com/docs/graph-api/reference/page/ratings/
