@@ -53,17 +53,22 @@ class TestPublisherPerformanceStream(TestCase):
 
     @HttpMocker()
     def test_incremental_read_resumes_from_state_with_lookback(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(_request("2024-01-02"), _response(2))
-        http_mocker.get(_request("2024-01-03"), _response(3))
+        for publisher_id, day in enumerate(["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"], start=1):
+            http_mocker.get(_request(day), _response(publisher_id))
         config = ConfigBuilder().with_lookback_days(1).build()
         catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.incremental).build()
-        state = StateBuilder().with_stream_state(_STREAM, {"date": "2024-01-03"}).build()
 
-        output = read(get_source(config=config, catalog=catalog, state=state), config, catalog, state)
+        first = read(get_source(config=config, catalog=catalog), config, catalog)
+        state = StateBuilder().with_stream_state(_STREAM, first.most_recent_state.stream_state.__dict__).build()
+        with freezegun.freeze_time("2024-01-05T12:00:00Z"):
+            output = read(get_source(config=config, catalog=catalog, state=state), config, catalog, state)
 
+        assert first.most_recent_state.stream_state.__dict__["date"] == "2024-01-03"
         assert not output.errors
         assert sorted((r.record.data["date"], r.record.data["publisherId"]) for r in output.records) == [
             ("2024-01-02", 2),
             ("2024-01-03", 3),
+            ("2024-01-04", 4),
+            ("2024-01-05", 5),
         ]
-        assert output.most_recent_state.stream_state.__dict__["date"] == "2024-01-03"
+        assert output.most_recent_state.stream_state.__dict__["date"] == "2024-01-05"

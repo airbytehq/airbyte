@@ -230,6 +230,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
+        global_substream_cursor: true
         lookback_window: P{{ config['lookback_days'] }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -258,6 +259,9 @@ definitions:
             - path:
                 - date
               value: "{{ stream_interval.start_time }}"
+            - path:
+                - region
+              value: "{{ stream_partition.region }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -315,6 +319,15 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT1M
+      matchers: []
 
 streams:
   - $ref: "#/definitions/streams/campaign_performance"
@@ -381,9 +394,12 @@ spec:
         description: >-
           Awin regions to request for the creative performance stream. The Awin
           creative report requires a region, so the stream reads one report per
-          selected region and returns no records when none are selected.
+          selected region and returns no records when none are selected. A region
+          added after this stream has synced data is read only from the last
+          synced date minus Lookback Days, so refresh the creative_performance
+          stream after adding a region to backfill its earlier history.
         order: 5
-        title: Creative Performance Regions
+        title: Creative performance regions
         items:
           type: string
           enum:
@@ -781,6 +797,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       advertiserId:
         type:
           - "null"
@@ -890,6 +907,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       advertiserId:
         type:
           - "null"

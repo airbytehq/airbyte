@@ -46,7 +46,7 @@ data:
     streams:
       - transactions
       - campaign_performance
-      - publisher_performance
+      - publishers
   externalDocumentationUrls:
     - title: Advertiser API reference
       url: https://help.awin.com/apidocs/for-advertisers

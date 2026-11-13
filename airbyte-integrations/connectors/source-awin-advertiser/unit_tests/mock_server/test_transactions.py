@@ -5,10 +5,11 @@ from unittest import TestCase
 
 import freezegun
 from conftest import get_source
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from mock_server.config import ADVERTISER_ID, BASE_URL, ConfigBuilder
 
@@ -58,3 +59,24 @@ class TestTransactionsStream(TestCase):
             3: False,
         }
         assert records[2]["basketProducts"] == [{"productId": "sku-2", "quantity": 2}]
+
+    @HttpMocker()
+    def test_emitted_fields_are_declared_in_the_discovered_schema(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(
+            HttpRequest(
+                url=f"{BASE_URL}/advertisers/{ADVERTISER_ID}/transactions/",
+                query_params={"startDate": "2024-01-01T00:00:00", "endDate": "2024-01-03T12:00:00", "showBasketProducts": "true"},
+            ),
+            HttpResponse(body=json.dumps([_transaction(1, "approved"), _transaction(2, "deleted")]), status_code=200),
+        )
+        config = ConfigBuilder().build()
+        catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
+
+        output = read(get_source(config=config, catalog=catalog), config, catalog)
+        schema = next(s.json_schema for s in discover(get_source(config=config), config).catalog.catalog.streams if s.name == _STREAM)
+
+        assert not output.errors
+        assert len(output.records) == 2
+        for record in output.records:
+            assert set(record.record.data) - set(schema["properties"]) == set()
+            Draft7Validator(schema).validate(record.record.data)
