@@ -72,8 +72,6 @@ def test_skips_archived_non_member_channels(requests_mock, token_config, stream_
     read_stream(stream_name, token_config, {})
 
     requested_channels = {
-        request.qs["channel"][0]
-        for request in requests_mock.request_history
-        if request.path == "/api/conversations.history"
+        request.qs["channel"][0] for request in requests_mock.request_history if request.path == "/api/conversations.history"
     }
     assert requested_channels == {"archived-member", "active-outsider"}
