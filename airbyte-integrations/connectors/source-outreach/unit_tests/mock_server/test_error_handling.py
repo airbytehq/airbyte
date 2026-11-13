@@ -57,6 +57,54 @@ class _Clock:
 
 class TestErrorHandling(TestCase):
     @HttpMocker()
+    def test_401_refreshes_the_token_and_retries_with_the_new_token(self, http_mocker: HttpMocker) -> None:
+        token_request = OutreachRequestBuilder.token_request()
+        http_mocker.post(
+            token_request,
+            [
+                HttpResponse(body='{"access_token": "token-A", "expires_in": 7200}', status_code=200),
+                HttpResponse(body='{"access_token": "token-B", "expires_in": 7200}', status_code=200),
+            ],
+        )
+        original_request = OutreachRequestBuilder.endpoint("/accounts").build(headers={"Authorization": "Bearer token-A"})
+        refreshed_request = OutreachRequestBuilder.endpoint("/accounts").build(headers={"Authorization": "Bearer token-B"})
+        http_mocker.get(
+            original_request,
+            error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again."),
+        )
+        http_mocker.get(refreshed_request, _accounts_page())
+
+        output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        assert not output.errors
+        assert record_ids(output) == [1]
+        http_mocker.assert_number_of_calls(original_request, 1)
+        http_mocker.assert_number_of_calls(refreshed_request, 1)
+        http_mocker.assert_number_of_calls(token_request, 2)
+
+    @HttpMocker()
+    def test_401_after_refresh_fails_as_config_error_without_refreshing_again(self, http_mocker: HttpMocker) -> None:
+        token_request = OutreachRequestBuilder.token_request()
+        http_mocker.post(
+            token_request,
+            [
+                HttpResponse(body='{"access_token": "token-A", "expires_in": 7200}', status_code=200),
+                HttpResponse(body='{"access_token": "token-B", "expires_in": 7200}', status_code=200),
+            ],
+        )
+        accounts_request = _request()
+        expired_token = error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again.")
+        http_mocker.get(accounts_request, [expired_token, expired_token])
+
+        output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        assert output.records == []
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert output.errors[0].trace.error.message == "Refreshed OAuth access token is rejected by the API."
+        http_mocker.assert_number_of_calls(accounts_request, 2)
+        http_mocker.assert_number_of_calls(token_request, 2)
+
+    @HttpMocker()
     def test_403_fails_as_config_error_with_the_scope_outreach_names(self, http_mocker: HttpMocker) -> None:
         # Body captured from a live 403 on a token without the stream's scope.
         given_token(http_mocker)

@@ -886,6 +886,11 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Outreach can expire access tokens mid-sync; refresh once before retrying.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
         - type: HttpResponseFilter
           http_codes:
             - 403
