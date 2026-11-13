@@ -113,8 +113,8 @@ class PostgresTableSchemaMapper(
                     finalSchema =
                         mapOf(
                             Meta.COLUMN_NAME_DATA to
-                                ColumnType(PostgresDataType.JSONB.typeName, false)
-                        )
+                                ColumnType(PostgresDataType.JSONB.typeName, false),
+                        ),
                 ),
             importType = tableSchema.importType,
         )

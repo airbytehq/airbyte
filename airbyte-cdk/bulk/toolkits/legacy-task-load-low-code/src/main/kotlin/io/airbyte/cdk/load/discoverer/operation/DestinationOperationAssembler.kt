@@ -41,12 +41,13 @@ class DestinationOperationAssembler(
             else
                 (schemaRequester
                         ?: throw IllegalStateException(
-                            "Object ${destinationObject.name} does not have properties but schemaRequester is not defined to fetch it"
+                            "Object ${destinationObject.name} does not have properties but schemaRequester is not defined to fetch it",
                         ))
                     .send(
                         mapOf(
-                            "object" to destinationObject.apiRepresentation.toInterpolationContext()
-                        )
+                            "object" to
+                                destinationObject.apiRepresentation.toInterpolationContext(),
+                        ),
                     )
                     .use { response -> decoder.decode(response.getBodyOrEmpty()) }
 
@@ -72,14 +73,13 @@ class DestinationOperationAssembler(
     private fun createOperation(
         objectName: String,
         schemaFromApi: JsonNode,
-        insertionMethod: InsertionMethod
+        insertionMethod: InsertionMethod,
     ): DestinationOperation? {
         val properties =
             schemaFromApi.extractArray(propertiesPath).map { insertionMethod.createProperty(it) }
-        val matchingKeys =
-            properties.filter {
-                it.isMatchingKey()
-            } // note that composite keys are not supported in this model
+        val matchingKeys = properties.filter {
+            it.isMatchingKey()
+        } // note that composite keys are not supported in this model
         val propertiesForSyncMode = properties.filter { it.isAvailable() }
 
         if (propertiesForSyncMode.isEmpty()) {
@@ -108,7 +108,7 @@ class DestinationOperationAssembler(
             properties =
                 propertiesForSyncMode.associateTo(LinkedHashMap()) { it.getName() to it.getType() },
             additionalProperties = false,
-            required = propertiesForSyncMode.filter { it.isRequired() }.map { it.getName() }
+            required = propertiesForSyncMode.filter { it.isRequired() }.map { it.getName() },
         )
     }
 }

@@ -29,7 +29,7 @@ class AvroNameTransformerTest {
 
     @Test
     internal fun testGetIdentifier() {
-        RAW_TO_NORMALIZED_IDENTIFIERS.forEach { (raw: String?, normalized: String?) ->
+        RAW_TO_NORMALIZED_IDENTIFIERS.forEach { (raw, normalized) ->
             Assertions.assertEquals(normalized, INSTANCE.getIdentifier(raw))
             Assertions.assertEquals(
                 normalized,
@@ -40,7 +40,7 @@ class AvroNameTransformerTest {
 
     @Test
     internal fun testGetNamespace() {
-        RAW_TO_NORMALIZED_NAMESPACES.forEach { (raw: String?, normalized: String?) ->
+        RAW_TO_NORMALIZED_NAMESPACES.forEach { (raw, normalized) ->
             Assertions.assertEquals(normalized, INSTANCE.getNamespace(raw))
         }
     }

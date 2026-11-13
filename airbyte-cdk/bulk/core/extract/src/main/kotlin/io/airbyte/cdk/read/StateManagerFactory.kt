@@ -34,11 +34,13 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
@@ -55,22 +57,67 @@ class StateManagerFactory(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}") val dataChannelFormat: String,
 ) {
+    private val log = KotlinLogging.logger {}
+
     /** Generates a [StateManager] instance based on the provided inputs. */
     fun create(
         config: SourceConfiguration,
         configuredCatalog: ConfiguredAirbyteCatalog,
         inputState: InputState,
     ): StateManager {
+        val droppedStreamIDs = mutableListOf<StreamIdentifier>()
         val allStreams: List<Stream> =
             metadataQuerierFactory.session(config).use { mq ->
-                configuredCatalog.streams.mapNotNull { toStream(mq, it) }
+                configuredCatalog.streams.mapNotNull { configuredStream ->
+                    val streamID = StreamIdentifier.from(configuredStream.stream)
+                    toStream(mq, configuredStream)
+                        ?: run {
+                            droppedStreamIDs += streamID
+                            outputConsumer.accept(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                                    .withStatus(AirbyteStreamStatus.STARTED),
+                            )
+                            outputConsumer.accept(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                                    .withStatus(AirbyteStreamStatus.INCOMPLETE),
+                            )
+                            null
+                        }
+                }
             }
+        if (config.global && droppedStreamIDs.isNotEmpty()) {
+            throw ConfigErrorException(
+                "CDC sync aborted: streams ${droppedStreamIDs.map { it.toString() }} could not be " +
+                    "read due to catalog validation errors. Advancing the global CDC position " +
+                    "would cause permanent data loss for these streams. Please resolve the " +
+                    "errors above and retry.",
+            )
+        }
         return if (config.global) {
-            when (inputState) {
-                is StreamInputState ->
-                    throw ConfigErrorException("input state unexpectedly of type STREAM")
-                is GlobalInputState -> forGlobal(allStreams, inputState)
-                is EmptyInputState -> forGlobal(allStreams)
+            metadataQuerierFactory.session(config).use { mq ->
+                when (inputState) {
+                    is StreamInputState -> {
+                        val residual = inputState.streams.filterValues { !it.isNull && !it.isEmpty }
+                        if (residual.isEmpty()) {
+                            log.warn {
+                                "Ignoring empty STREAM input state for ${inputState.streams.keys}; " +
+                                    "starting from scratch with global state."
+                            }
+                            forGlobal(mq, allStreams)
+                        } else {
+                            throw ConfigErrorException(
+                                "Input state is of type STREAM for streams ${residual.keys} but the " +
+                                    "connector is configured to use global state (CDC). This usually " +
+                                    "means the replication method was changed. Clear the connection's " +
+                                    "data to reset its state and retry.",
+                            )
+                        }
+                    }
+                    is GlobalInputState -> forGlobal(mq, allStreams, inputState)
+                    is EmptyInputState -> forGlobal(mq, allStreams)
+                }
             }
         } else {
             when (inputState) {
@@ -83,59 +130,61 @@ class StateManagerFactory(
     }
 
     private fun forGlobal(
+        metadataQuerier: MetadataQuerier,
         undecoratedStreams: List<Stream>,
         inputState: GlobalInputState? = null,
     ): StateManager {
-        val decoratedStreams: List<Stream> =
-            undecoratedStreams.map { stream: Stream ->
-                when (stream.configuredSyncMode) {
-                    ConfiguredSyncMode.INCREMENTAL ->
-                        stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
-                    ConfiguredSyncMode.FULL_REFRESH ->
-                        when (
-                            DataChannelMedium.valueOf(dataChannelMedium) to
-                                DataChannelFormat.valueOf(dataChannelFormat)
-                        ) {
-                            // Socket protobuf protobuf mode is using a sorted list of fields
-                            // Without including field id's.
-                            // We need to always match the full in catlog schema to maintain
-                            // sorting.
-                            // Output here needs to match Discover's JdbcAirbyteStreamFactory
-                            SOCKET to PROTOBUF ->
-                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
-                                    stream.copy(
-                                        schema =
-                                            stream.schema + metaFieldDecorator.globalMetaFields,
-                                    )
-                                } else {
-                                    stream
-                                }
-                            // While Socket json doesn't strictly need to maintain any sorting order
-                            // We still want to include the meta fields if there is a primary key
-                            // For debugging sockets purposes - so proto and json records are the
-                            // same.
-                            SOCKET to JSONL ->
-                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
-                                    stream.copy(
-                                        schema =
-                                            stream.schema + metaFieldDecorator.globalMetaFields,
-                                    )
-                                } else {
-                                    stream
-                                }
+        val decoratedStreams: List<Stream> = undecoratedStreams.map { stream: Stream ->
+            when (stream.configuredSyncMode) {
+                ConfiguredSyncMode.INCREMENTAL ->
+                    stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
+                ConfiguredSyncMode.FULL_REFRESH ->
+                    when (
+                        DataChannelMedium.valueOf(dataChannelMedium) to
+                            DataChannelFormat.valueOf(dataChannelFormat)
+                    ) {
+                        // Socket protobuf protobuf mode is using a sorted list of fields
+                        // Without including field id's.
+                        // We need to always match the full in catlog schema to maintain
+                        // sorting.
+                        // Output here needs to match Discover's JdbcAirbyteStreamFactory
+                        SOCKET to PROTOBUF ->
+                            if (
+                                metadataQuerier.primaryKey(stream.id).isNotEmpty() &&
+                                    stream.configuredPrimaryKey?.isNotEmpty() == true
+                            ) {
+                                stream.copy(
+                                    schema = stream.schema + metaFieldDecorator.globalMetaFields,
+                                )
+                            } else {
+                                stream
+                            }
+                        // While Socket json doesn't strictly need to maintain any sorting order
+                        // We still want to include the meta fields if there is a primary key
+                        // For debugging sockets purposes - so proto and json records are the
+                        // same.
+                        SOCKET to JSONL ->
+                            if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                stream.copy(
+                                    schema = stream.schema + metaFieldDecorator.globalMetaFields,
+                                )
+                            } else {
+                                stream
+                            }
 
-                            // stdio protobuf mode not supported
-                            /*DataChannelMedium.STDIO to PROTOBUF ->  */
+                        // stdio protobuf mode not supported
+                        /*DataChannelMedium.STDIO to PROTOBUF ->  */
 
-                            // Legacy stdio json mode doesn't need metafields decorations in full
-                            // refresh
-                            DataChannelMedium.STDIO to JSONL -> stream
-                            else -> stream
-                        }
-                }
+                        // Legacy stdio json mode doesn't need metafields decorations in full
+                        // refresh
+                        DataChannelMedium.STDIO to JSONL -> stream
+                        else -> stream
+                    }
             }
-        val globalStreams: List<Stream> =
-            decoratedStreams.filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }
+        }
+        val globalStreams: List<Stream> = decoratedStreams.filter {
+            it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
+        }
         val initialStreamStates: Map<Stream, OpaqueStateValue?> =
             decoratedStreams.associateWith { stream: Stream ->
                 when (stream.configuredSyncMode) {
@@ -168,27 +217,14 @@ class StateManagerFactory(
         val streamID: StreamIdentifier = StreamIdentifier.from(configuredStream.stream)
         val name: String = streamID.name
         val namespace: String? = streamID.namespace
-        val streamLabel: String = streamID.toString()
         when (metadataQuerier.streamNames(namespace).filter { it.name == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(streamID))
-                outputConsumer.accept(
-                    AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                        .withMessage("Stream '$streamLabel' not found or not accessible in source.")
-                )
                 return null
             }
             1 -> Unit
             else -> {
                 handler.accept(MultipleStreamsFound(streamID))
-                outputConsumer.accept(
-                    AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                        .withMessage("Multiple streams '$streamLabel' found in source.")
-                )
                 return null
             }
         }
@@ -232,12 +268,6 @@ class StateManagerFactory(
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(streamID))
-            outputConsumer.accept(
-                AirbyteErrorTraceMessage()
-                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                    .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                    .withMessage("Stream '$streamLabel' has no accessible fields.")
-            )
             return null
         }
 
@@ -245,8 +275,9 @@ class StateManagerFactory(
             if (pkColumnIDComponents.isEmpty()) {
                 return null
             }
-            val pkColumnIDs: List<String> =
-                pkColumnIDComponents.map { it.joinToString(separator = ".") }
+            val pkColumnIDs: List<String> = pkColumnIDComponents.map {
+                it.joinToString(separator = ".")
+            }
             val pk: List<EmittedField> = pkColumnIDs.mapNotNull(::dataColumnOrNull)
             if (pk.size < pkColumnIDComponents.size) {
                 handler.accept(InvalidPrimaryKey(streamID, pkColumnIDs))
@@ -292,18 +323,23 @@ class StateManagerFactory(
 
     /**
      * Recursively re-generates the original [AirbyteSchemaType] from a catalog stream field's JSON
-     * schema.
+     * schema. An `array` without `items` (any element type) maps to an array of
+     * [LeafAirbyteSchemaType.JSONB].
      */
     private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteSchemaType {
         fun value(key: String): String = jsonSchema[key]?.asText() ?: ""
         return when (value("type")) {
-            "array" -> ArrayAirbyteSchemaType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
+            "array" ->
+                ArrayAirbyteSchemaType(
+                    jsonSchema["items"]?.let { airbyteTypeFromJsonSchema(it) }
+                        ?: LeafAirbyteSchemaType.JSONB,
+                )
             "null" -> LeafAirbyteSchemaType.NULL
             "boolean" -> LeafAirbyteSchemaType.BOOLEAN
             "number" ->
                 when (value("airbyte_type")) {
                     "integer",
-                    "big_integer", -> LeafAirbyteSchemaType.INTEGER
+                    "big_integer" -> LeafAirbyteSchemaType.INTEGER
                     else -> LeafAirbyteSchemaType.NUMBER
                 }
             "string" ->

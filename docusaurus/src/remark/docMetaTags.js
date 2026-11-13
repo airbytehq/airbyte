@@ -1,10 +1,10 @@
-const { getFromPaths, toAttributes } = require("../helpers/objects");
+const { toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 const visit = require("unist-util-visit").visit;
 
 const generateMetaTags = (connectorName) => {
   return {
-    title: `${connectorName} Connector | Airbyte Documentation`,
+    title: `${connectorName} Connector | Airbyte Docs`,
     description: `Connect ${connectorName} to our ETL/ELT platform for streamlined data integration, automated syncing, and powerful data insights.`,
   };
 };
@@ -18,8 +18,7 @@ const plugin = () => {
     if (!registryEntry) return;
 
     visit(ast, "root", (node) => {
-      const name = getFromPaths(registryEntry, "name_[oss|cloud]");
-      const { title, description } = generateMetaTags(name);
+      const { title, description } = generateMetaTags(registryEntry.name);
 
       const attributes = toAttributes({
         title,
