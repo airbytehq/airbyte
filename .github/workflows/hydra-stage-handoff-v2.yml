@@ -322,13 +322,27 @@ jobs:
           DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
           DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
           HYDRA_EXPERIMENTAL_ASSESS: "1"
+          REASSESS_DELAY_SECONDS: "60"
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
           set -euo pipefail
           OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
-          echo "::group::hydra output"
+          echo "::group::hydra output (pass 1)"
           echo "$OUT"
           echo "::endgroup::"
+          REASSESSED=false
+          # A Stop-hook wake can arrive before the Devin session stops reporting working.
+          if jq -e '.assessment | .next_action == "wait" and
+            (.owner == "hydra" or ((.reason // "") | startswith("substantive-change judgment in progress")))' <<<"$OUT" >/dev/null; then
+            WAIT_REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
+            echo "::notice::Re-assessing after ${REASSESS_DELAY_SECONDS}s: $WAIT_REASON"
+            sleep "$REASSESS_DELAY_SECONDS"
+            OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
+            echo "::group::hydra output (pass 2)"
+            echo "$OUT"
+            echo "::endgroup::"
+            REASSESSED=true
+          fi
           NEXT_ACTION=$(jq -r '.assessment.next_action // "unknown"' <<<"$OUT")
           REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
           TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
@@ -354,6 +368,7 @@ jobs:
           } | tee -a "$GITHUB_OUTPUT"
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+          echo "reassessed=$REASSESSED" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "blockers=$BLOCKERS" >> "$GITHUB_OUTPUT"
@@ -638,6 +653,7 @@ jobs:
         if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
         env:
           SLACK_CHANNEL: C0CF6T8MVNH # #hydra-handoff-watcher
+          REASSESSED: ${{ steps.assess.outputs.reassessed }}
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
           TARGET: ${{ steps.assess.outputs.target }}
@@ -674,7 +690,7 @@ jobs:
                       (if .TARGET != "" then " | target: \($target_text)" else "" end) +
                       (if .TARGET == "" or .TARGET != "\(.GITHUB_REPOSITORY)#\(.PR_NUMBER)"
                        then " | PR: <\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)|#\(.PR_NUMBER)>" else "" end)),
-                     "Reason: \(.REASON)",
+                     "Reason: \(.REASON) | reassessed: \(.REASSESSED)",
                      (if .BLOCKERS != "" then "Blockers: \(.BLOCKERS)" else empty end),
                      "Head: \(.HEAD_SHA[0:7]) | dry-run: \(if .DRY_RUN == "true" then "yes" else "no" end)",
                      "Dispatch: \($dispatch)",
@@ -694,6 +710,7 @@ jobs:
         if: always()
         env:
           ELIGIBLE: ${{ steps.eligibility.outputs.eligible }}
+          REASSESSED: ${{ steps.assess.outputs.reassessed }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
           REASON: ${{ steps.assess.outputs.reason }}
           TARGET: ${{ steps.assess.outputs.target }}
@@ -710,6 +727,7 @@ jobs:
             echo "- PR: #${PR_NUMBER}"
             echo "- Eligible: ${ELIGIBLE:-n/a}"
             echo "- next_action: \`${NEXT_ACTION:-n/a}\`"
+            echo "- Reassessed: ${REASSESSED:-n/a}"
             [[ -n "${REASON:-}" ]] && echo "- Reason: ${REASON}"
             [[ -n "${TARGET:-}" ]] && echo "- Target: ${TARGET}"
             [[ -n "${BLOCKERS:-}" ]] && echo "- Blockers: ${BLOCKERS}"
