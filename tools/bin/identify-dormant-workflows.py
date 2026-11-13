@@ -74,6 +74,8 @@ def main():
 
     git_url_regex = re.compile(r"(?:git@|https://)github\.com[:/](.*?)(\.git|$)")
     re_match = git_url_regex.match(git_url.stdout.decode("utf-8"))
+    if not re_match:
+        raise ValueError(f"Could not parse GitHub repository from remote URL: {git_url.stdout.decode('utf-8').strip()}")
 
     repo_name = re_match.group(1)
 
