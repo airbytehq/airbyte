@@ -14,5 +14,6 @@
     "MD004": {
         "style": "dash" // Enforce "dash" style for unordered list items (e.g., "- item")
     },
-    "MD024": { "siblings_only": true } // Allow duplicate headings in different sections
+    "MD024": { "siblings_only": true }, // Allow duplicate headings in different sections
+    "MD060": false // Disable the "table-column-style" rule. Changelog rows are written compact by `bump-version`, while many table headers are padded.
 }
