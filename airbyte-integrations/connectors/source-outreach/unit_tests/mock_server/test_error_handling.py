@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import datetime, timezone
 from unittest import TestCase
 from unittest.mock import patch
@@ -55,7 +56,68 @@ class _Clock:
         self._freezer.stop()
 
 
+def _token_response(access_token: str) -> HttpResponse:
+    return HttpResponse(body=json.dumps({"access_token": access_token, "expires_in": 7200}), status_code=200)
+
+
+def _expired_token_response() -> HttpResponse:
+    # Body captured from a live mid-sync 401 on a `mailings` page request.
+    return error_response(401, "expiredAccessToken", "Expired Access Token", "Please get a new access token and try again.")
+
+
+def _with_token(url: str, access_token: str) -> HttpRequest:
+    return HttpRequest(url, headers={"Authorization": f"Bearer {access_token}"})
+
+
 class TestErrorHandling(TestCase):
+    @HttpMocker()
+    def test_401_expired_access_token_mid_sync_refreshes_the_token_and_retries_the_page(self, http_mocker: HttpMocker) -> None:
+        # Outreach access tokens expire after two hours. When a page request goes out with a token Outreach has already
+        # expired, the connector gets a new token and retries the same page instead of failing the sync.
+        token_request = OutreachRequestBuilder.token_request()
+        http_mocker.post(token_request, [_token_response("first-access-token"), _token_response("second-access-token")])
+        next_url = OutreachRequestBuilder.endpoint("/accounts").next_page_url("eyJzcCI6InVwZGF0ZWRBdCJ9")
+        http_mocker.get(
+            _with_token(OutreachRequestBuilder.endpoint("/accounts").url(), "first-access-token"),
+            page_response(
+                [resource(1, "account", {"name": "Acme", "updatedAt": "2024-01-02T03:04:05.000Z"})],
+                next_url=next_url,
+            ),
+        )
+        page_2_with_expired_token = _with_token(next_url, "first-access-token")
+        page_2_with_new_token = _with_token(next_url, "second-access-token")
+        http_mocker.get(page_2_with_expired_token, _expired_token_response())
+        http_mocker.get(
+            page_2_with_new_token,
+            page_response([resource(2, "account", {"name": "Globex", "updatedAt": "2024-01-03T03:04:05.000Z"})]),
+        )
+
+        with _Clock():
+            output = read_stream(_STREAM, SyncMode.full_refresh)
+
+        assert not output.errors
+        assert record_ids(output) == [1, 2]
+        http_mocker.assert_number_of_calls(token_request, 2)
+        http_mocker.assert_number_of_calls(page_2_with_expired_token, 1)
+        http_mocker.assert_number_of_calls(page_2_with_new_token, 1)
+
+    @HttpMocker()
+    def test_401_that_persists_after_a_token_refresh_fails_as_config_error_without_looping(self, http_mocker: HttpMocker) -> None:
+        token_request = OutreachRequestBuilder.token_request()
+        http_mocker.post(token_request, [_token_response("first-access-token"), _token_response("second-access-token")])
+        accounts_request = _request()
+        http_mocker.get(accounts_request, _expired_token_response())
+
+        with _Clock():
+            output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        assert output.records == []
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert output.errors[0].trace.error.message == "Refreshed OAuth access token is rejected by the API."
+        # One refresh, one retry with the new token, then the read stops.
+        http_mocker.assert_number_of_calls(token_request, 2)
+        http_mocker.assert_number_of_calls(accounts_request, 2)
+
     @HttpMocker()
     def test_403_fails_as_config_error_with_the_scope_outreach_names(self, http_mocker: HttpMocker) -> None:
         # Body captured from a live 403 on a token without the stream's scope.

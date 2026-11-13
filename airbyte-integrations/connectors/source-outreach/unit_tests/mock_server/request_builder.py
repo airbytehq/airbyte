@@ -50,6 +50,10 @@ class OutreachRequestBuilder:
     def build(self) -> HttpRequest:
         return HttpRequest(f"{BASE_URL}{self._path}", query_params=self._query_params())
 
+    def url(self) -> str:
+        """The first-page URL, for requests that also have to match on headers."""
+        return f"{BASE_URL}{self._path}?{urlencode(self._query_params())}"
+
     def next_page_url(self, page_after: str) -> str:
         """The `links.next` URL Outreach returns: the same query plus an opaque `page[after]` cursor."""
         return f"{BASE_URL}{self._path}?{urlencode({**self._query_params(), 'page[after]': page_after})}"

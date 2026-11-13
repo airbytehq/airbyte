@@ -886,6 +886,14 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        # Outreach access tokens expire after two hours. A page request sent with a token Outreach already treats as
+        # expired returns 401 `expiredAccessToken`; get a new token and retry the page once instead of failing the sync.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+          error_message: >-
+            Outreach rejected the OAuth access token: {{ ((response.get('errors') or [{}])[0].get('detail') or 'the access token is invalid or expired.')[:300] }}
         - type: HttpResponseFilter
           http_codes:
             - 403
