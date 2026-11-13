@@ -4,7 +4,7 @@ dockerRepository: airbyte/destination-hubspot
 
 # HubSpot Destination
 
-This page guides you through setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/move-data/elt-data-activation) for operational workflows.
+This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/move-data/elt-data-activation) for operational workflows.
 
 ## Prerequisites
 
@@ -47,8 +47,8 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 4. Enter a name for the HubSpot connector.
 5. Click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. This connector uses OAuth for authentication.
 
-   :::note
-   You may encounter an error during authentication with the message `An invalid scope name was provided`. To resolve this, close the popup window and retry authentication.
+   :::note HubSpot Authentication issues
+   You may encounter an error during the authentication process in the popup window with the message `An invalid scope name was provided`. To resolve this, close the window and retry authentication.
    :::
 
 6. Click **Set up destination** and wait for the tests to complete.
@@ -67,51 +67,49 @@ This is a [data activation](/platform/move-data/elt-data-activation) destination
 
 ## Supported Objects
 
-The HubSpot destination connector supports the following objects:
+The HubSpot destination connector supports the following streams:
 
-- [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique property
+- [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique field
 - [Contacts](https://developers.hubspot.com/docs/api/crm/contacts): Upsert on email
-- [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique property
-- [Products](https://developers.hubspot.com/docs/api/crm/products): Upsert on unique property
-- [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique property (requires HubSpot Enterprise)
+- [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique field
+- [Products](https://developers.hubspot.com/docs/api/crm/products): Upsert on unique field
+- [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field
 
 ## Limitations & Troubleshooting
 
-### Rate limiting
+### Rate Limiting
 
-For public OAuth apps, HubSpot limits each account to [110 requests every 10 seconds](https://developers.hubspot.com/docs/api/usage-details). If the connector encounters rate limiting, it retries requests, using the `Retry-After` header when available and exponential backoff otherwise.
+HubSpot's rate limits depend on the app type. For legacy public apps and marketplace OAuth apps, HubSpot documents a limit of [110 requests every 10 seconds](https://developers.hubspot.com/docs/developer-tooling/platform/usage-guidelines). If the connector encounters rate limiting, it retries requests, using the `Retry-After` header when available and exponential backoff otherwise.
 
 ### Batch size
 
 The connector sends records to HubSpot in batches of up to 100 records per API call. This is the maximum batch size supported by the HubSpot batch upsert API.
 
-### Destination object not showing up
+### Destination Object Not Showing Up
 
-Except for Contacts, which use email as the matching key, the upsert method for this connector requires a unique value property on the destination object.
+Except for the CONTACT object (which uses email as the matching key), the upsert method for this connector requires a unique value field to be present on the destination object.
 
-**Matching key requirements:**
-
-- **Contacts**: Uses the email property automatically.
-- **All other objects**: Require a property with unique values enabled.
+**Matching Key Requirements:**
+- **CONTACT**: Uses email field automatically
+- **All other objects**: Require a property with unique values enabled
 
 To create a unique value property in HubSpot:
+* In the CRM menu in the left-hand side, select the object you want to sync
+* Under `Actions`, select `Edit Properties`
+* Click on `Create property`
+* When entering the rules, check `Require unique values for this property`
 
-1. In the left sidebar, select the CRM object you want to sync to.
-2. Under **Actions**, select **Edit Properties**.
-3. Click **Create property**.
-4. When entering the rules, check **Require unique values for this property**.
+### App Verification
 
-### App verification
+When installing the app, you might see the message "You're connecting to an unverified app".
 
-When installing the app, you might see the message "You're connecting to an unverified app." This is expected.
+### Scopes for Unsupported Streams
 
-### Scopes for unsupported objects
+During app installation, you might see scopes related to objects we don't support. This is expected as changing scopes might require the users to re-authenticate which is quite disruptive. In order to prevent that, we added scopes on objects we intend to support given user demands.
 
-During app installation, you might see scopes related to objects this connector does not yet support. This is expected. Changing scopes would require you to re-authenticate, so scopes for planned objects are included in advance.
+### 403 Forbidden Error
 
-### 403 Forbidden error
-
-HubSpot requires specific [OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) for each API endpoint. Each object type requires access to its corresponding scope to sync data.
+Hubspot has **scopes** for each API call. Each stream is tied to a scope and will need access to that scope to sync data. Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 ### Supported property types
 
