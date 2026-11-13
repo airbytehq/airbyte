@@ -1,69 +1,76 @@
 # Braintree
 
-This page contains the setup guide and reference information for the Braintree source connector.
+This page contains the setup guide and reference information for the [Braintree](https://www.braintreepayments.com/) source connector.
 
 ## Prerequisites
 
-To set up the Braintree source connector, you'll need Braintree's:
+To set up the Braintree source connector, you need the following [Braintree API credentials](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#api-credentials):
 
-1. [Public Key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#public-key)
-2. [Environment](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#environment)
-3. [Merchant ID](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#merchant-id)
-4. [Private Key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#private-key)
+- [Merchant ID](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#merchant-id)
+- [Public key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#public-key)
+- [Private key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#private-key)
+- The [environment](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#environment) the credentials belong to: production or sandbox
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+Braintree API keys belong to an individual Control Panel user and have the same [role permissions](https://developer.paypal.com/braintree/articles/control-panel/users-roles/role-permissions) as that user. Braintree doesn't offer a separate read-only key type. Production and sandbox gateways each have their own merchant ID and API keys, so use credentials from the same environment you select in Airbyte.
+
+Braintree [recommends](https://developer.paypal.com/braintree/docs/start/go-live/python#create-an-api-user) creating a dedicated API user, rather than using an individual employee's keys, so that the connection doesn't break if that employee's user is suspended or deleted. If you use a custom role instead of Account Admin, the role needs permissions that allow the API searches the connector runs. For example:
+
+| Stream        | Role permission                                 |
+| :------------ | :---------------------------------------------- |
+| Transactions  | Download Transactions with Masked Payment Data  |
+| Customers     | Download Vault Records with Masked Payment Data |
+| Subscriptions | Download Subscription Records                   |
+
+If a stream fails with an authorization error, check the role permissions of the user that owns the API keys.
+
+### Find your credentials
+
+1. Log in to the [production](https://www.braintreegateway.com/login) or [sandbox](https://sandbox.braintreegateway.com/login) Control Panel as the user whose API keys you want to use.
+2. Click the gear icon in the top-right corner, then click **Business**. Your merchant ID is at the top of the page. It's also the string that follows `/merchants/` in the Control Panel URL.
+3. Click the gear icon, then click **API**. Scroll to **API Keys**. If no keys appear, click **Generate New API Key**.
+4. Copy the public key. In the **Private Key** column, click **View** to reveal the private key, then copy it.
 
 ## Set up the Braintree connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Braintree** from the Source type dropdown.
-4. Enter the name for the Braintree connector.
-5. For **Public Key**, enter your [Braintree Public Key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#public-key).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **Environment**, choose the appropriate option from the dropdown.
-8. For **Merchant ID**, enter your [Braintree Merchant ID](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#merchant-id).
-9. For **Private Key**, enter your [Braintree Private Key](https://developer.paypal.com/braintree/articles/control-panel/important-gateway-credentials#private-key).
-10. Click **Set up source**.
+1. In Airbyte, click **Sources**, then click **New source**.
+2. Select **Braintree**.
+3. Enter a name for the source.
+4. For **Merchant ID**, enter your Braintree merchant ID. This is the gateway-wide merchant ID, not a merchant account ID.
+5. For **Public Key**, enter your Braintree public key.
+6. For **Private Key**, enter your Braintree private key.
+7. For **Start Date**, enter a UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. The Customers, Disputes, Subscriptions, and Transactions streams only sync records on or after this date. The other streams ignore it.
+8. For **Environment**, select **Production** or **Sandbox** to match your credentials. The **Development** option sends requests to `localhost:3000` and the **Qa** option sends requests to Braintree's QA gateway, so they aren't useful for most users.
+9. Click **Set up source**.
 
-## Sync overview
+## Supported sync modes
 
-This source can sync data for the [Braintree API](https://developers.braintreepayments.com/start/overview). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Braintree source connector supports the following sync modes:
 
-### Supported Sync Modes
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-| Namespaces        | No                   |       |
+Incremental sync is only available for some streams. See the table in the next section.
 
-## Supported Streams
+## Supported streams
 
-The following streams are supported:
+| Stream | Braintree resource | Primary key | Incremental | Cursor field |
+| :----- | :----------------- | :---------- | :---------- | :----------- |
+| `customer_stream` | [Customer](https://developer.paypal.com/braintree/docs/reference/request/customer/search) | `id` | Yes | `created_at` |
+| `discount_stream` | [Discount](https://developer.paypal.com/braintree/docs/reference/response/discount) | `id` | No | None |
+| `dispute_stream` | [Dispute](https://developer.paypal.com/braintree/docs/reference/request/dispute/search) | `id` | Yes | `received_date` |
+| `merchant_account_stream` | [Merchant account](https://developer.paypal.com/braintree/docs/reference/response/merchant-account) | `id` | No | None |
+| `plan_stream` | [Plan](https://developer.paypal.com/braintree/docs/reference/response/plan) | `id` | No | None |
+| `subscription_stream` | [Subscription](https://developer.paypal.com/braintree/docs/reference/request/subscription/search) | `id` | Yes | `created_at` |
+| `transaction_stream` | [Transaction](https://developer.paypal.com/braintree/docs/reference/request/transaction/search) | `id` | Yes | `created_at` |
 
-- [Customers](https://developer.paypal.com/braintree/docs/reference/request/customer/search)
-- [Discounts](https://developer.paypal.com/braintree/docs/reference/response/discount)
-- [Disputes](https://developer.paypal.com/braintree/docs/reference/request/dispute/search)
-- [Transactions](https://developers.braintreepayments.com/reference/response/transaction/python)
-- [Merchant Accounts](https://developer.paypal.com/braintree/docs/reference/response/merchant-account)
-- [Plans](https://developer.paypal.com/braintree/docs/reference/response/plan)
-- [Subscriptions](https://developer.paypal.com/braintree/docs/reference/response/subscription)
+The incremental streams filter on the date a record was created, or for disputes, the date it was received. Incremental syncs don't pick up later updates to records that were already synced, such as a transaction's status changing from authorized to settled. To capture those changes, run a full refresh sync.
 
-## Data type mapping
+## Limitations and performance considerations
 
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-
-## Performance considerations
-
-The connector is restricted by normal Braintree [requests limitation](https://developers.braintreepayments.com/reference/general/searching/search-results/python#search-limit) on search transactions.
-
-The Braintree connector should not run into Braintree API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+- Braintree caps the number of records a single search returns: 50,000 for transaction searches and 10,000 for all other searches. For details, see [Search limit](https://developer.paypal.com/braintree/docs/reference/general/searching/search-results/python#search-limit).
+- Braintree doesn't publish fixed rate limits. It returns a [Too Many Requests error](https://developer.paypal.com/braintree/docs/reference/general/exceptions/python#too-many-requests-error) when request volume for an account reaches unsafe levels. The connector should not run into these limits under normal usage. If you see rate limit errors that aren't retried successfully, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 ## IP allow list
 
