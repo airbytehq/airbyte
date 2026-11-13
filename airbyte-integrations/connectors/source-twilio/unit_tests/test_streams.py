@@ -159,6 +159,51 @@ class TestTwilioStream:
 
 
 class TestIncrementalTwilioStream:
+    @freeze_time("2026-11-12T12:00:00Z")
+    @pytest.mark.parametrize(
+        "stream_name,resource,lower_key,upper_key,cursor_field",
+        [
+            ("messages", "Messages", "DateSent>", "DateSent<", "date_sent"),
+            ("recordings", "Recordings", "DateCreated>", "DateCreated<", "date_created"),
+        ],
+    )
+    def test_monthly_slices_advance_partition_cursor(self, requests_mock, stream_name, resource, lower_key, upper_key, cursor_field):
+        config = {**TEST_CONFIG, "start_date": "2026-09-01T00:00:00Z"}
+        partition = {"parent_slice": {}, "subresource_uri": f"/2010-04-01/Accounts/AC123/{resource}.json"}
+        record_cursor = "2026-11-05 10:00:00Z"
+        record = {"sid": "record-1", "account_sid": "AC123", cursor_field: "Thu, 05 Nov 2026 10:00:00 +0000"}
+        windows = []
+
+        def response(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            window = (query[lower_key][0], query[upper_key][0])
+            windows.append(window)
+            return {stream_name: [record] if window[0] == "2026-11-01 00:00:00Z" else []}
+
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        requests_mock.get(f"{BASE}/Accounts/AC123/{resource}.json", json=response)
+
+        output = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert not output.errors
+        assert [message.record.data["sid"] for message in output.records] == ["record-1"]
+        assert set(windows) == {
+            ("2026-09-01 00:00:00Z", "2026-09-30 23:59:59Z"),
+            ("2026-10-01 00:00:00Z", "2026-10-31 23:59:59Z"),
+            ("2026-11-01 00:00:00Z", "2026-11-12 12:00:00Z"),
+        }
+        final_state = output.most_recent_state.stream_state.__dict__
+        partition_state = next(state for state in final_state["states"] if state["partition"] == partition)
+        assert partition_state["cursor"][cursor_field] == record_cursor
+
+        windows.clear()
+        state = StateBuilder().with_stream_state(stream_name, final_state).build()
+        resumed_output = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+        assert not resumed_output.errors
+        assert not resumed_output.records
+        assert windows == [("2026-11-05 10:00:00Z", "2026-11-12 12:00:00Z")]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
