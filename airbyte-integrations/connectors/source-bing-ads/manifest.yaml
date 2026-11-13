@@ -2617,17 +2617,22 @@ definitions:
   download_error_handler:
     type: DefaultErrorHandler
     response_filters:
-      # Azure Blob Storage answers 403 `AuthenticationFailed` when the pre-signed (SAS) download URL has expired.
-      # That is not a credentials or permission problem and re-requesting the same expired URL cannot succeed,
-      # so fail the attempt as transient instead of falling back to the default 403 -> config_error mapping.
+      # The report/bulk file is downloaded from Azure Blob Storage through a temporary pre-signed (SAS) URL that
+      # Microsoft generates, so a 403 here is never about the user's credentials or permissions: it almost always
+      # means the link expired (`AuthenticationFailed - Signature not valid in the specified time frame`).
+      # Re-requesting the same URL cannot succeed, so fail the attempt as transient instead of falling back to
+      # the default 403 -> config_error mapping.
+      # Match on the status code only: `error_message_contains` and `predicate` read the response body, and this
+      # filter is also evaluated for successful responses, which would drain the streamed file before it is decoded.
       - type: HttpResponseFilter
         action: FAIL
         failure_type: transient_error
-        error_message_contains: Signature not valid in the specified time frame
+        http_codes:
+          - 403
         error_message: >-
-          The Microsoft Advertising (Bing Ads) download link for this stream's file expired before the file could
-          be downloaded. This is a temporary condition and not a problem with your credentials or permissions.
-          The sync will retry.
+          Microsoft's file storage rejected the temporary download link for this stream's report or bulk file
+          (HTTP 403). This usually means the link expired before the file could be downloaded. It is not a problem
+          with your credentials or permissions. The sync will retry.
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
