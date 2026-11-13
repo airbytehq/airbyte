@@ -14,7 +14,7 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 
-from source_facebook_marketing.streams.common import FACEBOOK_RATE_LIMIT_ERROR_CODES, retry_pattern
+from source_facebook_marketing.streams.common import FACEBOOK_RATE_LIMIT_ERROR_CODES, TRANSIENT_NETWORK_EXCEPTIONS, retry_pattern
 
 
 logger = logging.getLogger("airbyte")
@@ -24,7 +24,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookRequestError, *TRANSIENT_NETWORK_EXCEPTIONS), max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):

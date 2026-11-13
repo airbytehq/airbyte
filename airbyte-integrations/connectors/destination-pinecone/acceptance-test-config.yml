@@ -1,3 +1,4 @@
+bypass_reason: "Standard-test scenarios not configured: GSM holds a test config for this connector, but no acceptance-test entry lists it"
 acceptance_tests:
   spec:
     tests:

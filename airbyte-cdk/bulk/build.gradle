@@ -4,10 +4,11 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import org.gradle.api.GradleException
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.w3c.dom.Document
 
 plugins {
-    id 'org.jetbrains.dokka' version '2.0.0'
+    id 'org.jetbrains.dokka' version '2.2.0'
 }
 
 final var baseVersionFile = file("core/base/version.properties")
@@ -47,30 +48,44 @@ allprojects {
         enabled = false
     }
 
+    // Fail fast on Micronaut bean definitions that the JVM refuses to load (inject-kotlin 4.8-4.10
+    // emits unverifiable bytecode for Kotlin constructors mixing default values and primitives).
+    // Micronaut's service loader would otherwise drop them silently.
+    io.airbyte.gradle.MicronautBeanDefinitionVerification.configure(project)
+
     dependencies {
-        api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
-        api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
-        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
+        api platform('org.jetbrains.kotlin:kotlin-bom:2.4.21')
+        api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0')
+        api platform('com.fasterxml.jackson:jackson-bom:2.21.7')
         api platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        api platform('org.junit:junit-bom:5.10.2')
+        // micronaut-test is not managed by micronaut-core-bom and its own BOM is deliberately not
+        // imported here: an `api platform(...)` is exported in the published CDK metadata and would
+        // push every connector to the mockk version the BOM constrains. The micronaut-test artifacts
+        // carry an explicit version where they are declared (core/base, legacy-task-load-dlq).
+        api platform('org.junit:junit-bom:5.14.0')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
         api platform('org.testcontainers:testcontainers-bom:1.21.4')
 
         api 'org.jetbrains.kotlin:kotlin-stdlib'
-        api 'com.google.dagger:dagger:2.51.1'
-        ksp 'com.google.dagger:dagger-compiler:2.52'
-
-        annotationProcessor platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
-        annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
 
         ksp platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         ksp 'io.micronaut:micronaut-inject-kotlin'
         kspTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         kspTest 'io.micronaut:micronaut-inject-kotlin'
+        // KSP 2 no longer applies the `ksp` configuration to the other compilations (KSP 1 did,
+        // through its deprecated ksp.allow.all.target.configuration default), so every source set
+        // that declares Micronaut beans needs the processor spelled out. Modules with an
+        // integrationTest source set declare kspIntegrationTest themselves.
+        kspTestFixtures platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+        kspTestFixtures 'io.micronaut:micronaut-inject-kotlin'
 
-        testImplementation("io.mockk:mockk:1.13.13")
+        // Not below 1.14.9: mockk 1.13.16-1.14.7 unbox a value class returned from any property
+        // getter regardless of the getter's declared type, so recording `every { rawData }` on a
+        // mocked DestinationRecordRaw recursed until the heap was gone (fixed upstream in 1.14.9,
+        // which needs the Kotlin 2.2+ runtime). A plain version is enough: micronaut-test-bom, which
+        // would constrain mockk to 1.13.17, is deliberately not imported above.
+        testImplementation("io.mockk:mockk:1.14.11")
     }
 
     publishing {
@@ -133,65 +148,58 @@ project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
 extractProjects.each { project(it).version = extractVersion }
 loadProjects.each { project(it).version = loadVersion }
 
-// Configure Dokka for all subprojects
+// Configure Dokka (Gradle plugin V2 DSL) for all subprojects
 subprojects {
-    tasks.withType(org.jetbrains.dokka.gradle.DokkaTask.class) {
-        dokkaSourceSets {
-            configureEach {
-                // Only document public APIs
-                includeNonPublic.set(false)
-                skipEmptyPackages.set(true)
+    dokka {
+        // Keep the V1 multi-module layout (core/<module>, toolkits/<module>) so published URLs don't change.
+        modulePath.set(project.path.substring(':airbyte-cdk:bulk:'.length()).replace(':', '/'))
 
-                // Report undocumented members
-                reportUndocumented.set(true)
+        dokkaSourceSets.configureEach {
+            // Only document public APIs
+            documentedVisibilities.set([VisibilityModifier.Public])
+            skipEmptyPackages.set(true)
 
-                // Add external documentation links
-                externalDocumentationLinks {
-                    create("kotlin") {
-                        url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
-                        packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
-                    }
-                    create("kotlinx-coroutines") {
-                        url.set(uri("https://kotlinlang.org/api/kotlinx.coroutines/").toURL())
-                    }
-                    create("micronaut") {
-                        url.set(uri("https://docs.micronaut.io/latest/api/").toURL())
-                    }
+            // Report undocumented members
+            reportUndocumented.set(true)
+
+            // Add external documentation links
+            externalDocumentationLinks {
+                register("kotlin") {
+                    url("https://kotlinlang.org/api/latest/jvm/stdlib/")
+                    packageListUrl("https://kotlinlang.org/api/latest/jvm/stdlib/package-list")
                 }
-
-                // Source links back to GitHub
-                sourceLink {
-                    localDirectory.set(file("src/main"))
-                    remoteUrl.set(uri("https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/bulk/${project.name}/src/main").toURL())
-                    remoteLineSuffix.set("#L")
+                register("kotlinx-coroutines") {
+                    url("https://kotlinlang.org/api/kotlinx.coroutines/")
                 }
+                register("micronaut") {
+                    url("https://docs.micronaut.io/latest/api/")
+                }
+            }
+
+            // Source links back to GitHub
+            sourceLink {
+                localDirectory.set(file("src/main"))
+                remoteUrl("https://github.com/airbytehq/airbyte/tree/master/${rootProject.relativePath(projectDir)}/src/main")
+                remoteLineSuffix.set("#L")
             }
         }
     }
 }
 
-// Configure the multi-module documentation task
-tasks.named('dokkaHtmlMultiModule') {
+// Aggregate the API docs of every module that has main Kotlin sources into one site.
+// Generate with `./gradlew :airbyte-cdk:bulk:dokkaGenerate`.
+def documentedProjects = ([':airbyte-cdk:bulk:core:bulk-cdk-core-base'] + extractProjects + loadProjects)
+    .findAll { project(it).file('src/main/kotlin').directory }
+
+dependencies {
+    documentedProjects.each { dokka project(it) }
+}
+
+dokka {
     moduleName.set("Airbyte Kotlin Bulk CDK")
-    outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
-}
-
-// Convenience task for local development
-tasks.register('docsGenerate') {
-    group = 'documentation'
-    description = 'Generate Dokka documentation for all modules'
-    dependsOn 'dokkaHtmlMultiModule'
-
-    doLast {
-        println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
+    dokkaPublications.html {
+        outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
     }
-}
-
-// Backwards-compatible alias
-tasks.register('dokkaGenerate') {
-    group = 'documentation'
-    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
-    dependsOn 'docsGenerate'
 }
 
 // Helper function to check if a version exists in the Maven repository

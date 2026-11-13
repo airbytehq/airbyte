@@ -48,10 +48,10 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "null" to "null",
                     "0" to "0",
                     // requires unsigned: bigger than an int can hold
-                    "3000000000::oid" to "3000000000"
+                    "3000000000::oid" to "3000000000",
                 ),
-                "OID"
-            )
+                "OID",
+            ),
         )
         add(
             testCase(
@@ -64,11 +64,11 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                         "null" to "null",
                         "0" to "0",
                         // requires unsigned: bigger than an int can hold
-                        "3000000000::oid" to "3000000000"
+                        "3000000000::oid" to "3000000000",
                     )
                     .toArrayVals("OID[]", false),
-                "OID ARRAY"
-            )
+                "OID ARRAY",
+            ),
         )
 
         scalarAndArray("BIGINT", LeafAirbyteSchemaType.INTEGER, AnsiSql.bigIntValues)
@@ -76,22 +76,22 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "DECIMAL",
             LeafAirbyteSchemaType.NUMBER,
             AnsiSql.decimalValues,
-            baseTestName = "DECIMAL SUPPORTED VALS"
+            baseTestName = "DECIMAL SUPPORTED VALS",
         )
         scalarAndArray(
             "DECIMAL",
             LeafAirbyteSchemaType.NUMBER,
             nulledInfinities.plus(nulledNaN),
             arrayIsNulled = true,
-            baseTestName = "DECIMAL UNSUPPORTED VALS"
+            baseTestName = "DECIMAL UNSUPPORTED VALS",
         )
         add(
             testCase(
                 "DECIMAL(20,0)",
                 LeafAirbyteSchemaType.INTEGER,
                 AnsiSql.bigIntValues,
-                "DECIMAL(20,0)"
-            )
+                "DECIMAL(20,0)",
+            ),
         )
         add(
             testCase(
@@ -100,8 +100,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 //  Fix type handling for numeric arrays.
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.NUMBER),
                 AnsiSql.bigIntValues.toArrayVals("DECIMAL(20,0)[]"),
-                "DECIMAL(20,0) ARRAY"
-            )
+                "DECIMAL(20,0) ARRAY",
+            ),
         )
 
         scalarAndArray("DECIMAL(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
@@ -139,12 +139,12 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "BPCHAR(10)",
             LeafAirbyteSchemaType.STRING,
-            AnsiSql.charValues.withLength(10)
+            AnsiSql.charValues.withLength(10),
         )
         scalarAndArray(
             "CHARACTER(10)",
             LeafAirbyteSchemaType.STRING,
-            AnsiSql.charValues.withLength(10)
+            AnsiSql.charValues.withLength(10),
         )
         scalarAndArray("VARCHAR(100)", LeafAirbyteSchemaType.STRING, AnsiSql.varcharValues)
 
@@ -155,15 +155,15 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             LeafAirbyteSchemaType.STRING,
             mapOf(
                 "'A'" to "\"A\"",
-            )
+            ),
         )
         add(
             testCase(
                 "BIT(1)",
                 LeafAirbyteSchemaType.STRING,
                 mapOf("B'0'" to "\"0\"", "B'1'" to "\"1\""),
-                "BIT"
-            )
+                "BIT",
+            ),
         )
         add(
             testCase(
@@ -173,16 +173,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 //  Currently: bit(1) -> STRING; _bit(1) -> ARRAY<BOOLEAN>
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.BOOLEAN),
                 mapOf("B'0'" to "false", "B'1'" to "true").toArrayVals("BIT[]", false),
-                "BIT(1) ARRAY"
-            )
+                "BIT(1) ARRAY",
+            ),
         )
         add(
             testCase(
                 "BIT(10)",
                 LeafAirbyteSchemaType.STRING,
                 mapOf("B'0000000000'" to "\"0000000000\"", "B'1111111111'" to "\"1111111111\""),
-                "BIT"
-            )
+                "BIT",
+            ),
         )
         add(
             testCase(
@@ -194,16 +194,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 // TODO: Legacy mapping only maps "1" to true, all else are false
                 mapOf("B'0000000000'" to "false", "B'1111111111'" to "false")
                     .toArrayVals("BIT(10)[]", false),
-                "BIT(10) ARRAY"
-            )
+                "BIT(10) ARRAY",
+            ),
         )
         add(
             testCase(
                 "BIT VARYING",
                 LeafAirbyteSchemaType.STRING,
                 mapOf("B'0000000000'" to "\"0000000000\"", "B'1111111111'" to "\"1111111111\""),
-                "BIT VARYING"
-            )
+                "BIT VARYING",
+            ),
         )
         add(
             testCase(
@@ -215,8 +215,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 // TODO: Legacy mapping only maps "1" to true, all else are false
                 mapOf("B'0000000000'" to "false", "B'1111111111'" to "false")
                     .toArrayVals("BIT VARYING[]", false),
-                "BIT VARYING ARRAY"
-            )
+                "BIT VARYING ARRAY",
+            ),
         )
 
         add(
@@ -225,7 +225,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 LeafAirbyteSchemaType.STRING,
                 mapOf("decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\""),
                 "BYTEA",
-            )
+            ),
         )
         add(
             testCase(
@@ -236,24 +236,24 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 mapOf("decode('someBase64xx', 'base64')" to "\"someBase64xx\"")
                     .toArrayVals("BYTEA[]"),
                 "BYTEA ARRAY",
-            )
+            ),
         )
 
         // Semi-structured types
         scalarAndArray(
             "JSON",
             LeafAirbyteSchemaType.STRING,
-            ExtendedSql.jsonValues.mapKeys { "${it.key}::json" }
+            ExtendedSql.jsonValues.mapKeys { "${it.key}::json" },
         )
         scalarAndArray(
             "JSONB",
             LeafAirbyteSchemaType.STRING,
-            ExtendedSql.jsonValues.mapKeys { "${it.key}::jsonb" }
+            ExtendedSql.jsonValues.mapKeys { "${it.key}::jsonb" },
         )
         scalarAndArray(
             "XML",
             LeafAirbyteSchemaType.STRING,
-            ExtendedSql.xmlValues.mapKeys { "${it.key}::xml" }
+            ExtendedSql.xmlValues.mapKeys { "${it.key}::xml" },
         )
         scalarAndArray(
             "HSTORE",
@@ -264,8 +264,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "hstore('addr','123 Main St, Suite 5')" to
                     "\"{\\\"addr\\\":\\\"123 Main St, Suite 5\\\"}\"",
                 // Requires ObjectMapper with SerializationFeature.WRITE_NULL_MAP_VALUES
-                "hstore('size', NULL)" to "\"{\\\"size\\\":null}\""
-            )
+                "hstore('size', NULL)" to "\"{\\\"size\\\":null}\"",
+            ),
         )
 
         // Date/time types
@@ -273,14 +273,14 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "DATE",
             LeafAirbyteSchemaType.DATE,
             AnsiSql.dateValues.mapKeys { "${it.key}::date" },
-            baseTestName = "DATE SUPPORTED VALS"
+            baseTestName = "DATE SUPPORTED VALS",
         )
         scalarAndArray(
             "DATE",
             LeafAirbyteSchemaType.DATE,
             nulledInfinities.mapKeys { "${it.key}::date" },
             baseTestName = "DATE UNSUPPORTED VALS",
-            arrayIsNulled = true
+            arrayIsNulled = true,
         )
         scalarAndArray(
             "TIME",
@@ -291,7 +291,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "'00:00:00'" to "\"00:00:00.000000\"",
                     "'23:59:59'" to "\"23:59:59\"",
                 )
-                .mapKeys { "${it.key}::time" }
+                .mapKeys { "${it.key}::time" },
         )
         scalarAndArray(
             "TIMETZ",
@@ -302,7 +302,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "'00:00:00+00'" to "\"00:00:00.000000Z\"",
                     "'23:59:59+00'" to "\"23:59:59Z\"",
                 )
-                .mapKeys { "${it.key}::timetz" }
+                .mapKeys { "${it.key}::timetz" },
         )
         scalarAndArray(
             "TIMESTAMP",
@@ -321,7 +321,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
             nulledInfinities.mapKeys { "${it.key}::timestamp" },
             baseTestName = "TIMESTAMP UNSUPPORTED VALS",
-            arrayIsNulled = true
+            arrayIsNulled = true,
         )
         scalarAndArray(
             "TIMESTAMP WITH TIME ZONE",
@@ -334,49 +334,49 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
             nulledInfinities.mapKeys { "${it.key}::timestamptz" },
             baseTestName = "TIMESTAMP WITH TIME ZONE UNSUPPORTED VALS",
-            arrayIsNulled = true
+            arrayIsNulled = true,
         )
 
         // Geometric types
         scalarAndArray(
             "CIRCLE",
             LeafAirbyteSchemaType.STRING,
-            mapOf("'<(1.5,2.5),3.0>'::circle" to "\"<(1.5,2.5),3.0>\"")
+            mapOf("'<(1.5,2.5),3.0>'::circle" to "\"<(1.5,2.5),3.0>\""),
         )
         scalarAndArray(
             "BOX",
             LeafAirbyteSchemaType.STRING,
-            mapOf("'((0.0,0.0),(2.0,2.0))'::box" to "\"(2.0,2.0),(0.0,0.0)\"")
+            mapOf("'((0.0,0.0),(2.0,2.0))'::box" to "\"(2.0,2.0),(0.0,0.0)\""),
         )
         scalarAndArray(
             "LINE",
             LeafAirbyteSchemaType.STRING,
-            mapOf("'{0.0,1.0,2.0}'::line" to "\"{0.0,1.0,2.0}\"")
+            mapOf("'{0.0,1.0,2.0}'::line" to "\"{0.0,1.0,2.0}\""),
         )
         scalarAndArray(
             "LSEG",
             LeafAirbyteSchemaType.STRING,
-            mapOf("'[(0.0,0.0),(1.0,1.0)]'::lseg" to "\"[(0.0,0.0),(1.0,1.0)]\"")
+            mapOf("'[(0.0,0.0),(1.0,1.0)]'::lseg" to "\"[(0.0,0.0),(1.0,1.0)]\""),
         )
         scalarAndArray(
             "PATH",
             LeafAirbyteSchemaType.STRING,
             mapOf(
-                "'[(0.0,0.0),(1.0,0.0),(1.0,1.0)]'::path" to "\"[(0.0,0.0),(1.0,0.0),(1.0,1.0)]\""
-            )
+                "'[(0.0,0.0),(1.0,0.0),(1.0,1.0)]'::path" to "\"[(0.0,0.0),(1.0,0.0),(1.0,1.0)]\"",
+            ),
         )
         scalarAndArray(
             "POINT",
             LeafAirbyteSchemaType.STRING,
-            mapOf("'(1.0,2.0)'::point" to "\"(1.0,2.0)\"")
+            mapOf("'(1.0,2.0)'::point" to "\"(1.0,2.0)\""),
         )
         scalarAndArray(
             "POLYGON",
             LeafAirbyteSchemaType.STRING,
             mapOf(
                 "'((0.0,0.0),(1.0,0.0),(1.0,1.0))'::polygon" to
-                    "\"((0.0,0.0),(1.0,0.0),(1.0,1.0))\""
-            )
+                    "\"((0.0,0.0),(1.0,0.0),(1.0,1.0))\"",
+            ),
         )
     }
 
@@ -402,7 +402,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 checkpointTargetIntervalSeconds = 60
                 maxDbConnections = 1
                 setIncrementalConfigurationSpecificationValue(
-                    StandardReplicationMethodConfigurationSpecification
+                    StandardReplicationMethodConfigurationSpecification,
                 )
             }
 
@@ -417,6 +417,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             val executor = JdbcTestDbExecutor(schema, jdbcConfig)
             executor.executeUpdate("CREATE EXTENSION IF NOT EXISTS hstore;")
         }
+
         private val nulledInfinities =
             mapOf(
                 "'Infinity'" to "null",
@@ -433,15 +434,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     CREATE TABLE "$schema"."${it.tableName}"
                     ("id" BIGSERIAL PRIMARY KEY,
                     "${it.columnName}" ${it.sqlType})
-                    """.trimIndent()
-                }
+                    """
+                        .trimIndent()
+                },
             )
 
     private fun testCase(
         sqlType: String,
         type: AirbyteSchemaType,
         values: Map<String, String>,
-        testName: String
+        testName: String,
     ): TestCase {
         return TestCase(schema, sqlType, values, type, testName)
     }
@@ -461,8 +463,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 arrayType,
                 ArrayAirbyteSchemaType(type),
                 valsWithNull.toArrayVals(arrayType, arrayIsNulled),
-                "$baseTestName ARRAY"
-            )
+                "$baseTestName ARRAY",
+            ),
         )
     }
 
@@ -472,7 +474,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
     //   output: {"['1', 'A']" to "[\"1\", \"A\"]"}
     private fun Map<String, String>.toArrayVals(
         sqlType: String,
-        nullResult: Boolean = false
+        nullResult: Boolean = false,
     ): Map<String, String> {
         return mapOf(
             this.keys.joinToString(", ", "array[", "]::$sqlType") { it } to
@@ -482,7 +484,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "null"
                 } else {
                     this.values.joinToString(",", "[", "]") { it }
-                }
+                },
         )
     }
 }

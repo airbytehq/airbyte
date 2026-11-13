@@ -29,9 +29,9 @@ import jakarta.inject.Singleton
  * Between steps 1<->2 and 2<->3 are single-partition queues:
  *
  * - formatted parts are put on the first queue as they are completed. its size is scaled to the
- * available memory and part size
+ *   available memory and part size
  * - the upload workers take parts as they become available and upload them, then put fact-of-upload
- * on the second queue
+ *   on the second queue
  * - a single completer worker reads the second queue and completes the uploads
  * - state is acked only when the completer finishes each upload
  *
@@ -41,9 +41,9 @@ import jakarta.inject.Singleton
  *
  * The new steps are as follows:
  * 1. Routes the record message to either through file pipe or straight to the record pipe if it's
- * not related to a file based stream.
+ *    not related to a file based stream.
  * 2. Read file reference from the incoming record, open the file and read into chunks, emitting
- * them as "Part"s downstream.
+ *    them as "Part"s downstream.
  * 3. Uploads file parts
  * 4. Completes multipart file uploads.
  * 5. Passes the related record on to the record pipe (see above)
@@ -82,8 +82,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             isLegacyFileTransfer,
             processFileTaskLegacyStep,
             oneShotObjectLoaderStep,
-            dataChannelMedium
-        )
+            dataChannelMedium,
+        ),
     ) {
     companion object {
         fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
@@ -100,7 +100,7 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             isLegacyFileTransfer: Boolean,
             legacyProcessFileStep: ProcessFileTaskLegacyStep,
             oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
-            dataChannelMedium: DataChannelMedium
+            dataChannelMedium: DataChannelMedium,
         ): List<LoadPipelineStep> {
             return if (dataChannelMedium == DataChannelMedium.SOCKET) {
                 listOf(oneShotObjectLoaderStep)

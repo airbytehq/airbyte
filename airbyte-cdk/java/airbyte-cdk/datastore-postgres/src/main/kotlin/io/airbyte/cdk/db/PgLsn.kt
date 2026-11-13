@@ -74,7 +74,7 @@ class PgLsn private constructor(private val lsn: Long) : Comparable<PgLsn> {
             val front = (long1 shr 32).toInt()
             val back = long1.toInt()
             return (Integer.toHexString(front) + "/" + Integer.toHexString(back)).uppercase(
-                Locale.getDefault()
+                Locale.getDefault(),
             )
         }
     }

@@ -1,0 +1,99 @@
+---
+products: cloud, oss-community
+---
+
+# Airbyte MCP
+
+The Airbyte MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) server that connects AI agents, like Claude, ChatGPT, and VS Code Copilot, to your Airbyte organization. Your agent works with Airbyte on your behalf, using the same permissions you have in Airbyte.
+
+With the Airbyte MCP, your agent can:
+
+- **Build and manage data pipelines**: deploy sources and destinations, create connections, select streams, and start syncs.
+- **Troubleshoot and maintain pipelines**: check sync status, read job logs, check connector configurations, and explain failures.
+- **Read data directly from sources and destinations**: when your organization enables the [context layer](../context-layer/readme.md), your agent can read live data from supported sources and query supported destinations without waiting for a sync.
+- **Learn how each connector works**: connector skills describe the entities, actions, and parameters each connector supports, so your agent knows how to request data correctly.
+- **Search synced data**: find records by keyword, meaning, or both using [context layer search](../context-layer/search.md) in Airbyte Cloud.
+- **Answer questions about Airbyte**: your agent can search Airbyte's documentation, website, API specifications, YouTube videos, and GitHub content to answer questions about how Airbyte works. If you use Airbyte Cloud, you don't need the separate [Airbyte knowledge MCP server](/platform/airbyte-knowledge-mcp).
+
+To start, [connect the Airbyte MCP to your agent](install.md). For a complete list of what your agent can do, see [Airbyte MCP tools](tools.md). To limit which tools your agent can use, see [Advanced configuration](advanced-configuration.md).
+
+## Example prompts
+
+After you connect the Airbyte MCP, ask your agent to do things in plain language. For example:
+
+- "List the connections in my Airbyte workspace and tell me which ones failed in the last day."
+- "Why did my last Salesforce sync fail? Read the logs and suggest a fix."
+- "Create a connection from my Postgres source to my BigQuery destination that syncs every 6 hours."
+- "Show me the 10 most recently updated HubSpot contacts." This requires agent access to be enabled in your organization's context layer.
+- "In Snowflake, how many orders arrived last week?" This requires agent access to be enabled in your organization's context layer.
+
+## Usage limits
+
+Each organization can make up to 100,000 direct reads and searches combined per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
+
+Direct reads also count toward the API rate limits of the source you read from, and can incur compute costs from your destination.
+
+## Limitations
+
+- The hosted Airbyte MCP server works with all editions of Airbyte Cloud and Airbyte Flex. You can [run the Airbyte MCP locally with self-managed Airbyte Core](self-managed.md), but there are known issues with local deployments.
+- Direct reads and searches are read-only. Your agent can retrieve records, but it can't create, update, or delete records in a source or destination through these tools.
+- Direct reads only work with [supported connectors](../context-layer/agent-access.md#supported-connectors), and only after an organization admin [enables agent access](../context-layer/manage-access.md#manage-agent-access).
+- Direct reads will not work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).
+
+## Feedback
+
+The Airbyte MCP is in active development. To report a problem or request a feature, [open an Airbyte MCP issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml) on GitHub. Don't include secrets or credentials in these issues, because they're publicly viewable.
+
+## Appendix
+
+<details>
+<summary>How authentication works</summary>
+
+The Airbyte MCP never asks for your password or API keys in the chat. It uses [OAuth 2.0](https://oauth.net/2/) to sign you in to Airbyte Cloud, then acts with your Airbyte permissions.
+
+```mermaid
+sequenceDiagram
+    participant Client as MCP client
+    participant Browser as Browser
+    participant MCP as Airbyte MCP
+    participant Cloud as Airbyte Cloud
+
+    Client->>MCP: Connect to https://mcp.airbyte.com/mcp
+    MCP-->>Client: Sign-in required
+    Client->>Browser: Open Airbyte sign-in page
+    Browser->>Cloud: Sign in, or sign in with SSO
+    Cloud-->>Client: Access token
+    Client->>MCP: Tool call with access token
+    MCP->>Cloud: Airbyte API request as you
+    Cloud-->>MCP: Result
+    MCP-->>Client: Result
+```
+
+1. Your MCP client connects to `https://mcp.airbyte.com/mcp`. The server responds that sign-in is required.
+2. Your client opens the Airbyte Cloud sign-in page in a browser. If your organization uses [single sign-on](/platform/access-management/sso), you sign in with your company identifier.
+3. Airbyte Cloud returns an access token to your client.
+4. Your client sends that token with each tool call. The Airbyte MCP uses it to call the Airbyte API as you.
+
+Because the Airbyte MCP acts as you, your agent can only see and change the workspaces, connectors, and connections your Airbyte [role](/platform/access-management/rbac) allows. When the token expires, your client asks you to sign in again.
+
+Automated agents that can't open a browser can authenticate with an Airbyte application instead. See [Connect without a browser](install.md#connect-without-a-browser).
+
+Third-party credentials, like your Salesforce password or a database key, stay in the source or destination you configured in Airbyte. Direct reads use those stored credentials, so the agent never sees them.
+
+When your agent reads directly from a source or destination, Airbyte uses the credentials saved in that connector in that workspace, not your own credentials for the third-party system. What the agent can read depends on the permissions of those stored credentials. This means it's possible for an Airbyte user to see records they aren't ordinarily permitted to see in that system, or to not see records they can usually see.
+
+</details>
+
+<details>
+<summary>What connectors do</summary>
+
+A connector is the component Airbyte uses to talk to a third-party system. It can be a data replication connector, an agent connector, or both:
+
+- **Data replication connectors** extract data from sources or load data into destinations. They power connections and syncs.
+- **Agent connectors** support agent access for direct reads and search through the context layer.
+
+In Airbyte Cloud, when a source or destination supports both connector types, agent access uses the same stored credentials as data replication. Direct reads call the source or destination in real time and return the records your agent requests. To learn more, see [Sources, destinations, and connectors](../move-data/sources-destinations-connectors.md).
+
+A connection can also feed the context layer search index when both the source and destination are agent connectors. Search finds records in indexed synced data rather than calling a connector's API in real time.
+
+</details>

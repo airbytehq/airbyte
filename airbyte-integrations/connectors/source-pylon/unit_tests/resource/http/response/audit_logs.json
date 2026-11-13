@@ -1,0 +1,18 @@
+{
+  "action": "synthetic-value",
+  "action_happened_at": "2026-01-01T00:00:00Z",
+  "actor_contact_id": "synthetic-value",
+  "actor_user_id": "synthetic-value",
+  "attributes": {
+    "synthetic_key": "synthetic-value"
+  },
+  "created_at": "2026-01-01T00:00:00Z",
+  "id": "synthetic-value",
+  "link": "synthetic-value",
+  "metadata": {
+    "synthetic_key": "synthetic-value"
+  },
+  "object_id": "synthetic-value",
+  "object_type": "synthetic-value",
+  "source": "synthetic-value"
+}

@@ -18,22 +18,14 @@ import java.io.Serializable
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("dockerImage", "isCustomConnector")
 class JobGetSpecConfig : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("dockerImage")
     @set:JsonProperty("dockerImage")
     @JsonProperty("dockerImage")
     var dockerImage: String? = null
+
     /** determine if the running image is a custom connector. */
     /** determine if the running image is a custom connector. */
     /** determine if the running image is a custom connector. */

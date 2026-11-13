@@ -81,8 +81,8 @@ class DatabricksBeanFactory {
         when (config.authType) {
             is PersonalAccessTokenConfiguration -> {
                 props["AuthMech"] = "3"
-                datasource.setUsername("token")
-                datasource.setPassword(config.authType.personalAccessToken)
+                props["UID"] = "token"
+                props["PWD"] = config.authType.personalAccessToken
             }
             is OAuthConfiguration -> {
                 props["AuthMech"] = "11"

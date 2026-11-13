@@ -181,6 +181,49 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
             ), f"Unexpected search_appearance value: {record.record.data['search_appearance']}"
 
     @HttpMocker()
+    def test_numeric_queries_are_emitted_as_strings(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["RICH_RESULT"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query"]:
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "2024"),
+                            _build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "3.14"),
+                        ]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+        queries = [record.record.data["query"] for record in records]
+
+        assert set(queries) == {"2024", "3.14"}
+        assert all(isinstance(query, str) for query in queries)
+
+    @HttpMocker()
     def test_search_appearance_distinguishes_records(self, http_mocker: HttpMocker) -> None:
         """Test that records from different search appearance types are distinguishable.
 
