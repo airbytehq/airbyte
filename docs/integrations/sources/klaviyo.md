@@ -166,9 +166,9 @@ The connector waits at most 10 minutes for any single retry. When `Retry-After` 
 
 [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter rate limit issues that aren't retried successfully.
 
-The `Campaigns Detailed` stream adds the `estimated_recipient_count` and `campaign_messages` fields to the data from the `Campaigns` stream. The connector makes up to two extra API requests per campaign to fetch them, so this stream takes longer to sync than `Campaigns`.
+The `Campaigns Detailed` stream fetches `estimated_recipient_count` with an additional API request per campaign. If the campaign contains a related campaign-messages link, the connector follows it to populate `campaign_messages`.
 
-The `Lists Detailed` stream adds the `profile_count` field to the data from the `Lists` stream. Klaviyo only returns `profile_count` from the [Get List](https://developers.klaviyo.com/en/reference/get_list) endpoint, so the connector makes an extra API request per list and this stream takes longer to sync than `Lists`.
+The `Lists Detailed` stream requests the `profile_count` field from the [Get List](https://developers.klaviyo.com/en/v2026-01-15/reference/get_list) endpoint with an additional API request per list.
 
 The `Events Detailed` stream adds the metric's `name` to each event's `relationships.metric.data` object.
 
@@ -199,7 +199,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.0 | 2026-10-08 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15` ahead of the `2024-10-15` retirement. Some nested fields in `campaigns` and `campaigns_detailed` move to new paths; syncs aren't affected and the connector auto-upgrades at the deadline. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) |
+| 4.0.5 | 2026-11-10 | [91622](https://github.com/airbytehq/airbyte/pull/91622) | Update dependencies |
+| 4.0.4 | 2026-11-03 | [90629](https://github.com/airbytehq/airbyte/pull/90629) | Update dependencies |
+| 4.0.3 | 2026-10-27 | [89977](https://github.com/airbytehq/airbyte/pull/89977) | Update dependencies |
+| 4.0.2 | 2026-10-20 | [89305](https://github.com/airbytehq/airbyte/pull/89305) | Update dependencies |
+| 4.0.1 | 2026-10-13 | [88714](https://github.com/airbytehq/airbyte/pull/88714) | Update dependencies |
+| 4.0.0 | 2026-10-08 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15`. Some nested fields in `campaigns` and `campaigns_detailed` move to new paths. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) |
 | 3.0.6 | 2026-10-06 | [87223](https://github.com/airbytehq/airbyte/pull/87223) | Update dependencies |
 | 3.0.5 | 2026-09-22 | [86678](https://github.com/airbytehq/airbyte/pull/86678) | Update dependencies |
 | 3.0.4 | 2026-09-15 | [86109](https://github.com/airbytehq/airbyte/pull/86109) | Update dependencies |

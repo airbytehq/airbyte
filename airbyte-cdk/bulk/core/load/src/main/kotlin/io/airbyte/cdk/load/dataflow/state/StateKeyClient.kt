@@ -79,8 +79,9 @@ class InferredStateKeyClient(
                     "Catalog contains no streams; cannot emit global state."
                 }
 
-                val ordinals =
-                    streams.map { it.unmappedDescriptor to currentOrdinal(it.unmappedDescriptor) }
+                val ordinals = streams.map {
+                    it.unmappedDescriptor to currentOrdinal(it.unmappedDescriptor)
+                }
                 val universal = ordinals.first().second
                 check(ordinals.all { it.second == universal }) {
                     "For global state, all streams must share the same ordinal. Found=${ordinals.map { it.second }.toSet()}."

@@ -54,7 +54,7 @@ class DynamoDbPartitionReaderTest {
         Assertions.assertEquals(ITEMS, run.output.records().size)
         Assertions.assertEquals(
             ITEMS,
-            run.output.records().map { it.data["id"].asText() }.toSet().size
+            run.output.records().map { it.data["id"].asText() }.toSet().size,
         )
         Assertions.assertEquals(List(12) { 100L } + 0L, run.checkpoints.map { it.numRecords })
         for (checkpoint in run.checkpoints.dropLast(1)) {
@@ -211,13 +211,13 @@ class DynamoDbPartitionReaderTest {
                     Assertions.assertEquals(
                         8,
                         state["scan"]["total_segments"].asInt(),
-                        state.toString()
+                        state.toString(),
                     )
                 }
                 val all: List<String> = first.recordIds() + second.recordIds()
                 Assertions.assertEquals(
                     (1..ITEMS).map { "item-%04d".format(it) }.toSet(),
-                    all.toSet()
+                    all.toSet(),
                 )
                 val counts: Map<String, Int> = all.groupingBy { it }.eachCount()
                 Assertions.assertEquals(lost.toSet(), counts.filterValues { it == 2 }.keys)
@@ -259,7 +259,7 @@ class DynamoDbPartitionReaderTest {
                 }
                 Assertions.assertEquals(
                     Jsons.readTree(
-                        """{"cursor_field":["v"],"cursor":"$ITEMS","cursor_record_count":1}"""
+                        """{"cursor_field":["v"],"cursor":"$ITEMS","cursor_record_count":1}""",
                     ),
                     last,
                 )
@@ -287,7 +287,7 @@ class DynamoDbPartitionReaderTest {
         val state: JsonNode =
             Jsons.readTree(
                 """{"scan":{"total_segments":2,"segments":[
-                     {"segment":0,"complete":true},{"segment":1,"complete":true}]}}"""
+                     {"segment":0,"complete":true},{"segment":1,"complete":true}]}}""",
             )
         val driver = Driver(fullRefreshStream(), state, pageLimit = 50, maxSegments = 8)
         try {
@@ -413,7 +413,7 @@ class DynamoDbPartitionReaderTest {
 
     class Rounds(
         val output: BufferingOutputConsumer,
-        val checkpoints: List<PartitionReadCheckpoint>
+        val checkpoints: List<PartitionReadCheckpoint>,
     )
 
     /**
@@ -432,6 +432,9 @@ class DynamoDbPartitionReaderTest {
                 concurrencyResource,
                 ResourceAcquirer(listOf(concurrencyResource)),
                 scanPageLimit = 100,
+                segmentTargetBytes = DynamoDbSharedState.DEFAULT_SEGMENT_TARGET_BYTES,
+                maxSegments = DynamoDbSharedState.DEFAULT_MAX_SEGMENTS,
+                featureFlags = emptySet(),
             )
         val output = BufferingOutputConsumer(Clock.systemUTC())
         val stateManager = StateManager(initialStreamStates = mapOf(stream to initialState))

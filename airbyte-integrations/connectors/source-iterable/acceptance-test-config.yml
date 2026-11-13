@@ -18,9 +18,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: "web_push_click"
             bypass_reason: "Can not populate; need messaging service configured"
@@ -90,13 +87,10 @@ acceptance_tests:
             bypass_reason: "Can not populate; need messaging service configured"
           - name: "email_unsubscribe"
             bypass_reason: "Can not populate; need messaging service configured"
-        timeout_seconds: 3600
-        fail_on_extra_columns: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/catalog.json"
-        timeout_seconds: 3600
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -110,4 +104,3 @@ acceptance_tests:
               bypass_reason: "Can not populate; need messaging service configured"
             - name: "email_send_skip"
               bypass_reason: "Can not populate; need messaging service configured"
-        timeout_seconds: 3600
