@@ -65,7 +65,7 @@ The Granola source connector supports the following streams:
 | Stream | Sync mode | Primary key |
 | :--- | :--- | :--- |
 | `notes` | Incremental | `id` |
-| `detailed_notes` | Full refresh | `id` |
+| `detailed_notes` | Incremental | `id` |
 | `note_transcripts` | Full refresh | None |
 
 ### Notes
@@ -84,11 +84,18 @@ The Granola API doesn't return deleted notes or mark notes as deleted, so the co
 
 The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
 
-The stream isn't incremental. On every sync it re-reads the full list of notes updated since your start date and requests each note's details again, so it makes one request for every note in that range. The connector always requests transcript data for this stream. Syncing `detailed_notes` can increase sync time and data volume for workspaces with many notes.
+For incremental syncs, the stream uses `updated_at` as the cursor field. The stream keeps its own copy of the `notes` cursor in its state and uses it to list notes with `updated_after`, so after the first sync it requests details only for notes updated since the last sync. Because the copy is separate, syncing, clearing, or refreshing the `notes` stream doesn't change which notes `detailed_notes` requests. The connector always requests transcript data for this stream.
 
-The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
+In **Incremental | Append** mode, each edit adds a row for the note, and the most recently updated note is repeated on each sync because of the same one-second lookback that `notes` uses.
 
-Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. Starting with version 0.3.0, the connector skips those notes in this stream instead of failing the sync, so a note with an oversized transcript produces no `detailed_notes` record at all. Sync the `note_transcripts` stream to replicate their transcripts, and see [Notes are missing from `detailed_notes`](#notes-are-missing-from-detailed_notes) for how to tell which notes were skipped.
+Incremental sync for `detailed_notes` is available starting with version 1.1.0. Connections that already synced this stream in full refresh keep doing so until you change the stream's sync mode.
+
+Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint. The connector skips a note in this stream, producing no record for it, in two cases:
+
+- Granola responds with `413` and the error code `TRANSCRIPT_TOO_LARGE`, because the transcript is too large to return inline. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. Sync the `note_transcripts` stream to replicate these transcripts. Versions before 0.3.0 failed the sync in this situation.
+- Granola lists the note but responds with `404 NOTE_NOT_FOUND` when its details are requested. Granola can keep returning `404` for the same note on every sync. Versions 1.1.1 and earlier failed the whole stream in this situation.
+
+Later incremental syncs don't request a skipped note again unless it's edited. See [Notes are missing from `detailed_notes`](#notes-are-missing-from-detailed_notes) for how to tell which notes were skipped.
 
 ### Note transcripts
 
@@ -105,7 +112,7 @@ The set of notes the connector can read depends on the key you configure:
 | Key type | Data scope |
 | :--- | :--- |
 | **Personal API key** | The scopes selected when the key was created. **Personal notes** covers notes you own, notes shared directly with you, and notes in private folders shared with you. **Public notes** covers notes visible to everyone in the workspace, such as notes in the Team space. |
-| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces, and administrators can change it in **Settings > Spaces**. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
+| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces. For an existing space, a workspace administrator can open the space, click **Integrations** in the space header, choose **Granola API**, and switch on **Allow access with a workspace API key**. Folders inherit this setting from their space. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
 
 Notes in Granola are private by default, so a key with only **Public notes** access returns nothing until notes are placed in a folder that everyone in the workspace can see. If a sync returns no records, check the key's scopes first. For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
@@ -134,13 +141,13 @@ When Granola returns `401` or `403`, the connector fails the sync immediately as
 
 Versions up to 0.2.13 sent each 30-day window's bounds as dates rather than timestamps. The Granola API excludes the entire day named by `created_before`, so those syncs skipped every note created on a window boundary date, in both the `notes` and `detailed_notes` streams. Version 0.2.14 sends second-level timestamps, so new syncs cover the full range.
 
-Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. If you're upgrading straight to 1.0.0 or later, you don't need a separate refresh: the first sync after that upgrade re-reads every note updated since your start date. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
+Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. If you're upgrading straight to 1.0.0 or later, you don't need a separate refresh: the first sync after that upgrade re-reads every note updated since your start date. You don't need to do anything for `detailed_notes`. It was full refresh only before version 1.1.0, so it re-read every note since your start date on each sync after the fix.
 
 ### Notes are missing from `detailed_notes`
 
-Starting with version 0.3.0, the connector skips a note in `detailed_notes` when Granola won't return its transcript inline. Earlier versions failed the whole sync in this situation. The connector logs each skip at INFO level rather than as a warning, so search the sync logs for `transcript is too large` to identify the affected notes.
+Starting with version 0.3.0, the connector skips a note in `detailed_notes` when Granola won't return its transcript inline. Earlier versions failed the whole sync in this situation. The connector logs each skip at INFO level rather than as a warning, so search the sync logs for `transcript is too large` to identify the affected notes. Starting with version 1.1.2, the connector also skips a note that Granola answers with `404`; search the sync logs for `returned 404 when its details were requested` to identify those notes. A note skipped for a `404` still appears in `notes`, but may have no transcript in `note_transcripts`.
 
-A skipped note still appears in `notes`, with its ID, title, owner, and creation and update times, and its transcript still appears in `note_transcripts`. Only the fields that come from the detail endpoint are unavailable for those notes: summaries, attendees, calendar events, and folder membership.
+A note skipped because its transcript is too large still appears in `notes`, with its ID, title, owner, and creation and update times, and its transcript still appears in `note_transcripts`. Only the fields that come from the detail endpoint are unavailable for those notes: summaries, attendees, calendar events, and folder membership.
 
 ## IP allow list
 
@@ -164,6 +171,15 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.2 | 2026-11-10 | [91289](https://github.com/airbytehq/airbyte/pull/91289) | Skip notes that Granola returns as not found in the detailed_notes stream instead of failing the sync |
+| 1.1.1 | 2026-11-10 | [91556](https://github.com/airbytehq/airbyte/pull/91556) | Update dependencies |
+| 1.1.0 | 2026-11-04 | [89049](https://github.com/airbytehq/airbyte/pull/89049) | Add incremental sync to the detailed_notes stream |
+| 1.0.6 | 2026-11-03 | [90584](https://github.com/airbytehq/airbyte/pull/90584) | Update dependencies |
+| 1.0.5 | 2026-10-27 | [89923](https://github.com/airbytehq/airbyte/pull/89923) | Update dependencies |
+| 1.0.4 | 2026-10-20 | [89255](https://github.com/airbytehq/airbyte/pull/89255) | Update dependencies |
+| 1.0.3 | 2026-10-13 | [88655](https://github.com/airbytehq/airbyte/pull/88655) | Update dependencies |
+| 1.0.2 | 2026-10-06 | [87885](https://github.com/airbytehq/airbyte/pull/87885) | Update dependencies |
+| 1.0.1 | 2026-10-05 | [87682](https://github.com/airbytehq/airbyte/pull/87682) | Promote to certified |
 | 1.0.0 | 2026-10-02 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Append-mode `notes` connections get duplicates on the first sync; see the migration guide |
 | 0.3.5 | 2026-09-29 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
 | 0.3.4 | 2026-09-29 | [87192](https://github.com/airbytehq/airbyte/pull/87192) | Update dependencies |

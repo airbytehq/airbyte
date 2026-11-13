@@ -80,7 +80,8 @@ class StateManagerGlobalStatesTest {
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
@@ -91,7 +92,8 @@ class StateManagerGlobalStatesTest {
                     |]},
                     |"sourceStats":{"recordCount":579.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -179,7 +181,8 @@ class StateManagerGlobalStatesTest {
         val checkpointOngoing: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
@@ -189,7 +192,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":123.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpointOngoing.map { Jsons.valueToTree<JsonNode>(it) },
@@ -206,7 +210,8 @@ class StateManagerGlobalStatesTest {
         val checkpointCompleted: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
@@ -216,8 +221,10 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":456.0}
                     |}
-                """.trimMargin(),
-                    """{
+                    """
+                        .trimMargin(),
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
@@ -227,7 +234,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":789.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpointCompleted.map { Jsons.valueToTree<JsonNode>(it) },
@@ -269,7 +277,8 @@ class StateManagerGlobalStatesTest {
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
@@ -279,7 +288,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":789.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -321,7 +331,8 @@ class StateManagerGlobalStatesTest {
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"GLOBAL",
                     |"global":{"shared_state":{"cdc":"ongoing"},
                     |"stream_states":[
@@ -332,7 +343,8 @@ class StateManagerGlobalStatesTest {
                     |]},
                     |"sourceStats":{"recordCount":741.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },

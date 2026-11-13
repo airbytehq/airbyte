@@ -21,6 +21,7 @@ import java.time.Instant
  *  "bigquery_read_snapshot_time":"2026-09-22T04:28:16.000000Z",
  *  "bigquery_read_cursor_upper_bound":{"cursor":"updated_at","value":"2024-01-10T20:53:31.000000"}}
  * ```
+ *
  * The last two fields are only present for the initial snapshot of an incremental stream: the
  * session was opened on the table as of [snapshotTime] and [cursorUpperBound] is the maximum cursor
  * value at that same instant, which becomes the stream's cursor checkpoint once every read stream

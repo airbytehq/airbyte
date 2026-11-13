@@ -82,17 +82,19 @@ class PostgresAcceptanceTest :
                 InputRecord(
                     stream,
                     """
-                        {
-                          "id": 1,
-                          "schemaless_object": {
-                            "objectValue": "before\u0000after",
-                            "arrayValue": [{ "nested": "a\u0000b" }]
-                          }
-                        }""".trimIndent(),
+                    {
+                      "id": 1,
+                      "schemaless_object": {
+                        "objectValue": "before\u0000after",
+                        "arrayValue": [{ "nested": "a\u0000b" }]
+                      }
+                    }
+                    """
+                        .trimIndent(),
                     emittedAtMs = 1602637589100,
                     checkpointId = checkpointKeyForMedium()?.checkpointId,
-                )
-            )
+                ),
+            ),
         )
 
         dumpAndDiffRecords(
@@ -111,7 +113,7 @@ class PostgresAcceptanceTest :
                                 ),
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
+                ),
             ),
             stream,
             primaryKey = listOf(listOf("id")),
@@ -130,16 +132,18 @@ class PostgresAcceptanceTest :
                 InputRecord(
                     stream,
                     """
-                        {
-                          "id": 1,
-                          "schemaless_object": {
-                            "key\u0000name": [{ "nested\u0000key": "value" }]
-                          }
-                        }""".trimIndent(),
+                    {
+                      "id": 1,
+                      "schemaless_object": {
+                        "key\u0000name": [{ "nested\u0000key": "value" }]
+                      }
+                    }
+                    """
+                        .trimIndent(),
                     emittedAtMs = 1602637589100,
                     checkpointId = checkpointKeyForMedium()?.checkpointId,
-                )
-            )
+                ),
+            ),
         )
 
         dumpAndDiffRecords(
@@ -155,7 +159,7 @@ class PostgresAcceptanceTest :
                                 mapOf("keyname" to listOf(mapOf("nestedkey" to "value"))),
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
+                ),
             ),
             stream,
             primaryKey = listOf(listOf("id")),
@@ -178,7 +182,7 @@ class PostgresAcceptanceTest :
                             "id" to FieldType(IntegerType, nullable = true),
                             "schemaless_object" to
                                 FieldType(ObjectTypeWithoutSchema, nullable = true),
-                        )
+                        ),
                     ),
                     Append,
                 ),

@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Data replication platform
+# Platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -53,13 +53,13 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <Grid columns="2">
 
-<CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+<CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 14-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 <CardWithIcon title="Plus" description="A self-serve upgrade with everything in Standard, plus more frequent syncs, more workspaces, single sign on, and premium support. Choose the number of credits that fits your usage." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="/platform/enterprise-flex/" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="/platform/hybrid-deployment" icon="fa-lock" />
 
 </Grid>
 
@@ -81,7 +81,7 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Airbyte MCP
 
-If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, the [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte data pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions. The Airbyte MCP is in private beta.
+If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, the [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte data pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions.
 
 ### Terraform
 

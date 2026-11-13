@@ -234,22 +234,44 @@ def test_applications_refreshes_token_on_401(requests_mock, get_source):
     assert [record.record.data["id"] for record in output.records] == [1]
 
 
+@pytest.mark.parametrize(
+    "config, expected_remedy",
+    [
+        pytest.param(
+            CONFIG,
+            "the OAuth token lacks the required Harvest scope or the authorizing user is not a Site Admin. "
+            "Re-authenticate this source as a Greenhouse Site Admin.",
+            id="oauth",
+        ),
+        pytest.param(
+            CLIENT_CREDENTIALS_CONFIG,
+            "the custom integration credential lacks the required Harvest scope, or the Site Admin user ID is not a "
+            "Site Admin. Grant the scope to the credential in Greenhouse under Configure > Dev Center > "
+            "API Credential Management, or clear or correct the Site Admin user ID.",
+            id="client_credentials",
+        ),
+    ],
+)
 @pytest.mark.parametrize("stream_name", ["offices", "users"])
-def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source, stream_name):
-    _register_token(requests_mock)
+def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source, stream_name, config, expected_remedy):
+    _register_token(requests_mock, client_credentials=config["credentials"]["auth_type"] == "ClientCredentials")
     requests_mock.get(
         f"https://harvest.greenhouse.io/v3/{stream_name}",
         status_code=403,
         json={"message": "Forbidden"},
     )
 
-    source = get_source(CONFIG)
+    source = get_source(config)
     sync_mode = SyncMode.incremental if stream_name == "users" else SyncMode.full_refresh
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
+    output = read(source, config=config, catalog=catalog, expecting_exception=True)
 
     assert output.errors
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
+    assert any(
+        trace.trace.error.message == f"Greenhouse denied access to a Harvest API endpoint (HTTP 403): {expected_remedy}"
+        for trace in output.errors
+    )
 
 
 def test_custom_field_options_stream_is_unfiltered_by_key_and_paginated(requests_mock, get_source):

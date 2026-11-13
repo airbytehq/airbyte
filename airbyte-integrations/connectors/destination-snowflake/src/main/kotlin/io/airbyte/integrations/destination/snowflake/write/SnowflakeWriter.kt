@@ -47,7 +47,7 @@ class SnowflakeWriter(
             .forEach { snowflakeClient.createNamespace(it) }
 
         snowflakeClient.createNamespace(
-            escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema)
+            escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema),
         )
 
         initialStatuses = stateGatherer.gatherInitialStatus()
@@ -145,7 +145,7 @@ class SnowflakeWriter(
                     }
                 else ->
                     throw SystemErrorException(
-                        "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
+                        "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}",
                     )
             }
         return if (snowflakeS3Copy === DisabledSnowflakeS3Copy) loader

@@ -69,6 +69,10 @@ class ConfigBuilder:
         self._config["report_stream_lookback_window_in_hours"] = hours
         return self
 
+    def with_period_in_days(self, days: int) -> ConfigBuilder:
+        self._config["period_in_days"] = days
+        return self
+
     def with_report_options_list(self, options_list: list) -> ConfigBuilder:
         self._config["report_options_list"] = options_list
         return self

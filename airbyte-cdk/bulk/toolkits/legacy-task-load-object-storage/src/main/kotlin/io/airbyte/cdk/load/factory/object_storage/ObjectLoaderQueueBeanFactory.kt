@@ -55,7 +55,7 @@ class ObjectLoaderQueueBeanFactory(
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
     ): Long {
         if (dataChannelMedium == DataChannelMedium.SOCKET) {
             return max(
@@ -74,15 +74,16 @@ class ObjectLoaderQueueBeanFactory(
     @Named("objectLoaderPartQueue")
     @Requires(bean = ObjectLoader::class)
     fun recordObjectLoaderPartQueue(
-        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager,
     ): ResourceReservingPartitionedQueue<
-        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>,
+    > {
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
             loader.maxMemoryRatioReservedForParts,
             loader.numUploadWorkers,
             loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.partSizeBytes,
         )
     }
 
@@ -101,11 +102,11 @@ class ObjectLoaderQueueBeanFactory(
                 .map {
                     ChannelMessageQueue(
                         Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>(
-                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
-                        )
+                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers,
+                        ),
                     )
                 }
-                .toTypedArray()
+                .toTypedArray(),
         )
     }
 
@@ -116,7 +117,7 @@ class ObjectLoaderQueueBeanFactory(
         @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) },
         )
     }
 
@@ -128,7 +129,7 @@ class ObjectLoaderQueueBeanFactory(
         @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) },
         )
     }
 
@@ -140,15 +141,16 @@ class ObjectLoaderQueueBeanFactory(
     @Named("filePartQueue")
     @Requires(condition = IsFileTransferCondition::class)
     fun fileObjectLoaderPartQueue(
-        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager,
     ): ResourceReservingPartitionedQueue<
-        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>,
+    > {
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
             loader.maxMemoryRatioReservedForParts,
             loader.numUploadWorkers,
             loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.partSizeBytes,
         )
     }
 
@@ -167,11 +169,11 @@ class ObjectLoaderQueueBeanFactory(
                 .map {
                     ChannelMessageQueue(
                         Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>(
-                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
-                        )
+                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers,
+                        ),
                     )
                 }
-                .toTypedArray()
+                .toTypedArray(),
         )
     }
 
@@ -184,11 +186,12 @@ class ObjectLoaderQueueBeanFactory(
             (0 until loader.numUploadCompleters)
                 .map {
                     ChannelMessageQueue<
-                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>(
-                        Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
+                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>,
+                    >(
+                        Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS),
                     )
                 }
-                .toTypedArray()
+                .toTypedArray(),
         )
 }
 

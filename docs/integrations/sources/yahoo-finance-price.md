@@ -4,9 +4,9 @@ This source syncs historical and intraday price data for stocks, ETFs, and other
 
 ## Prerequisites
 
-You don't need a Yahoo account or API key. The connector calls a public, unauthenticated endpoint.
+The connector doesn't require a Yahoo account or API key. It sends requests without authentication.
 
-Yahoo doesn't officially document or support this endpoint. Yahoo can change its behavior, limits, or availability without notice.
+The interval and range options below describe connector configuration, not a guarantee that Yahoo will return data for every combination.
 
 ## Set up the Yahoo Finance Price connector
 
@@ -17,16 +17,16 @@ Yahoo doesn't officially document or support this endpoint. Yahoo can change its
 5. Select a **Range**. This is how far back from the current time to fetch prices, from `1d` to `max`.
 6. Click **Set up source**.
 
-### Interval and range limits
+### Interval and range options
 
-Yahoo Finance limits how far back you can request intraday data. If the interval and range you select exceed these limits, Yahoo returns an error and the sync fails.
+The connector offers these configuration values and sends the selected interval and range directly to Yahoo Finance:
 
-| Interval                        | Maximum range                                    |
-| :------------------------------ | :----------------------------------------------- |
-| `1m`                            | About 8 days. Use the `1d`, `5d`, or `7d` range. |
-| `5m`, `15m`, `30m`, `90m`       | Last 60 days. Use a range of `1mo` or less.      |
-| `1h`                            | Last 730 days. Use a range of `2y` or less.      |
-| `1d`, `5d`, `1wk`, `1mo`, `3mo` | No limit. Any range works.                       |
+| Setting | Allowed values |
+| :------ | :------------- |
+| **Interval** | `1m`, `5m`, `15m`, `30m`, `90m`, `1h`, `1d`, `5d`, `1wk`, `1mo`, `3mo` |
+| **Range** | `1d`, `5d`, `7d`, `1mo`, `3mo`, `6mo`, `1y`, `2y`, `5y`, `ytd`, `max` |
+
+The connector doesn't validate interval and range combinations before making the request. If Yahoo responds with HTTP `422`, the connector fails with a configuration error. Choose a shorter range or a longer interval, as the error message advises.
 
 ## Supported sync modes
 
@@ -35,7 +35,7 @@ The Yahoo Finance Price source supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
-The connector doesn't support incremental syncs. Each sync fetches the full selected range again.
+The connector doesn't support incremental syncs. Each sync requests the selected range again.
 
 ## Supported streams
 
@@ -43,14 +43,14 @@ The connector doesn't support incremental syncs. Each sync fetches the full sele
 | :------ | :------------------------------------------------------------------------------------------------ |
 | `price` | One record per ticker per sync. Each record contains the complete chart response for that ticker. |
 
-Each `price` record has a single top-level `chart` object. Prices are in `chart.result[].indicators.quote[]`, where `open`, `high`, `low`, `close`, and `volume` are parallel arrays. The `chart.result[].timestamp` array holds the matching Unix timestamps, in seconds. Ticker metadata, such as `symbol`, `currency`, `exchangeName`, and trading periods, is in `chart.result[].meta`.
+Each `price` record has a top-level `chart` object. Prices are in `chart.result[].indicators.quote[]`, where `open`, `high`, `low`, `close`, and `volume` are arrays. The `chart.result[].timestamp` array holds timestamps for the price data. Ticker metadata, such as `symbol`, `currency`, `exchangeName`, and trading periods, is in `chart.result[].meta`.
 
 Because prices are stored as arrays inside one record, you typically need to unnest these arrays in your destination to get one row per price point.
 
 ## Limitations and troubleshooting
 
-- **Invalid tickers fail the sync.** The connector requests each ticker separately. If any ticker doesn't exist or is delisted, Yahoo returns `404 Not Found` and the sync fails. Check each symbol on Yahoo Finance before adding it.
-- **Interval and range errors.** If you see an error such as `1m data not available ... Only 8 days worth of 1m granularity data are allowed`, choose a shorter range or a longer interval. See [Interval and range limits](#interval-and-range-limits).
+- **Ticker errors.** The connector requests each ticker separately. If Yahoo returns HTTP `404`, the connector fails with a configuration error that advises you to remove unknown or delisted symbols and empty entries, such as a trailing comma. Check each symbol on Yahoo Finance before adding it.
+- **Interval and range errors.** If Yahoo returns HTTP `422`, the connector fails with a configuration error that advises you to choose a shorter range or a longer interval. See [Interval and range options](#interval-and-range-options).
 
 ## IP allow list
 
@@ -63,6 +63,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.27 | 2026-11-10 | [91460](https://github.com/airbytehq/airbyte/pull/91460) | Upgrade source-declarative-manifest base image to 7.47.0 |
+| 0.3.26 | 2026-10-08 | [88219](https://github.com/airbytehq/airbyte/pull/88219) | Fail fast with a clear config error on unknown/delisted tickers (HTTP 404) and unsupported interval/range combinations (HTTP 422) |
+| 0.3.25 | 2026-10-06 | [79086](https://github.com/airbytehq/airbyte/pull/79086) | Update dependencies |
 | 0.3.24 | 2026-10-03 | [87643](https://github.com/airbytehq/airbyte/pull/87643) | Replace sentinel pagination with per-ticker partitions (final request returned 404) |
 | 0.3.23 | 2025-05-24 | [60760](https://github.com/airbytehq/airbyte/pull/60760) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59990](https://github.com/airbytehq/airbyte/pull/59990) | Update dependencies |

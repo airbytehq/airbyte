@@ -3,12 +3,7 @@
 #
 
 
-config = {
-    "pool_ids": "0",
-    "start_ids": "0",
-    "url_base": "https://api.korellia.kyve.network",
-    "page_size": 100
-}
+config = {"pool_ids": "0", "start_ids": "0", "url_base": "https://api.korellia.kyve.network", "page_size": 100}
 
 pool_data = {
     "id": "0",
@@ -26,24 +21,14 @@ pool_data = {
     "min_delegation": "100000000000000",
     "max_bundle_size": "100",
     "disabled": False,
-    "funders": [
-        {
-            "address": "kyve1hfvhl7vf635xta2l4y5p4myj23pp7sg08f5rew",
-            "amount": "360622257494263"
-        }
-    ],
+    "funders": [{"address": "kyve1hfvhl7vf635xta2l4y5p4myj23pp7sg08f5rew", "amount": "360622257494263"}],
     "total_funds": "360622257494263",
     "protocol": {
         "version": "1.0.0-beta.6",
-        "binaries": "{\"kyve-linux-arm64\":\"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-linux-arm64.zip\",\"kyve-linux-x64\":\"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-linux-x64.zip\",\"kyve-macos-x64\":\"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-macos-x64.zip\"}",
-        "last_upgrade": "1675501187"
+        "binaries": '{"kyve-linux-arm64":"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-linux-arm64.zip","kyve-linux-x64":"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-linux-x64.zip","kyve-macos-x64":"https://github.com/KYVENetwork/kyvejs/releases/download/%40kyvejs%2Fevm%401.0.0-beta.6/kyve-macos-x64.zip"}',
+        "last_upgrade": "1675501187",
     },
-    "upgrade_plan": {
-        "version": "",
-        "binaries": "",
-        "scheduled_at": "0",
-        "duration": "0"
-    },
+    "upgrade_plan": {"version": "", "binaries": "", "scheduled_at": "0", "duration": "0"},
     "current_storage_provider_id": 1,
-    "current_compression_id": 1
+    "current_compression_id": 1,
 }

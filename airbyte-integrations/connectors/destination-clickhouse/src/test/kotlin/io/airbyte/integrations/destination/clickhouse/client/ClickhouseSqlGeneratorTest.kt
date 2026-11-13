@@ -36,14 +36,14 @@ class ClickhouseSqlGeneratorTest {
     @MethodSource("alterTableTestCases")
     fun testAlterTableContainsClauses(
         columnChangeset: ColumnChangeset,
-        expectedClauses: List<String>
+        expectedClauses: List<String>,
     ) {
         val tableName = TableName("my_namespace", "my_table")
         val actualSql = clickhouseSqlGenerator.alterTable(columnChangeset, tableName)
         expectedClauses.forEach { clause ->
             assertTrue(
                 actualSql.contains(clause),
-                "Expected SQL to contain: $clause, but got: $actualSql"
+                "Expected SQL to contain: $clause, but got: $actualSql",
             )
         }
     }
@@ -55,7 +55,7 @@ class ClickhouseSqlGeneratorTest {
                 columnsToAdd =
                     mapOf(
                         "col1" to ColumnType("Int32", true),
-                        "col2" to ColumnType("String", true)
+                        "col2" to ColumnType("String", true),
                     ),
                 columnsToChange =
                     mapOf(
@@ -73,7 +73,7 @@ class ClickhouseSqlGeneratorTest {
                 columnsToDrop =
                     mapOf(
                         "col5" to ColumnType("IrrelevantValue", true),
-                        "col6" to ColumnType("IrrelevantValue", true)
+                        "col6" to ColumnType("IrrelevantValue", true),
                     ),
                 columnsToRetain = emptyMap(),
             )
@@ -127,7 +127,8 @@ class ClickhouseSqlGeneratorTest {
             """
             EXCHANGE TABLES `source_db`.`source_table`
                 AND `target_db`.`target_table`;
-        """.trimIndent()
+            """
+                .trimIndent()
         val actualSql = clickhouseSqlGenerator.exchangeTable(sourceTable, targetTable)
 
         Assertions.assertEquals(actualSql, expectedSql)
@@ -156,7 +157,8 @@ class ClickhouseSqlGeneratorTest {
                 _airbyte_generation_id,
                 target_col1,target_col2
             FROM `source_namespace`.`source_table`
-        """.trimIndent()
+            """
+                .trimIndent()
 
         val actualSql = clickhouseSqlGenerator.copyTable(columnNames, sourceTable, targetTable)
         Assertions.assertEquals(expectedSql, actualSql)
@@ -187,7 +189,8 @@ class ClickhouseSqlGeneratorTest {
             """
             EXCHANGE TABLES `source_db`.`source_table`
                 AND `target_db`.`target_table` ON CLUSTER `my_cluster`;
-        """.trimIndent()
+            """
+                .trimIndent()
         Assertions.assertEquals(
             expectedSql,
             generator.exchangeTable(
@@ -268,8 +271,8 @@ class ClickhouseSqlGeneratorTest {
                                 "existing_column" to
                                     ColumnTypeChange(
                                         ColumnType("IrrelevantValue", false),
-                                        ColumnType("String", false)
-                                    )
+                                        ColumnType("String", false),
+                                    ),
                             ),
                         columnsToDrop = mapOf("old_column" to ColumnType("IrrelevantValue", false)),
                         columnsToRetain = emptyMap(),
@@ -277,8 +280,8 @@ class ClickhouseSqlGeneratorTest {
                     listOf(
                         " ADD COLUMN `new_column` Int32",
                         " MODIFY COLUMN `existing_column` String",
-                        " DROP COLUMN `old_column`"
-                    )
+                        " DROP COLUMN `old_column`",
+                    ),
                 ),
                 Arguments.of(
                     ColumnChangeset(
@@ -287,7 +290,7 @@ class ClickhouseSqlGeneratorTest {
                         columnsToDrop = mapOf(),
                         columnsToRetain = emptyMap(),
                     ),
-                    listOf(" ADD COLUMN `new_column` Int32")
+                    listOf(" ADD COLUMN `new_column` Int32"),
                 ),
                 Arguments.of(
                     ColumnChangeset(
@@ -297,13 +300,13 @@ class ClickhouseSqlGeneratorTest {
                                 "existing_column" to
                                     ColumnTypeChange(
                                         ColumnType("IrrelevantValue", false),
-                                        ColumnType("String", false)
-                                    )
+                                        ColumnType("String", false),
+                                    ),
                             ),
                         columnsToDrop = mapOf(),
                         columnsToRetain = emptyMap(),
                     ),
-                    listOf(" MODIFY COLUMN `existing_column` String")
+                    listOf(" MODIFY COLUMN `existing_column` String"),
                 ),
                 Arguments.of(
                     ColumnChangeset(
@@ -312,7 +315,7 @@ class ClickhouseSqlGeneratorTest {
                         columnsToDrop = mapOf("old_column" to ColumnType("IrrelevantValue", false)),
                         columnsToRetain = emptyMap(),
                     ),
-                    listOf(" DROP COLUMN `old_column`")
+                    listOf(" DROP COLUMN `old_column`"),
                 ),
                 Arguments.of(
                     ColumnChangeset(
@@ -326,12 +329,12 @@ class ClickhouseSqlGeneratorTest {
                                 "col3" to
                                     ColumnTypeChange(
                                         ColumnType("IrrelevantValue", false),
-                                        ColumnType("String", false)
+                                        ColumnType("String", false),
                                     ),
                                 "col4" to
                                     ColumnTypeChange(
                                         ColumnType("IrrelevantValue", false),
-                                        ColumnType("Int64", true)
+                                        ColumnType("Int64", true),
                                     ),
                             ),
                         columnsToDrop =
@@ -347,8 +350,8 @@ class ClickhouseSqlGeneratorTest {
                         " MODIFY COLUMN `col3` String",
                         " MODIFY COLUMN `col4` Nullable(Int64)",
                         " DROP COLUMN `col5`",
-                        " DROP COLUMN `col6`"
-                    )
+                        " DROP COLUMN `col6`",
+                    ),
                 ),
             )
     }

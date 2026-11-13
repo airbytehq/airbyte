@@ -30,11 +30,11 @@ object StubDestinationMessageFactory {
                 DestinationRecordJsonSource(
                     AirbyteMessage()
                         .withRecord(
-                            AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
-                        )
+                            AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode()),
+                        ),
                 ),
             serializedSizeBytes = 0L,
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 
@@ -60,10 +60,10 @@ object StubDestinationMessageFactory {
                 CheckpointMessage.Checkpoint(
                     unmappedNamespace = stream.unmappedNamespace,
                     unmappedName = stream.unmappedName,
-                    state = JsonNodeFactory.instance.objectNode()
+                    state = JsonNodeFactory.instance.objectNode(),
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            serializedSizeBytes = 0L
+            serializedSizeBytes = 0L,
         )
     }
 
@@ -74,7 +74,7 @@ object StubDestinationMessageFactory {
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
             originalTypeField = AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            serializedSizeBytes = 0L
+            serializedSizeBytes = 0L,
         )
     }
 
