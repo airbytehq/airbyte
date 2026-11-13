@@ -176,7 +176,15 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only migrate legacy state shapes that do not yet carry the parent `channel_messages` state.
+        Once `parent_state.channel_messages` exists, it holds per-channel cursors written by the CDK;
+        overwriting it with a single value derived from `start_date` would make every resumed sync
+        re-read `conversations.history` for all channels from the beginning.
+        """
+        if not stream_state:
+            return False
+        return not stream_state.get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
