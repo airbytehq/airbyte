@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -1003,3 +1004,87 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+MESSAGES_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "date_created": "2022-01-01T00:00:00Z",
+            "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"},
+        }
+        for sid in ("AC1", "AC2")
+    ],
+}
+
+
+def _read_messages_and_record_windows(requests_mock, state):
+    windows = []
+
+    def _messages_callback(request, context):
+        query = parse_qs(urlparse(request.url).query)
+        account_sid = re.search(r"/Accounts/(AC\d+)/Messages.json", request.url).group(1)
+        windows.append((account_sid, query["DateSent>"][0], query["DateSent<"][0]))
+        if account_sid == "AC1":
+            return {"messages": [{"sid": f"SM{len(windows)}", "account_sid": "AC1", "date_sent": "Tue, 10 Nov 2026 10:00:00 +0000"}]}
+        return {"messages": []}
+
+    requests_mock.get(f"{BASE}/Accounts.json", json=MESSAGES_ACCOUNTS_JSON)
+    for sid in ("AC1", "AC2"):
+        requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=_messages_callback)
+    stream_state = StateBuilder().with_stream_state("messages", state).build() if state else None
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2026-01-01T00:00:00Z"}, "messages", SyncMode.incremental, stream_state)
+    return windows, output.records, output.most_recent_state.stream_state.__dict__
+
+
+@pytest.mark.parametrize(
+    "incoming_state",
+    [
+        pytest.param(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json", "parent_slice": {}},
+                        "cursor": {"date_sent": "2026-11-10 10:00:00Z"},
+                    },
+                    {
+                        "partition": {"subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {}},
+                        "cursor": {"date_sent": "2026-01-01 00:00:00Z"},
+                    },
+                ],
+                "state": {"date_sent": "2026-11-10 10:00:00Z"},
+                "lookback_window": 0,
+                "parent_state": {},
+            },
+            id="per_partition_state_with_stale_idle_account",
+        ),
+        pytest.param({"use_global_cursor": True, "state": {"date_sent": "2026-11-10 10:00:00Z"}, "lookback_window": 0}, id="global_state"),
+    ],
+)
+@freeze_time("2026-11-13 12:00:00+00:00")
+def test_messages_incremental_read_resumes_every_account_from_global_cursor(incoming_state, requests_mock):
+    windows, records, final_state = _read_messages_and_record_windows(requests_mock, incoming_state)
+
+    assert sorted(windows) == [
+        ("AC1", "2026-11-10 10:00:00Z", "2026-11-13 12:00:00Z"),
+        ("AC2", "2026-11-10 10:00:00Z", "2026-11-13 12:00:00Z"),
+    ]
+    assert [record.record.data["account_sid"] for record in records] == ["AC1"]
+    assert final_state["use_global_cursor"] is True
+    assert "states" not in final_state
+    assert final_state["state"] == {"date_sent": "2026-11-10 10:00:00Z"}
+
+
+def test_messages_second_sync_does_not_re_read_idle_account_history(requests_mock):
+    with freeze_time("2026-11-12 12:00:00+00:00"):
+        first_windows, _, first_state = _read_messages_and_record_windows(requests_mock, None)
+    assert ("AC2", "2026-01-01 00:00:00Z", "2026-01-31 23:59:59Z") in first_windows
+
+    with freeze_time("2026-11-13 12:00:00+00:00"):
+        second_windows, _, _ = _read_messages_and_record_windows(requests_mock, first_state)
+
+    assert sorted(second_windows) == [
+        ("AC1", "2026-11-10 10:00:00Z", "2026-11-13 12:00:00Z"),
+        ("AC2", "2026-11-10 10:00:00Z", "2026-11-13 12:00:00Z"),
+    ]

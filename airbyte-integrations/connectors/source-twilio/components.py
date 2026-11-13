@@ -83,6 +83,48 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Switch per-partition state to the global cursor used with `global_substream_cursor`.
+
+    A per-partition cursor only advances to the latest record it has seen, so an account with no new records keeps
+    its old cursor and would be re-read from it on every sync. The global `state` holds the latest record cursor of
+    the last completed sync, when every partition was read up to the sync end. Without a global `state`, the oldest
+    partition cursor is used so that no partition skips data.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {"partition": {"subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json", "parent_slice": {}}, "cursor": {"date_sent": "2026-11-10 10:00:00Z"}},
+          {"partition": {"subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {}}, "cursor": {"date_sent": "2026-01-01 00:00:00Z"}}
+        ],
+        "state": {"date_sent": "2026-11-10 10:00:00Z"},
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": {"date_sent": "2026-11-10 10:00:00Z"},
+        "lookback_window": 0
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        new_state = {key: copy.deepcopy(value) for key, value in stream_state.items() if key not in ("states", "use_global_cursor")}
+        new_state["use_global_cursor"] = True
+        if not new_state.get("state"):
+            cursors = [state["cursor"] for state in stream_state.get("states", []) if state.get("cursor")]
+            if cursors:
+                cursor_field = next(iter(cursors[0]))
+                new_state["state"] = {cursor_field: min(cursor[cursor_field] for cursor in cursors if cursor_field in cursor)}
+        return new_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "states" in stream_state and not stream_state.get("use_global_cursor", False)
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
