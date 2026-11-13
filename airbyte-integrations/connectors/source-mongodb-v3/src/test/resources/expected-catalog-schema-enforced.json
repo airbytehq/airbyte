@@ -1,0 +1,217 @@
+{
+  "streams": [
+    {
+      "default_cursor_field": [
+        "_ab_cdc_cursor"
+      ],
+      "is_resumable": true,
+      "json_schema": {
+        "properties": {
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string"
+          },
+          "_id": {
+            "type": "number"
+          },
+          "v": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "int_id",
+      "namespace": "test_db",
+      "source_defined_cursor": true,
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ],
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ]
+    },
+    {
+      "default_cursor_field": [
+        "_ab_cdc_cursor"
+      ],
+      "is_resumable": true,
+      "json_schema": {
+        "properties": {
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string"
+          },
+          "_id": {
+            "type": "string"
+          },
+          "active": {
+            "type": "string"
+          },
+          "address": {
+            "type": "object"
+          },
+          "age": {
+            "type": "number"
+          },
+          "big": {
+            "type": "number"
+          },
+          "bin": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "codews": {
+            "type": "object"
+          },
+          "created": {
+            "type": "string"
+          },
+          "dec": {
+            "type": "number"
+          },
+          "extra_only_here": {
+            "type": "string"
+          },
+          "maxK": {
+            "type": "string"
+          },
+          "minK": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nothing": {
+            "type": "null"
+          },
+          "re": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "sym": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array"
+          },
+          "ts": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "people",
+      "namespace": "test_db",
+      "source_defined_cursor": true,
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ],
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ]
+    },
+    {
+      "default_cursor_field": [
+        "_ab_cdc_cursor"
+      ],
+      "is_resumable": true,
+      "json_schema": {
+        "properties": {
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string"
+          },
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "people_view",
+      "namespace": "test_db",
+      "source_defined_cursor": true,
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ],
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ]
+    },
+    {
+      "default_cursor_field": [
+        "_ab_cdc_cursor"
+      ],
+      "is_resumable": true,
+      "json_schema": {
+        "properties": {
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string"
+          },
+          "_id": {
+            "type": "string"
+          },
+          "v": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "name": "string_id",
+      "namespace": "test_db",
+      "source_defined_cursor": true,
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ],
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ]
+    }
+  ]
+}
