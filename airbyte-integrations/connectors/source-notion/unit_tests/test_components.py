@@ -279,3 +279,78 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2021-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": [], "color": "default"},
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    """
+    A second incremental read only emits the blocks edited since the saved state, including a block whose parent
+    block was not edited: the unchanged parent still has to be walked to find it.
+    """
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": "2022-03-02T00:00:00.000Z"}]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=_list_response(
+            [
+                _block("old-block", "2021-06-01T00:00:00.000Z"),
+                _block("old-parent", "2021-06-02T00:00:00.000Z", has_children=True),
+                _block("newer-block", "2022-03-01T00:00:00.000Z"),
+            ]
+        ),
+    )
+    parent_children = requests_mock.get(
+        "https://api.notion.com/v1/blocks/old-parent/children?page_size=100",
+        [
+            # first read
+            {"json": _list_response([_block("child-a", "2021-06-03T00:00:00.000Z"), _block("child-b", "2022-03-02T00:00:00.000Z")])},
+            # second read: child-a was edited, its parent block was not
+            {"json": _list_response([_block("child-a", "2022-04-01T00:00:00.000Z"), _block("child-b", "2022-03-02T00:00:00.000Z")])},
+        ],
+    )
+
+    first_read = read(get_source(config), config=config, catalog=catalog)
+
+    assert [record.record.data["id"] for record in first_read.records] == ["old-block", "child-a", "child-b", "old-parent", "newer-block"]
+    first_state = first_read.most_recent_state.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2022-03-02T00:00:00.000000Z"}
+
+    state = StateBuilder().with_stream_state("blocks", first_state).build()
+    second_read = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    # child-b sits exactly on the saved cursor value: the lower bound is inclusive, so it is emitted again.
+    assert [record.record.data["id"] for record in second_read.records] == ["child-a", "child-b"]
+    assert second_read.most_recent_state.stream_state.__dict__["state"] == {"last_edited_time": "2022-04-01T00:00:00.000000Z"}
+    assert parent_children.call_count == 2
