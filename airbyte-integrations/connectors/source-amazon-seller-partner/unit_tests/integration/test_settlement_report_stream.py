@@ -328,6 +328,129 @@ def test_given_document_lookup_forbidden_once_when_read_then_retried_and_records
     http_mocker.assert_number_of_calls(document_request, 2)
 
 
+def _mock_single_done_report_until_document_lookup(
+    http_mocker: HttpMocker, document_responses: list[HttpResponse], document_lookup_succeeds: bool = True
+) -> HttpRequest:
+    """
+    Mocks one DONE report whose `getReportDocument` call answers with `document_responses` in order, and returns that
+    request. The mocker repeats the last response if the connector asks for more, so call counts catch extra retries.
+    """
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    http_mocker.get(
+        RequestBuilder.check_report_status_endpoint(_DONE_REPORT_ID).build(),
+        build_response(_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID), status_code=HTTPStatus.OK),
+    )
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(document_request, document_responses)
+    if document_lookup_succeeds:
+        http_mocker.get(RequestBuilder.download_document_endpoint(_DONE_DOWNLOAD_URL).build(), _download_response())
+    return document_request
+
+
+def _document_lookup_errors(status_code: HTTPStatus, count: int) -> list[HttpResponse]:
+    # A 1000/s rate-limit header makes the backoff strategy wait 1ms instead of its 60s default.
+    return [HttpResponse(body="", status_code=status_code, headers={"x-amzn-RateLimit-Limit": "1000"}) for _ in range(count)]
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_rate_limited_beyond_default_retries_when_read_then_retried_and_records_emitted(
+    http_mocker: HttpMocker,
+) -> None:
+    """429s get more than the CDK default of 5 retries."""
+    document_request = _mock_single_done_report_until_document_lookup(
+        http_mocker,
+        [*_document_lookup_errors(HTTPStatus.TOO_MANY_REQUESTS, 6), _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL)],
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 7)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_rate_limited_on_every_attempt_when_read_then_fails_after_30_retries(
+    http_mocker: HttpMocker,
+) -> None:
+    document_request = _mock_single_done_report_until_document_lookup(
+        http_mocker, _document_lookup_errors(HTTPStatus.TOO_MANY_REQUESTS, 31), document_lookup_succeeds=False
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert output.errors
+    assert len(output.records) == 0
+    http_mocker.assert_number_of_calls(document_request, 31)
+
+
+@pytest.mark.parametrize(
+    "status_code",
+    [
+        pytest.param(HTTPStatus.FORBIDDEN, id="403"),
+        pytest.param(HTTPStatus.INTERNAL_SERVER_ERROR, id="500"),
+        pytest.param(HTTPStatus.SERVICE_UNAVAILABLE, id="503"),
+    ],
+)
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_fails_with_other_error_on_every_attempt_when_read_then_fails_after_5_retries(
+    http_mocker: HttpMocker, status_code: HTTPStatus
+) -> None:
+    """Errors other than 429 keep the CDK default of 5 retries instead of sharing the 30 that 429s get."""
+    document_request = _mock_single_done_report_until_document_lookup(
+        http_mocker, _document_lookup_errors(status_code, 6), document_lookup_succeeds=False
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert output.errors
+    assert len(output.records) == 0
+    http_mocker.assert_number_of_calls(document_request, 6)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_rate_limited_then_forbidden_when_read_then_429s_do_not_use_up_403_retries(
+    http_mocker: HttpMocker,
+) -> None:
+    document_request = _mock_single_done_report_until_document_lookup(
+        http_mocker,
+        [
+            *_document_lookup_errors(HTTPStatus.TOO_MANY_REQUESTS, 10),
+            *_document_lookup_errors(HTTPStatus.FORBIDDEN, 5),
+            _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL),
+        ],
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 16)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_alternates_429_and_403_when_read_then_both_count_toward_the_overall_30_retries(
+    http_mocker: HttpMocker,
+) -> None:
+    document_request = _mock_single_done_report_until_document_lookup(
+        http_mocker,
+        [*_document_lookup_errors(HTTPStatus.FORBIDDEN, 4), *_document_lookup_errors(HTTPStatus.TOO_MANY_REQUESTS, 27)],
+        document_lookup_succeeds=False,
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert output.errors
+    http_mocker.assert_number_of_calls(document_request, 31)
+
+
 @HttpMocker()
 def test_given_previous_sync_state_when_read_then_listing_resumes_at_previous_sync_end_and_reports_not_downloaded_again(
     http_mocker: HttpMocker,
