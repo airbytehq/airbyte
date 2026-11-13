@@ -70,9 +70,6 @@
     "culinary_team": {
       "type": ["string", "null"]
     },
-    "current_location": {
-      "type": ["string", "null"]
-    },
     "delivery_and_pickup_option_info": {
       "type": ["array", "null"],
       "items": {
@@ -125,9 +122,6 @@
       "type": ["string", "null"]
     },
     "general_manager": {
-      "type": ["string", "null"]
-    },
-    "genre": {
       "type": ["string", "null"]
     },
     "global_brand_page_name": {
@@ -249,9 +243,6 @@
       "type": ["string", "null"]
     },
     "name_with_location_descriptor": {
-      "type": ["string", "null"]
-    },
-    "network": {
       "type": ["string", "null"]
     },
     "new_like_count": {

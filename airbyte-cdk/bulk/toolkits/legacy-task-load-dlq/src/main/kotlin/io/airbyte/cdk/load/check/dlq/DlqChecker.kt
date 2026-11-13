@@ -50,11 +50,12 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
         }
     }
 
-    private fun <T> writeTestBlob(config: T) where
-    T : ObjectStorageConfig,
-    T : ObjectStoragePathConfigurationProvider,
-    T : ObjectStorageFormatConfigurationProvider,
-    T : ObjectStorageCompressionConfigurationProvider<*> {
+    private fun <T> writeTestBlob(config: T)
+        where
+            T : ObjectStorageConfig,
+            T : ObjectStoragePathConfigurationProvider,
+            T : ObjectStorageFormatConfigurationProvider,
+            T : ObjectStorageCompressionConfigurationProvider<*> {
         log.info { "Validating ${config.type} configuration for object storage" }
 
         val path = ObjectStoragePathFactory.from(config).getFinalDirectory(mockStream)

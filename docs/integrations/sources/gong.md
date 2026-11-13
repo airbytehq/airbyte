@@ -61,6 +61,12 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 - **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes.
 
 </FieldAnchor>
+
+<FieldAnchor field="scorecards_review_method">
+
+- **Scorecards Review Method** (optional). Which answered scorecards to fetch: `MANUAL`, `AUTOMATIC` (scored by Gong's AI) or `BOTH`. The Gong API only returns manually reviewed scorecards unless asked otherwise, so choose `AUTOMATIC` or `BOTH` to sync AI-scored scorecards. The default is `MANUAL`, which keeps the previous behavior. If you change this on an existing connection, only scorecards reviewed after the last sync are added. To backfill older ones, refresh the answered scorecards stream.
+
+</FieldAnchor>
 <HideInUI>
 
 ## Supported sync modes
@@ -111,6 +117,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.6.0 | 2026-11-03 | [90976](https://github.com/airbytehq/airbyte/pull/90976) | Add `scorecards_review_method` option to fetch AI-scored (`AUTOMATIC`) answered scorecards; defaults to `MANUAL` |
+| 1.5.7 | 2026-11-10 | [91548](https://github.com/airbytehq/airbyte/pull/91548) | Update dependencies |
+| 1.5.6 | 2026-11-03 | [90575](https://github.com/airbytehq/airbyte/pull/90575) | Update dependencies |
+| 1.5.5 | 2026-10-27 | [84435](https://github.com/airbytehq/airbyte/pull/84435) | Update external documentation URLs and enable autopilot rollouts |
+| 1.5.4 | 2026-10-27 | [89913](https://github.com/airbytehq/airbyte/pull/89913) | Update dependencies |
+| 1.5.3 | 2026-10-20 | [89233](https://github.com/airbytehq/airbyte/pull/89233) | Update dependencies |
+| 1.5.2 | 2026-10-19 | [89089](https://github.com/airbytehq/airbyte/pull/89089) | Add `date-time` format to `start_date` so the setup form renders a datepicker |
+| 1.5.1 | 2026-10-13 | [88636](https://github.com/airbytehq/airbyte/pull/88636) | Update dependencies |
 | 1.5.0 | 2026-10-05 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema (`parties[].context`, `media`) and add missing `reviewMethod` and `conferencingProviders` fields |
 | 1.4.4 | 2026-10-06 | [87873](https://github.com/airbytehq/airbyte/pull/87873) | Update dependencies |
 | 1.4.3 | 2026-09-29 | [87189](https://github.com/airbytehq/airbyte/pull/87189) | Update dependencies |

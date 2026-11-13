@@ -76,7 +76,7 @@ abstract class BaseStdoutOutputConsumer(
 
     protected open fun getOrCreateRecordTemplate(
         stream: String,
-        namespace: String?
+        namespace: String?,
     ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
@@ -124,7 +124,7 @@ class RecordTemplate(
             for (additionalProperty in additionalProperties) {
                 recordMessage.withAdditionalProperty(
                     additionalProperty.key,
-                    additionalProperty.value
+                    additionalProperty.value,
                 )
             }
             // Generate the corresponding dummy AirbyteMessage instance.
@@ -139,7 +139,7 @@ class RecordTemplate(
             // and return both parts in a RecordTemplate instance for this stream.
             return RecordTemplate(
                 prefix = (parts.first() + DATA_PREFIX).toByteArray(),
-                suffix = parts.last().toByteArray()
+                suffix = parts.last().toByteArray(),
             )
         }
 

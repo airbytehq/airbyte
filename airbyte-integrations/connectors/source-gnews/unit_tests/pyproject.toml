@@ -1,0 +1,20 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-gnews-tests"
+version = "0.1.0"
+description = "Mock-server tests for source-gnews"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+airbyte-cdk = "7.47.0"
+pytest = "^8"
+freezegun = "^1.5"
+requests-mock = "^1.12"
+
+[tool.pytest.ini_options]
+testpaths = ["mock_server"]
