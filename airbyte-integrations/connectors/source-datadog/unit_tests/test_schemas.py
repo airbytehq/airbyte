@@ -66,3 +66,14 @@ def test_added_field_is_declared_with_its_type(
     assert ("items" in declared) == bool(item_kind)
     if item_kind:
         assert _kinds(declared["items"]) - {"null"} == {item_kind}
+
+
+@pytest.mark.parametrize("stream", ["audit_logs", "logs"])
+def test_sync_date_stays_a_plain_string(schemas: dict[str, Mapping[str, Any]], stream: str) -> None:
+    sync_date = _declared(schemas[stream], "sync_date")
+
+    assert _kinds(sync_date) == {"string", "null"}
+    assert "format" not in sync_date, (
+        f"`{stream}.sync_date` was declared before 2.1.0, and a `format` on an existing field is a breaking change: "
+        "a destination that already has the column as a string would have to turn it into a timestamp."
+    )
