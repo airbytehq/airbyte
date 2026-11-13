@@ -62,7 +62,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1, pipeline2, pipeline3),
                 inputStreams,
                 pipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         coEvery { pipeline1.run() } coAnswers { delay(100) }
@@ -97,7 +97,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 failingScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When/Then
@@ -127,7 +127,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 singlePipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -155,7 +155,7 @@ class PipelineRunnerTest {
                 emptyList(),
                 inputStreams,
                 emptyScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -178,7 +178,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 singlePipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -206,7 +206,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 singlePipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When/Then
@@ -237,7 +237,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 singlePipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When/Then
@@ -270,7 +270,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 failingScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -302,7 +302,7 @@ class PipelineRunnerTest {
                 pipelines,
                 inputStreams,
                 largeScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -339,11 +339,11 @@ class PipelineRunnerTest {
                 reconcilerDisabled = true
                 assertTrue(
                     pipeline1Complete,
-                    "Pipeline 1 should be complete before disabling reconciler"
+                    "Pipeline 1 should be complete before disabling reconciler",
                 )
                 assertTrue(
                     pipeline2Complete,
-                    "Pipeline 2 should be complete before disabling reconciler"
+                    "Pipeline 2 should be complete before disabling reconciler",
                 )
             }
 
@@ -355,7 +355,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1, pipeline2),
                 inputStreams,
                 twoScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When
@@ -381,7 +381,7 @@ class PipelineRunnerTest {
                     listOf(pipeline1),
                     inputStreams,
                     singlePipelineScope,
-                    aggregateDispatcher
+                    aggregateDispatcher,
                 )
 
             // When/Then
@@ -416,7 +416,7 @@ class PipelineRunnerTest {
                 listOf(pipeline1),
                 inputStreams,
                 singlePipelineScope,
-                aggregateDispatcher
+                aggregateDispatcher,
             )
 
         // When - should complete without exception

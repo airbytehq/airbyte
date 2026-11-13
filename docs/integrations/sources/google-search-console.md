@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [Google Sea
 ## Prerequisites
 
 - Google Account
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
+- One or more verified properties in Google Search Console. You need the exact property identifier for each one. URL-prefix properties look like `https://example.com/`, and Domain properties look like `sc-domain:example.com`. See [Google's guide to property types](https://support.google.com/webmasters/answer/34592).
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -25,6 +25,8 @@ To authenticate the Google Search Console connector, you will need to use one of
 #### OAuth (Recommended for Airbyte Cloud)
 
 You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+
+The connector requests the `https://www.googleapis.com/auth/webmasters.readonly` OAuth scope for read-only access to your Search Console data.
 
 <!-- /env:cloud -->
 
@@ -87,7 +89,7 @@ For more information on this topic, please refer to [this Google article](https:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Search Console from the Source type dropdown.
 4. Enter a name for the Google Search Console connector.
-5. For **Website URL Property**, enter the website properties in Google Search Console that contain the data you want to replicate. You can add multiple site URLs.
+5. For **Website URL Property**, enter each Search Console property exactly. Domain properties use `sc-domain:example.com`; URL-prefix properties use the full URL, including protocol and trailing slash, e.g. `https://www.example.com/`. You can add multiple properties.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
@@ -135,20 +137,20 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ## Supported Streams
 
-- [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-- [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
-- [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`sites`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
+- [`sitemaps`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
+- [`search_analytics_all_fields`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
+- [`search_analytics_by_country`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_date`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_device`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_by_query`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_page_report`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_site_report_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_keyword_site_report_by_site`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_page_report`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_site_report_by_page`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [`search_analytics_site_report_by_site`](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
 ### Entity-Relationship Diagram (ERD)
@@ -216,7 +218,7 @@ Expand to see details about Google Search Console connector limitations and trou
 
 The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
+**Request-rate quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site. When exceeded, the connector retries with a 60-second backoff.
 
 **Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
 
@@ -227,13 +229,17 @@ To check your actual QPS quota limits:
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+Check your project's actual quotas in Google Cloud Console before requesting an increase. Configure **Search Analytics API Requests Per Minute** in the connector to stay within the applicable limits.
 
 If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+
+#### Row limit
+
+The [Search Analytics API](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) accepts a `rowLimit` of at most 25,000 rows per response and uses `startRow` for pagination. It returns top rows and does not guarantee that every row is available through the API.
 
 #### Retired search appearance values
 
@@ -247,6 +253,15 @@ Two effects are worth planning for:
 - Re-syncing a historical window may no longer reproduce rows for a retired value, so a full refresh can return fewer records than the original sync did.
 
 ### Troubleshooting
+
+#### Site URL errors during setup or sync
+
+The connection test reads the `sites` stream for every property you configured, so an incorrect **Website URL Property** value fails at setup rather than partway through a sync. The `sites` and `sitemaps` streams report the following errors as configuration errors:
+
+- `Configured site URL is not a verified Search Console property in this account.` The value doesn't match a property in the Search Console account you authenticated with. Compare the value against the property list in Search Console. Common mismatches are a missing trailing slash, `http` instead of `https`, a missing or extra `www.`, or entering a plain domain instead of the `sc-domain:` form for a Domain property.
+- `Configured site URL is not accessible with the account's Search Console permissions.` The property exists, but the authenticated account can't read it. Ask a property owner to add the Google account (for OAuth) or the service account email (for service account authentication) as a user on that property.
+
+#### Other issues
 
 - Check out common troubleshooting issues for the Google Search Console source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
@@ -263,6 +278,18 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.21 | 2026-11-10 | [89240](https://github.com/airbytehq/airbyte/pull/89240) | Update dependencies |
+| 2.1.20 | 2026-11-05 | [91063](https://github.com/airbytehq/airbyte/pull/91063) | Clarify Website URL Property formats for Domain and URL-prefix properties |
+| 2.1.19 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Emit dimension values exactly as Google returns them, including quoted and numeric-looking queries |
+| 2.1.18 | 2026-10-22 | [89665](https://github.com/airbytehq/airbyte/pull/89665) | Fix 400 errors on the search_analytics_site_report_by_site stream by using aggregationType auto for Google News and Discover search types; keep numeric-looking search queries as strings in keyword streams |
+| 2.1.17 | 2026-10-13 | [88645](https://github.com/airbytehq/airbyte/pull/88645) | Update dependencies |
+| 2.1.16 | 2026-10-06 | [87882](https://github.com/airbytehq/airbyte/pull/87882) | Update dependencies |
+| 2.1.15 | 2026-09-29 | [87207](https://github.com/airbytehq/airbyte/pull/87207) | Update dependencies |
+| 2.1.14 | 2026-09-22 | [86665](https://github.com/airbytehq/airbyte/pull/86665) | Update dependencies |
+| 2.1.13 | 2026-09-15 | [86094](https://github.com/airbytehq/airbyte/pull/86094) | Update dependencies |
+| 2.1.12 | 2026-09-09 | [75289](https://github.com/airbytehq/airbyte/pull/75289) | Improve error messages for unverified or inaccessible site URLs on the sites and sitemaps streams |
+| 2.1.11 | 2026-09-08 | [85529](https://github.com/airbytehq/airbyte/pull/85529) | Update dependencies |
+| 2.1.10 | 2026-08-18 | [84615](https://github.com/airbytehq/airbyte/pull/84615) | Update dependencies |
 | 2.1.9 | 2026-08-11 | [83959](https://github.com/airbytehq/airbyte/pull/83959) | Update dependencies |
 | 2.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.1.7 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.1.5 — 2.1.6 is built on SDM 7.23.7, which breaks bundled custom components |

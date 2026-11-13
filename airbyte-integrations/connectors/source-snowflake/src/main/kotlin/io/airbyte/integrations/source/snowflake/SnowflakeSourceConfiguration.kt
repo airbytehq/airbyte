@@ -12,6 +12,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 
 private val log = KotlinLogging.logger {}
@@ -26,7 +28,7 @@ data class SnowflakeSourceConfiguration(
         SshConnectionOptions(
             kotlin.time.Duration.ZERO,
             kotlin.time.Duration.ZERO,
-            kotlin.time.Duration.ZERO
+            kotlin.time.Duration.ZERO,
         ),
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
@@ -57,13 +59,36 @@ class SnowflakeSourceConfigurationFactory :
     > {
 
     companion object {
-        private const val PRIVATE_KEY_FILE_NAME = "rsa_key.p8"
+        private val SCHEMES_THE_DRIVER_TOLERATES: List<String> =
+            listOf(
+                "https://",
+                "http://", // # ignore-https-check
+            )
+
+        /**
+         * Normalizes the `Host` field to what the Snowflake JDBC driver would use anyway: trims
+         * whitespace, drops a leading `https://` (or plain `http`) scheme in any case, one trailing
+         * `/` and a trailing `:443`, in that order. The result is the bare account domain for the
+         * common paste `https://account.snowflakecomputing.com/`. Anything else (a path,
+         * credentials, another scheme or port) is kept and left to the Cloud-only syntax check.
+         */
+        internal fun normalizeHost(raw: String): String {
+            var host: String = raw.trim()
+            val scheme: String? = SCHEMES_THE_DRIVER_TOLERATES.firstOrNull {
+                host.startsWith(it, ignoreCase = true)
+            }
+            if (scheme != null) {
+                host = host.substring(scheme.length)
+            }
+            return host.removeSuffix("/").removeSuffix(":443")
+        }
     }
 
     override fun makeWithoutExceptionHandling(
         pojo: SnowflakeSourceConfigurationSpecification,
     ): SnowflakeSourceConfiguration {
-        val realHost: String = pojo.host
+        // The spec value is left as typed; only the host the connector uses is normalized.
+        val realHost: String = normalizeHost(pojo.host)
         val jdbcProperties = mutableMapOf<String, String>()
 
         // Handle credentials based on auth type
@@ -74,8 +99,7 @@ class SnowflakeSourceConfigurationFactory :
             }
             is KeyPairCredentialsSpecification -> {
                 jdbcProperties["user"] = credentials.username
-                createPrivateKeyFile(credentials.privateKey)
-                jdbcProperties["private_key_file"] = PRIVATE_KEY_FILE_NAME
+                jdbcProperties["private_key_file"] = createPrivateKeyFile(credentials.privateKey)
                 credentials.privateKeyPassword?.let { jdbcProperties["private_key_file_pwd"] = it }
             }
             is ProgrammaticAccessTokenCredentialsSpecification -> {
@@ -86,15 +110,28 @@ class SnowflakeSourceConfigurationFactory :
             }
             else ->
                 throw ConfigErrorException(
-                    "Unsupported credentials type: ${credentials?.javaClass?.name}"
+                    "Unsupported credentials type: ${credentials?.javaClass?.name}",
                 )
         }
 
         jdbcProperties["db"] = pojo.database
         jdbcProperties["warehouse"] = pojo.warehouse
 
-        // Disable Apache Arrow for now as it is causing issue in jdbc
-        jdbcProperties["enableArrow"] = "false"
+        // Fail at login when the configured warehouse, database or schema does not exist or is not
+        // authorized. Without this the session opens anyway and CHECK passes, because SHOW commands
+        // and LIMIT 0 probes run without a warehouse; the first real query then fails.
+        jdbcProperties["validateDefaultParameters"] = "true"
+        // The driver probes the AWS, Azure and GCP instance-metadata endpoints on every new
+        // connection (telemetry only; no supported auth method needs it) and waits up to 1 s per
+        // probe. The CDK opens a connection per query, so this saves ~2 s each.
+        jdbcProperties["disablePlatformDetection"] = "true"
+        // The Schema option is an exact name. By default the driver treats `_` and `%` in the
+        // schema argument of getTables/getColumns/getPrimaryKeys as LIKE wildcards: it then runs
+        // `show ... in database` over every schema and filters client-side (12 minutes for a check
+        // on
+        // a large account), over-matches other schemas (SCHEMA_A also matched SCHEMAXA) and returns
+        // their columns and primary keys as duplicates (airbytehq/airbyte#87000, #86998).
+        jdbcProperties["ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS"] = "false"
 
         pojo.schema?.let { jdbcProperties["schema"] = it }
         pojo.role.let { jdbcProperties["role"] = it }
@@ -144,9 +181,16 @@ class SnowflakeSourceConfigurationFactory :
         )
     }
 
-    private fun createPrivateKeyFile(fileValue: String) {
+    /**
+     * Writes the private key to an owner-only temporary file (the driver only accepts a file path)
+     * and returns its absolute path. The file is removed when the JVM exits.
+     */
+    private fun createPrivateKeyFile(fileValue: String): String {
         try {
-            java.io.File(PRIVATE_KEY_FILE_NAME).writeText(fileValue, StandardCharsets.UTF_8)
+            val path: Path = Files.createTempFile("snowflake-rsa-key", ".p8")
+            path.toFile().deleteOnExit()
+            Files.writeString(path, fileValue, StandardCharsets.UTF_8)
+            return path.toAbsolutePath().toString()
         } catch (e: Exception) {
             throw RuntimeException("Failed to create file for private key", e)
         }

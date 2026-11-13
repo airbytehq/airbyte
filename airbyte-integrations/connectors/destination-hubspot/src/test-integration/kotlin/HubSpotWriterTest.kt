@@ -35,14 +35,14 @@ import org.junit.jupiter.api.assertAll
 class HubSpotDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         TODO("Not yet implemented")
     }
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         TODO("Not yet implemented")
     }
@@ -78,8 +78,8 @@ class HubSpotWriterTest() :
             ObjectType(
                 linkedMapOf(
                     "email" to FieldType(StringType, nullable = true),
-                    "hs_enriched_email_bounce_detected" to FieldType(BooleanType, nullable = true)
-                )
+                    "hs_enriched_email_bounce_detected" to FieldType(BooleanType, nullable = true),
+                ),
             ),
             generationId = 0,
             minimumGenerationId = 0,
@@ -97,8 +97,8 @@ class HubSpotWriterTest() :
             ObjectType(
                 linkedMapOf(
                     "retl_identifier" to FieldType(StringType, nullable = true),
-                    "about_us" to FieldType(StringType, nullable = true)
-                )
+                    "about_us" to FieldType(StringType, nullable = true),
+                ),
             ),
             generationId = 0,
             minimumGenerationId = 0,
@@ -116,8 +116,8 @@ class HubSpotWriterTest() :
             ObjectType(
                 linkedMapOf(
                     "car_id" to FieldType(StringType, nullable = true),
-                    "hs_object_source_detail_1" to FieldType(NumberType, nullable = true)
-                )
+                    "hs_object_source_detail_1" to FieldType(NumberType, nullable = true),
+                ),
             ),
             generationId = 0,
             minimumGenerationId = 0,
@@ -176,7 +176,7 @@ class HubSpotWriterTest() :
                         unmappedName = carsStream.mappedDescriptor.name,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
-                    )
+                    ),
                 ),
             )
 
@@ -186,7 +186,7 @@ class HubSpotWriterTest() :
                 assertEquals(
                     3,
                     stateMessages.size,
-                    "Expected to receive exactly three state messages (one for each stream), got ${stateMessages.size} ($stateMessages)"
+                    "Expected to receive exactly three state messages (one for each stream), got ${stateMessages.size} ($stateMessages)",
                 )
             },
             {
@@ -209,12 +209,12 @@ class HubSpotWriterTest() :
                                                             .NULLED,
                                                     reason =
                                                         AirbyteRecordMessageMetaChange.Reason
-                                                            .SOURCE_FIELD_SIZE_LIMITATION
-                                                )
+                                                            .SOURCE_FIELD_SIZE_LIMITATION,
+                                                ),
                                             ),
-                                        syncId = 42
-                                    )
-                            )
+                                        syncId = 42,
+                                    ),
+                            ),
                         ),
                         contactStream,
                         primaryKey = listOf(listOf("email")),

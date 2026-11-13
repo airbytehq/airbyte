@@ -14,6 +14,6 @@ class HubSpotDiscoverTest :
             listOf(
                 DiscoverTestConfig(
                     configContents = Files.readString(Path.of("secrets/config.json")),
-                )
+                ),
             ),
     )

@@ -14,6 +14,22 @@ import yaml
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
+STREAM_NAMES = [
+    "campaigns",
+    "adgroups",
+    "keywords",
+    "campaigns_report_daily",
+    "adgroups_report_daily",
+    "keywords_report_daily",
+    "ads",
+    "ads_report_daily",
+]
+REPORT_STREAM_NAMES = [
+    "campaigns_report_daily",
+    "adgroups_report_daily",
+    "keywords_report_daily",
+    "ads_report_daily",
+]
 
 
 @pytest.fixture(scope="module")
@@ -36,14 +52,24 @@ def _get_date_field_values(stream):
     return values
 
 
-def _get_response_filters(stream):
-    error_handler = stream["retriever"]["requester"].get("error_handler", {})
-    if error_handler.get("type") == "CompositeErrorHandler":
-        filters = []
-        for handler in error_handler.get("error_handlers", []):
-            filters.extend(handler.get("response_filters", []))
-        return filters
-    return error_handler.get("response_filters", [])
+def _resolve_ref(manifest, value):
+    if isinstance(value, dict) and "$ref" in value:
+        path = value["$ref"].removeprefix("#/").split("/")
+        resolved = manifest
+        for component in path:
+            resolved = resolved[component]
+        return resolved
+    return value
+
+
+def _get_error_handler(manifest, stream):
+    handler = stream["retriever"]["requester"]["error_handler"]
+    return _resolve_ref(manifest, handler)
+
+
+def _get_response_filters(manifest, stream):
+    error_handler = _get_error_handler(manifest, stream)
+    return [_resolve_ref(manifest, response_filter) for response_filter in error_handler.get("response_filters", [])]
 
 
 @pytest.mark.parametrize(
@@ -71,9 +97,7 @@ def test_ads_report_daily_no_keyword_error_predicate(manifest):
     """ads_report_daily must not contain the keyword-specific IGNORE
     predicate that was copy-pasted from keywords_report_daily."""
     stream = _get_stream_def(manifest, "ads_report_daily")
-    error_handler = stream["retriever"]["requester"].get("error_handler", {})
-
-    for f in error_handler.get("response_filters", []):
+    for f in _get_response_filters(manifest, stream):
         predicate = f.get("predicate", "")
         assert "CAMPAIGN DOES NOT CONTAIN KEYWORD" not in predicate, "ads_report_daily must not contain keyword-specific error predicate"
 
@@ -81,9 +105,7 @@ def test_ads_report_daily_no_keyword_error_predicate(manifest):
 def test_keywords_report_daily_retains_keyword_predicate(manifest):
     """keywords_report_daily must keep the keyword-specific IGNORE predicate."""
     stream = _get_stream_def(manifest, "keywords_report_daily")
-    error_handler = stream["retriever"]["requester"].get("error_handler", {})
-
-    has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in error_handler.get("response_filters", []))
+    has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in _get_response_filters(manifest, stream))
     assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
 
 
@@ -103,14 +125,13 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
 def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
     """Apple Ads may return 401 before the CDK's tracked token expiry."""
     stream = _get_stream_def(manifest, stream_name)
-    filters = _get_response_filters(stream)
+    filters = _get_response_filters(manifest, stream)
 
     refresh_filters = [f for f in filters if f.get("action") == "REFRESH_TOKEN_THEN_RETRY" and 401 in f.get("http_codes", [])]
 
     assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
     for f in refresh_filters:
-        assert f.get("failure_type") == "transient_error"
-        assert f.get("error_message") == "Access token is expired."
+        assert "Apple Ads rejected the credentials (401)" in f.get("error_message", "")
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):
@@ -144,3 +165,79 @@ def test_num_workers_spec_field(manifest):
     assert num_workers["default"] == 2
     assert num_workers.get("minimum", 0) >= 1
     assert num_workers.get("maximum", 999) <= 20
+
+
+@pytest.mark.parametrize(
+    "stream_name, expected_ref",
+    [
+        ("campaigns", "#/definitions/error_handler"),
+        ("adgroups", "#/definitions/error_handler"),
+        ("keywords", "#/definitions/error_handler"),
+        ("ads", "#/definitions/error_handler"),
+        ("campaigns_report_daily", "#/definitions/report_error_handler"),
+        ("adgroups_report_daily", "#/definitions/report_error_handler"),
+        ("keywords_report_daily", "#/definitions/keywords_report_error_handler"),
+        ("ads_report_daily", "#/definitions/report_error_handler"),
+    ],
+)
+def test_streams_use_expected_shared_error_handler(manifest, stream_name, expected_ref):
+    stream = _get_stream_def(manifest, stream_name)
+    assert stream["retriever"]["requester"]["error_handler"]["$ref"] == expected_ref
+
+
+def test_manifest_does_not_use_composite_error_handler():
+    assert "CompositeErrorHandler" not in MANIFEST_PATH.read_text()
+
+
+def test_each_stream_resolves_to_default_error_handler(manifest):
+    for stream_name in STREAM_NAMES:
+        stream = _get_stream_def(manifest, stream_name)
+        assert _get_error_handler(manifest, stream)["type"] == "DefaultErrorHandler"
+
+
+@pytest.mark.parametrize("stream_name", STREAM_NAMES)
+def test_streams_classify_api_errors(manifest, stream_name):
+    filters = _get_response_filters(manifest, _get_stream_def(manifest, stream_name))
+    bad_request = "config_error" if stream_name.endswith("_report_daily") else "system_error"
+    for status_code, failure_type in ((400, bad_request), (403, "config_error"), (404, "system_error")):
+        matching = [response_filter for response_filter in filters if status_code in response_filter.get("http_codes", [])]
+        assert matching
+        assert matching[0]["action"] == "FAIL"
+        assert matching[0]["failure_type"] == failure_type
+
+
+def test_keywords_report_daily_ignore_filter_is_first(manifest):
+    filters = _get_response_filters(manifest, _get_stream_def(manifest, "keywords_report_daily"))
+    assert filters[0]["action"] == "IGNORE"
+    assert "CAMPAIGN DOES NOT CONTAIN KEYWORD" in filters[0]["predicate"]
+
+
+def test_spec_does_not_require_optional_timezone_or_token_endpoint(manifest):
+    required = manifest["spec"]["connection_specification"]["required"]
+    assert "timezone" not in required
+    assert "token_refresh_endpoint" not in required
+
+
+def test_report_lookback_window_has_a_default(manifest):
+    for stream_name in REPORT_STREAM_NAMES:
+        body = _get_stream_def(manifest, stream_name)["incremental_sync"]["lookback_window"]
+        assert "config.get('lookback_window', 30)" in body
+
+
+def test_schemas_include_additive_campaign_and_adgroup_fields(manifest):
+    campaigns = manifest["schemas"]["campaigns"]["properties"]
+    adgroups = manifest["schemas"]["adgroups"]["properties"]
+
+    assert campaigns["biddingStrategy"]["type"] == ["string", "null"]
+    assert campaigns["targetCpa"]["anyOf"] == [
+        {"type": "null"},
+        {
+            "type": "object",
+            "properties": {
+                "amount": {"type": "string"},
+                "currency": {"type": "string"},
+            },
+        },
+    ]
+    assert adgroups["automatedKeywordsRequired"]["type"] == ["boolean", "null"]
+    assert adgroups["biddingStrategy"]["type"] == ["string", "null"]
