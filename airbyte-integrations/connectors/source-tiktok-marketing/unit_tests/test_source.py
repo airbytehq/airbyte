@@ -3,13 +3,15 @@
 #
 
 import json
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 import yaml
-from jsonschema import ValidationError, validate
+from requests_mock import Mocker
 
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import ConnectorSpecification, FailureType, Status, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
@@ -18,27 +20,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import _YAML_FILE_PATH, get_source
-
-
-_ADDITIONAL_PRODUCTION_STREAMS = {
-    "advertiser_ids",
-    "ads_reports_by_country_daily",
-    "ad_groups_reports_by_country_daily",
-    "advertisers_reports_daily",
-    "advertisers_audience_reports_daily",
-    "advertisers_audience_reports_by_country_daily",
-    "advertisers_audience_reports_by_platform_daily",
-    "ads_reports_by_country_hourly",
-    "advertisers_reports_hourly",
-    "ad_groups_reports_by_country_hourly",
-    "advertisers_reports_lifetime",
-    "advertisers_audience_reports_lifetime",
-    "spark_ads",
-    "pixels",
-    "pixel_instant_page_events",
-    "pixel_events_statistics",
-}
-_COMMON_STREAMS = {"advertisers", "ads", "ad_groups", "campaigns"}
 
 
 def _walk_response_filters(value):
@@ -83,35 +64,10 @@ def test_source_streams(config, stream_len):
     assert len(streams) == stream_len
 
 
-@pytest.mark.parametrize(
-    "config",
-    [
-        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": ""}},
-        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": None}},
-        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111"}},
-        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": "secret"}},
-        {
-            "start_date": "2021-04-01",
-            "credentials": {
-                "auth_type": "oauth2.0",
-                "app_id": "1111",
-                "secret": "secret",
-                "access_token": "token",
-            },
-        },
-    ],
-)
-def test_production_streams_available_for_current_and_legacy_configs(config):
-    names = {stream.name for stream in get_source(config=config, state=None).streams(config=config)}
-    assert _ADDITIONAL_PRODUCTION_STREAMS <= names
-    assert _COMMON_STREAMS <= names
-
-
-@pytest.mark.parametrize("auth_type", ["oauth2.0", "sandbox_access_token"])
-def test_spec_accepts_only_production_authentication(auth_type):
+def test_check_rejects_sandbox_before_requesting_tiktok(requests_mock: Mocker, tmp_path: Path) -> None:
     config = {
         "credentials": {
-            "auth_type": auth_type,
+            "auth_type": "sandbox_access_token",
             "app_id": "1111",
             "secret": "secret",
             "access_token": "token",
@@ -119,12 +75,63 @@ def test_spec_accepts_only_production_authentication(auth_type):
         },
         "start_date": "2021-04-01",
     }
-    spec = get_source(config=config, state=None).spec(logger=None)
-    if auth_type == "sandbox_access_token":
-        with pytest.raises(ValidationError):
-            validate(config, spec.connectionSpecification)
-    else:
-        validate(config, spec.connectionSpecification)
+    requests_mock.get(
+        "https://sandbox-ads.tiktok.com/open_api/v1.3/advertiser/info/",
+        json={"code": 0, "data": {"list": [{"advertiser_id": "1111", "advertiser_name": "Test advertiser"}]}},
+    )
+    config_file = tmp_path / "config.json"
+    config_file.write_text(json.dumps(config))
+    entrypoint = AirbyteEntrypoint(get_source(config=config))
+    args = entrypoint.parse_args(["check", "--config", str(config_file)])
+
+    messages = [json.loads(message) for message in entrypoint.run(args)]
+
+    assert requests_mock.call_count == 0
+    statuses = [message["connectionStatus"] for message in messages if message["type"] == "CONNECTION_STATUS"]
+    assert len(statuses) == 1
+    assert statuses[0]["status"] == "FAILED"
+    assert "Config validation error" in statuses[0]["message"]
+    assert "oauth2.0" in statuses[0]["message"]
+
+
+@pytest.mark.parametrize(
+    "environment",
+    [
+        pytest.param({"advertiser_id": "1111", "secret": ""}, id="empty-secret"),
+        pytest.param({"advertiser_id": "1111", "secret": None}, id="null-secret"),
+        pytest.param({"advertiser_id": "1111"}, id="missing-secret"),
+    ],
+)
+def test_read_pixels_with_legacy_production_credentials(requests_mock: Mocker, environment: dict[str, str | None]) -> None:
+    config = {"access_token": "LEGACY_TOKEN", "start_date": "2024-01-01", "environment": environment}
+    requests_mock.get(
+        "https://business-api.tiktok.com/open_api/v1.3/advertiser/info/",
+        json={"code": 0, "data": {"list": [{"advertiser_id": "1111", "advertiser_name": "Test advertiser"}]}},
+    )
+    pixel = {"pixel_id": "2222", "pixel_name": "Test pixel"}
+    requests_mock.get(
+        "https://business-api.tiktok.com/open_api/v1.3/pixel/list/",
+        json={"code": 0, "data": {"pixels": [pixel]}},
+    )
+    catalog = CatalogBuilder().with_stream("pixels", SyncMode.full_refresh).build()
+
+    output = read(get_source(config=config), config, catalog)
+
+    assert not output.errors
+    assert [(record.record.stream, record.record.data) for record in output.records] == [("pixels", pixel)]
+    assert [(request.method, request.url.split("?")[0], request.qs) for request in requests_mock.request_history] == [
+        (
+            "GET",
+            "https://business-api.tiktok.com/open_api/v1.3/advertiser/info/",
+            {"advertiser_ids": ['["1111"]'], "page_size": ["100"]},
+        ),
+        (
+            "GET",
+            "https://business-api.tiktok.com/open_api/v1.3/pixel/list/",
+            {"advertiser_id": ["1111"], "page_size": ["20"]},
+        ),
+    ]
+    assert all(request.headers["Access-Token"] == "LEGACY_TOKEN" for request in requests_mock.request_history)
 
 
 def test_source_spec(config):
