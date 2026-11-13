@@ -18,7 +18,7 @@ install = [
   "install-ops-cli",
   "install-unit-tests-project",
 ]
-install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]==7.46.0.post8.dev42871066020'"
 install-ops-cli = "uv tool install --upgrade airbyte-internal-ops"
 install-unit-tests-project.shell = '''
 if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
