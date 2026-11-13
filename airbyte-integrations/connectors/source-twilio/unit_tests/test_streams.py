@@ -1003,3 +1003,66 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+@pytest.mark.parametrize(
+    "stream_name,path,cursor_field,lower_key,upper_key",
+    [
+        ("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<"),
+        ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
+    ],
+)
+def test_multi_slice_incremental_read_advances_partition_state_to_latest_record(
+    stream_name, path, cursor_field, lower_key, upper_key, requests_mock
+):
+    """
+    When a sync covers more than one slice, the per-partition cursor must advance to the latest record of the whole
+    sync, not just of the first slice. Otherwise the next sync re-reads every record after the first slice.
+    """
+    config = {**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z", "slice_step_duration": "P1D"}
+    partition = {"subresource_uri": f"/2010-04-01{path}", "parent_slice": {}}
+    records_per_window = {
+        "2022-11-14 00:00:00Z": [{"sid": "R1", cursor_field: "Mon, 14 Nov 2022 10:00:00 +0000"}],
+        "2022-11-15 00:00:00Z": [{"sid": "R2", cursor_field: "Tue, 15 Nov 2022 10:00:00 +0000"}],
+        "2022-11-16 00:00:00Z": [{"sid": "R3", cursor_field: "Wed, 16 Nov 2022 10:00:00 +0000"}],
+        "2022-11-16 10:00:00Z": [{"sid": "R3", cursor_field: "Wed, 16 Nov 2022 10:00:00 +0000"}],
+    }
+    requested_windows = []
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        lower, upper = query[lower_key][0], query[upper_key][0]
+        requested_windows.append((lower, upper))
+        return {stream_name: records_per_window.get(lower, [])}
+
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+    requests_mock.get(f"{BASE}{path}", json=_callback, status_code=200)
+
+    first_state = (
+        StateBuilder()
+        .with_stream_state(stream_name, {"states": [{"partition": partition, "cursor": {cursor_field: "2022-11-14 00:00:00Z"}}]})
+        .build()
+    )
+    with freeze_time("2022-11-16 12:03:11+00:00"):
+        first = read_from_stream(config, stream_name, SyncMode.incremental, first_state)
+
+    # Slices run concurrently, so records and requests are compared without ordering.
+    assert sorted(r.record.data["sid"] for r in first.records) == ["R1", "R2", "R3"]
+    assert sorted(requested_windows) == [
+        ("2022-11-14 00:00:00Z", "2022-11-14 23:59:59Z"),
+        ("2022-11-15 00:00:00Z", "2022-11-15 23:59:59Z"),
+        ("2022-11-16 00:00:00Z", "2022-11-16 12:03:11Z"),
+    ]
+    emitted_state = first.most_recent_state.stream_state.__dict__
+    assert emitted_state["states"] == [{"partition": partition, "cursor": {cursor_field: "2022-11-16 10:00:00Z"}}]
+    assert emitted_state["state"] == {cursor_field: "2022-11-16 10:00:00Z"}
+
+    requested_windows.clear()
+    second_state = StateBuilder().with_stream_state(stream_name, emitted_state).build()
+    with freeze_time("2022-11-16 13:00:00+00:00"):
+        second = read_from_stream(config, stream_name, SyncMode.incremental, second_state)
+
+    # The next sync resumes from the latest record (inclusive lower bound, so only that record overlaps) instead of
+    # re-reading the records already emitted by the earlier slices.
+    assert requested_windows == [("2022-11-16 10:00:00Z", "2022-11-16 13:00:00Z")]
+    assert [r.record.data["sid"] for r in second.records] == ["R3"]
