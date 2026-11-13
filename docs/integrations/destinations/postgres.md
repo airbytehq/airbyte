@@ -327,12 +327,15 @@ The connector adapts some values to what Postgres accepts:
   removing a null byte makes two keys in the same object identical, the last value wins. This edit
   isn't recorded in `_airbyte_meta`, so compare against your source if you need to know which
   records were affected.
-- Values that exceed a Postgres type's range are written as `NULL`, and the record's
+- Values that fail the connector's size or range checks are written as `NULL`, and the record's
   `_airbyte_meta` column records a `DESTINATION_FIELD_SIZE_LIMITATION` change. This applies to
-  integers outside the `BIGINT` range, numbers with more than 131,072 digits before the decimal
-  point, strings the connector estimates could exceed Postgres's 1 GB field limit (it assumes a
+  integers outside the `BIGINT` range, numbers with an absolute value greater than `1e131072`,
+  strings the connector estimates could exceed Postgres's 1 GB field limit (it assumes a
   worst case of 4 bytes per character, so any string longer than about 268 million characters),
   and timestamps outside the range Postgres supports (4713 BC to 294276 AD).
+  These checks don't cover every server constraint: an absolute numeric value of exactly
+  `1e131072` passes the connector's check but exceeds Postgres's 131,072-digit limit and can
+  cause `COPY` to fail instead of becoming `NULL`.
 - Dates and timestamps with a year later than 9999 are written without the leading `+` sign that the connector's internal representation uses for extended years (`+10000-01-01` becomes `10000-01-01`). Before version 3.0.22, PostgreSQL's `COPY` rejected these values and the sync failed.
 
 ## Creating dependent objects
@@ -379,7 +382,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.24  | 2026-10-29 | [89654](https://github.com/airbytehq/airbyte/pull/89654) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; PostgreSQL JDBC driver 42.7.14. |
+| 3.0.24  | 2026-10-29 | [89654](https://github.com/airbytehq/airbyte/pull/89654) | Upgrade to Bulk CDK 1.1.9; update Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0, BouncyCastle 1.86 and PostgreSQL JDBC driver 42.7.14. |
 | 3.0.23  | 2026-10-01 | [87617](https://github.com/airbytehq/airbyte/pull/87617) | Upgrade to Bulk CDK 1.1.1. |
 | 3.0.22  | 2026-09-24 | [86926](https://github.com/airbytehq/airbyte/pull/86926) | Strip the leading `+` from extended-year date/timestamp values so PostgreSQL `COPY` accepts them |
 | 3.0.21 | 2026-09-15 | [86331](https://github.com/airbytehq/airbyte/pull/86331) | Version bump to republish the Cloud-specific connector spec. |
