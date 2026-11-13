@@ -1003,3 +1003,132 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+MESSAGES_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "date_created": "2022-01-01T00:00:00Z",
+            "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"},
+        }
+        for sid in ("AC1", "AC2")
+    ],
+}
+MESSAGES_CONFIG = {**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}
+
+
+def _message(sid, date_sent):
+    return {"sid": sid, "date_sent": date_sent.strftime("%a, %d %b %Y %H:%M:%S +0000")}
+
+
+def _register_messages(requests_mock, records_by_account):
+    """Serve each account's messages filtered by the requested DateSent window and record every window requested."""
+    windows = []
+    requests_mock.get(f"{BASE}/Accounts.json", json=MESSAGES_ACCOUNTS_JSON, status_code=200)
+    for account_sid in ("AC1", "AC2"):
+
+        def _callback(request, context, account_sid=account_sid):
+            query = parse_qs(urlparse(request.url).query)
+            lower, upper = query["DateSent>"][0], query["DateSent<"][0]
+            windows.append((account_sid, lower, upper))
+            lower_dt = datetime.strptime(lower, "%Y-%m-%d %H:%M:%SZ")
+            upper_dt = datetime.strptime(upper, "%Y-%m-%d %H:%M:%SZ")
+            return {
+                "messages": [_message(sid, sent) for sid, sent in records_by_account.get(account_sid, []) if lower_dt <= sent <= upper_dt]
+            }
+
+        requests_mock.get(f"{BASE}/Accounts/{account_sid}/Messages.json", json=_callback, status_code=200)
+    return windows
+
+
+def _read_messages(state=None):
+    built_state = StateBuilder().with_stream_state("messages", state).build() if state is not None else None
+    return read_from_stream(MESSAGES_CONFIG, "messages", SyncMode.incremental, built_state)
+
+
+class TestMessagesGlobalCursor:
+    def test_account_without_new_messages_is_not_reread_on_next_sync(self, requests_mock):
+        with freeze_time("2022-11-15 12:00:00+00:00"):
+            _register_messages(requests_mock, {"AC1": [("SM1", datetime(2022, 11, 15, 10, 0, 0))]})
+            first_sync = _read_messages()
+        assert [record.record.data["sid"] for record in first_sync.records] == ["SM1"]
+        next_state = dict(first_sync.most_recent_state.stream_state.__dict__)
+        # The runtime lookback is the wall-clock duration of the first sync; pin it so the windows are deterministic.
+        next_state["lookback_window"] = 0
+
+        requests_mock.reset_mock()
+        with freeze_time("2022-11-16 12:03:11+00:00"):
+            windows = _register_messages(
+                requests_mock,
+                {
+                    "AC1": [("SM1", datetime(2022, 11, 15, 10, 0, 0))],
+                    "AC2": [("SM2", datetime(2022, 11, 16, 8, 0, 0))],
+                },
+            )
+            second_sync = _read_messages(next_state)
+
+        assert sorted(windows) == [
+            ("AC1", "2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z"),
+            ("AC2", "2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        # SM1 is re-emitted because the lower bound is inclusive of the previous cursor value.
+        assert sorted(record.record.data["sid"] for record in second_sync.records) == ["SM1", "SM2"]
+        final_state = second_sync.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-16 08:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "state": {"date_sent": "2022-11-15 10:00:00Z"},
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-15 10:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-02-01 00:00:00Z"},
+                        },
+                    ],
+                },
+                "2022-11-15 10:00:00Z",
+                id="stale_partition_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-14T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                        },
+                    ],
+                },
+                "2022-11-13 12:11:10Z",
+                id="legacy_per_partition_state_without_global_cursor",
+            ),
+        ],
+    )
+    def test_existing_per_partition_state_resumes_from_global_cursor(self, state, expected_lower_bound, requests_mock):
+        windows = _register_messages(requests_mock, {})
+
+        output = _read_messages(state)
+
+        assert sorted(windows) == [
+            ("AC1", expected_lower_bound, "2022-11-16 12:03:11Z"),
+            ("AC2", expected_lower_bound, "2022-11-16 12:03:11Z"),
+        ]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
