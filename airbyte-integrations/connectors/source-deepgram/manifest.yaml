@@ -1,0 +1,530 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://deepgram.com/
+  API Reference: https://developers.deepgram.com/reference/manage
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.deepgram.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "Token {{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: Authorization
+
+  project_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: project_id
+        partition_field: project_id
+        stream:
+          $ref: "#/definitions/streams/projects"
+
+  add_project_id:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - project_id
+        value: "{{ stream_partition['project_id'] }}"
+
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+
+    requests:
+      type: DeclarativeStream
+      name: requests
+      primary_key:
+        - request_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects/{{ stream_partition['project_id'] }}/requests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - requests
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 1000
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/requests"
+
+    keys:
+      type: DeclarativeStream
+      name: keys
+      primary_key:
+        - api_key_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects/{{ stream_partition['project_id'] }}/keys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - api_keys
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - $ref: "#/definitions/add_project_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - api_key_id
+              value: "{{ record.get('api_key', {}).get('api_key_id') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/keys"
+
+    balances:
+      type: DeclarativeStream
+      name: balances
+      primary_key:
+        - balance_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects/{{ stream_partition['project_id'] }}/balances
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - balances
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - $ref: "#/definitions/add_project_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balances"
+
+    usage:
+      type: DeclarativeStream
+      name: usage
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects/{{ stream_partition['project_id'] }}/usage
+          http_method: GET
+          request_parameters:
+            start: "{{ config['start_date'][:10] }}"
+            end: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - $ref: "#/definitions/add_project_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage"
+
+    usage_fields:
+      type: DeclarativeStream
+      name: usage_fields
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/projects/{{ stream_partition['project_id'] }}/usage/fields
+          http_method: GET
+          request_parameters:
+            start: "{{ config['start_date'][:10] }}"
+            end: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - $ref: "#/definitions/add_project_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage_fields"
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/requests"
+  - $ref: "#/definitions/streams/keys"
+  - $ref: "#/definitions/streams/balances"
+  - $ref: "#/definitions/streams/usage"
+  - $ref: "#/definitions/streams/usage_fields"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Deepgram API key. Create one in the Deepgram Console under
+          Settings > API Keys. The key needs read scopes for the Management
+          API (for example `project:read`, `usage:read`, `keys:read`,
+          `billing:read`).
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          UTC date and time in the format 2020-01-01T00:00:00Z. Requests and
+          usage created before this date will not be replicated.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: false
+    requests: false
+    keys: false
+    balances: false
+    usage: false
+    usage_fields: false
+  testedStreams: {}
+
+schemas:
+  projects:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      project_id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+    required:
+      - project_id
+
+  requests:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      request_id:
+        type: string
+      project_uuid:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      path:
+        type:
+          - "null"
+          - string
+      api_key_id:
+        type:
+          - "null"
+          - string
+      response:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      code:
+        type:
+          - "null"
+          - number
+      deployment:
+        type:
+          - "null"
+          - string
+      callback:
+        type:
+          - "null"
+          - string
+    required:
+      - request_id
+
+  keys:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      api_key_id:
+        type: string
+      project_id:
+        type: string
+      member:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          member_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+      api_key:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          api_key_id:
+            type:
+              - "null"
+              - string
+          comment:
+            type:
+              - "null"
+              - string
+          scopes:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+    required:
+      - api_key_id
+      - project_id
+
+  balances:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      balance_id:
+        type: string
+      project_id:
+        type: string
+      amount:
+        type:
+          - "null"
+          - number
+      units:
+        type:
+          - "null"
+          - string
+      purchase_order_id:
+        type:
+          - "null"
+          - string
+    required:
+      - balance_id
+      - project_id
+
+  usage:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      project_id:
+        type: string
+      start:
+        type:
+          - "null"
+          - string
+      end:
+        type:
+          - "null"
+          - string
+      resolution:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          units:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - number
+      results:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+    required:
+      - project_id
+
+  usage_fields:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      project_id:
+        type: string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      models:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            language:
+              type:
+                - "null"
+                - string
+            version:
+              type:
+                - "null"
+                - string
+            model_id:
+              type:
+                - "null"
+                - string
+      processing_methods:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      features:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+    required:
+      - project_id
