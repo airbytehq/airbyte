@@ -27,3 +27,5 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+`BlocksRetriever` applies the incremental cursor at emission time, after recursive traversal, rather than in the record selector. Children of old blocks must still be fetched: their timestamps can be newer than their parents'. Nested records retain the root page slice for cursor filtering and checkpointing, including when resuming per-partition state.

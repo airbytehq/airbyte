@@ -3,8 +3,10 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -23,11 +25,31 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+    client_side_incremental_sync: Optional[Mapping[str, Any]] = None
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._incremental_cursor = self.cursor or (self.client_side_incremental_sync or {}).get("cursor")
+        self.cursor = None
+        record_filter = self.record_selector.record_filter
+        if isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator):
+            self.record_selector.record_filter = RecordFilter(
+                config=self.config, parameters=parameters, condition=record_filter.condition
+            )
 
     def read_records(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        for stream_data in self._read_block_tree(records_schema, stream_slice):
+            record = Record(data=stream_data.data, stream_name=self.name, associated_slice=stream_slice)
+            if not self._incremental_cursor or self._incremental_cursor.should_be_synced(record):
+                yield record
+
+    def _read_block_tree(
         self,
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
@@ -44,7 +66,7 @@ class BlocksRetriever(SimpleRetriever):
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
                     cursor_slice=stream_slice.cursor_slice,
                 )
-                yield from self.read_records(records_schema, child_stream_slice)
+                yield from self._read_block_tree(records_schema, child_stream_slice)
                 self.current_block_depth -= 1
 
             if "parent" in stream_data:
