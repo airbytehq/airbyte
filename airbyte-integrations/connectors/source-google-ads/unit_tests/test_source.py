@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, Mock, call
 import pendulum
 import pytest
 import yaml
+from freezegun import freeze_time
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
@@ -110,6 +111,47 @@ def test_chunk_date_range():
     ] == slices
 
 
+def test_chunk_date_range_with_timezone_across_dst():
+    slices = list(
+        chunk_date_range(
+            start_date="2024-03-01",
+            end_date="2024-04-15",
+            conversion_window=14,
+            time_zone="America/Los_Angeles",
+            slice_duration=pendulum.duration(days=14),
+            slice_step=pendulum.duration(days=1),
+        )
+    )
+
+    assert slices == [
+        {"start_date": "2024-02-16", "end_date": "2024-03-01"},
+        {"start_date": "2024-03-02", "end_date": "2024-03-16"},
+        {"start_date": "2024-03-17", "end_date": "2024-03-31"},
+        {"start_date": "2024-04-01", "end_date": "2024-04-15"},
+    ]
+
+
+def test_chunk_date_range_without_end_date_uses_storage_window():
+    with freeze_time("2024-03-10T23:30:00Z"):
+        slices = list(
+            chunk_date_range(
+                start_date="2020-01-01",
+                end_date=None,
+                days_of_data_storage=90,
+                time_zone="America/Los_Angeles",
+            )
+        )
+
+    assert slices == [
+        {"start_date": "2023-12-11", "end_date": "2023-12-25"},
+        {"start_date": "2023-12-26", "end_date": "2024-01-09"},
+        {"start_date": "2024-01-10", "end_date": "2024-01-24"},
+        {"start_date": "2024-01-25", "end_date": "2024-02-08"},
+        {"start_date": "2024-02-09", "end_date": "2024-02-23"},
+        {"start_date": "2024-02-24", "end_date": "2024-03-09"},
+    ]
+
+
 def test_streams_count(config):
     streams = get_source(config).streams(config)
     expected_streams_number = 33
@@ -207,6 +249,36 @@ def test_read_missing_stream(config):
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
             [],
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
+        # mid-sync per-partition checkpoint without global cursor ⇒ unchanged
+        (
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "123", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2026-03-10"},
+                    }
+                ],
+                "lookback_window": 0,
+            },
+            [],
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "123", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2026-03-10"},
+                    }
+                ],
+                "lookback_window": 0,
+            },
+        ),
+        # global-cursor-only checkpoint without per-partition states ⇒ unchanged
+        (
+            {"use_global_cursor": True, "lookback_window": 0},
+            [],
+            {"use_global_cursor": True, "lookback_window": 0},
         ),
     ],
 )

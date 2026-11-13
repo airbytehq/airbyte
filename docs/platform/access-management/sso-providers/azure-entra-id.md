@@ -1,6 +1,6 @@
 ---
 sidebar_label: Entra ID
-products: cloud
+products: cloud-plus
 ---
 
 # Set up single sign on using Entra ID

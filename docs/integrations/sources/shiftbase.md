@@ -8,42 +8,47 @@ This page contains the setup guide and reference information for the [Shiftbase]
 
 ## Prerequisites
 
-- A Shiftbase account with access to **Settings > App center**.
-- A Shiftbase Public API token.
+To set up the Shiftbase source connector, you'll need:
 
-Each connection reads a single Shiftbase account. To sync several accounts, create one source per account.
+- A Shiftbase account with API access
+- An **Access Token** generated from the Shiftbase App Center
 
-### Generate an API token
+### Generating an Access Token
 
-1. In Shiftbase, go to **Settings > App center > Public API**.
-2. Click **Install** on the **Public API** tile.
-3. Enter a name for the token. Shiftbase then shows the token overview, where you can add more tokens with **+ Add App Token**.
-4. Copy the token. You need it to configure the source.
-
-If a stream returns no data or fails with an authorization error, check that the Shiftbase user who created the token can see the same departments, employees, and reports in the Shiftbase UI.
+1. Log in to your Shiftbase account
+2. Navigate to the App Center
+3. Generate a new API Access Token
+4. Copy and securely store the token - you'll need it for the connector configuration
 
 ## Setup guide
 
-### Set up the Shiftbase connector in Airbyte
+### Set up Shiftbase
 
-1. Select **Shiftbase** from the list of sources.
-2. Enter a **Source name**.
-3. For **Access Token**, enter the Public API token you generated.
-4. For **Start Date**, enter a date in `YYYY-MM-DD` format. See [How Start Date is used](#how-start-date-is-used).
-5. Optional: for **Schedule Report End Date**, enter a date in `YYYY-MM-DD` format. This is the last day fetched by the `schedule_detail_report` stream. If you leave it empty, the connector uses 30 days from the day the sync runs, so future rosters are included.
-6. Click **Set up source**.
+#### For Airbyte Cloud
 
-### How Start Date is used
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Shiftbase from the Source type dropdown.
+4. Enter a name for the Shiftbase connector.
+5. Enter your **Access Token** from the Shiftbase App Center.
+6. Enter your **Start Date** for historical data sync (format: YYYY-MM-DD).
+7. Optionally, enter a **Schedule Report End Date** (format: YYYY-MM-DD) to set the end date for the Schedule Detail Report stream. Defaults to 1 month into the future if not provided.
+8. Click **Set up source**.
 
-**Start Date** does more than bound historical data, and its effect differs by stream:
+<!-- env:oss -->
 
-- `departments`, `employees`, and `shifts` send it as the `min_date` request parameter on every request.
-- `absentees` and `availabilities` use it as the initial cursor value and send it as `min_date`.
-- `employee_time_distribution` uses the year of this date as the first year it requests.
-- `employees_report` sends it as the report's `from` date.
-- `timesheet_detail_report` and `schedule_detail_report` use it as the first day of their day-by-day window.
+#### For Airbyte Open Source
 
-An early Start Date increases sync time significantly, because `timesheet_detail_report` and `schedule_detail_report` request one day at a time. For example, a Start Date two years in the past means roughly 730 requests per detail report stream on the first sync. `employees_report` is a single request regardless of the date.
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Shiftbase** from the Source type dropdown.
+4. Enter the name for the Shiftbase connector.
+5. For **Access Token**, enter your Shiftbase API access token generated from the App Center.
+6. For **Start Date**, enter the date in `YYYY-MM-DD` format. Data from this date onwards will be replicated.
+7. Optionally, for **Schedule Report End Date**, enter a date in `YYYY-MM-DD` format to set the end date for the Schedule Detail Report stream. If not provided, it defaults to 1 month into the future from the current date.
+8. Click **Set up source**.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -54,42 +59,39 @@ The Shiftbase source connector supports the following [sync modes](https://docs.
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (for supported streams)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (for supported streams)
 
-`employees_report` has no primary key, so it can't use **Incremental - Append + Deduped**.
+## Supported Streams
 
-## Supported streams
-
-| Stream | Sync modes | Cursor field | Description |
-|:---|:---|:---|:---|
-| [Departments](https://developer.shiftbase.com/docs/core/510254d159b47-list-departments) | Full Refresh | | Departments and their scheduling, clocking, and timesheet settings. |
-| [Employees](https://developer.shiftbase.com/docs/core/75d0181c0add8-list-employees-in-department) | Full Refresh | | Employee membership per department. One record per employee and department, with `id`, `department_id`, `team_id`, and `type`. Contains no names or other personal details. |
-| [Employee Time Distribution](https://developer.shiftbase.com/docs/core/9ceb4dce3acb8-list-employee-time-distribution) | Full Refresh, Incremental | `year` | Worked hours, worked-hours percentage, and absences per employee per calendar year. |
-| [Absentees](https://developer.shiftbase.com/docs/core/2e1fba402f9bb-list-absentees) | Full Refresh, Incremental | `updated` | Absence and leave records, including status, hours, and salary impact. |
-| [Availabilities](https://developer.shiftbase.com/docs/core/0b8b4f51ba73a-list-availabilities) | Full Refresh, Incremental | `date` | Availability entries per employee and day. |
-| [Shifts](https://developer.shiftbase.com/docs/core/c8dbe25e28719-list-shifts) | Full Refresh | | Shift definitions per department: name, default start and end times, breaks, rate card, and color. These are the templates used to build a roster, not rostered shifts. For rostered shifts, use `schedule_detail_report`. |
-| [Users](https://developer.shiftbase.com/docs/core/7b22ead2360d9-list-users) | Full Refresh | | Account attributes per user: employee number, start and end dates, hire date, login and MFA status, locale, and plus/minus hours. Contains no names, email addresses, phone numbers, or addresses. |
-| [Employees Report](https://developer.shiftbase.com/docs/core/4d05f64e94419-employees-report) | Full Refresh | | User report from the `reports/users` endpoint, including contract type, function, location, contract hours, and wage at the end of the reporting period. |
-| [Timesheet Detail Report](https://developer.shiftbase.com/docs/core/5612d41bb72b1-timesheet-detail-report) | Full Refresh, Incremental | `timesheetDate` | Per-timesheet report rows with clocked and rostered times, breaks, surcharges, overtime, and salary. |
-| [Schedule Detail Report](https://developer.shiftbase.com/docs/core/122ab05b95b82-schedule-detail-report) | Full Refresh, Incremental | `rosterDate` | Per-roster report rows with department, team, shift, times, breaks, and salary. Covers future rosters up to **Schedule Report End Date**. |
-
-The connector requests the report streams with `export: json`, so records arrive as flat JSON rows rather than the column-and-row structure the Shiftbase API returns by default.
-
-Airbyte tests the connection by reading `departments`. A failed connection test usually means the token is invalid or the account can't read departments.
-
-### Incremental sync behavior
-
-Incremental streams other than `schedule_detail_report` are configured as data feeds: the connector stops requesting once it passes the cursor window and discards records that fall outside it. Two consequences are worth planning for:
-
-- Records dated in the future are dropped. `availabilities` uses the availability `date` as its cursor, so availability entered for future days doesn't sync. `schedule_detail_report` is the only stream that reads future-dated data, up to **Schedule Report End Date**.
-- `availabilities` and `employee_time_distribution` advance on a data date, not an update timestamp. Edits to an already-synced day or year are only picked up if the stream re-reads that window, so use a fresh sync or a full refresh when you need corrected history.
-
-`absentees` cursors on `updated`, so changes to existing absences do sync.
+| Stream | Sync Mode | Description |
+|:---|:---|:---|
+| [Departments](https://developer.shiftbase.com/docs/core/510254d159b47-list-departments) | Full Refresh | Internal departments within the Shiftbase account |
+| [Employees](https://developer.shiftbase.com/docs/core/75d0181c0add8-list-employees-in-department) | Full Refresh | List of employees (PII fields like name are excluded) |
+| [Absentees](https://developer.shiftbase.com/docs/core/2e1fba402f9bb-list-absentees) | Full Refresh, Incremental | Records of employee absences and leave |
+| [Employee Time Distribution](https://developer.shiftbase.com/docs/core/9ceb4dce3acb8-list-employee-time-distribution) | Full Refresh, Incremental | Distribution of worked and planned hours per employee |
+| [Availabilities](https://developer.shiftbase.com/docs/core/0b8b4f51ba73a-list-availabilities) | Full Refresh, Incremental | Employee availability slots and preferences |
+| [Shifts](https://developer.shiftbase.com/docs/core/c8dbe25e28719-list-shifts) | Full Refresh | Scheduled work shifts and roster details |
+| [Users](https://developer.shiftbase.com/docs/core/7b22ead2360d9-list-users) | Full Refresh | User account details (PII excluded, flattened structure) |
+| [Employees Report](https://developer.shiftbase.com/docs/core/4d05f64e94419-employees-report) | Full Refresh | Employees report data |
+| [Timesheet Detail Report](https://developer.shiftbase.com/docs/core/5612d41bb72b1-timesheet-detail-report) | Full Refresh, Incremental | Detailed timesheet report data |
+| [Schedule Detail Report](https://developer.shiftbase.com/docs/core/122ab05b95b82-schedule-detail-report) | Full Refresh, Incremental | Detailed schedule report data |
 
 ## Performance considerations
 
-- The connector retries HTTP 429, 500, 502, 503, and 504 responses. It waits for the interval in the `Retry-After` response header when Shiftbase sends one, and otherwise backs off exponentially.
-- `timesheet_detail_report` and `schedule_detail_report` request one day per API call, so sync duration scales with the length of the date range.
-- `employee_time_distribution` makes one call per employee per year: it iterates every department, then every employee in that department, then each year from **Start Date** onward. On large accounts this is the slowest stream by a wide margin.
-- No stream paginates. Each request returns the complete result set for its scope, so a wide **Start Date** on `departments`, `shifts`, or `absentees` produces large single responses.
+The Shiftbase API has rate limiting in place. The connector handles rate limits automatically with exponential backoff. If you encounter rate limit issues, consider:
+
+- Reducing the sync frequency
+- Using incremental sync where available to minimize API calls
+
+## Data type map
+
+| Shiftbase Type | Airbyte Type |
+|:---|:---|
+| `string` | `string` |
+| `integer` | `integer` |
+| `boolean` | `boolean` |
+| `object` | `object` |
+| `array` | `array` |
+| `date` | `string` |
+| `datetime` | `string` |
 
 ## Limitations & Troubleshooting
 
@@ -98,17 +100,15 @@ Incremental streams other than `schedule_detail_report` are configured as data f
 
 ### Connector limitations
 
-- The `employees` and `users` streams exclude personal details such as names, email addresses, phone numbers, and addresses. If you need those fields, they aren't available through this connector.
-- The report streams carry compensation data (`contractWage`, `timesheetSalary`, `rosterSalary`, `endContractWage`). Restrict access to these tables in your destination accordingly.
-- Report stream schemas are fixed by the connector, and some columns are specific to the account they were captured from, such as surcharge percentage columns (`timesheet150.00%`) and custom-field columns (`timesheetCustomFields4490`). Columns your account returns that aren't in the schema are not declared in the catalog, so destinations may drop them.
-- `employee_time_distribution` adds a synthetic `year` field as its cursor. Shiftbase doesn't return it; the connector derives it from the requested year.
+- The `users` stream is flattened and excludes PII (names, emails, phones, addresses) for privacy compliance
+- The `employees` stream has the `name` field removed to minimize PII exposure
+- Some streams (reports) make day-by-day API calls which may result in longer sync times for large date ranges
 
 ### Troubleshooting
 
-- **Connection test fails**: Confirm the token is active in **Settings > App center > Public API** and that the account can read departments.
-- **A stream is empty**: Check whether **Start Date** excludes the data you expect, and remember that future-dated records only arrive through `schedule_detail_report`.
-- **Missing future rosters**: Set **Schedule Report End Date** far enough ahead. Without it, the connector reads only 30 days beyond the sync date.
-- **Syncs take hours**: Move **Start Date** forward, or disable `employee_time_distribution` and the report streams you don't need.
+- **Connection test fails**: Verify your access token is valid and has not expired
+- **Empty streams**: Ensure your Shiftbase account has data for the requested date range
+- **Rate limiting**: The connector handles rate limits automatically, but extended syncs may take longer if limits are hit frequently
 
 </details>
 
@@ -119,6 +119,15 @@ Incremental streams other than `schedule_detail_report` are configured as data f
 
 | Version | Date | Pull Request | Subject |
 |:---|:---|:---|:---|
+| 0.0.10 | 2026-11-10 | [91721](https://github.com/airbytehq/airbyte/pull/91721) | Update dependencies |
+| 0.0.9 | 2026-11-03 | [90745](https://github.com/airbytehq/airbyte/pull/90745) | Update dependencies |
+| 0.0.8 | 2026-10-20 | [89396](https://github.com/airbytehq/airbyte/pull/89396) | Update dependencies |
+| 0.0.7 | 2026-10-13 | [88794](https://github.com/airbytehq/airbyte/pull/88794) | Update dependencies |
+| 0.0.6 | 2026-10-06 | [88035](https://github.com/airbytehq/airbyte/pull/88035) | Update dependencies |
+| 0.0.5 | 2026-09-29 | [87329](https://github.com/airbytehq/airbyte/pull/87329) | Update dependencies |
+| 0.0.4 | 2026-09-22 | [86801](https://github.com/airbytehq/airbyte/pull/86801) | Update dependencies |
+| 0.0.3 | 2026-09-15 | [86200](https://github.com/airbytehq/airbyte/pull/86200) | Update dependencies |
+| 0.0.2 | 2026-09-08 | [85666](https://github.com/airbytehq/airbyte/pull/85666) | Update dependencies |
 | 0.0.1 | 2026-08-27 | [72899](https://github.com/airbytehq/airbyte/pull/72899) | Initial release |
 
 </details>

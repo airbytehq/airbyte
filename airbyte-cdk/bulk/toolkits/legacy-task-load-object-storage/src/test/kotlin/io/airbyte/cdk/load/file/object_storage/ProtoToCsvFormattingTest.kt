@@ -54,7 +54,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures(true) {
             "obj_col",
             "union_col",
             "unknown_col"
-        """
+            """
                 .trimIndent()
                 .replace("\n", "")
         assertEquals(
@@ -81,7 +81,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures(true) {
             "{""k"":""v""}",
             "{""u"":1}",
             ""
-        """
+            """
                 .trimIndent()
                 .replace("\n", "")
 
@@ -116,7 +116,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures(true) {
             "_airbyte_meta",
             "_airbyte_generation_id",
             "_airbyte_data"
-        """
+            """
                 .trimIndent()
                 .replace("\n", "")
 
@@ -132,7 +132,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures(true) {
             "{""sync_id"":42,""changes"":[{""field"":""x"",""change"":""NULLED"",""reason"":""DESTINATION_SERIALIZATION_ERROR""},{""field"":""y"",""change"":""NULLED"",""reason"":""SOURCE_SERIALIZATION_ERROR""},{""field"":""z"",""change"":""TRUNCATED"",""reason"":""SOURCE_RECORD_SIZE_LIMITATION""},{""field"":""unknown_col"",""change"":""NULLED"",""reason"":""DESTINATION_SERIALIZATION_ERROR""}]}",
             314,
             "{""bool_col"":true,""int_col"":123,""num_col"":12.34,""string_col"":""hello"",""date_col"":""2025-06-17"",""time_tz_col"":""23:59:59+02:00"",""time_no_tz_col"":""23:59:59"",""ts_tz_col"":""2025-06-17T23:59:59+02:00"",""ts_no_tz_col"":""2025-06-17T23:59:59"",""array_col"":[""a"",""b""],""obj_col"":{""k"":""v""},""union_col"":{""u"":1},""unknown_col"":null}"
-        """
+            """
                 .trimIndent()
                 .replace("\n", "")
 

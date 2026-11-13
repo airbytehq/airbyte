@@ -28,7 +28,7 @@ class SocketInputFlow(
     private val inputFormatReader: DataChannelReader,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
     private val memoryManager: ReservationManager,
-    private val logPerNRecords: Long = 100_000L
+    private val logPerNRecords: Long = 100_000L,
 ) : Flow<PipelineInputEvent> {
     private val log = KotlinLogging.logger {}
 
@@ -57,7 +57,7 @@ class SocketInputFlow(
                         }
                         is CheckpointMessage ->
                             pipelineEventBookkeepingRouter.handleCheckpoint(
-                                memoryManager.reserve(message.serializedSizeBytes, message)
+                                memoryManager.reserve(message.serializedSizeBytes, message),
                             )
                         is ProbeMessage -> collector.emit(PipelineHeartbeat())
                         Undefined -> log.warn { "Unhandled message: $message" }

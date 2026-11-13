@@ -35,7 +35,7 @@ data class PersonalAccessTokenConfiguration(
 class DatabricksConfigurationFactory :
     DestinationConfigurationFactory<DatabricksSpecification, DatabricksConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: DatabricksSpecification
+        pojo: DatabricksSpecification,
     ): DatabricksConfiguration =
         DatabricksConfiguration(
             acceptTerms = pojo.acceptTerms,
