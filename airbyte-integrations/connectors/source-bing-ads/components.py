@@ -18,10 +18,13 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -683,3 +686,40 @@ class BingAdsReportDownloadRequester(HttpRequester):
                 exc_info=True,
             )
             return None
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Classifies an expired Bing Ads file download URL as a transient error.
+
+    Bulk and report files are downloaded from Azure Blob Storage through a pre-signed URL that is only valid
+    for a few minutes. Once it expires, Azure answers 403 with the `x-ms-error-code: AuthenticationFailed` header
+    and a "Signature not valid in the specified time frame" detail in an XML body. The CDK default reports every
+    403 as a permission problem (`config_error`), which is wrong here: the credentials are fine and the next sync
+    gets a new URL.
+
+    This cannot be an `HttpResponseFilter`: its `predicate` and `error_message_contains` read the response body of
+    every response, including successful ones, which drains the streamed file before the decoder reads it. Its
+    `http_codes` alone would relabel every 403. This handler only reads the body of a 403.
+    """
+
+    _EXPIRED_SIGNATURE_ERROR_CODE = "AuthenticationFailed"
+    _EXPIRED_SIGNATURE_DETAIL = "Signature not valid in the specified time frame"
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if self._is_expired_download_url(response_or_exception):
+            # Not retried: the same request would reuse the expired URL.
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.transient_error,
+                error_message="Bing Ads file download URL is expired.",
+            )
+        return super().interpret_response(response_or_exception)
+
+    def _is_expired_download_url(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
+        return (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == 403
+            and response_or_exception.headers.get("x-ms-error-code") == self._EXPIRED_SIGNATURE_ERROR_CODE
+            and self._EXPIRED_SIGNATURE_DETAIL in response_or_exception.text
+        )
