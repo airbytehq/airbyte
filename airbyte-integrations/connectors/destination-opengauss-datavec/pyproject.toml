@@ -1,0 +1,40 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airbyte-destination-opengauss-datavec"
+version = "0.1.0"
+description = "Airbyte destination implementation for openGauss DataVec."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/opengauss-datavec"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_opengauss_datavec"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = { version = "<2.0.0", extras = ["vector-db-based"] }
+psycopg2-binary = "^2.9.10"
+sqlalchemy = "^2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8"
+ruff = "^0.4"
+mypy = "^1.9.0"
+testcontainers = "^4.9.0"
+
+[tool.poetry.scripts]
+destination-opengauss-datavec = "destination_opengauss_datavec.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
