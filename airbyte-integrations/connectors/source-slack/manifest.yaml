@@ -217,8 +217,9 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          type: RecordFilter
-          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
+          type: CustomRecordFilter
+          class_name: source_declarative_manifest.components.ChannelRecordFilter
+          condition: "{{ true }}"
       paginator:
         $ref: "#/definitions/default_paginator"
         pagination_strategy:
@@ -323,12 +324,13 @@ definitions:
                 record_selector:
                   $ref: "#/definitions/channels_stream/retriever/record_selector"
                   record_filter:
-                    type: RecordFilter
+                    type: CustomRecordFilter
+                    class_name: source_declarative_manifest.components.ChannelRecordFilter
                     # Limit message/thread partitions to channels the bot can actually read.
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or (config.get('join_channels') and not record.get('is_archived', false))) }}"
+                    condition: "{{ record.is_member or (config.get('join_channels') and not record.get('is_archived', false)) }}"
             parent_key: id
             partition_field: channel
             request_option:
@@ -533,10 +535,22 @@ spec:
           type: string
           minLength: 0
         title: Channel name filter
-        description: A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.
+        description: Channel names or shell-style wildcard patterns (without leading '#') to sync. Supports '*' for any sequence and '?' for one character, for example 'team-*'. Exact names also work. Empty list means all channels. Exclusions take precedence.
         examples:
           - channel_one
           - channel_two
+      channel_exclude_filter:
+        type: array
+        default: []
+        items:
+          type: string
+        title: Channel name exclude filter
+        description: Channel names or shell-style wildcard patterns (without leading '#') to exclude. Supports '*' for any sequence and '?' for one character. Exclusion takes precedence over the channel name filter. Empty list excludes nothing.
+      include_external_shared_channels:
+        type: boolean
+        default: true
+        title: Include externally shared channels
+        description: Whether to include externally shared channels (Slack Connect). When false, channels with is_ext_shared set to true are skipped. This is a record-level filter because Slack's types parameter has no shared-channel type.
       threads_ignore_no_replies:
         type: boolean
         default: false
