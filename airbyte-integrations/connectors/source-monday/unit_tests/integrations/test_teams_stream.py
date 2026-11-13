@@ -51,6 +51,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         ]
         for response in test_cases:
             http_mocker.clear_all_matchers()
+            initial_request_count = len(http_mocker._mocker.request_history)
             api_token_authenticator = self.get_authenticator(self._config)
 
             http_mocker.post(
@@ -66,13 +67,7 @@ class TestTeamsStreamFullRefresh(TestCase):
 
             assert len(output.records) == 1
 
-            # Check for retry log messages indicating the new error format was handled
-            error_logs = [
-                error
-                for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-                if "COMPLEXITY_BUDGET_EXHAUSTED" in error or "Complexity budget exhausted" in error
-            ]
-            assert len(error_logs) >= 1
+            assert len(http_mocker._mocker.request_history) - initial_request_count == 2
 
     @HttpMocker()
     def test_given_retryable_error_when_read_teams_then_stop_syncing(self, http_mocker):
@@ -91,13 +86,7 @@ class TestTeamsStreamFullRefresh(TestCase):
 
         assert len(output.records) == 0
 
-        # Check for retry log messages indicating the new error format was handled
-        error_logs = [
-            error
-            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if "COMPLEXITY_BUDGET_EXHAUSTED" in error or "Complexity budget exhausted" in error
-        ]
-        assert len(error_logs) >= 1
+        assert len(http_mocker._mocker.request_history) == 6
 
     @HttpMocker()
     def test_given_retryable_500_error_when_read_teams_then_stop_syncing(self, http_mocker):
@@ -118,8 +107,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         error_logs = [
             error
             for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if "Backing off _send(...) for 0.0s (airbyte_cdk.sources.streams.http.exceptions.UserDefinedBackoffException: HTTP Status Code: 500. Error: Internal server error.)"
-            in error
+            if "UserDefinedBackoffException: Rate limit exceeded (HTTP 500). Retrying in 61.0 seconds." in error
         ]
         assert len(error_logs) == 5
 
