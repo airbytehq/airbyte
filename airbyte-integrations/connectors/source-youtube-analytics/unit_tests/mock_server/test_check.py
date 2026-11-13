@@ -26,7 +26,8 @@ _API = YoutubeAnalyticsRequestBuilder.BASE_URL
 _BASIC_JOB = {"id": "job-basic", "reportTypeId": "channel_basic_a3"}
 _ANNOTATIONS_JOB = {"id": "job-annotations", "reportTypeId": "channel_annotations_a1"}
 _BASIC_CSV = (
-    "date,channel_id,video_id,live_or_on_demand,subscribed_status,country_code,views\n" "20261018,channel-1,video-1,on_demand,subscribed,US,7\n"
+    "date,channel_id,video_id,live_or_on_demand,subscribed_status,country_code,views\n"
+    "20261018,channel-1,video-1,on_demand,subscribed,US,7\n"
 )
 
 
