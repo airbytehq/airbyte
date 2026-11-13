@@ -89,7 +89,7 @@ data:
       url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-charts-and-metrics.yaml
       type: openapi_spec
     - title: RevenueCat authentication
-      url: https://www.revenuecat.com/docs/welcome/authentication
+      url: https://www.revenuecat.com/docs/projects/authentication
       type: authentication_guide
     - title: RevenueCat API v2 rate limits
       url: https://www.revenuecat.com/docs/api-v2#tag/Rate-Limit

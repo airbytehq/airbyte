@@ -1,6 +1,11 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Records shaped like the RevenueCat v2 OpenAPI responses conform to the discovered schemas."""
+"""
+Records shaped like the RevenueCat v2 OpenAPI responses conform to the discovered schemas.
+
+The one known exception is the vendor-string store identifiers, which the manifest still declares `integer` until 1.0.0
+(AGENTS.md section 5). `test_vendor_string_store_identifiers_fail_the_declared_integer_type` pins that defect.
+"""
 
 from typing import Any, Dict, List
 
@@ -90,7 +95,6 @@ _RECORDS: Dict[str, Dict[str, Any]] = {
         "customer_id": "cust_1",
         "original_customer_id": "cust_1",
         "product_id": None,
-        "purchased_at": _MS,
         "starts_at": _MS,
         "ends_at": None,
         "current_period_starts_at": _MS,
@@ -227,7 +231,8 @@ def _discovered_schema(stream: str) -> Dict[str, Any]:
 def test_emitted_records_declare_every_field_and_match_discovered_types(stream: str) -> None:
     spec = STREAMS[stream]
     with HttpMocker() as http_mocker:
-        (partition,) = mock_ancestors(http_mocker, stream, ["parent_a"])
+        parent_id = "+14155550123" if spec.partition_field == "customer_id" else "parent_a"
+        (partition,) = mock_ancestors(http_mocker, stream, [parent_id])
         request = RevenueCatRequestBuilder.endpoint(spec.path(partition))
         if stream == "metrics_overview":
             request = request.without_query_params()
@@ -239,3 +244,28 @@ def test_emitted_records_declare_every_field_and_match_discovered_types(stream: 
     schema = _discovered_schema(stream)
     jsonschema.Draft7Validator(schema, format_checker=jsonschema.FormatChecker()).validate(emitted)
     assert _undeclared_paths(emitted, schema) == []
+
+
+_STORE_IDENTIFIERS = {
+    "customers_subscriptions": "store_subscription_identifier",
+    "customers_purchases": "store_purchase_identifier",
+}
+
+
+@pytest.mark.xfail(
+    strict=True,
+    raises=jsonschema.ValidationError,
+    reason="Vendor store identifiers are strings but are declared integer until 1.0.0 (AGENTS.md section 5)",
+)
+@pytest.mark.parametrize("stream", list(_STORE_IDENTIFIERS))
+def test_vendor_string_store_identifiers_fail_the_declared_integer_type(stream: str) -> None:
+    spec = STREAMS[stream]
+    with HttpMocker() as http_mocker:
+        (partition,) = mock_ancestors(http_mocker, stream, ["parent_a"])
+        vendor_record = {**_RECORDS[stream], _STORE_IDENTIFIERS[stream]: "GPA.3372-1234-5678-90123"}
+        http_mocker.get(RevenueCatRequestBuilder.endpoint(spec.path(partition)).build(), list_response(stream, [vendor_record]))
+        output = read_stream(stream)
+
+    assert output.errors == []
+    (emitted,) = records_data(output)
+    jsonschema.Draft7Validator(_discovered_schema(stream)).validate(emitted)

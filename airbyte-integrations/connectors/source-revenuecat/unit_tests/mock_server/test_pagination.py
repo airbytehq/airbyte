@@ -2,6 +2,8 @@
 
 """Pagination and partitioning contracts for every list stream."""
 
+from urllib.parse import quote
+
 import pytest
 
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -19,11 +21,11 @@ def test_reads_100_records_per_page_and_follows_next_page_for_each_partition(str
         page_two_requests = []
         for index, partition in enumerate(partitions):
             path = spec.path(partition)
-            first_id, second_id = f"{stream}_{index}_1", f"{stream}_{index}_2"
+            first_id, second_id = f"$RCAnonymousID:{stream}_{index}_1", f"{stream}_{index}_2"
             page_two = RevenueCatRequestBuilder.endpoint(path).with_starting_after(first_id).build()
             http_mocker.get(
                 RevenueCatRequestBuilder.endpoint(path).build(),
-                list_response(stream, [record(stream, first_id)], next_page=next_page_path(path, first_id)),
+                list_response(stream, [record(stream, first_id)], next_page=next_page_path(path, quote(first_id, safe=""))),
             )
             http_mocker.get(page_two, list_response(stream, [record(stream, second_id)], next_page=None))
             page_two_requests.append(page_two)
