@@ -1,0 +1,9 @@
+{
+  "requiredPlugins": [
+    {
+      "source": "git-subdir",
+      "url": "https://github.com/airbytehq/ai-skills.git",
+      "path": "plugins/hydra-connector-ops"
+    }
+  ]
+}

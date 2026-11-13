@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -41,9 +42,12 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
@@ -409,12 +413,12 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     3,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
-                    Types.StringType.get()
+                    Types.StringType.get(),
                 ),
                 Types.NestedField.required(
                     4,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
                 Types.NestedField.required(
                     5,
@@ -446,7 +450,7 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     12,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
             )
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
@@ -469,6 +473,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
@@ -545,6 +550,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -559,13 +565,8 @@ internal class S3DataLakeStreamLoaderTest {
                 any<Type.PrimitiveType>(),
             )
         } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<Type.PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) } returns
+            updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
 
         every { updateSchema.commit() } just runs
@@ -644,7 +645,7 @@ internal class S3DataLakeStreamLoaderTest {
                 tableSchema =
                     makeTableSchema(
                         objectSchema,
-                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys)
+                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
                     ),
             )
         val columns =
@@ -654,12 +655,12 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     3,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
-                    Types.StringType.get()
+                    Types.StringType.get(),
                 ),
                 Types.NestedField.required(
                     4,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
                 Types.NestedField.required(
                     5,
@@ -691,7 +692,7 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     12,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
             )
         val icebergSchema = Schema(columns, emptySet())
@@ -714,6 +715,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -728,15 +730,14 @@ internal class S3DataLakeStreamLoaderTest {
                 any<Type.PrimitiveType>(),
             )
         } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<Type.PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) } returns
+            updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
+        // Bulk CDK load >= 1.1.2 generates `_airbyte_meta.changes` with optional list elements and
+        // relaxes the required ones in the existing table through makeColumnOptional (1.1.1 did not
+        // call it at all). Answer it so the test runs on both, and assert on it below.
+        every { updateSchema.makeColumnOptional(any()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
@@ -777,10 +778,12 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<Type.PrimitiveType>()) }
-        verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        // User columns keep their nullability; only the CDK-owned `_airbyte_meta.changes` subtree
+        // may be relaxed, and only by CDK versions that generate optional list elements.
         verify(exactly = 0) {
-            updateSchema.addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>())
+            updateSchema.makeColumnOptional(match { !it.startsWith("_airbyte_meta.") })
         }
+        verify(exactly = 0) { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) }
         verify(exactly = 1) { updateSchema.requireColumn("id") }
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify(exactly = 0) { updateSchema.commit() }
@@ -838,7 +841,216 @@ internal class S3DataLakeStreamLoaderTest {
         )
     }
 
-    private fun makeIcebergConfiguration(): S3DataLakeConfiguration {
+    @Test
+    fun testIncomingSchemaUsesFinalColumnNamesAndKeepsFieldIds() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "UserId" to FieldType(IntegerType, nullable = true),
+                    "URLs" to FieldType(StringType, nullable = true),
+                    "plain" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val finalColumnNames = mapOf("UserId" to "userid", "URLs" to "urls", "plain" to "plain")
+        val stream =
+            makeNormalizedStream(
+                objectSchema,
+                finalColumnNames,
+                Dedupe(primaryKey = listOf(listOf("UserId")), cursor = emptyList()),
+                generationId = 1,
+                minimumGenerationId = 0,
+            )
+        val inputNameSchema =
+            objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("UserId")))
+        val createdSchema = slot<Schema>()
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch(any()) } returns this@mockk
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { schema() } answers { createdSchema.captured }
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), capture(createdSchema)) } returns table
+            every { toIcebergSchema(any()) } returns inputNameSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(normalizeColumnNames = true),
+                icebergUtil,
+            )
+
+        runBlocking { streamLoader.start() }
+
+        val schema = createdSchema.captured
+        assertEquals(
+            inputNameSchema.columns().map { finalColumnNames[it.name()] ?: it.name() },
+            schema.columns().map { it.name() },
+        )
+        assertEquals(
+            inputNameSchema.columns().map { it.fieldId() },
+            schema.columns().map { it.fieldId() },
+        )
+        assertEquals(inputNameSchema.identifierFieldIds(), schema.identifierFieldIds())
+        assertEquals(setOf("userid"), schema.identifierFieldNames())
+        assertFalse(schema.findField("userid").isOptional)
+        assertTrue(Meta.COLUMN_NAMES.all { schema.findField(it) != null })
+    }
+
+    @Test
+    fun testStartRejectsRenamedColumnsWhenNormalizationIsEnabled() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "UserName" to FieldType(StringType, nullable = true),
+                    "Foo.Bar" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val stream =
+            makeNormalizedStream(
+                objectSchema,
+                mapOf("id" to "id", "UserName" to "username", "Foo.Bar" to "foo_bar"),
+                Append,
+                generationId = 1,
+                minimumGenerationId = 0,
+            )
+        // The table was created before the option was enabled, so it still has "UserName" and
+        // "Foo.Bar".
+        val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val table: Table = mockk { every { schema() } returns existingSchema }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns existingSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(normalizeColumnNames = true),
+                icebergUtil,
+            )
+
+        val failure = assertFailsWith<ConfigErrorException> { runBlocking { streamLoader.start() } }
+
+        assertContains(failure.message!!, "UserName -> username")
+        assertContains(failure.message!!, "Foo.Bar -> foo_bar")
+        assertContains(failure.message!!, "Clear this stream's data")
+        verify(exactly = 0) { streamStateStore.put(any(), any()) }
+    }
+
+    @Test
+    fun testStartAllowsRenamedColumnsOnTruncateRefresh() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "UserName" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val stream =
+            makeNormalizedStream(
+                objectSchema,
+                mapOf("id" to "id", "UserName" to "username"),
+                Append,
+                generationId = 1,
+                minimumGenerationId = 1,
+            )
+        val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val updateSchema: UpdateSchema = mockk {
+            every { deleteColumn(any()) } returns this@mockk
+            every { addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>()) } returns
+                this@mockk
+            every { apply() } returns existingSchema
+        }
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch(any()) } returns this@mockk
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { schema() } returns existingSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+            every { updateSchema().allowIncompatibleChanges() } returns updateSchema
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns existingSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(normalizeColumnNames = true),
+                icebergUtil,
+            )
+
+        runBlocking { streamLoader.start() }
+
+        assertEquals(ColumnTypeChangeBehavior.OVERWRITE, streamLoader.columnTypeChangeBehavior)
+        verify { updateSchema.deleteColumn("UserName") }
+        verify { updateSchema.addColumn(null, "username", Types.StringType.get()) }
+        verify(exactly = 0) { updateSchema.commit() }
+    }
+
+    private fun makeNormalizedStream(
+        objectSchema: ObjectType,
+        inputToFinalColumnNames: Map<String, String>,
+        importType: ImportType,
+        generationId: Long,
+        minimumGenerationId: Long,
+    ) =
+        DestinationStream(
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = 1,
+            unmappedNamespace = "namespace",
+            unmappedName = "name",
+            namespaceMapper =
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+            tableSchema =
+                StreamTableSchema(
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = objectSchema.properties,
+                            inputToFinalColumnNames = inputToFinalColumnNames,
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                ),
+        )
+
+    private fun makeStreamLoader(
+        stream: DestinationStream,
+        icebergConfiguration: S3DataLakeConfiguration,
+        icebergUtil: IcebergUtil,
+    ): S3DataLakeStreamLoader {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        return S3DataLakeStreamLoader(
+            icebergConfiguration,
+            stream,
+            IcebergTableSynchronizer(
+                IcebergTypesComparator(),
+                IcebergSuperTypeFinder(IcebergTypesComparator()),
+            ),
+            s3DataLakeUtil,
+            icebergUtil,
+            stagingBranchName = "airbyte_staging_test",
+            mainBranchName = "main",
+            streamStateStore = streamStateStore,
+        )
+    }
+
+    private fun makeIcebergConfiguration(
+        normalizeColumnNames: Boolean = false,
+    ): S3DataLakeConfiguration {
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -858,6 +1070,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { this@mockk.normalizeColumnNames } returns normalizeColumnNames
         }
     }
 

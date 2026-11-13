@@ -54,14 +54,42 @@ class ClickhouseCheckerTest {
 
         verify {
             client.execute(
-                "CREATE TABLE IF NOT EXISTS ${config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS ${config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()",
             )
         }
         verify {
             client.insert(
                 "${config.database}.${checker.tableName}",
                 any<InputStream>(),
-                ClickHouseFormat.JSONEachRow
+                ClickHouseFormat.JSONEachRow,
+            )
+        }
+    }
+
+    @Test
+    fun `check with cluster config - creates check table with ON CLUSTER and ReplicatedMergeTree`() {
+        val clusterConfig = Fixtures.config(clusterName = "my_cluster", useReplicatedEngines = true)
+        val clusterChecker = ClickhouseChecker(clock, clusterConfig, client)
+
+        clusterChecker.check()
+
+        verify {
+            client.execute(
+                "CREATE TABLE IF NOT EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster` (test UInt8) ENGINE = ReplicatedMergeTree ORDER BY ()",
+            )
+        }
+    }
+
+    @Test
+    fun `cleanup with cluster config - drops check table with ON CLUSTER`() {
+        val clusterConfig = Fixtures.config(clusterName = "my_cluster")
+        val clusterChecker = ClickhouseChecker(clock, clusterConfig, client)
+
+        clusterChecker.cleanup()
+
+        verify {
+            client.execute(
+                "DROP TABLE IF EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster`",
             )
         }
     }
@@ -145,6 +173,8 @@ class ClickhouseCheckerTest {
             password: String = "password",
             enableJson: Boolean = false,
             recordWindow: Long = 42000,
+            useReplicatedEngines: Boolean = ClickhouseConfiguration.Defaults.USE_REPLICATED_ENGINES,
+            clusterName: String = ClickhouseConfiguration.Defaults.DEFAULT_CLUSTER_NAME,
         ): ClickhouseConfiguration =
             ClickhouseConfiguration(
                 hostname = hostname,
@@ -156,6 +186,8 @@ class ClickhouseCheckerTest {
                 enableJson = enableJson,
                 tunnelConfig = SshNoTunnelMethod,
                 recordWindowSize = recordWindow,
+                useReplicatedEngines = useReplicatedEngines,
+                clusterName = clusterName,
             )
     }
 }

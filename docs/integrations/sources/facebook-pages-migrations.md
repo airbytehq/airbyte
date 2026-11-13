@@ -1,4 +1,42 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Facebook Pages Migration Guide
+
+## Upgrading to 3.0.0
+
+This version removes the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` from the `page` stream schema. The connector no longer requests them.
+
+This version also stops requesting `page.live_videos` and removes it from the `page` stream schema. Meta does not make the `/{page-id}/live_videos` edge available for New Pages Experience Pages; requesting it returns `(#10) To use live-video-api ...` and the connector maps that response to a configuration error, causing the entire `page` stream to fail.
+
+:::caution
+These fields are not requested after upgrading, and Meta no longer serves them for New Pages Experience Pages. If you need the last-known values of `current_location`, `genre`, `network`, `parking` or `start_info`, export or snapshot those columns before upgrading and refreshing the schema.
+:::
+
+### Why this change?
+
+Meta deprecated these fields for New Pages Experience Pages in Graph API v26.0, launched on 2026-07-29, and provides no replacement. Meta states that the deprecation will reach all remaining supported Graph API versions approximately 90 days after launch; the exact date is to be confirmed. The connector's error handler fails hard on `Tried accessing nonexisting field`, so leaving these fields in the request would fail the entire `page` stream. If you sync a New Pages Experience Page and stay on `2.x`, the `page` stream will start failing once Meta applies the change to all API versions. See the [Meta Graph API v26.0 changelog](https://developers.facebook.com/docs/graph-api/changelog/version26.0).
+
+### Who is affected?
+
+- `page` — all five fields are removed from the top-level record, and `current_location`, `genre` and `network` are removed from the nested `best_page` and `parent_page` objects.
+- `page.live_videos` — the edge is removed from the `page` stream.
+- `post` — `current_location`, `genre` and `network` are removed from the nested page objects under `sponsor_tags[].data[]`. `parking` and `start_info` were never present there.
+- `page_insights` and `post_insights` are unaffected; no action is required for them.
+
+No specification, configuration, or state changes are required.
+
+### Migration steps
+
+1. Upgrade the connector to version `3.0.0`.
+2. Refresh the source schema for the `page` and `post` streams.
+3. Update downstream models or SQL that reference any of the following:
+   - `page.current_location`, `page.genre`, `page.network`, `page.parking`, `page.start_info`
+   - `page.live_videos`
+   - `page.best_page.current_location`, `page.best_page.genre`, `page.best_page.network`
+   - `page.parent_page.current_location`, `page.parent_page.genre`, `page.parent_page.network`
+   - `post.sponsor_tags.data[].current_location`, `post.sponsor_tags.data[].genre`, `post.sponsor_tags.data[].network`
+
+Clearing the `page` stream is not required.
 
 ## Upgrading to 2.0.0
 
@@ -191,3 +229,7 @@ This will reset the data in your destination and initiate a fresh sync.
 :::
 
 For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear)
+
+## Connector upgrade guide
+
+<MigrationGuide />

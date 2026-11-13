@@ -23,7 +23,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
       enableProgressiveRollout: true
   remoteRegistries:
     pypi:
