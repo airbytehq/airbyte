@@ -413,12 +413,20 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state.
+
+        The cursor never moves backwards: slices re-read inside the lookback window start before the saved cursor, so
+        completing them must not lower it. Otherwise an interrupted sync persists an older cursor and every following
+        sync starts another lookback window earlier.
+        """
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            current_cursor = self._cursor_values.get(account_id) if self._cursor_values else None
+            if current_cursor and current_cursor >= ts_start:
+                continue
             if self._cursor_values:
                 self._cursor_values[account_id] = ts_start
             else:
