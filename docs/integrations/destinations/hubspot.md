@@ -103,7 +103,7 @@ To create a unique value property in HubSpot:
 
 ### App verification
 
-When installing the app, you might see the message "You're connecting to an unverified app." This is expected and doesn't affect functionality.
+When installing the app, you might see the message "You're connecting to an unverified app." This is expected.
 
 ### Scopes for unsupported objects
 
