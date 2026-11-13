@@ -52,7 +52,7 @@ class PipelineEventBookkeepingRouterTest {
             1,
             1,
             1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
     private val stream2 =
         DestinationStream(
@@ -63,7 +63,7 @@ class PipelineEventBookkeepingRouterTest {
             1,
             1,
             1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private fun router(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
@@ -109,7 +109,7 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 10L,
                 checkpointId = null,
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
@@ -127,7 +127,7 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 5L,
                 checkpointId = CheckpointId("abc"),
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
@@ -148,7 +148,7 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 0L,
                 checkpointId = null,
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             ),
         )
 
@@ -173,7 +173,7 @@ class PipelineEventBookkeepingRouterTest {
             DestinationFile(
                 stream = stream1,
                 emittedAtMs = 0L,
-                fileMessage = DestinationFile.AirbyteRecordMessageFile(fileUrl = "s3://x")
+                fileMessage = DestinationFile.AirbyteRecordMessageFile(fileUrl = "s3://x"),
             ),
         )
 
@@ -181,7 +181,7 @@ class PipelineEventBookkeepingRouterTest {
             fileTransferQueue.publish(
                 match<FileTransferQueueRecord> {
                     it.checkpointId == CheckpointId("1") && it.index == 1L
-                }
+                },
             )
         }
     }
@@ -210,8 +210,8 @@ class PipelineEventBookkeepingRouterTest {
                     unmappedName = stream1.unmappedName,
                     blob = """{"a":1}""",
                     sourceRecordCount = 0L,
-                    checkpointKey = null
-                )
+                    checkpointKey = null,
+                ),
             )
 
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
@@ -241,10 +241,10 @@ class PipelineEventBookkeepingRouterTest {
                     checkpointKey =
                         CheckpointKey(
                             checkpointIndex = CheckpointIndex(1),
-                            checkpointId = CheckpointId("k")
+                            checkpointId = CheckpointId("k"),
                         ),
                     destinationRecordCount = null,
-                )
+                ),
             )
 
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
@@ -273,7 +273,7 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("x")
+                        checkpointId = CheckpointId("x"),
                     ),
             )
         val rm = ReservationManager(1)
@@ -297,7 +297,7 @@ class PipelineEventBookkeepingRouterTest {
                     additionalProperties = emptyMap(),
                     serializedSizeBytes = 0L,
                     checkpointKey = null,
-                )
+                ),
             )
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
         coEvery { checkpointQueue.publish(capture(slot)) } just Runs
@@ -327,9 +327,9 @@ class PipelineEventBookkeepingRouterTest {
                     checkpointKey =
                         CheckpointKey(
                             checkpointIndex = CheckpointIndex(1),
-                            checkpointId = CheckpointId("g")
+                            checkpointId = CheckpointId("g"),
                         ),
-                )
+                ),
             )
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
         coEvery { checkpointQueue.publish(capture(slot)) } just Runs
@@ -353,7 +353,7 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("g")
+                        checkpointId = CheckpointId("g"),
                     ),
             )
         val rm = ReservationManager(1)
@@ -379,21 +379,21 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("snap")
+                        checkpointId = CheckpointId("snap"),
                     ),
                 streamCheckpoints =
                     mapOf(
                         stream1.mappedDescriptor to
                             CheckpointKey(
                                 checkpointIndex = CheckpointIndex(1),
-                                checkpointId = CheckpointId("i1")
+                                checkpointId = CheckpointId("i1"),
                             ),
                         stream2.mappedDescriptor to
                             CheckpointKey(
                                 checkpointIndex = CheckpointIndex(1),
-                                checkpointId = CheckpointId("i2")
-                            )
-                    )
+                                checkpointId = CheckpointId("i2"),
+                            ),
+                    ),
             )
         val rm = ReservationManager(1)
         val reserved: Reserved<CheckpointMessage> = rm.reserve(1, snapshot)
@@ -418,7 +418,7 @@ class PipelineEventBookkeepingRouterTest {
                 additionalProperties = emptyMap(),
                 serializedSizeBytes = 0L,
                 checkpointKey = null,
-                streamCheckpoints = emptyMap()
+                streamCheckpoints = emptyMap(),
             )
         val rm = ReservationManager(1)
         val reserved: Reserved<CheckpointMessage> = rm.reserve(1, snapshot)
@@ -442,12 +442,12 @@ class PipelineEventBookkeepingRouterTest {
 
         coVerify {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor },
             )
         }
         coVerify {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor },
             )
         }
         coVerify { syncManager.markInputConsumed() }
@@ -464,7 +464,7 @@ class PipelineEventBookkeepingRouterTest {
         r.close()
         coVerify(exactly = 0) {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor },
             )
         }
     }

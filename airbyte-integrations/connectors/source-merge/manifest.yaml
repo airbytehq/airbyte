@@ -65,10 +65,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -95,10 +103,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -125,10 +141,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -155,10 +179,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -185,10 +217,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -215,10 +255,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -245,10 +293,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -275,10 +331,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -305,10 +369,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -335,10 +407,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -365,10 +445,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -395,10 +483,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -425,10 +521,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -439,6 +543,18 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["api_token"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 403
+          error_message: >-
+            Skipping this stream: the Linked Account does not have the Scope for this
+            Common Model enabled in the Merge dashboard
+            (https://help.merge.dev/en/articles/5950052-common-model-and-field-scopes).
+            Response: {{ response }}
 
 streams:
   - $ref: "#/definitions/streams/account_details"

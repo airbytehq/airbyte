@@ -37,7 +37,7 @@ class ObjectStoragePathFactoryTest {
             val dateTime =
                 LocalDateTime.parse(
                     "2020-01-02T03:04:05.6789",
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME,
                 )
             val epochMilli =
                 dateTime.toInstant(ZoneId.of("UTC").rules.getOffset(dateTime)).toEpochMilli()
@@ -71,7 +71,7 @@ class ObjectStoragePathFactoryTest {
                 .objectStoragePathConfiguration
                 .copy(
                     pathPattern =
-                        "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}_"
+                        "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}_",
                 )
     }
 
@@ -145,7 +145,7 @@ class ObjectStoragePathFactoryTest {
         @Test
         fun testPathDoesNotHaveTrailingSlash(
             pathFactory: ObjectStoragePathFactory,
-            timeProvider: TimeProvider
+            timeProvider: TimeProvider,
         ) {
             val syncTime = timeProvider.syncTimeMillis()
             val wallTime = timeProvider.currentTimeMillis()

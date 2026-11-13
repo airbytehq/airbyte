@@ -222,6 +222,11 @@ streams:
   - $ref: "#/definitions/streams/locations_detailed"
   - $ref: "#/definitions/streams/providers_detailed"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 20
+
 spec:
   type: Spec
   connection_specification:
@@ -239,6 +244,17 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads used to fetch the per-record detail
+          streams (locations_detailed, providers_detailed, provider_locations).
+          Higher values speed up syncs but may hit the CQC API rate limit.
+        default: 5
+        minimum: 1
+        maximum: 20
+        order: 1
     additionalProperties: true
 
 metadata:

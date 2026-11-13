@@ -2,8 +2,12 @@
 
 import json
 from unittest import TestCase
+from unittest.mock import patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import (
+    ConstantBackoffStrategy,
+)
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -177,6 +181,46 @@ class TestAdsReportHourly(TestCase):
         assert len(output.records) == 2
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
+
+    @HttpMocker()
+    def test_retries_51002(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        query_params = {
+            "service_type": "AUCTION",
+            "report_type": "BASIC",
+            "data_level": "AUCTION_AD",
+            "dimensions": '["ad_id", "stat_time_hour"]',
+            "metrics": str(self.metrics).replace("'", '"'),
+            "start_date": self.config()["start_date"],
+            "end_date": self.config()["start_date"],
+            "page_size": 1000,
+            "advertiser_id": self.advertiser_id,
+        }
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
+            ),
+            [
+                HttpResponse(body=json.dumps({"code": 51002, "message": "internal error"}), status_code=200),
+                HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+            ],
+        )
+
+        query_params["start_date"] = query_params["end_date"] = self.config()["end_date"]
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
+            ),
+            HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
+        )
+
+        with patch.object(ConstantBackoffStrategy, "backoff_time", return_value=0):
+            output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
+
+        assert len(output.records) == 2
+        assert not output.errors
 
     @HttpMocker()
     def test_read_with_state(self, http_mocker: HttpMocker):

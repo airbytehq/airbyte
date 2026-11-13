@@ -28,8 +28,12 @@ import kotlinx.coroutines.launch
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
-class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
-    DatabaseHandler {
+class BigQueryDatabaseHandler(
+    private val bq: BigQuery,
+    private val jobProjectBq: BigQuery,
+    private val datasetLocation: String,
+    private val jobProjectId: String,
+) : DatabaseHandler {
     /**
      * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
      * these statements with exponential backoff, and the SDK doesn't do it automatically. So this
@@ -92,18 +96,23 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         var job =
             bq.create(
                 JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
-                    QueryJobConfiguration.of(statement)
-                )
+                    JobId.newBuilder()
+                        .setProject(jobProjectId)
+                        .setLocation(datasetLocation)
+                        .setJob(queryId.toString())
+                        .build(),
+                    QueryJobConfiguration.of(statement),
+                ),
             )
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
+        // After a retried insert hits 409 Already Exists, the SDK returns the job without status.
+        while (job.status?.state != JobStatus.State.DONE) {
             Thread.sleep(1000L)
             job = job.reload()
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
-                BigQueryException(listOf(job.status.error) + job.status.executionErrors)
+                BigQueryException(listOf(job.status.error) + job.status.executionErrors),
             )
         }
 
@@ -117,7 +126,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         if (statistics.numChildJobs != null) {
             // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for
             // them
-            bq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
+            jobProjectBq
+                .listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
                 .iterateAll()
                 .sortedBy { it.getStatistics<JobStatistics>().endTime }
                 .forEach { childJob: Job ->
@@ -130,7 +140,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                                 .replace("\\s+".toRegex(), " ")
                                 .substring(
                                     0,
-                                    min(100.0, configuration.query.length.toDouble()).toInt()
+                                    min(100.0, configuration.query.length.toDouble()).toInt(),
                                 )
                         if (truncatedQuery != configuration.query) {
                             truncatedQuery += "..."
@@ -177,6 +187,9 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
+                if (e.errors.any { it.message.contains(CUSTOM_QUOTA_EXCEEDED_ERROR) }) {
+                    return ConfigErrorException(e.reason, e)
+                }
             }
         }
         return e
@@ -184,5 +197,6 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
 
     companion object {
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
+        private const val CUSTOM_QUOTA_EXCEEDED_ERROR = "Custom quota exceeded"
     }
 }
