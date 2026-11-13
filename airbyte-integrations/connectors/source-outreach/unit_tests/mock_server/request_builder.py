@@ -12,7 +12,7 @@ START_CURSOR = "2020-11-16T00:00:00.000Z"
 
 
 class OutreachRequestBuilder:
-    """Builds the list request every stream sends: sorted by `updatedAt`, filtered from a cursor."""
+    """Builds a list request with an optional sort and lower-bound cursor."""
 
     @classmethod
     def endpoint(cls, path: str) -> "OutreachRequestBuilder":
@@ -29,6 +29,11 @@ class OutreachRequestBuilder:
         self._path = path
         self._page_size = 1000
         self._updated_since = START_CURSOR
+        self._cursor_field = "updatedAt"
+
+    def with_cursor_field(self, cursor_field: str | None) -> "OutreachRequestBuilder":
+        self._cursor_field = cursor_field
+        return self
 
     def with_page_size(self, page_size: int) -> "OutreachRequestBuilder":
         self._page_size = page_size
@@ -39,13 +44,15 @@ class OutreachRequestBuilder:
         return self
 
     def _query_params(self) -> dict[str, str]:
-        return {
+        params = {
             "count": "false",
-            "sort": "updatedAt",
             "page[size]": str(self._page_size),
             "newFilterSyntax": "true",
-            "filter[updatedAt][gte]": self._updated_since,
         }
+        if self._cursor_field:
+            params["sort"] = self._cursor_field
+            params[f"filter[{self._cursor_field}][gte]"] = self._updated_since
+        return params
 
     def build(self) -> HttpRequest:
         return HttpRequest(f"{BASE_URL}{self._path}", query_params=self._query_params())
