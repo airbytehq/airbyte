@@ -12,6 +12,8 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+`cursor_granularity` must match `datetime_format` precision (for example, `PT1S` for seconds). Finer granularity creates gaps between serialized slices, preventing them from merging and leaving per-partition state stale.
+
 ### Future incremental stream candidates
 
 None identified yet.

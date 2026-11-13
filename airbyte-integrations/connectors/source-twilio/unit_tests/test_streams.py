@@ -160,6 +160,49 @@ class TestTwilioStream:
 
 class TestIncrementalTwilioStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_later_slice_advances_partition_state(self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        requested_windows = []
+        record_cursor = "2022-11-15 12:00:00Z"
+
+        def _response(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            lower, upper = query[lower_key][0], query[upper_key][0]
+            requested_windows.append((lower, upper))
+            records = [{"sid": "RE1", cursor_field: "2022-11-15T12:00:00Z"}] if lower <= record_cursor <= upper else []
+            return {stream_name: records}
+
+        requests_mock.get(f"{BASE}{path}", json=_response)
+        config = {**TEST_CONFIG, "start_date": "2022-09-01T00:00:00Z"}
+        first_sync = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert len(requested_windows) == 3
+        assert min(upper for _, upper in requested_windows) < record_cursor
+        assert len(first_sync.records) == 1
+        partition_state = first_sync.most_recent_state.stream_state.__dict__
+        assert partition_state["states"] == [
+            {
+                "partition": {"parent_slice": {}, "subresource_uri": f"/2010-04-01{path}"},
+                "cursor": {cursor_field: record_cursor},
+            }
+        ]
+
+        state = StateBuilder().with_stream_state(stream_name, partition_state).build()
+        requested_windows.clear()
+        second_sync = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+        assert requested_windows[0][0] == record_cursor
+        assert len(second_sync.records) == 1
+        assert second_sync.most_recent_state.stream_state.__dict__["states"] == partition_state["states"]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
 
