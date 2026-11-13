@@ -90,7 +90,7 @@ These streams use **OpenAI-compliance-token** and **Workspace ID**.
 - Conversation metadata becomes `conversation_*` columns, such as `conversation_title` and `conversation_mode`.
 - `message.author` becomes `author_type`, `author_client_type`, `author_skills_used`, and `author_tools_used`.
 
-The connector converts skills, tools, and non-text message content to strings. It doesn't emit the original nested `message`, `conversation`, `actor`, and `principal` objects, or any field not listed in the stream schema.
+The connector converts skills, tools, and non-text message content to strings. It removes the original nested `message`, `conversation`, `actor`, and `principal` objects. Other fields aren't filtered out just because they aren't listed in the stream schema.
 
 `conversation_messages_log` contains the text of user conversations. Restrict access to the destination tables that hold this data.
 
