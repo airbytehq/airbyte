@@ -330,7 +330,7 @@ The connector authenticates with a refresh token issued by [Microsoft Entra ID](
 To restore syncs, re-authenticate the source:
 
 <!-- env:cloud -->
-- **Airbyte Cloud**: Open the source's settings, click **Authenticate your Bing Ads account**, sign in, and save the source.
+- **Airbyte Cloud**: Open the source's settings, click **Re-authenticate**, sign in, and save the source.
 <!-- /env:cloud -->
 <!-- env:oss -->
 - **Airbyte Open Source**: [Get a new refresh token](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13), enter it in the source's **Refresh Token** field, and save the source.
