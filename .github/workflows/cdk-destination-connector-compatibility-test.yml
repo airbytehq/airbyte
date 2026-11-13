@@ -29,8 +29,8 @@ jobs:
         with:
           submodules: true # Needed for when airbyte-enterprise calls this workflow
 
-      - name: Install yq
-        run: sudo snap install yq
+      - name: Check yq version
+        run: yq --version
 
       - name: Generate Destination Connector Matrix
         id: generate-matrix

@@ -1,53 +1,189 @@
-{
-  "prospects": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prospects"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "sequences": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "sequences"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "sequence_states": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "sequence_states"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "sequence_steps": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "sequence_steps"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "accounts": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "accounts"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "opportunities": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "opportunities"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "personas": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "personas"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "mailings": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "mailings"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "mailboxes": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "mailboxes"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "stages": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "stages"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "calls": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "calls"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "call_purposes": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "call_purposes"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "call_dispositions": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "call_dispositions"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "users": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "tasks": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tasks"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "templates": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "templates"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   },
-  "snippets": {
-    "updatedAt": "2040-11-16T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "snippets"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   }
-}
+]

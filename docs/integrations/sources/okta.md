@@ -91,6 +91,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.4.0 | 2026-11-10 | [91335](https://github.com/airbytehq/airbyte/pull/91335) | Migrate to manifest-only. Fix OAuth 2.0 (refresh token) authentication and save rotated refresh tokens. Fix private keys saved with escaped newlines. |
+| 0.3.29 | 2026-11-10 | [91662](https://github.com/airbytehq/airbyte/pull/91662) | Update dependencies |
+| 0.3.28 | 2026-11-03 | [90919](https://github.com/airbytehq/airbyte/pull/90919) | Raise minimum supported Python version to 3.11 |
+| 0.3.27 | 2026-11-03 | [90674](https://github.com/airbytehq/airbyte/pull/90674) | Update dependencies |
 | 0.3.26 | 2026-10-27 | [90029](https://github.com/airbytehq/airbyte/pull/90029) | Update dependencies |
 | 0.3.25 | 2026-10-20 | [78853](https://github.com/airbytehq/airbyte/pull/78853) | Update dependencies |
 | 0.3.24 | 2026-10-14 | [88958](https://github.com/airbytehq/airbyte/pull/88958) | Update to CDK v7 and base image 4.1.1 |

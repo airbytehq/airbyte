@@ -12,20 +12,22 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.sql.Statement
 import java.time.ZoneOffset
+import java.util.concurrent.Executors
 
 const val CONFIG_PATH = "secrets/oauth_config.json"
 const val PAT_CONFIG_PATH = "secrets/pat_config.json"
 
 /**
  * Maps expected records to account for Databricks type storage:
- * - TIMESTAMP stores in UTC, losing the original offset. The JDBC driver also reports TIMESTAMP_NTZ
- *   columns as "TIMESTAMP", so both types are read back as OffsetDateTime at UTC.
+ * - TIMESTAMP stores in UTC, losing the original offset, so expected offsets are normalized to UTC.
+ *   TIMESTAMP_NTZ round-trips as a LocalDateTime and needs no mapping.
  * - Time types (with/without timezone) have no native Databricks equivalent and are stored as
  *   STRING via [toString()][java.time.OffsetTime.toString], so expected time values are converted
  *   to [StringValue] using the same method (which omits zero seconds, unlike ISO formatters).
@@ -44,12 +46,6 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
                 TimestampWithTimezoneValue(
                     value.value.toInstant().atOffset(ZoneOffset.UTC),
                 )
-            // JDBC driver reports TIMESTAMP_NTZ as "TIMESTAMP", so the data dumper returns
-            // OffsetDateTime at UTC for both types. Convert expected NTZ to match.
-            is TimestampWithoutTimezoneValue ->
-                TimestampWithTimezoneValue(
-                    value.value.toInstant(ZoneOffset.UTC).atOffset(ZoneOffset.UTC),
-                )
             // Time types are stored as STRING via toString(), which omits zero seconds
             // (e.g. "11:34-01:00" not "11:34:00-01:00"). Use toString() to match.
             is TimeWithTimezoneValue -> StringValue(value.value.toString())
@@ -63,15 +59,26 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
 
 /**
  * Cleans up old test namespaces from Databricks. Finds schemas matching `test%` and drops those
- * older than the integration test threshold.
+ * older than the [RETENTION_DAYS].
+ *
+ * Unity Catalog caps a catalog at 10,000 schemas and each CI run leaves a few hundred behind, so
+ * the CDK default of 30 days exhausts the quota (`UC_RESOURCE_QUOTA_EXCEEDED`).
+ *
+ * Drops run on [DROP_PARALLELISM] connections: this runs inside a test's `@AfterEach` (bounded by
+ * `JunitMethodExecutionTimeout`) and a serial `DROP SCHEMA ... CASCADE` takes ~0.7s, so a day's
+ * worth of schemas would not finish in time.
  */
 object DatabricksDataCleaner : DestinationCleaner {
+    private val log = KotlinLogging.logger {}
+    private const val RETENTION_DAYS = 2L
+    private const val DROP_PARALLELISM = 8
+
     override fun cleanup() {
         val config = DatabricksTestConfigProvider.configFromFile()
         val dataSource = DatabricksTestDataSourceProvider.get(config)
+        val schemas = mutableListOf<String>()
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
-                val schemas = mutableListOf<String>()
                 stmt
                     .executeQuery(
                         """
@@ -86,13 +93,48 @@ object DatabricksDataCleaner : DestinationCleaner {
                             schemas.add(rs.getString("schema_name"))
                         }
                     }
-
-                schemas
-                    .filter { IntegrationTest.isNamespaceOld(it) }
-                    .forEach { schema ->
-                        stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
-                    }
             }
+        }
+
+        val schemasToDrop = schemas.filter { IntegrationTest.isNamespaceOld(it, RETENTION_DAYS) }
+        log.info {
+            "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
+        }
+        if (schemasToDrop.isEmpty()) {
+            return
+        }
+
+        val start = System.currentTimeMillis()
+        val executor = Executors.newFixedThreadPool(DROP_PARALLELISM)
+        try {
+            val chunkSize = (schemasToDrop.size + DROP_PARALLELISM - 1) / DROP_PARALLELISM
+            schemasToDrop
+                .chunked(chunkSize)
+                .map { chunk ->
+                    executor.submit {
+                        dataSource.connection.use { conn ->
+                            conn.createStatement().use { stmt ->
+                                chunk.forEach { schema ->
+                                    dropSchema(stmt, config.database, schema)
+                                }
+                            }
+                        }
+                    }
+                }
+                .forEach { it.get() }
+        } finally {
+            executor.shutdown()
+        }
+        val elapsedSeconds = (System.currentTimeMillis() - start) / 1000
+        log.info { "Dropped ${schemasToDrop.size} test schemas in ${elapsedSeconds}s" }
+    }
+
+    private fun dropSchema(stmt: Statement, catalog: String, schema: String) {
+        try {
+            stmt.execute("DROP SCHEMA IF EXISTS `$catalog`.`$schema` CASCADE")
+        } catch (e: Exception) {
+            // Concurrent CI jobs run this cleaner too; a schema may already be gone.
+            log.warn(e) { "Failed to drop test schema $schema, continuing" }
         }
     }
 }

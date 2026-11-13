@@ -204,6 +204,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.34     | 2026-10-28 | [89658](https://github.com/airbytehq/airbyte/pull/89658)   | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139. |
 | 2.1.33     | 2026-10-27 | [90134](https://github.com/airbytehq/airbyte/pull/90134)   | Upgrade ClickHouse Java client to 0.11.0.                                      |
 | 2.1.32     | 2026-10-09 | [88421](https://github.com/airbytehq/airbyte/pull/88421)   | Upgrade ClickHouse Java client to 0.10.0; test against ClickHouse 26.7.        |
 | 2.1.31     | 2026-10-01 | [87612](https://github.com/airbytehq/airbyte/pull/87612)   | Upgrade to Bulk CDK 1.1.1.                                                     |
