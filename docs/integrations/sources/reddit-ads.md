@@ -174,6 +174,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 1.0.6 | 2026-11-10 | [91306](https://github.com/airbytehq/airbyte/pull/91306) | Declare the refreshed `credentials.access_token` and `credentials.token_expiry_date` as hidden spec fields so the access token is masked |
 | 1.0.5 | 2026-11-10 | [91692](https://github.com/airbytehq/airbyte/pull/91692) | Update dependencies |
 | 1.0.4 | 2026-11-03 | [90706](https://github.com/airbytehq/airbyte/pull/90706) | Update dependencies |
 | 1.0.3 | 2026-10-27 | [90048](https://github.com/airbytehq/airbyte/pull/90048) | Update dependencies |

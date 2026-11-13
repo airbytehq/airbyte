@@ -8,6 +8,7 @@ import pytest
 from conftest import _MANIFEST_PATH, base_config, legacy_flat_config
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RefreshTokenUpdater
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -103,6 +104,20 @@ def test_spec_has_credentials_oneof_and_oauth_predicate() -> None:
     server_output_properties = oauth_config["complete_oauth_server_output_specification"]["properties"]
     assert server_output_properties["client_id"]["path_in_connector_config"] == ["credentials", "client_id"]
     assert server_output_properties["client_secret"]["path_in_connector_config"] == ["credentials", "client_secret"]
+
+
+def test_spec_declares_the_written_back_access_token_as_a_hidden_secret_in_every_credentials_option() -> None:
+    manifest = _get_source(base_config()).resolved_manifest
+    # Parsed through the CDK model so the unset access token and expiry paths resolve to the CDK's defaults.
+    updater = RefreshTokenUpdater.parse_obj(manifest["definitions"]["linked"]["HttpRequester"]["authenticator"]["refresh_token_updater"])
+    assert updater.access_token_config_path == ["credentials", "access_token"]
+    assert updater.token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+
+    for option in manifest["spec"]["connection_specification"]["properties"]["credentials"]["oneOf"]:
+        access_token = option["properties"]["access_token"]
+        assert access_token["airbyte_secret"] is True
+        assert access_token["airbyte_hidden"] is True
+        assert option["properties"]["token_expiry_date"]["airbyte_hidden"] is True
 
 
 def test_legacy_flat_config_migrates_and_emits_control_message(tmp_path, capsys) -> None:
