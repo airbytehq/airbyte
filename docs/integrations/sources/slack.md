@@ -187,13 +187,17 @@ Because this throttle can slow down a sync that includes other streams, consider
 
 #### Slack API error handling
 
-The Slack Web API often reports errors in an HTTP 200 response whose `ok` field is `false`. The connector checks the `ok` field and the `error` code in each response:
+The Slack Web API often reports errors in an HTTP 200 response whose `ok` field is `false`. For data-reading requests, the connector classifies these HTTP 200 responses by their `error` code:
 
 - **Authentication or permission errors**, such as `missing_scope`, `not_authed`, `invalid_auth`, `token_revoked`, `token_expired`, and `no_permission`, fail the sync with a configuration error. Re-authenticate or check your token's scopes.
-- **Rate limiting** (`ratelimited`, or HTTP 429) is retried automatically.
+- **Rate limiting** (`ratelimited`) is retried automatically.
 - **Inaccessible channels or threads**, such as `not_in_channel`, `channel_not_found`, `is_archived`, and `thread_not_found`, are skipped, and the sync continues with other channels.
 - **Transient errors**, such as `request_timeout`, `service_unavailable`, `fatal_error`, and `internal_error`, are retried automatically.
 - **Any other error code** fails the sync with a system error that includes the code Slack returned.
+
+For non-200 responses, HTTP-status filters can take precedence over the error-code catch-all. For example, the Users stream treats HTTP 400/403 as configuration errors, while Users and Channel Members retry HTTP 500/503. HTTP 429 responses are rate-limited and retried.
+
+Automatic channel joining is separate: for HTTP 200 `ok=false` responses, a `missing_scope` error fails with a configuration error, but other join errors are logged rather than classified by the data-reading rules above.
 
 #### Threads stream performance
 
