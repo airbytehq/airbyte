@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "airbyte-destination-motherduck"
-version = "0.2.6"
+version = "0.2.7"
 description = "Destination implementation for MotherDuck."
 authors = ["Guen Prawiroatmodjo, Simon Späti, Airbyte"]
 license = "ELv2"
@@ -10,7 +10,7 @@ readme = "README.md"
 include = "destination_motherduck"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.11,<3.13"
 
 # NOTE: You can toggle between pinned and local CDK version for testing:
 airbyte-cdk = {version = "^6.57.3", extras = ["sql"]}
