@@ -49,15 +49,19 @@ Export Dates, Gift Cards, External Subscriptions, External Subscription Payment 
 ## Supported Streams
 
 - [Account Acquisitions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_acquisition)
-- [Accounts](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_accounts)
 - [Account Coupon Redemptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_coupon_redemptions)
 - [Account Notes](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_notes)
+- [Accounts](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_accounts)
 - [Add Ons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_add_ons)
 - [Billing Infos](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_billing_infos)
 - [Coupons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_coupons)
 - [Credit Payments](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_credit_payments)
 - [Export Dates](https://recurly.com/developers/api/v2021-02-25/index.html#operation/get_export_dates) (Full Refresh only)
+- [External Subscription Payment Phases](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
+- [External Subscriptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscriptions)
+- [Gift Cards](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_gift_cards)
 - [Invoices](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_invoices)
+- [Items](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_items)
 - [Line Items](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_line_items)
 - [Measured Units](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_measured_unit)
 - [Plans](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_plans)
@@ -67,10 +71,6 @@ Export Dates, Gift Cards, External Subscriptions, External Subscription Payment 
 - [Transactions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_transactions)
 - [Unique Coupons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_unique_coupon_codes)
 - Unique Coupons Parent: a helper stream containing bulk coupons, used to find the individual codes synced by Unique Coupons. It does not contain the individual codes itself.
-- [External Subscriptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscriptions)
-- [External Subscription Payment Phases](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
-- [Gift Cards](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_gift_cards)
-- [Items](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_items)
 - [Usage Records](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_usage)
 
 The Usage Records stream includes both billed and unbilled usage.
@@ -104,7 +104,7 @@ The Usage Records stream reads every subscription on every sync, then makes one 
 
 ### Authentication errors
 
-If Recurly returns HTTP 401 or 403, the sync fails with a configuration error, except when a feature-aware stream receives the missing-feature response described above. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field. If HTTP 403 persists with a valid key and is not a missing-feature response, check the site's access permissions with Recurly.
+If Recurly returns HTTP 401 or 403, the sync fails with a configuration error, except when one of the streams listed above reports a missing Recurly feature. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field. If HTTP 403 persists with a valid key and is not a missing-feature response, check the site's access permissions with Recurly.
 
 ## IP allow list
 
