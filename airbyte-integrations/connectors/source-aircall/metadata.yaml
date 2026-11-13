@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.2.1
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -96,6 +96,9 @@ data:
     - title: API announcements
       url: https://developers.aircall.io/api-references/#announcements
       type: api_deprecations
+    - title: API changelog
+      url: https://developers.aircall.io/api-references/#changelog
+      type: api_release_history
     - title: Status page
       url: https://status.aircall.com/
       type: status_page
