@@ -27,3 +27,5 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+`blocks` cannot rely on `is_client_side_incremental` alone. In the CDK the base image ships (7.47.0) the factory only hands the client-side cursor to the record selector of a `SimpleRetriever`; a `CustomRetriever` (`BlocksRetriever`) gets a record selector with no cursor filter, so every block was emitted on every incremental sync. The `blocks` `record_filter` condition therefore compares `last_edited_time` to `stream_slice.cursor_slice.start_time` (the state minus the one-second lookback) itself. Full refresh slices have no `start_time`, so the condition lets every block through. `unit_tests/mock_server/test_blocks.py` pins this.

@@ -280,7 +280,14 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          # The CDK does not attach the client-side incremental filter to a CustomRetriever's record
+          # selector, so the cursor comparison is done here against the slice start (state minus lookback).
+          # Full refresh slices carry no start_time, so every block passes.
+          condition: >-
+            {{ record["type"] not in ["child_page", "child_database", "ai_block"]
+            and (not stream_slice.cursor_slice.get("start_time")
+            or not record.get("last_edited_time")
+            or str_to_datetime(record["last_edited_time"]) >= str_to_datetime(stream_slice.cursor_slice["start_time"])) }}
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:
