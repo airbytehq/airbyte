@@ -118,10 +118,7 @@ def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
 
 
 def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock):
-    """The wait cap must not turn ordinary transient errors into failures. A headerless 5xx falls
-    back to the `min_wait: 60` floor, and the CDK raises at `>=`, so a user on the spec's minimum
-    Max Waiting Time of 1 minute would hit a 60s cap that exactly equals that floor. Measured
-    before the `+ 1` in the manifest: a single 500 failed the whole resolution."""
+    """Headerless 5xx responses use exponential backoff and do not consult the rate-limit wait cap."""
     _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/org/repos",
@@ -180,11 +177,8 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
 
 
 def test_check_retries_a_transient_error_instead_of_reporting_a_rate_limit(requests_mock):
-    """`check` must survive one GitHub blip. Its wait budget has to stay above the `min_wait: 60`
-    floor that `WaitUntilTimeFromHeader` returns for any retryable response without rate-limit
-    headers, or the cap refuses that floor and a 500 fails the connection test on the first
-    attempt — reported as "The rate limit wait time is longer than the connector is allowed to
-    wait." Measured with `max_waiting_time: 0` in `check_config`: exactly that, one attempt."""
+    """`check` must survive one GitHub blip. A headerless 500 uses exponential backoff and does
+    not consult the rate-limit cap, so it can retry instead of being reported as a rate-limit error."""
     _mock_rate_limit(requests_mock)
     listing = requests_mock.get(
         "https://api.github.com/orgs/org/repos",

@@ -54,8 +54,10 @@ class BigqueryCopyMetadata(
             }
         val table =
             requireNotNull(
-                if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName
-            ) { "Missing logical BigQuery table for ${stream.mappedDescriptor}" }
+                if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName,
+            ) {
+                "Missing logical BigQuery table for ${stream.mappedDescriptor}"
+            }
         // Use the same schemas as the loader factories. Standard raw inserts include loaded-at
         // in their target schema, even though neither standard formatter writes that field.
         val headers =
@@ -72,40 +74,39 @@ class BigqueryCopyMetadata(
         check(!gcs || headers.size == fields.size) {
             "BigQuery CSV header and load schema disagree"
         }
-        val columns =
-            fields.mapIndexed { ordinal, field ->
-                val sourcePath =
-                    if (raw || ordinal < AIRBYTE_COLUMN_COUNT) emptyList<String>()
-                    else if (gcs) listOf(headers[ordinal])
-                    else
-                        listOf(
-                            stream.schema.asColumns().keys.elementAt(ordinal - AIRBYTE_COLUMN_COUNT)
-                        )
-                fieldDescriptor(field) +
-                    if (gcs)
-                        mapOf(
-                            "csv_ordinal" to ordinal,
-                            "csv_header" to headers[ordinal],
-                            "source_path" to sourcePath,
-                        )
-                    else
-                        mapOf(
-                            "source_path" to sourcePath,
-                            "json_field" to
-                                field.name.takeUnless {
-                                    raw && it == Meta.COLUMN_NAME_AB_LOADED_AT
-                                },
-                            "presence" to
-                                when {
-                                    raw && field.name == Meta.COLUMN_NAME_AB_LOADED_AT ->
-                                        "omitted; loads as SQL NULL"
-                                    sourcePath.isNotEmpty() &&
-                                        dataChannelFormat != DataChannelFormat.PROTOBUF ->
-                                        "omitted when missing, null, or nulled by validation"
-                                    else -> "always emitted"
-                                },
-                        )
-            }
+        val columns = fields.mapIndexed { ordinal, field ->
+            val sourcePath =
+                if (raw || ordinal < AIRBYTE_COLUMN_COUNT) emptyList<String>()
+                else if (gcs) listOf(headers[ordinal])
+                else
+                    listOf(
+                        stream.schema.asColumns().keys.elementAt(ordinal - AIRBYTE_COLUMN_COUNT),
+                    )
+            fieldDescriptor(field) +
+                if (gcs)
+                    mapOf(
+                        "csv_ordinal" to ordinal,
+                        "csv_header" to headers[ordinal],
+                        "source_path" to sourcePath,
+                    )
+                else
+                    mapOf(
+                        "source_path" to sourcePath,
+                        "json_field" to
+                            field.name.takeUnless {
+                                raw && it == Meta.COLUMN_NAME_AB_LOADED_AT
+                            },
+                        "presence" to
+                            when {
+                                raw && field.name == Meta.COLUMN_NAME_AB_LOADED_AT ->
+                                    "omitted; loads as SQL NULL"
+                                sourcePath.isNotEmpty() &&
+                                    dataChannelFormat != DataChannelFormat.PROTOBUF ->
+                                    "omitted when missing, null, or nulled by validation"
+                                else -> "always emitted"
+                            },
+                    )
+        }
 
         fun pathMapping(path: List<String>): Map<String, Any?> {
             require(path.isNotEmpty()) { "Configured BigQuery key paths must not be empty" }
@@ -144,8 +145,7 @@ class BigqueryCopyMetadata(
             configuredCatalog?.streams?.singleOrNull {
                 it.stream.namespace == stream.unmappedNamespace &&
                     it.stream.name == stream.unmappedName
-            }
-                ?: stream.asProtocolObject()
+            } ?: stream.asProtocolObject()
         if (configured.stream.jsonSchema == null) {
             configured.stream.jsonSchema = AirbyteTypeToJsonSchema().convert(stream.schema)
         }
@@ -236,13 +236,13 @@ class BigqueryCopyMetadata(
                 else
                     mapOf(
                         "input_record_count_meaning" to
-                            "Successful formatter-byte appends to the standard insert archive batch"
+                            "Successful formatter-byte appends to the standard insert archive batch",
                     )
         return sharedMetadata.schema(
             result + sourceDescriptor,
             schemaId(result),
             stream.generationId,
-            stream.syncId
+            stream.syncId,
         )
     }
 
@@ -264,7 +264,7 @@ class BigqueryCopyMetadata(
                     config.destinationId.toString(),
                     stream.unmappedNamespace,
                     stream.unmappedName,
-                )
+                ),
             )
             .take(32)
 
@@ -275,7 +275,7 @@ class BigqueryCopyMetadata(
                 stream.unmappedNamespace,
                 stream.unmappedName,
                 runId,
-                epochSeconds
+                epochSeconds,
             )
             .removeSuffix("/")
     }
@@ -392,8 +392,10 @@ class BigqueryCopyMetadata(
         require(
             stream.generationId >= 0 &&
                 (stream.minimumGenerationId == 0L ||
-                    stream.minimumGenerationId == stream.generationId)
-        ) { "BigQuery S3 copy supports minimum generation zero or equal to current generation" }
+                    stream.minimumGenerationId == stream.generationId),
+        ) {
+            "BigQuery S3 copy supports minimum generation zero or equal to current generation"
+        }
     }
 
     private fun hash(value: Any): String {

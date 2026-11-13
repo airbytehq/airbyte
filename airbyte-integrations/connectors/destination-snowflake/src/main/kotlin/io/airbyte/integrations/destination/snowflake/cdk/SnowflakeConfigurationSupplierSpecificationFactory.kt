@@ -25,7 +25,7 @@ class SnowflakeConfigurationSupplierSpecificationFactory(
     override fun create(): ConnectorSpecification {
         return extendSpecification(
             ConnectorSpecification()
-                .withConnectionSpecification(configJsonObjectSupplier.jsonSchema)
+                .withConnectionSpecification(configJsonObjectSupplier.jsonSchema),
         )
     }
 }

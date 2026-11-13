@@ -68,6 +68,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             ),
         )
     }
+
     /**
      * Returns the data type used for array columns in Teradata.
      *
@@ -75,6 +76,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      */
     override val arrayType: DataType<*>
         get() = JSON_TYPE
+
     /**
      * Returns the SQL dialect for Teradata.
      *
@@ -82,6 +84,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      */
     override val dialect: SQLDialect
         get() = SQLDialect.DEFAULT
+
     /**
      * Returns the struct data type used for struct columns in Teradata.
      *
@@ -89,6 +92,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      */
     override val structType: DataType<*>
         get() = JSON_TYPE
+
     /**
      * Returns the widest data type used in Teradata.
      *
@@ -96,6 +100,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      */
     override val widestType: DataType<*>
         get() = JSON_TYPE
+
     /**
      * Builds the Airbyte meta column SQL expression.
      *
@@ -121,6 +126,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             .isNotNull()
             .and(extractColumnAsJson(cdcDeletedAtColumn).notEqual("null"))
     }
+
     /**
      * Helper method to extract a column as JSON from the data field.
      *
@@ -134,17 +140,18 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                 field(column.originalName)) + "') as VARCHAR(100) )",
         )
     }
+
     /**
      * Extracts raw data fields from the given columns.
      *
      * @param columns The columns to extract raw data fields for.
      * @param useExpensiveSaferCasting Flag indicating whether to use expensive casting for certain
-     * fields.
+     *   fields.
      * @return A list of SQL fields representing the extracted raw data.
      */
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>> {
         val fields: MutableList<Field<*>> = ArrayList()
         columns.forEach { (key, value) ->
@@ -228,9 +235,9 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                                 toDialectType(value) +
                                 ") " +
                                 "ELSE NULL " +
-                                "END"
+                                "END",
                         )
-                        .`as`(key.name)
+                        .`as`(key.name),
                 )
             } else if (value == AirbyteProtocolType.BOOLEAN) {
                 fields.add(
@@ -247,7 +254,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                                 field(
                                     key.originalName,
                                 ) +
-                                "') = 'FALSE' THEN 0 END")
+                                "') = 'FALSE' THEN 0 END"),
                         )
                         .`as`(key.name),
                 )
@@ -266,6 +273,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
         }
         return fields
     }
+
     /**
      * Generates a `ROW_NUMBER` SQL expression for the given primary key and cursor field.
      *
@@ -275,7 +283,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      */
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int> {
         val primaryKeyFields: List<Field<*>> =
             primaryKey
@@ -303,6 +311,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                 .`as`(ROW_NUMBER_COLUMN_NAME)
         return query
     }
+
     /**
      * Converts an Airbyte protocol type to the corresponding SQL dialect type. This method maps the
      * Airbyte protocol types to the appropriate SQL data types.
@@ -323,19 +332,20 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             }
         return s
     }
+
     /**
      * Creates a new table based on the provided stream configuration. If the `force` parameter is
      * true, the existing table will be dropped before creating the new one. Otherwise, the table
      * will be created without dropping the existing one.
      *
      * @param stream The stream configuration that contains table details such as name, namespace,
-     * and columns.
+     *   and columns.
      * @param suffix The suffix to append to the table name when creating the final table
-     * identifier.
+     *   identifier.
      * @param force A flag indicating whether to force the dropping of an existing table before
-     * creating the new one.
+     *   creating the new one.
      * @return The SQL statement to create the table, potentially including a drop table statement
-     * if `force` is true.
+     *   if `force` is true.
      */
     override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
 
@@ -367,6 +377,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             )
         return sl
     }
+
     /**
      * Overwrites the final table by renaming the old table to a new name. This is typically used
      * when transitioning from one version of the table schema to another.
@@ -393,6 +404,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             )
         return query
     }
+
     /**
      * Migrates a table from version 1 to version 2 by creating a new V2 table from the data in the
      * V1 table. The migration process involves creating a new table with adjusted columns and data
@@ -409,6 +421,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             createV2RawTableFromV1Table(rawTableName, namespace, tableName),
         )
     }
+
     /**
      * Creates a V2 raw table from the V1 table by selecting and adjusting the required columns,
      * including casting specific columns to the appropriate data types.
@@ -421,7 +434,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
     public override fun createV2RawTableFromV1Table(
         rawTableName: Name,
         namespace: String,
-        tableName: String
+        tableName: String,
     ): String {
         val query =
             java.lang.String.format(
@@ -441,6 +454,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             )
         return query
     }
+
     /**
      * Generates the SQL for performing an insert and delete transaction in Teradata. This method
      * handles both append and append-dedupe modes. It inserts data into a final table, deletes old
@@ -452,27 +466,33 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      *                     primary key, cursor, columns, and post-import action.
      * @param finalSuffix
      * ```
+     *
      * An optional suffix that can be added to the final table name.
+     *
      * @param minRawTimestamp An optional minimum timestamp used for filtering raw data during
-     * insert.
+     *   insert.
      * @param useExpensiveSaferCasting A flag indicating whether to use expensive, safer casting
+     *
      * ```
      *                                 for certain data types during data extraction.
      * @return
      * ```
+     *
      * The generated SQL wrapped in a transaction for inserting and deleting data.
+     *
      * ```
      *         The SQL will differ depending on whether the import type is APPEND or APPEND_DEDUPE.
      *
      * @throws SQLException
      * ```
+     *
      * If there is an error generating the SQL for the transaction.
      */
     override fun insertAndDeleteTransaction(
         streamConfig: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val finalSchema = streamConfig.id.finalNamespace
         val finalTable =
@@ -522,7 +542,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                             DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1),
                         ), // Can refer by CTE.field but no use since we don't strongly type
                     // them.
-                    )
+                )
                 .getSQL(ParamType.INLINED)
         // Used for append and overwrite modes.
         val insertStmt =
@@ -562,6 +582,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             checkpointStmt,
         )
     }
+
     /**
      * Creates a SQL update statement that updates the `AB_LOADED_AT` column of the given table. The
      * `AB_LOADED_AT` column is set to the current timestamp where it is currently `NULL`, and the
@@ -575,7 +596,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
     private fun checkpointRawTable(
         schemaName: String,
         tableName: String,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Optional<Instant>,
     ): String {
         val dsl = dslContext
         var extractedAtCondition = DSL.noCondition()
@@ -595,6 +616,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             .and(extractedAtCondition)
             .getSQL(ParamType.INLINED)
     }
+
     /**
      * Creates a SQL delete statement that removes rows from the final table where the
      * `CDC_DELETED_AT` column is not `NULL`. This is typically used to handle deletions in CDC
@@ -610,6 +632,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
             .where(DSL.field(DSL.quotedName(cdcDeletedAtColumn.name)).isNotNull())
             .getSQL(ParamType.INLINED)
     }
+
     /**
      * Creates a SQL delete statement that deletes rows from the final table based on the primary
      * keys and cursor. This delete operation ensures that only non-duplicate or non-eligible rows
@@ -619,16 +642,16 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
      * @param schemaName The schema name where the table resides.
      * @param tableName The table name from which rows will be deleted.
      * @param primaryKeys The list of primary key columns used for deduplication and identifying
-     * rows.
+     *   rows.
      * @param cursor An optional cursor column that helps in filtering rows to delete.
      * @return The SQL delete statement to delete specific rows from the final table based on
-     * primary keys and cursor.
+     *   primary keys and cursor.
      */
     private fun deleteFromFinalTable(
         schemaName: String,
         tableName: String,
         primaryKeys: List<ColumnId>,
-        cursor: Optional<ColumnId>
+        cursor: Optional<ColumnId>,
     ): String {
         val dsl = dslContext
         // Unknown type doesn't play well with where .. in (select..)

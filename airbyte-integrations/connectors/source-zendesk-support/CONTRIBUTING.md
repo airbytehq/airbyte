@@ -51,6 +51,12 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
 
+## 7. `ticket_audits_per_ticket` Reads Archived Tickets' Audits
+
+`ticket_audits` reads `GET /api/v2/ticket_audits`, which Zendesk documents as excluding archived tickets. The `ticket_audits_per_ticket` stream reads `GET /api/v2/tickets/{ticket_id}/audits.json` for each ticket the `tickets` incremental export returns, which includes archived tickets, at the cost of one request per created or updated ticket. It is always discovered but not listed in `suggestedStreams`, so users opt in by selecting it. It uses a global substream cursor on `_ab_updated_at` (the parent ticket's `generated_timestamp`), skips `403`/`404` per ticket, and, like the per-ticket `ticket_metrics` calls, has no `api_budget` policy: it relies on Zendesk's `429` responses and the `Retry-After` header.
+
+**Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

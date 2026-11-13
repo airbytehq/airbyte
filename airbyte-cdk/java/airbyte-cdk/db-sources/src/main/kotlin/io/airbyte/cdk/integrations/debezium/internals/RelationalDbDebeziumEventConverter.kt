@@ -11,7 +11,7 @@ import java.time.Instant
 
 class RelationalDbDebeziumEventConverter(
     private val cdcMetadataInjector: CdcMetadataInjector<*>,
-    private val emittedAt: Instant
+    private val emittedAt: Instant,
 ) : DebeziumEventConverter {
     override fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage {
         val debeziumEvent = event.eventValueAsJson
@@ -24,7 +24,7 @@ class RelationalDbDebeziumEventConverter(
 
         if (listOf(before, after).all { it == null }) {
             throw IllegalStateException(
-                "ChangeEvent contains no before or after records $debeziumEvent"
+                "ChangeEvent contains no before or after records $debeziumEvent",
             )
         }
         // Value of before and after may be a null or a NullNode object,
@@ -41,13 +41,13 @@ class RelationalDbDebeziumEventConverter(
                 baseNode,
                 source,
                 cdcMetadataInjector,
-                after?.isNull == true
+                after?.isNull == true,
             )
         return DebeziumEventConverter.Companion.buildAirbyteMessage(
             source,
             cdcMetadataInjector,
             emittedAt,
-            data
+            data,
         )
     }
 }

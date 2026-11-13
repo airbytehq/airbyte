@@ -26,7 +26,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
         ObjectLoaderUploadCompleter.State,
         ObjectKey,
         ObjectLoaderPartLoader.PartResult<T>,
-        ObjectLoaderUploadCompleter.UploadResult<T>
+        ObjectLoaderUploadCompleter.UploadResult<T>,
     > {
     private val log = KotlinLogging.logger {}
 
@@ -46,7 +46,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
 
     override suspend fun accept(
         input: ObjectLoaderPartLoader.PartResult<T>,
-        state: State
+        state: State,
     ): BatchAccumulatorResult<State, UploadResult<T>> {
         return when (input) {
             is ObjectLoaderPartLoader.LoadedPart -> {
@@ -65,7 +65,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                         fileNumber = 0L, // ignored
                         bytes = bytes,
                         isFinal = input.isFinal,
-                        partIndex = input.partIndex
+                        partIndex = input.partIndex,
                     )
                 state.partBookkeeper.add(part)
                 if (state.partBookkeeper.isComplete) {
@@ -90,7 +90,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
     override suspend fun finish(state: State): FinalOutput<State, UploadResult<T>> {
         if (!state.partBookkeeper.isEmpty) {
             throw IllegalStateException(
-                "Upload completers had unfinished work at end-of-stream. This should not happen."
+                "Upload completers had unfinished work at end-of-stream. This should not happen.",
             )
         }
 
