@@ -7,10 +7,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
-        # the spec was changed with the `format: date` for start/end dates input,
-        # to satisfy the DatePicker requirements
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
+          # Maintainer-approved sandbox retirement uses the standard release flow.
+          # This exception expires once a version newer than 5.4.0 is published.
+          disable_for_version: "5.4.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
