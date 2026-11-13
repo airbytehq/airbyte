@@ -2614,6 +2614,21 @@ definitions:
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
+  # Bing Ads returns pre-signed Azure Blob Storage SAS URLs for bulk and report files. These requests carry no user
+  # credentials, so a 403 means the SAS URL itself was rejected, typically because it expired before the download
+  # started (AuthenticationFailed: "Signature not valid in the specified time frame"). Without this filter the CDK
+  # default 403 mapping reports it as a user permission (config) error. Match on the status code only: filters are
+  # also evaluated on successful responses, and `predicate`/`error_message_contains` read the body, which would
+  # consume the streamed file before the decoder reads it.
+  download_requester_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "Bing Ads file download URL is expired or no longer valid."
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2660,6 +2675,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_requester_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2743,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_requester_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
