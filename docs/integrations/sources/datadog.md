@@ -80,6 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.1.0 | 2026-11-13 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | The `logs` cursor now advances between syncs; `audit_logs` is incremental; every list stream is paged at the vendor's page size; `metrics` covers the last 60 days; `dashboards` and `service_level_objectives` include deleted records, with a `deleted` flag; errors on keys, permissions and the log query say what to fix; new `num_workers` option |
 | 2.0.25 | 2026-11-10 | [91324](https://github.com/airbytehq/airbyte/pull/91324) | Upgrade base image to `source-declarative-manifest:7.47.0` |
 | 2.0.24 | 2025-05-24 | [60420](https://github.com/airbytehq/airbyte/pull/60420) | Update dependencies |
 | 2.0.23 | 2025-05-10 | [59399](https://github.com/airbytehq/airbyte/pull/59399) | Update dependencies |

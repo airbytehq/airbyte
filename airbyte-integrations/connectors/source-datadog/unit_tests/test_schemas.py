@@ -10,8 +10,10 @@ from unit_tests.conftest import CONFIG, get_source
 
 
 ADDED_FIELDS = [
+    ("audit_logs", "attributes.message", "string", None, None),
     ("dashboards", "deleted", "boolean", None, None),
     ("dashboards", "is_read_only", "boolean", None, None),
+    ("logs", "attributes.source", "string", None, None),
     ("monitors", "creator.id", "integer", None, None),
     ("monitors", "draft_status", "string", None, None),
     ("monitors", "matching_downtimes[].active", "boolean", None, None),

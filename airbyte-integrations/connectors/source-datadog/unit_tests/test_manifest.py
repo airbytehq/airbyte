@@ -39,8 +39,9 @@ DATADOG_SITES = [
     "uk1.datadoghq.com",
 ]
 
-# The limit and period Datadog reported in its X-RateLimit headers on 2026-11-12.
+# The limit and period Datadog reported in its X-RateLimit headers on 2026-11-12, and on 2026-11-13 for the audit events.
 RATE_LIMITS = {
+    "/api/v2/audit/events": {"limit": 100, "interval": "PT60S"},
     "/api/v1/dashboard": {"limit": 60, "interval": "PT60S"},
     "/api/v1/downtime": {"limit": 60, "interval": "PT60S"},
     "/api/v2/incidents": {"limit": 100, "interval": "PT60S"},
@@ -50,7 +51,7 @@ RATE_LIMITS = {
     "/api/v1/slo": {"limit": 1000, "interval": "PT10S"},
     "/api/v1/synthetics/tests": {"limit": 12000, "interval": "PT60S"},
 }
-PATHS_WITHOUT_A_KNOWN_LIMIT = ["/api/v2/audit/events", "/api/v2/teams", "/api/v2/users"]
+PATHS_WITHOUT_A_KNOWN_LIMIT = ["/api/v2/teams", "/api/v2/users"]
 
 
 def _rates_that_apply_to(path: str) -> list[list[Mapping[str, Any]]]:

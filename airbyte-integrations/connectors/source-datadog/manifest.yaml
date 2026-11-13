@@ -591,6 +591,13 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
+        - limit: 100
+          interval: PT60S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/api/v2/audit/events$
+    - type: MovingWindowCallRatePolicy
+      rates:
         - limit: 60
           interval: PT60S
       matchers:
@@ -889,6 +896,11 @@ schemas:
               - "null"
             description: JSON object of attributes from Audit Logs events.
             additionalProperties: true
+          message:
+            type:
+              - string
+              - "null"
+            description: Message of the event.
           service:
             type:
               - string
@@ -1473,6 +1485,11 @@ schemas:
               - string
               - "null"
             description: The name of the application or service generating the log events.
+          source:
+            type:
+              - string
+              - "null"
+            description: Source of your log.
           status:
             type:
               - string
