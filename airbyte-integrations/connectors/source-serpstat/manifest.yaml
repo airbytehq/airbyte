@@ -39,19 +39,17 @@ definitions:
               domain: "{{config['domain']}}"
               during_all_time: true
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{response.error.code == 32000}}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{response.error.code == 32000}}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
         record_selector:
           type: RecordSelector
           extractor:
@@ -130,23 +128,21 @@ definitions:
               se: "{{config['region_id']}}"
               domains: "{{config['domains']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    predicate: "{{ 'Invalid token' in response.error.message }}"
-                    error_message: Invalid Token
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{ 'Too Many Requests' in response.error.message }}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Invalid token' in response.error.message }}"
+                error_message: Invalid Token
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'Too Many Requests' in response.error.message }}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -225,19 +221,17 @@ definitions:
               filters:
                 "{{config['filter_by']}}": "{{config['filter_value']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{response.error.code == 32000}}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{response.error.code == 32000}}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
         record_selector:
           type: RecordSelector
           extractor:
@@ -331,19 +325,17 @@ definitions:
               order: "{{config['sort_value']}}"
               domain: "{{config['domain']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{response.error.code == 32000}}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{response.error.code == 32000}}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
         record_selector:
           type: RecordSelector
           extractor:
@@ -397,19 +389,17 @@ definitions:
                 "{{config['sort_by']}}": "{{config['sort_value']}}"
               domain: "{{config['domain']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{response.error.code == 32000}}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{response.error.code == 32000}}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
         record_selector:
           type: RecordSelector
           extractor:
@@ -498,19 +488,17 @@ definitions:
               filters:
                 "{{config['filter_by']}}": "{{config['filter_value']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{response.error.code == 32000}}"
-                    error_message: >-
-                      You are sending more requests per second then available
-                      for your Serpstat plan
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{response.error.code == 32000}}"
+                error_message: >-
+                  You are sending more requests per second then available
+                  for your Serpstat plan
         record_selector:
           type: RecordSelector
           extractor:
@@ -588,19 +576,17 @@ streams:
             domain: "{{config['domain']}}"
             during_all_time: true
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{response.error.code == 32000}}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{response.error.code == 32000}}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
       record_selector:
         type: RecordSelector
         extractor:
@@ -678,23 +664,21 @@ streams:
             se: "{{config['region_id']}}"
             domains: "{{config['domains']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  predicate: "{{ 'Invalid token' in response.error.message }}"
-                  error_message: Invalid Token
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{ 'Too Many Requests' in response.error.message }}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ 'Invalid token' in response.error.message }}"
+              error_message: Invalid Token
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{ 'Too Many Requests' in response.error.message }}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
       record_selector:
         type: RecordSelector
         extractor:
@@ -772,19 +756,17 @@ streams:
             filters:
               "{{config['filter_by']}}": "{{config['filter_value']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{response.error.code == 32000}}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{response.error.code == 32000}}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
       record_selector:
         type: RecordSelector
         extractor:
@@ -877,19 +859,17 @@ streams:
             order: "{{config['sort_value']}}"
             domain: "{{config['domain']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{response.error.code == 32000}}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{response.error.code == 32000}}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
       record_selector:
         type: RecordSelector
         extractor:
@@ -942,19 +922,17 @@ streams:
               "{{config['sort_by']}}": "{{config['sort_value']}}"
             domain: "{{config['domain']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{response.error.code == 32000}}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{response.error.code == 32000}}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
       record_selector:
         type: RecordSelector
         extractor:
@@ -1042,19 +1020,17 @@ streams:
             filters:
               "{{config['filter_by']}}": "{{config['filter_value']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 2
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{response.error.code == 32000}}"
-                  error_message: >-
-                    You are sending more requests per second then available
-                    for your Serpstat plan
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{response.error.code == 32000}}"
+              error_message: >-
+                You are sending more requests per second then available
+                for your Serpstat plan
       record_selector:
         type: RecordSelector
         extractor:
