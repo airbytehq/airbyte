@@ -27,3 +27,8 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+`blocks` is the exception to where that filtering happens. Its manifest sets `is_client_side_incremental: false` and `BlocksRetriever` drops blocks whose `last_edited_time` is before the slice's `start_time` itself, after it has fetched their children. Two reasons:
+
+1. A block's `last_edited_time` is not guaranteed to move when a nested child is edited, so filtering in the record selector (before the recursion) would also skip the recently edited children of an unchanged parent block.
+2. In newer CDK versions (confirmed on 7.47.0; 7.1.0 still filtered) the factory no longer hands the client-side cursor to a `CustomRetriever`'s record selector, so `is_client_side_incremental: true` silently stopped filtering and every block was emitted on every sync. `unit_tests/mock_server/test_blocks.py` pins the behavior.
