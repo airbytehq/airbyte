@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.40"
+version = "0.1.41"
 name = "source-commcare"
 description = "Source implementation for Commcare."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,11 +16,11 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_commcare"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = ">=3.10,<3.14"
 flatten-json = "==0.1.13"
 bigquery-schema-generator = "==1.5.1"
 gbqschema-converter = "==1.2.1"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-commcare = "source_commcare.run:run"
