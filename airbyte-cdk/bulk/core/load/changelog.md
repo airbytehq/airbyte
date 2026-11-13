@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.11 — 2026-11-13
+
+[#79180](https://github.com/airbytehq/airbyte/pull/79180) — Fix: prevent user columns from colliding with reserved Airbyte column names (`_airbyte_raw_id`, `_airbyte_meta`, etc.) by seeding the collision resolver with reserved names.
+
 ### 1.1.10 — 2026-11-05
 
 [#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.

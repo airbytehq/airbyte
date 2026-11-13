@@ -9,12 +9,20 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class ColumnNameResolverTest {
     @MockK private lateinit var mapper: TableSchemaMapper
+
+    @BeforeEach
+    fun setUp() {
+        // Default passthrough for toColumnName — covers reserved-name seeding
+        // in getColumnNameMapping(). Individual tests can override specific names.
+        every { mapper.toColumnName(any()) } answers { firstArg() }
+    }
 
     @Test
     fun `handles no collisions`() {
@@ -126,6 +134,80 @@ class ColumnNameResolverTest {
         val result = resolver.getColumnNameMapping(emptySet())
 
         assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `renames user column that collides with reserved _airbyte_meta`() {
+        val resolver = ColumnNameResolver(mapper)
+        val columns = setOf("_airbyte_meta", "data")
+
+        // mapper.toColumnName is called for both reserved seeding and user columns
+        every { mapper.toColumnName("_airbyte_raw_id") } returns "_airbyte_raw_id"
+        every { mapper.toColumnName("_airbyte_extracted_at") } returns "_airbyte_extracted_at"
+        every { mapper.toColumnName("_airbyte_meta") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_airbyte_generation_id") } returns "_airbyte_generation_id"
+        every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
+        every { mapper.toColumnName("data") } returns "data"
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(2, result.size)
+        // The user column "_airbyte_meta" must be renamed to avoid collision
+        assertEquals("_airbyte_meta_1", result["_airbyte_meta"])
+        assertEquals("data", result["data"])
+    }
+
+    @Test
+    fun `renames user column that collides with reserved name case-insensitively`() {
+        val resolver = ColumnNameResolver(mapper)
+        val columns = setOf("_AIRBYTE_META", "data")
+
+        every { mapper.toColumnName("_airbyte_raw_id") } returns "_airbyte_raw_id"
+        every { mapper.toColumnName("_airbyte_extracted_at") } returns "_airbyte_extracted_at"
+        every { mapper.toColumnName("_airbyte_meta") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_airbyte_generation_id") } returns "_airbyte_generation_id"
+        every { mapper.toColumnName("_AIRBYTE_META") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_AIRBYTE_META_1") } returns "_airbyte_meta_1"
+        every { mapper.toColumnName("data") } returns "data"
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(2, result.size)
+        assertEquals("_airbyte_meta_1", result["_AIRBYTE_META"])
+        assertEquals("data", result["data"])
+    }
+
+    @Test
+    fun `renames user columns colliding with multiple reserved names`() {
+        val resolver = ColumnNameResolver(mapper)
+        val columns = setOf("_airbyte_raw_id", "_airbyte_meta", "user_col")
+
+        every { mapper.toColumnName("_airbyte_raw_id") } returns "_airbyte_raw_id"
+        every { mapper.toColumnName("_airbyte_extracted_at") } returns "_airbyte_extracted_at"
+        every { mapper.toColumnName("_airbyte_meta") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_airbyte_generation_id") } returns "_airbyte_generation_id"
+        every { mapper.toColumnName("_airbyte_raw_id_1") } returns "_airbyte_raw_id_1"
+        every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
+        every { mapper.toColumnName("user_col") } returns "user_col"
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(3, result.size)
+        assertEquals("_airbyte_raw_id_1", result["_airbyte_raw_id"])
+        assertEquals("_airbyte_meta_1", result["_airbyte_meta"])
+        assertEquals("user_col", result["user_col"])
     }
 
     @Test
