@@ -2614,6 +2614,17 @@ definitions:
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
+  expired_download_error_message: "The Bing Ads download link for stream '{{ parameters['name'] }}' expired."
+  download_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        error_message_contains: "Signature not valid in the specified time frame"
+        action: FAIL
+        failure_type: transient_error
+        error_message:
+          $ref: "#/definitions/expired_download_error_message"
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2660,6 +2671,10 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      expired_download_error_message:
+        $ref: "#/definitions/expired_download_error_message"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2723,9 +2738,19 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
+      poll_url: https://bulk.api.bingads.microsoft.com/Bulk/v13/BulkDownloadStatus/Query
+      creation_request_id_field: DownloadRequestId
+      poll_request_id_field: RequestId
+      download_url_field_path: [ResultFileUrl]
+      expired_download_error_message:
+        $ref: "#/definitions/expired_download_error_message"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
@@ -6296,6 +6321,10 @@ dynamic_streams:
           value: "{{components_values['parameters']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["primary_key"]
           value: "{{components_values['primary_key']}}"
         - type: ComponentMappingDefinition
@@ -6386,6 +6415,10 @@ dynamic_streams:
           value: "{{components_values['DownloadEntities']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["schema_loader"]
           value: "{{components_values['schema_loader']}}"
   # Custom reports
@@ -6427,6 +6460,10 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["name"]
+          value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "name"]
           value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
