@@ -38,6 +38,10 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             "INC_DATE",
             "INC_VARCHAR",
             "INC_NOPK_NUMBER",
+            "INC_TS_NTZ_DEFAULT_TZ",
+            "INC_TS_TZ_DEFAULT_TZ",
+            "INC_TS_LTZ_DEFAULT_TZ",
+            "INC_DATE_DEFAULT_TZ",
             "SPLIT_100K",
         )
 
@@ -82,7 +86,7 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             execute(admin, "CREATE SCHEMA \"$database\".\"$s\"")
             execute(
                 admin,
-                "CREATE TABLE \"$database\".\"$s\".T (ID INTEGER PRIMARY KEY, V VARCHAR)"
+                "CREATE TABLE \"$database\".\"$s\".T (ID INTEGER PRIMARY KEY, V VARCHAR)",
             )
         }
         try {
@@ -93,13 +97,13 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
                     discover(
                         SnowflakeLiveTestSupport.spec(
                             schema = target,
-                            checkPrivileges = checkPrivileges
-                        )
+                            checkPrivileges = checkPrivileges,
+                        ),
                     )
                 assertEquals(
                     listOf("T"),
                     filtered.streams.map { it.name },
-                    "check_privileges=$checkPrivileges"
+                    "check_privileges=$checkPrivileges",
                 )
                 val stream = filtered.streams.single()
                 assertEquals(target, stream.namespace)
@@ -125,7 +129,7 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
         assertEquals(listOf(listOf("ID")), byName["PK_TABLE"]!!.sourceDefinedPrimaryKey)
         assertEquals(
             listOf(listOf("A"), listOf("B")),
-            byName["COMPOSITE_PK"]!!.sourceDefinedPrimaryKey
+            byName["COMPOSITE_PK"]!!.sourceDefinedPrimaryKey,
         )
         assertTrue(byName["NO_PK"]!!.sourceDefinedPrimaryKey.isEmpty())
         assertTrue(byName["V_TYPES"]!!.sourceDefinedPrimaryKey.isEmpty())
@@ -138,7 +142,7 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
         )
         assertEquals(
             setOf("ID", "V"),
-            byName["EMPTY_TABLE"]!!.jsonSchema["properties"].fieldNames().asSequence().toSet()
+            byName["EMPTY_TABLE"]!!.jsonSchema["properties"].fieldNames().asSequence().toSet(),
         )
     }
 
@@ -164,7 +168,7 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             assertEquals(
                 probed[name]!!.sourceDefinedPrimaryKey,
                 unprobed[name]!!.sourceDefinedPrimaryKey,
-                name
+                name,
             )
         }
     }

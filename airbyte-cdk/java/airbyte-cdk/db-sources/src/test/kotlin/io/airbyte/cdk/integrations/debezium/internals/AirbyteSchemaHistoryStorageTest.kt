@@ -21,9 +21,9 @@ class AirbyteSchemaHistoryStorageTest {
             AirbyteSchemaHistoryStorage.initializeDBHistory(
                 AirbyteSchemaHistoryStorage.SchemaHistory(
                     Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-                    false
+                    false,
                 ),
-                true
+                true,
             )
         val schemaHistoryFromUncompressedContent =
             schemaHistoryStorageFromUncompressedContent.read()
@@ -32,16 +32,16 @@ class AirbyteSchemaHistoryStorageTest {
         Assertions.assertNotNull(schemaHistoryFromUncompressedContent.schema)
         Assertions.assertEquals(
             contentReadDirectlyFromFile,
-            schemaHistoryStorageFromUncompressedContent.readUncompressed()
+            schemaHistoryStorageFromUncompressedContent.readUncompressed(),
         )
 
         val schemaHistoryStorageFromCompressedContent =
             AirbyteSchemaHistoryStorage.initializeDBHistory(
                 AirbyteSchemaHistoryStorage.SchemaHistory(
                     Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema)),
-                    true
+                    true,
                 ),
-                true
+                true,
             )
         val schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read()
 
@@ -49,7 +49,7 @@ class AirbyteSchemaHistoryStorageTest {
         Assertions.assertNotNull(schemaHistoryFromCompressedContent.schema)
         Assertions.assertEquals(
             schemaHistoryFromUncompressedContent.schema,
-            schemaHistoryFromCompressedContent.schema
+            schemaHistoryFromCompressedContent.schema,
         )
     }
 
@@ -59,14 +59,14 @@ class AirbyteSchemaHistoryStorageTest {
         Assertions.assertEquals(
             5.881045341491699,
             AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(
-                MoreResources.readResource("dbhistory_greater_than_1_mb.dat")
-            )
+                MoreResources.readResource("dbhistory_greater_than_1_mb.dat"),
+            ),
         )
         Assertions.assertEquals(
             0.0038671493530273438,
             AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(
-                MoreResources.readResource("dbhistory_less_than_1_mb.dat")
-            )
+                MoreResources.readResource("dbhistory_less_than_1_mb.dat"),
+            ),
         )
     }
 
@@ -79,9 +79,9 @@ class AirbyteSchemaHistoryStorageTest {
             AirbyteSchemaHistoryStorage.initializeDBHistory(
                 AirbyteSchemaHistoryStorage.SchemaHistory(
                     Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-                    false
+                    false,
                 ),
-                true
+                true,
             )
         val schemaHistoryFromUncompressedContent =
             schemaHistoryStorageFromUncompressedContent.read()
@@ -90,16 +90,16 @@ class AirbyteSchemaHistoryStorageTest {
         Assertions.assertNotNull(schemaHistoryFromUncompressedContent.schema)
         Assertions.assertEquals(
             contentReadDirectlyFromFile,
-            schemaHistoryFromUncompressedContent.schema
+            schemaHistoryFromUncompressedContent.schema,
         )
 
         val schemaHistoryStorageFromCompressedContent =
             AirbyteSchemaHistoryStorage.initializeDBHistory(
                 AirbyteSchemaHistoryStorage.SchemaHistory(
                     Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema)),
-                    false
+                    false,
                 ),
-                true
+                true,
             )
         val schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read()
 
@@ -107,7 +107,7 @@ class AirbyteSchemaHistoryStorageTest {
         Assertions.assertNotNull(schemaHistoryFromCompressedContent.schema)
         Assertions.assertEquals(
             schemaHistoryFromUncompressedContent.schema,
-            schemaHistoryFromCompressedContent.schema
+            schemaHistoryFromCompressedContent.schema,
         )
     }
 }

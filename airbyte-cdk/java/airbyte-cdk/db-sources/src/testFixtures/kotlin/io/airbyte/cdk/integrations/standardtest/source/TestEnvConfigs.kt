@@ -21,12 +21,12 @@ private val LOGGER = KotlinLogging.logger {}
 class TestEnvConfigs private constructor(envMap: Map<String, String>) {
     enum class DeploymentMode {
         OSS,
-        CLOUD
+        CLOUD,
     }
 
     enum class WorkerEnvironment {
         DOCKER,
-        KUBERNETES
+        KUBERNETES,
     }
 
     private val getEnv = Function { key: String -> envMap.getValue(key) }
@@ -90,7 +90,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         key: String,
         defaultValue: T,
         parser: Function<String, T>,
-        isSecret: Boolean
+        isSecret: Boolean,
     ): T {
         val value = getEnv.apply(key)
         if (value != null && !value.isEmpty()) {
@@ -99,7 +99,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             LOGGER.info(
                 "Using default value for environment variable {}: '{}'",
                 key,
-                if (isSecret) "*****" else defaultValue
+                if (isSecret) "*****" else defaultValue,
             )
             return defaultValue
         }
@@ -134,7 +134,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                 DEPLOYMENT_MODE,
                 Function { instance: TestEnvConfigs -> instance.deploymentMode.name },
                 WORKER_ENVIRONMENT,
-                Function { instance: TestEnvConfigs -> instance.workerEnvironment.name }
+                Function { instance: TestEnvConfigs -> instance.workerEnvironment.name },
             )
     }
 }

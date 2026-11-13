@@ -22,8 +22,11 @@ import software.amazon.awssdk.services.s3.model.*
 
 interface StreamingArchiveUpload : AutoCloseable {
     fun append(bytes: ByteArray)
+
     fun seal()
+
     suspend fun finish()
+
     override fun close()
 }
 
@@ -32,9 +35,11 @@ interface StreamingArchiveUpload : AutoCloseable {
  */
 internal class StreamingArchiveDiskBudget(private val maximum: Long = 4L shl 30) {
     private var used = 0L
+
     init {
         require(maximum > 0)
     }
+
     @Synchronized
     fun reserve(bytes: Long) {
         check(bytes <= maximum - used) {
@@ -42,10 +47,12 @@ internal class StreamingArchiveDiskBudget(private val maximum: Long = 4L shl 30)
         }
         used += bytes
     }
+
     @Synchronized
     fun release(bytes: Long) {
         used -= bytes
     }
+
     @Synchronized fun retainedBytes(): Long = used
 }
 
@@ -160,7 +167,7 @@ internal class StreamingS3ArchiveUpload(
                             .checksumAlgorithm(ChecksumAlgorithm.CRC32)
                             .checksumType(ChecksumType.COMPOSITE)
                             .metadata(metadata)
-                            .build()
+                            .build(),
                     )
                     .also { future ->
                         creation = future
@@ -263,15 +270,15 @@ internal class StreamingS3ArchiveUpload(
                                         .bucket(bucket)
                                         .key(key)
                                         .uploadId(
-                                            initiation.awaitStreaming(cancel = false).uploadId()
+                                            initiation.awaitStreaming(cancel = false).uploadId(),
                                         )
                                         .checksumType(ChecksumType.COMPOSITE)
                                         .multipartUpload(
                                             CompletedMultipartUpload.builder()
                                                 .parts(uploaded)
-                                                .build()
+                                                .build(),
                                         )
-                                        .build()
+                                        .build(),
                                 )
                                 .awaitStreaming()
                             completed.set(true)
@@ -338,7 +345,7 @@ internal class StreamingS3ArchiveUpload(
                                 .bucket(bucket)
                                 .key(key)
                                 .uploadId(uploadId)
-                                .build()
+                                .build(),
                         )
                     } catch (t: Throwable) {
                         CompletableFuture.failedFuture(t)
@@ -395,7 +402,7 @@ internal class StreamingS3ArchiveUpload(
         try {
             closeResult.get(
                 cleanupTimeout.toMillis() * 4,
-                java.util.concurrent.TimeUnit.MILLISECONDS
+                java.util.concurrent.TimeUnit.MILLISECONDS,
             )
         } catch (t: java.util.concurrent.ExecutionException) {
             throw (t.cause ?: t)
@@ -438,7 +445,7 @@ private suspend fun <T> CompletableFuture<T>.awaitStreaming(cancel: Boolean = tr
             if (error == null) continuation.resume(value)
             else
                 continuation.resumeWithException(
-                    if (error is CompletionException) error.cause ?: error else error
+                    if (error is CompletionException) error.cause ?: error else error,
                 )
         }
     }

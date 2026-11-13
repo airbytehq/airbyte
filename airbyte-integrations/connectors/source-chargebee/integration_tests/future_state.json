@@ -152,5 +152,26 @@
       "stream_state": { "occurred_at": "2147483647" },
       "stream_descriptor": { "name": "event" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "addon" },
+      "stream_state": { "updated_at": "2145916800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "plan" },
+      "stream_state": { "updated_at": "2145916800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "virtual_bank_account" },
+      "stream_state": { "updated_at": "2145916800" }
+    }
   }
 ]

@@ -35,7 +35,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             DatetimeMicrosHandler,
             DateHandler,
             TimeHandler,
-            TimestampHandler
+            TimestampHandler,
         )
 
     /**
@@ -53,7 +53,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
      * - Datetime (micro and millis): invalid, interpreted as NULL
      * - Date: invalid, interpreted as NULL
      * - Timestamp: interpreted as 0, which is then converted to the Unix epoch, 1970-01-01.
-     * Snapshot reads can still produce NULL values.
+     *   Snapshot reads can still produce NULL values.
      * - Time: 00:00:00 represents midnight, which is a valid time value.
      */
     data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
@@ -86,7 +86,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -119,7 +119,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -149,7 +149,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -180,7 +180,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -211,7 +211,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 }

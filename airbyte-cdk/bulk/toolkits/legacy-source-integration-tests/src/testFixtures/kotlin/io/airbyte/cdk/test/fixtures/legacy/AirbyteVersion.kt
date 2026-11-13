@@ -41,11 +41,12 @@ class AirbyteVersion : Version {
         fun getErrorMessage(version1: AirbyteVersion, version2: AirbyteVersion): String {
             return String.format(
                 """
-                        Version mismatch between %s and %s.
-                        Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte
-                        """.trimIndent(),
+                Version mismatch between %s and %s.
+                Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte
+                """
+                    .trimIndent(),
                 version1.serialize(),
-                version2.serialize()
+                version2.serialize(),
             )
         }
 
