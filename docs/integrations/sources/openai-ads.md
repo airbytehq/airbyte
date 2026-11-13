@@ -33,7 +33,7 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
 7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
 8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. The default of 32 covers OpenAI's 30-day click attribution window plus 2 days, because OpenAI needs at least one day to process conversions. See [Lookback window](#lookback-window).
-9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. The default is 3.
+9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. Values below 2 run with 2 workers. The default is 3.
 10. Click **Set up source**.
 
 #### For Airbyte Open Source
