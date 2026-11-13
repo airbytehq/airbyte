@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Report/Bulk File Downloads Use Short-Lived Azure SAS URLs
+
+Report and bulk files are downloaded from pre-signed Azure Blob Storage URLs that expire after a few minutes. When a URL expires before the download starts, Azure returns HTTP 403 with `x-ms-error-code: AuthenticationFailed` ("Signature not valid in the specified time frame"). No user credentials are sent with these downloads, so the shared `expired_download_url_error_handler` reports any 403 from them as a `transient_error` instead of the CDK default "you don't have permission" `config_error`.
+
+**Why this matters:** The handler matches on `http_codes` only. Adding a `predicate` or `error_message_contains` makes the CDK call `response.json()` on every download response, which consumes the streamed file body and silently returns zero records on successful downloads.

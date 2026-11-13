@@ -2613,6 +2613,24 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Error handler for report/bulk file downloads from Azure Blob Storage.
+  # Bing Ads returns pre-signed (SAS) download URLs with a short TTL. If the URL expires before
+  # the download starts, Azure responds with 403 and `x-ms-error-code: AuthenticationFailed`
+  # ("Signature not valid in the specified time frame"). The download URL carries its own SAS
+  # signature (no user credentials are sent), so a 403 here is not a permission problem on the
+  # user's account: surface it as a transient error instead of the CDK default 403 config_error.
+  # NOTE: match on http_codes only. A `predicate`/`error_message_contains` would call
+  # response.json() on every response and consume the streamed file body of successful downloads.
+  expired_download_url_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "The Bing Ads file download link expired before the file could be downloaded (HTTP 403 from Azure Blob Storage). This is a temporary error, not a permissions issue, and the sync will retry."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2678,7 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/expired_download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2745,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/expired_download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
