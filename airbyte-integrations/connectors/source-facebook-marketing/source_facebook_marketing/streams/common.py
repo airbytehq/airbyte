@@ -277,3 +277,38 @@ def _get_user_facing_error_details(fb_exception: FacebookRequestError) -> str:
             if text not in parts:
                 parts.append(text)
     return f"{'. '.join(parts)}." if parts else ""
+
+
+def sanitize_circular_references(data: Any) -> Any:
+    """Remove circular references from nested dicts/lists produced by the Facebook SDK.
+
+    The Facebook Business SDK's `AbstractObject.export_all_data()` can produce dicts
+    containing circular references (e.g. `AdSet._field_types` maps `source_adset` back
+    to `AdSet`). These cause `json.dumps()` to raise `ValueError: Circular reference
+    detected` and `orjson.dumps()` to hit recursion limits.
+
+    This function walks the structure, tracking visited container identities, and
+    replaces any back-edge with `None`.
+    """
+    seen: set[int] = set()
+
+    def _walk(obj: Any) -> Any:
+        if isinstance(obj, dict):
+            obj_id = id(obj)
+            if obj_id in seen:
+                return None
+            seen.add(obj_id)
+            result = {k: _walk(v) for k, v in obj.items()}
+            seen.discard(obj_id)
+            return result
+        if isinstance(obj, list):
+            obj_id = id(obj)
+            if obj_id in seen:
+                return None
+            seen.add(obj_id)
+            result = [_walk(item) for item in obj]
+            seen.discard(obj_id)
+            return result
+        return obj
+
+    return _walk(data)

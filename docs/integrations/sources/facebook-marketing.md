@@ -533,6 +533,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.13 | 2026-11-11 | [79675](https://github.com/airbytehq/airbyte/pull/79675) | Fixed JSON serialization failures caused by circular references in Facebook SDK export data for ad_sets and other streams. |
 | 6.1.12 | 2026-11-04 | [90852](https://github.com/airbytehq/airbyte/pull/90852) | Build the insights stream schema once per stream instead of for every record, which speeds up insights syncs, most of all custom insights |
 | 6.1.11 | 2026-11-04 | [90896](https://github.com/airbytehq/airbyte/pull/90896) | Raise minimum supported Python version to 3.11 |
 | 6.1.10 | 2026-11-04 | [90974](https://github.com/airbytehq/airbyte/pull/90974) | Update CDK to 7.45 |
