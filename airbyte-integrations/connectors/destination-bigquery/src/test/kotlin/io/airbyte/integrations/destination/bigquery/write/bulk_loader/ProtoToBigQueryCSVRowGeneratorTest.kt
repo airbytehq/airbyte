@@ -115,7 +115,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 Meta.COLUMN_NAME_AB_RAW_ID,
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                 Meta.COLUMN_NAME_AB_GENERATION_ID,
-                Meta.COLUMN_NAME_AB_META
+                Meta.COLUMN_NAME_AB_META,
             )
 
         val encoder = AirbyteValueProtobufEncoder()
@@ -128,19 +128,19 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
                 encoder.encode(
                     OffsetTime.parse("23:59:59+02:00"),
-                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                 ),
                 encoder.encode(
                     LocalTime.parse("23:59:59"),
-                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
                 encoder.encode(
                     OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                 ),
                 encoder.encode(
                     LocalDateTime.parse("2025-06-17T23:59:59"),
-                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""".toByteArray(), LeafAirbyteSchemaType.JSONB),
@@ -154,33 +154,33 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("x")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .DESTINATION_SERIALIZATION_ERROR
+                                .DESTINATION_SERIALIZATION_ERROR,
                         ),
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("y")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .SOURCE_SERIALIZATION_ERROR
+                                .SOURCE_SERIALIZATION_ERROR,
                         ),
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("z")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .SOURCE_RECORD_SIZE_LIMITATION
+                                .SOURCE_RECORD_SIZE_LIMITATION,
                         ),
                 )
                 .build()
@@ -214,7 +214,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                     "obj_col" to
                         FieldType(
                             ObjectType(linkedMapOf("k" to FieldType(StringType, false))),
-                            false
+                            false,
                         ),
                     "union_col" to
                         FieldType(
@@ -227,7 +227,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                             ),
                             false,
                         ),
-                    "unknown_col" to FieldType(UnknownType(Jsons.emptyObject()), false)
+                    "unknown_col" to FieldType(UnknownType(Jsons.emptyObject()), false),
                 ),
             )
 
@@ -294,7 +294,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
         assertTrue(metaJson.contains("\"change\":\"NULLED\""))
         assertTrue(metaJson.contains("\"reason\":\"DESTINATION_SERIALIZATION_ERROR\""))
         assertTrue(
-            metaJson.contains("\"field\":\"unknown_col\"")
+            metaJson.contains("\"field\":\"unknown_col\""),
         ) // Should include unknown column change
     }
 
@@ -377,25 +377,25 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         OffsetTime.parse("23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalTime.parse("23:59:59"),
-                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB).build(),
@@ -438,13 +438,13 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         OffsetTime.parse("23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalTime.parse("23:59:59"),
-                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
@@ -453,7 +453,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB).build(),
@@ -487,8 +487,8 @@ class ProtoToBigQueryCSVRowGeneratorTest {
         val ex = assertThrows(IllegalArgumentException::class.java) { generator.generate(nonProto) }
         assertTrue(
             ex.message!!.contains(
-                "ProtoToBigQueryCSVRowGenerator only supports DestinationRecordProtobufSource"
-            )
+                "ProtoToBigQueryCSVRowGenerator only supports DestinationRecordProtobufSource",
+            ),
         )
     }
 
@@ -523,25 +523,25 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         OffsetTime.parse("23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalTime.parse("23:59:59"),
-                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder
@@ -579,25 +579,25 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         OffsetTime.parse("23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalTime.parse("23:59:59"),
-                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB).build(),
@@ -636,25 +636,25 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder
                     .encode(
                         OffsetTime.parse("23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalTime.parse("23:59:59"),
-                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                     )
                     .build(),
                 encoder
                     .encode(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     )
                     .build(),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB).build(),
@@ -757,15 +757,15 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                                             AirbyteRecordMessageMetaOuterClass
                                                 .AirbyteRecordMessageMeta
                                                 .newBuilder()
-                                                .build()
+                                                .build(),
                                         )
-                                        .build()
+                                        .build(),
                                 )
-                                .build()
+                                .build(),
                         )
                     every { this@mockk.stream } returns
                         this@ProtoToBigQueryCSVRowGeneratorTest.stream
-                }
+                },
             )
         assertEquals("\\N", csvRow[7])
         assertEquals(
@@ -777,7 +777,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
     }
 
     private fun buildModifiedRecord(
-        protoValues: List<AirbyteRecordMessage.AirbyteValueProtobuf>
+        protoValues: List<AirbyteRecordMessage.AirbyteValueProtobuf>,
     ): DestinationRecordProtobufSource {
         val recordProto =
             AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
@@ -793,7 +793,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
     private fun field(
         name: String,
         type: io.airbyte.cdk.load.data.AirbyteType,
-        idx: Int
+        idx: Int,
     ): AirbyteValueProxy.FieldAccessor = mockk {
         every { this@mockk.name } returns name
         every { this@mockk.type } returns type

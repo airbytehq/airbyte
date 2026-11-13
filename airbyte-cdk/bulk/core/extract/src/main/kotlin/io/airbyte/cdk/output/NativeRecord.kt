@@ -64,7 +64,7 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
             is ArrayEncoder<*> -> fve.encode().toString()
             is ProtobufAwareCustomConnectorJsonCodec<*> ->
                 (fve.jsonEncoder as ProtobufAwareCustomConnectorJsonCodec).valueForProtobufEncoding(
-                    value
+                    value,
                 )
             else -> value
         }
@@ -74,7 +74,7 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
 fun NativeRecordPayload.toProtobuf(
     schema: Set<DataOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
-    valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+    valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
         schema
@@ -90,8 +90,8 @@ fun NativeRecordPayload.toProtobuf(
                         encoder.encode(
                             decodedValueForProto,
                             field.type.airbyteSchemaType,
-                            valueBuilder.clear()
-                        )
+                            valueBuilder.clear(),
+                        ),
                     )
                 }
             }

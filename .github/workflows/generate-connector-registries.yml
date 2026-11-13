@@ -56,6 +56,9 @@ on:
         type: boolean
         default: false
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: read
 

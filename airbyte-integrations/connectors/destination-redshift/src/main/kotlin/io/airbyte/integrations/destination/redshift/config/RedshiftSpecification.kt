@@ -31,12 +31,12 @@ open class RedshiftSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription(
-        "Enter your Redshift Cluster Endpoint (must include the cluster-id, region and end with .redshift.amazonaws.com)"
+        "Enter your Redshift Cluster Endpoint (must include the cluster-id, region and end with .redshift.amazonaws.com)",
     )
     @get:JsonProperty("host")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 1, "examples":["my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com"], "pattern": "^[^\\s/?#]+\\.redshift(-serverless)?\\.amazonaws\\.com$", "pattern_descriptor": "{cluster-id}.{random}.{region}.redshift.amazonaws.com"}"""
+            """{"group": "connection", "order": 1, "examples":["my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com"], "pattern": "^[^\\s/?#]+\\.redshift(-serverless)?\\.amazonaws\\.com$", "pattern_descriptor": "{cluster-id}.{random}.{region}.redshift.amazonaws.com"}""",
     )
     val host: String = ""
 
@@ -45,17 +45,17 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 2, "minimum": 0, "maximum": 65536, "examples": ["5439"], "default": 5439}"""
+            """{"group": "connection", "order": 2, "minimum": 0, "maximum": 65536, "examples": ["5439"], "default": 5439}""",
     )
     val port: Int = 5439
 
     @get:JsonSchemaTitle("Username")
     @get:JsonPropertyDescription(
-        "Enter the name of the user you want to use to access the database"
+        "Enter the name of the user you want to use to access the database",
     )
     @get:JsonProperty("username")
     @get:JsonSchemaInject(
-        json = """{"group": "connection", "order": 3, "examples":["airbyte_user"]}"""
+        json = """{"group": "connection", "order": 3, "examples":["airbyte_user"]}""",
     )
     val username: String = ""
 
@@ -67,22 +67,22 @@ open class RedshiftSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Database")
     @get:JsonPropertyDescription(
-        "Enter the name of the <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html\">database</a> you want to sync data into"
+        "Enter the name of the <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html\">database</a> you want to sync data into",
     )
     @get:JsonProperty("database")
     @get:JsonSchemaInject(
-        json = """{"group": "connection", "order": 5, "examples":["airbyte_database"]}"""
+        json = """{"group": "connection", "order": 5, "examples":["airbyte_database"]}""",
     )
     val database: String = ""
 
     @get:JsonSchemaTitle("Default Schema")
     @get:JsonPropertyDescription(
-        "Enter the name of the default <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_Schemas_and_tables.html\">schema</a> tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\"."
+        "Enter the name of the default <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_Schemas_and_tables.html\">schema</a> tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
     )
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 6, "examples": ["public"], "default": "public"}"""
+            """{"group": "connection", "order": 6, "examples": ["public"], "default": "public"}""",
     )
     val schema: String = "public"
 
@@ -95,12 +95,12 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle(
-        "Drop tables and columns with CASCADE. (WARNING! Risk of unrecoverable data loss)"
+        "Drop tables and columns with CASCADE. (WARNING! Risk of unrecoverable data loss)",
     )
     @get:JsonPropertyDescription(
         "WARNING! This will delete all data in all dependent objects " +
             "(views, etc.) including during schema evolution of columns. Use with caution. This option is intended for usecases which can " +
-            "easily rebuild the dependent objects."
+            "easily rebuild the dependent objects.",
     )
     @get:JsonProperty("drop_cascade")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "default": false}""")
@@ -128,7 +128,7 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @JsonGetter("tunnel_method")
     @JsonSchemaTitle("SSH Tunnel Method")
     @JsonPropertyDescription(
-        "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
+        "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =

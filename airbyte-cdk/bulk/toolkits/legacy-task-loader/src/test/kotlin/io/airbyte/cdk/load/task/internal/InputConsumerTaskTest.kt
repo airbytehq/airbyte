@@ -82,14 +82,14 @@ class InputConsumerTaskTest {
                     StubDestinationMessageFactory.makeRecord(
                             MockDestinationCatalogFactory.stream1,
                         )
-                        .wrap(1L)
+                        .wrap(1L),
                 )
                 repeat(2) {
                     collector.emit(
                         StubDestinationMessageFactory.makeRecord(
                                 MockDestinationCatalogFactory.stream2,
                             )
-                            .wrap(it + 2L)
+                            .wrap(it + 2L),
                     )
                 }
             }
@@ -104,7 +104,7 @@ class InputConsumerTaskTest {
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
                 false,
-                NamespaceMapper(NamespaceDefinitionType.SOURCE)
+                NamespaceMapper(NamespaceDefinitionType.SOURCE),
             )
         val task =
             InputConsumerTask(
@@ -129,19 +129,19 @@ class InputConsumerTaskTest {
                     StubDestinationMessageFactory.makeRecord(
                             MockDestinationCatalogFactory.stream1,
                         )
-                        .wrap(1L)
+                        .wrap(1L),
                 )
                 collector.emit(
                     StubDestinationMessageFactory.makeStreamComplete(
                             MockDestinationCatalogFactory.stream1,
                         )
-                        .wrap(2L)
+                        .wrap(2L),
                 )
                 collector.emit(
                     StubDestinationMessageFactory.makeStreamComplete(
                             MockDestinationCatalogFactory.stream2,
                         )
-                        .wrap(3L)
+                        .wrap(3L),
                 )
             }
 
@@ -155,7 +155,7 @@ class InputConsumerTaskTest {
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
                 false,
-                NamespaceMapper(NamespaceDefinitionType.SOURCE)
+                NamespaceMapper(NamespaceDefinitionType.SOURCE),
             )
         val task =
             InputConsumerTask(
@@ -181,7 +181,7 @@ class InputConsumerTaskTest {
         data class TestEvent(
             val stream: DestinationStream,
             val count: Int,
-            val expectedStateIndex: Long
+            val expectedStateIndex: Long,
         )
 
         val batches =
@@ -208,7 +208,7 @@ class InputConsumerTaskTest {
                     }
                     collector.emit(
                         StubDestinationMessageFactory.makeStreamState(stream, count.toLong())
-                            .wrap(0L)
+                            .wrap(0L),
                     )
                 }
             }
@@ -258,14 +258,14 @@ class InputConsumerTaskTest {
                         is AddRecords -> {
                             repeat(event.count) {
                                 collector.emit(
-                                    StubDestinationMessageFactory.makeRecord(event.stream).wrap(1L)
+                                    StubDestinationMessageFactory.makeRecord(event.stream).wrap(1L),
                                 )
                             }
                         }
                         is SendState -> {
                             collector.emit(
                                 StubDestinationMessageFactory.makeGlobalState(event.expectedStats)
-                                    .wrap(0L)
+                                    .wrap(0L),
                             )
                         }
                     }
@@ -282,12 +282,12 @@ class InputConsumerTaskTest {
             val expectedKey =
                 CheckpointKey(
                     checkpointIndex = CheckpointIndex(event.expectedCheckpointIndex),
-                    checkpointId = CheckpointId(event.expectedCheckpointIndex.toString())
+                    checkpointId = CheckpointId(event.expectedCheckpointIndex.toString()),
                 )
             Assertions.assertEquals(expectedKey, wrapped.checkpointKey)
             Assertions.assertEquals(
                 event.expectedStats,
-                wrapped.checkpoint.destinationStats?.recordCount
+                wrapped.checkpoint.destinationStats?.recordCount,
             )
         }
     }

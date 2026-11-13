@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Singleton of destination config for easy lookup of values. */
 class DestinationConfig private constructor() {
     // whether the destination fully supports Destinations V2

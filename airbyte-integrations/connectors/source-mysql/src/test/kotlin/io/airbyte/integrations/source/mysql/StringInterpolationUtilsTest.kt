@@ -22,11 +22,12 @@ class StringInterpolationUtilsTest {
         for (boundary in result) {
             boundary.codePoints().forEach { cp ->
                 assertTrue(cp <= ceiling) {
-                    "boundary contains U+%04X above observed ceiling U+%04X: %s".format(
-                        cp,
-                        ceiling,
-                        boundary
-                    )
+                    "boundary contains U+%04X above observed ceiling U+%04X: %s"
+                        .format(
+                            cp,
+                            ceiling,
+                            boundary,
+                        )
                 }
                 assertTrue(cp !in 0xD800..0xDFFF) {
                     "boundary contains surrogate U+%04X: %s".format(cp, boundary)
@@ -53,7 +54,7 @@ class StringInterpolationUtilsTest {
         for (i in 0 until result.size - 1) {
             assertTrue(
                 result[i] <= result[i + 1],
-                "Each string should be lexicographically <= the next: ${result[i]} vs ${result[i + 1]}"
+                "Each string should be lexicographically <= the next: ${result[i]} vs ${result[i + 1]}",
             )
         }
     }
@@ -107,7 +108,7 @@ class StringInterpolationUtilsTest {
     fun `unicodeInterpolatedStrings should generate expected number of results`(
         start: String,
         end: String,
-        steps: Int
+        steps: Int,
     ) {
         val result = unicodeInterpolatedStrings(start, end, steps)
         assertEquals(steps + 1, result.size)
@@ -152,7 +153,7 @@ class StringInterpolationUtilsTest {
             guidInterpolatedStrings(
                 "00000000-0000-0000-0000-000000000000",
                 "ffffffff-ffff-ffff-ffff-ffffffffffff",
-                5
+                5,
             )
         assertEquals(6, result.size, "Should generate steps+1 values (including start and end)")
     }
@@ -171,12 +172,12 @@ class StringInterpolationUtilsTest {
             guidInterpolatedStrings(
                 "00000000-0000-0000-0000-000000000000",
                 "ffffffff-ffff-ffff-ffff-ffffffffffff",
-                10
+                10,
             )
         for (i in 0 until result.size - 1) {
             assertTrue(
                 result[i] <= result[i + 1],
-                "Each GUID should be lexicographically <= the next: ${result[i]} vs ${result[i + 1]}"
+                "Each GUID should be lexicographically <= the next: ${result[i]} vs ${result[i + 1]}",
             )
         }
     }
@@ -241,7 +242,7 @@ class StringInterpolationUtilsTest {
             guidInterpolatedStrings(
                 "GGGGGGGG-0000-0000-0000-000000000000",
                 "ffffffff-ffff-ffff-ffff-ffffffffffff",
-                2
+                2,
             )
         }
     }
@@ -264,12 +265,12 @@ class StringInterpolationUtilsTest {
     @CsvSource(
         "00000000-0000-0000-0000-000000000000, 11111111-1111-1111-1111-111111111111, 2",
         "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa, bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb, 4",
-        "12345678-90ab-cdef-1234-567890abcdef, 12345678-90ab-cdef-1234-567890abcdf0, 3"
+        "12345678-90ab-cdef-1234-567890abcdef, 12345678-90ab-cdef-1234-567890abcdf0, 3",
     )
     fun `guidInterpolatedStrings should generate expected number of results`(
         start: String,
         end: String,
-        steps: Int
+        steps: Int,
     ) {
         val result = guidInterpolatedStrings(start, end, steps)
         assertEquals(steps + 1, result.size)
@@ -281,13 +282,13 @@ class StringInterpolationUtilsTest {
             guidInterpolatedStrings(
                 "00000000-0000-0000-0000-000000000000",
                 "ffffffff-ffff-ffff-ffff-ffffffffffff",
-                5
+                5,
             )
         val guidPattern = Regex("^[0-9a-fA-F-]+$")
         result.forEach {
             assertTrue(
                 guidPattern.matches(it),
-                "Result should only contain valid GUID characters: $it"
+                "Result should only contain valid GUID characters: $it",
             )
             assertEquals(36, it.length, "GUID should be 36 characters long")
         }

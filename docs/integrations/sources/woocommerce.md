@@ -71,22 +71,22 @@ The WooCommerce source connector supports the following [sync modes](https://doc
 | Stream | Cursor field | Notes |
 | ------ | ------------ | ----- |
 | [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) | `date_modified_gmt` | |
-| [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) | `date_modified_gmt` | The WooCommerce customers endpoint can't filter by modification date, so Airbyte reads all customers on every sync and discards records older than the cursor. |
+| [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) | `date_modified_gmt` | The connector doesn't send modification-date filters for this stream. It reads customers and filters records locally using the cursor. |
 | [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) | `date_modified_gmt` | |
-| [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) | | Child of **Orders**. Airbyte makes one request per order. |
+| [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) | | Child of **Orders**. Airbyte requests notes for each order. |
 | [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways) | | |
 | [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes) | | |
-| [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms) | | Child of **Product attributes**. Airbyte makes one request per attribute. |
+| [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms) | | Child of **Product attributes**. Airbyte requests terms for each attribute. |
 | [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories) | | |
-| [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) | `date_created_gmt` | Incremental syncs track when a review was created, not when it was last edited, so later edits to an existing review aren't picked up. |
+| [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) | `date_created_gmt` | Incremental syncs track creation rather than modification. Editing a review doesn't advance this cursor. |
 | [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes) | | |
 | [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags) | | |
-| [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations) | | Child of **Products**. Airbyte makes one request per product. |
+| [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations) | | Child of **Products**. Airbyte requests variations for each product. |
 | [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) | `date_modified_gmt` | |
-| [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds) | | Child of **Orders**. Airbyte makes one request per order. |
+| [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds) | | Child of **Orders**. Airbyte requests refunds for each order. |
 | [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods) | | |
-| [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations) | | Child of **Shipping zones**. Airbyte makes one request per zone. |
-| [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods) | | Child of **Shipping zones**. Airbyte makes one request per zone. |
+| [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations) | | Child of **Shipping zones**. Airbyte requests locations for each zone. |
+| [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods) | | Child of **Shipping zones**. Airbyte requests methods for each zone. |
 | [Shipping zones](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zones) | | |
 | [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools) | | Airbyte uses this stream for the connection test. |
 | [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes) | | |
@@ -94,7 +94,7 @@ The WooCommerce source connector supports the following [sync modes](https://doc
 
 Streams with a cursor field support incremental syncs. All other streams are full refresh only. The **Start Date** you configure applies to incremental streams; full refresh streams always return everything the API exposes.
 
-Child streams read their parent records automatically, whether or not you selected the parent in your connection. Because they issue one request per parent record, they're much slower than top-level streams on large stores.
+Child streams read their parent records automatically, whether or not you selected the parent in your connection. They make requests for each parent record and paginate the results, so account for these additional requests when planning syncs.
 
 ## Limitations & Troubleshooting
 
@@ -132,6 +132,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.59 | 2026-11-10 | [91775](https://github.com/airbytehq/airbyte/pull/91775) | Update dependencies |
+| 0.5.58 | 2026-11-03 | [90815](https://github.com/airbytehq/airbyte/pull/90815) | Update dependencies |
+| 0.5.57 | 2026-10-27 | [90086](https://github.com/airbytehq/airbyte/pull/90086) | Update dependencies |
+| 0.5.56 | 2026-10-20 | [89490](https://github.com/airbytehq/airbyte/pull/89490) | Update dependencies |
+| 0.5.55 | 2026-10-13 | [88866](https://github.com/airbytehq/airbyte/pull/88866) | Update dependencies |
+| 0.5.54 | 2026-10-06 | [88091](https://github.com/airbytehq/airbyte/pull/88091) | Update dependencies |
+| 0.5.53 | 2026-09-29 | [87432](https://github.com/airbytehq/airbyte/pull/87432) | Update dependencies |
+| 0.5.52 | 2026-09-22 | [86871](https://github.com/airbytehq/airbyte/pull/86871) | Update dependencies |
+| 0.5.51 | 2026-09-15 | [86294](https://github.com/airbytehq/airbyte/pull/86294) | Update dependencies |
+| 0.5.50 | 2026-09-08 | [85730](https://github.com/airbytehq/airbyte/pull/85730) | Update dependencies |
 | 0.5.49 | 2026-08-26 | [85030](https://github.com/airbytehq/airbyte/pull/85030) | Skip product attributes whose WooCommerce taxonomy no longer exists instead of failing the sync |
 | 0.5.48 | 2026-08-18 | [84829](https://github.com/airbytehq/airbyte/pull/84829) | Update dependencies |
 | 0.5.47 | 2026-08-11 | [84188](https://github.com/airbytehq/airbyte/pull/84188) | Update dependencies |
