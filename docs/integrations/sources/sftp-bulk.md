@@ -27,7 +27,7 @@ The SFTP Bulk connector offers several features that are not available in the st
 To set up the SFTP connector, select _one_ of the following authentication methods:
 
 - Your username and password credentials associated with the server.
-- A private/public key pair.
+- A private/public key pair. Supported private key types are RSA, Ed25519, ECDSA, and DSS.
 
 To set up key pair authentication, follow these steps:
 
@@ -61,7 +61,7 @@ For more information on SSH key pair authentication, please refer to the
 
 ### Set up the SFTP Bulk connector in Airbyte
 
-### For Airbyte Cloud
+### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -70,7 +70,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the [SSH Key Authentication Setup](#ssh-key-authentication-setup) section below for detailed instructions.
 9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
@@ -92,41 +92,24 @@ For more information on SSH key pair authentication, please refer to the
 
 14. Click **Set up source** to complete setup. A test runs to verify the configuration.
 
-#### SSH Key Authentication Setup
-
-If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
-
-1. **Locate your private key text.** This is the block of text that begins with `-----BEGIN OPENSSH PRIVATE KEY-----` or `-----BEGIN RSA PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----` or `-----END RSA PRIVATE KEY-----`.
-
-2. **Create a PEM file:**
-   1. Open any text editor or IDE (for example, PyCharm, VS Code, or a terminal text editor).
-   2. Create a new file named `ssh.pem`.
-   3. Paste the entire private key text into the file, including the BEGIN and END lines.
-   4. Make sure there are no quotes or extra spaces before or after the key.
-   5. Save the file.
-
-3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
-
-   ```bash
-   chmod 600 ssh.pem
-   ```
-
-4. **Upload the file in Airbyte Cloud:**
-   1. In the SFTP Bulk source setup form, find the **Private key** field.
-   2. Click **Upload file** and select your saved `ssh.pem` file.
-
-Once uploaded, Airbyte uses this file to authenticate securely with your SFTP server.
-
-:::note
-The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
-:::
-
-### For Airbyte Open Source
+### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
+
+#### SSH Key Authentication Setup
+
+If your SFTP server uses SSH key-based authentication, provide the contents of your private key in the **Private key** field. The connector supports RSA, Ed25519, ECDSA, and DSS keys.
+
+1. Locate your private key file. Use the private key, not the public key file ending in `.pub`.
+2. Copy the entire key, including its `-----BEGIN ... PRIVATE KEY-----` and `-----END ... PRIVATE KEY-----` lines.
+3. Paste it into the **Private key** field, preserving line breaks. You can also use **Upload file** to load the key text from a file.
+
+Do not add quotes or extra text around the key. A `.pem` filename is not required; the connector detects the key type from its contents.
+
+If the key cannot be parsed, setup fails with `Private key format is not recognized. Supported types: RSA, Ed25519, ECDSA, DSS.` Check that you supplied a complete private key of a supported type.
 
 ## Delivery Method
 
@@ -177,6 +160,10 @@ The **Replicate Records** delivery method is not a workaround for large file siz
 
 For more information about delivery methods and their limitations, see the [Delivery Methods documentation](/platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -184,11 +171,16 @@ For more information about delivery methods and their limitations, see the [Deli
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.9.4 | 2026-11-03 | [90893](https://github.com/airbytehq/airbyte/pull/90893) | Require Python 3.11 or later |
+| 1.9.3 | 2026-10-20 | [89517](https://github.com/airbytehq/airbyte/pull/89517) | Allow Python 3.13 and upgrade base image to python-connector-base 4.1.1 |
+| 1.9.2 | 2026-04-07 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
+| 1.9.1 | 2026-04-02 | [75967](https://github.com/airbytehq/airbyte/pull/75967) | Support non-RSA private key types (Ed25519, ECDSA, DSS) for SSH authentication |
 | 1.9.0 | 2026-01-08 | [71225](https://github.com/airbytehq/airbyte/pull/71225) | Promoting release candidate 1.9.0-rc.2 to a main version. |
-| 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic                    |
-| 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version                                                                                                                           |
-| 1.8.9      | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours                                                                                                                          |
-| 1.8.8      | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit                                                                                                                      |
+| 1.9.0-rc.2 | 2026-01-06 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic |
+| 1.9.0-rc.1 | 2025-12-22 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version |
+| 1.8.9 | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours |
+| 1.8.8 | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit |
+| 1.8.7 | 2025-10-21 | [68276](https://github.com/airbytehq/airbyte/pull/68276) | Update dependencies |
 | 1.8.6 | 2025-10-14 | [67923](https://github.com/airbytehq/airbyte/pull/67923) | Update dependencies |
 | 1.8.5 | 2025-10-07 | [67234](https://github.com/airbytehq/airbyte/pull/67234) | Update dependencies |
 | 1.8.4 | 2025-09-30 | [66868](https://github.com/airbytehq/airbyte/pull/66868) | Update dependencies |

@@ -48,12 +48,11 @@ definitions:
     paginator:
       type: DefaultPaginator
       page_token_option:
-        type: RequestOption
-        field_name: page
-        inject_into: request_parameter
+        type: RequestPath
       pagination_strategy:
-        type: OffsetIncrement
-        inject_on_first_request: true
+        type: CursorPagination
+        cursor_value: "{{ response.get('links', {}).get('next') }}"
+        stop_condition: "{{ not response.get('links', {}).get('next') }}"
     requester:
       type: HttpRequester
       url_base: "https://api.northpass.com/v2"
@@ -98,12 +97,11 @@ definitions:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -148,12 +146,11 @@ definitions:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -429,12 +426,11 @@ definitions:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -825,12 +821,11 @@ definitions:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -881,12 +876,11 @@ definitions:
                 paginator:
                   type: DefaultPaginator
                   page_token_option:
-                    type: RequestOption
-                    field_name: page
-                    inject_into: request_parameter
+                    type: RequestPath
                   pagination_strategy:
-                    type: OffsetIncrement
-                    inject_on_first_request: true
+                    type: CursorPagination
+                    cursor_value: "{{ response.get('links', {}).get('next') }}"
+                    stop_condition: "{{ not response.get('links', {}).get('next') }}"
                 requester:
                   type: HttpRequester
                   url_base: "https://api.northpass.com/v2"
@@ -1351,12 +1345,11 @@ streams:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -1645,12 +1638,11 @@ streams:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -2051,12 +2043,11 @@ streams:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
+          type: RequestPath
         pagination_strategy:
-          type: OffsetIncrement
-          inject_on_first_request: true
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
       requester:
         type: HttpRequester
         url_base: "https://api.northpass.com/v2"
@@ -2108,12 +2099,11 @@ streams:
                 paginator:
                   type: DefaultPaginator
                   page_token_option:
-                    type: RequestOption
-                    field_name: page
-                    inject_into: request_parameter
+                    type: RequestPath
                   pagination_strategy:
-                    type: OffsetIncrement
-                    inject_on_first_request: true
+                    type: CursorPagination
+                    cursor_value: "{{ response.get('links', {}).get('next') }}"
+                    stop_condition: "{{ not response.get('links', {}).get('next') }}"
                 requester:
                   type: HttpRequester
                   url_base: "https://api.northpass.com/v2"

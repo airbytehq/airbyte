@@ -35,7 +35,7 @@ constructor(
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         return StreamId(
             namingTransformer.getNamespace(namespace),
@@ -99,23 +99,22 @@ constructor(
 
     /**
      * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
-     * specific syntax to extract data
+     *   specific syntax to extract data
      * @param useExpensiveSaferCasting
      * @return a list of jooq fields for the final table insert statement.
      */
     protected abstract fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>>
 
     /**
-     *
      * @param columns from the schema to be used for type casting errors and construct _airbyte_meta
-     * column
+     *   column
      * @return
      */
     protected abstract fun buildAirbyteMetaColumn(
-        columns: LinkedHashMap<ColumnId, AirbyteType>
+        columns: LinkedHashMap<ColumnId, AirbyteType>,
     ): Field<*>
 
     /**
@@ -136,7 +135,7 @@ constructor(
      */
     protected abstract fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int>
 
     protected open val dslContext: DSLContext
@@ -152,7 +151,7 @@ constructor(
     @VisibleForTesting
     fun buildFinalTableFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaColumns: Map<String, DataType<*>>
+        metaColumns: Map<String, DataType<*>>,
     ): List<Field<*>> {
         val fields =
             metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
@@ -175,7 +174,7 @@ constructor(
      * @return
      */
     open fun getFinalTableMetaColumns(
-        includeMetaColumn: Boolean
+        includeMetaColumn: Boolean,
     ): LinkedHashMap<String, DataType<*>> {
         val metaColumns = LinkedHashMap<String, DataType<*>>()
         metaColumns[JavaBaseConstants.COLUMN_NAME_AB_RAW_ID] =
@@ -202,7 +201,7 @@ constructor(
     fun buildRawTableSelectFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         metaColumns: Map<String, DataType<*>>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): List<Field<*>> {
         val fields =
             metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
@@ -219,7 +218,7 @@ constructor(
     fun rawTableCondition(
         postImportAction: ImportType,
         isCdcDeletedAtPresent: Boolean,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Optional<Instant>,
     ): Condition {
         var condition: Condition =
             DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull()
@@ -247,13 +246,13 @@ constructor(
         val finalTableIdentifier = stream.id.finalName + suffix.lowercase(Locale.getDefault())
         if (!force) {
             return of(
-                createTableSql(stream.id.finalNamespace, finalTableIdentifier, stream.columns)
+                createTableSql(stream.id.finalNamespace, finalTableIdentifier, stream.columns),
             )
         }
 
         val dropTableStep =
             dslContext.dropTableIfExists(
-                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
+                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier),
             )
         if (cascadeDrop) {
             dropTableStep.cascade()
@@ -273,7 +272,7 @@ constructor(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         // TODO: Add flag to use merge vs insert/delete
 
@@ -296,7 +295,7 @@ constructor(
         }
         return transactionally(
             dropTableStep.getSQL(ParamType.INLINED),
-            renameTable(stream.finalNamespace, stream.finalName + finalSuffix, stream.finalName)
+            renameTable(stream.finalNamespace, stream.finalName + finalSuffix, stream.finalName),
         )
     }
 
@@ -317,7 +316,7 @@ constructor(
     protected open fun createV2RawTableFromV1Table(
         rawTableName: Name,
         namespace: String,
-        tableName: String
+        tableName: String,
     ): String {
         val hasGenerationId = columns == DestinationColumns.V2_WITH_GENERATION
 
@@ -382,7 +381,7 @@ constructor(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         metaColumns: Map<String, DataType<*>>,
         condition: Condition,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): SelectConditionStep<Record> {
         val dsl = dslContext
         return dsl.select(buildRawTableSelectFields(columns, metaColumns, useExpensiveSaferCasting))
@@ -396,7 +395,7 @@ constructor(
         schemaName: String,
         tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaFields: Map<String, DataType<*>>
+        metaFields: Map<String, DataType<*>>,
     ): InsertValuesStepN<Record> {
         val dsl = dslContext
         return dsl.insertInto(DSL.table(DSL.quotedName(schemaName, tableName)))
@@ -407,7 +406,7 @@ constructor(
         streamConfig: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val finalSchema = streamConfig.id.finalNamespace
         val finalTable =
@@ -458,7 +457,7 @@ constructor(
                             DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1),
                         ), // Can refer by CTE.field but no use since we don't strongly type
                     // them.
-                    )
+                )
                 .getSQL(ParamType.INLINED)
 
         // Used for append and overwrite modes.
@@ -510,7 +509,7 @@ constructor(
     protected open fun createTableSql(
         namespace: String,
         tableName: String,
-        columns: LinkedHashMap<ColumnId, AirbyteType>
+        columns: LinkedHashMap<ColumnId, AirbyteType>,
     ): String {
         val dsl = dslContext
         val createTableSql =
@@ -535,7 +534,7 @@ constructor(
         schemaName: String,
         tableName: String,
         primaryKeys: List<ColumnId>,
-        cursor: Optional<ColumnId>
+        cursor: Optional<ColumnId>,
     ): String {
         val dsl = dslContext
         // Unknown type doesn't play well with where .. in (select..)
@@ -567,7 +566,7 @@ constructor(
     private fun checkpointRawTable(
         schemaName: String,
         tableName: String,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Optional<Instant>,
     ): String {
         val dsl = dslContext
         var extractedAtCondition = DSL.noCondition()
@@ -591,7 +590,7 @@ constructor(
     protected open fun castedField(
         field: Field<*>,
         type: AirbyteType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         if (type is AirbyteProtocolType) {
             return castedField(field, type, useExpensiveSaferCasting)
@@ -610,7 +609,7 @@ constructor(
     protected open fun castedField(
         field: Field<*>,
         type: AirbyteProtocolType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         return DSL.cast(field, toDialectType(type))
     }

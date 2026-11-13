@@ -20,9 +20,12 @@ To use the Milvus destination, you'll need:
 You'll need the following information to configure the destination:
 
 - **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Milvus Endpoint URL** - The URL of your Milvus instance
-- Either **Milvus API token** or **Milvus Instance Username and Password**
-- **Milvus Collection name** - The name of the collection to load data into
+- **Public Endpoint** - The URL of your Milvus instance
+- **Authentication** - An API token, a username and password, or no authentication. Use no authentication only for local test clusters, not clusters with public IP addresses.
+- **Collection Name** - The name of the collection to load data into
+- **Database Name** - Optional. Leave empty to use the default database.
+
+On Airbyte Cloud, the endpoint must start with `https://` and authentication must be enabled; otherwise, the connection check fails.
 
 ## Supported sync modes
 
@@ -69,18 +72,7 @@ If the record contains a field with the same name as the primary key, it will be
 
 ### Setting up a collection
 
-When using the Zilliz cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
-
-```
-POST /v1/vector/collections/create
-{
-  "collectionName": "my-collection",
-  "dimension": 1536,
-  "metricType": "L2",
-  "vectorField": "vector",
-  “primaryField”: “pk”
-}
-```
+To create a collection using the Zilliz Cloud REST API, see the [Create Collection API reference](https://docs.zilliz.com/reference/restful/create-collection-v2). Configure the collection to match the requirements in [Indexing](#indexing).
 
 When using a self-hosted Milvus cluster, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
 
@@ -96,18 +88,9 @@ collection = Collection(name="test_collection", schema=schema)
 collection.create_index(field_name="vector", index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
 ```
 
-### Langchain integration
+### LangChain integration
 
-To initialize a langchain vector store based on the indexed data, use the following code:
-
-```python
-embeddings = OpenAIEmbeddings(openai_api_key="my-key")
-vector_store = Milvus(embeddings=embeddings, collection_name="my-collection", connection_args={"uri": "my-zilliz-endpoint", "token": "my-api-key"})
-vector_store.fields.append("text")
-# call  vs.fields.append() for all fields you need from the metadata
-
-vector_store.similarity_search("test")
-```
+For query examples, see the official [LangChain Milvus integration guide](https://docs.langchain.com/oss/python/integrations/vectorstores/milvus). Use the embedding model and collection field names configured for your Airbyte destination.
 
 ## Namespace support
 
@@ -120,9 +103,14 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.63 | 2026-10-14 | [88972](https://github.com/airbytehq/airbyte/pull/88972) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
+| 0.0.62 | 2026-09-29 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
+| 0.0.61 | 2026-08-13 | [84362](https://github.com/airbytehq/airbyte/pull/84362) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
+| 0.0.60 | 2026-07-02 | [81383](https://github.com/airbytehq/airbyte/pull/81383) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.0.59 | 2026-07-02 | [81394](https://github.com/airbytehq/airbyte/pull/81394) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
 | 0.0.58 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.0.57 | 2025-10-21 | [68333](https://github.com/airbytehq/airbyte/pull/68333) | Update dependencies |
-| 0.0.56 | 2025-10-14 | [61075](https://github.com/airbytehq/airbyte/pull/61075) | Update dependencies |
+| 0.0.56 | 2025-10-16 | [61075](https://github.com/airbytehq/airbyte/pull/61075) | Update dependencies |
 | 0.0.55 | 2025-05-17 | [57175](https://github.com/airbytehq/airbyte/pull/57175) | Update dependencies |
 | 0.0.54 | 2025-03-29 | [56587](https://github.com/airbytehq/airbyte/pull/56587) | Update dependencies |
 | 0.0.53 | 2025-03-22 | [56136](https://github.com/airbytehq/airbyte/pull/56136) | Update dependencies |
@@ -164,14 +152,14 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 | 0.0.17 | 2024-06-25 | [40446](https://github.com/airbytehq/airbyte/pull/40446) | Update dependencies |
 | 0.0.16 | 2024-06-22 | [40161](https://github.com/airbytehq/airbyte/pull/40161) | Update dependencies |
 | 0.0.15 | 2024-05-20 | [38276](https://github.com/airbytehq/airbyte/pull/38276) | Replace AirbyteLogger with logging.Logger |
-| 0.0.14  | 2024-3-22  | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
-| 0.0.13  | 2024-3-22  | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
+| 0.0.14  | 2024-04-16  | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
+| 0.0.13  | 2024-03-26  | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
 | 0.0.12  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                                               |
 | 0.0.11  | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                                                                                             |
 | 0.0.10  | 2023-11-16 | [#32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources                                                                                                            |
 | 0.0.9   | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                                                                                 |
-| 0.0.8   | 2023-11-08 | [#31563](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist                                                                                                          |
-| 0.0.7   | 2023-10-23 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option                                                                                                                            |
+| 0.0.8   | 2023-11-09 | [#32262](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist                                                                                                          |
+| 0.0.7   | 2023-10-27 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option                                                                                                                            |
 | 0.0.6   | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                     |
 | 0.0.5   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option                                                                                                               |
 | 0.0.4   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size                                                                                                                      |

@@ -42,7 +42,7 @@ class JsonToAvroSchemaConverter {
         namespace: String?,
         useV2FieldNames: Boolean = false,
         addStringToLogicalTypes: Boolean = true,
-        appendExtraProps: Boolean = true
+        appendExtraProps: Boolean = true,
     ): Schema {
         val schema =
             getAvroSchema(
@@ -61,7 +61,7 @@ class JsonToAvroSchemaConverter {
 
     /**
      * @param appendAirbyteFields Add default airbyte fields (e.g. _airbyte_id) to the output Avro
-     * schema.
+     *   schema.
      * @param appendExtraProps Add default additional property field to the output Avro schema.
      * @param addStringToLogicalTypes Default logical type field to string.
      * @param isRootNode Whether it is the root field in the input Json schema.
@@ -88,7 +88,7 @@ class JsonToAvroSchemaConverter {
                 "Schema name \"$fieldName\" contains illegal character(s) and is standardized to \"$stdName\""
             }
             builder.doc(
-                "${AvroConstants.DOC_KEY_ORIGINAL_NAME}${AvroConstants.DOC_KEY_VALUE_DELIMITER}$fieldName"
+                "${AvroConstants.DOC_KEY_ORIGINAL_NAME}${AvroConstants.DOC_KEY_VALUE_DELIMITER}$fieldName",
             )
         }
         if (stdNamespace != null) {
@@ -143,7 +143,7 @@ class JsonToAvroSchemaConverter {
                             .name("sync_id")
                             .type(Schema.create(Schema.Type.LONG))
                             .noDefault()
-                            .endRecord()
+                            .endRecord(),
                     )
                     .noDefault()
             }
@@ -165,7 +165,7 @@ class JsonToAvroSchemaConverter {
                     "Field name \"$subfieldName\" contains illegal character(s) and is standardized to \"$stdFieldName\""
                 }
                 fieldBuilder.doc(
-                    "${AvroConstants.DOC_KEY_ORIGINAL_NAME}${AvroConstants.DOC_KEY_VALUE_DELIMITER}$subfieldName"
+                    "${AvroConstants.DOC_KEY_ORIGINAL_NAME}${AvroConstants.DOC_KEY_VALUE_DELIMITER}$subfieldName",
                 )
             }
             val subfieldNamespace: String? =
@@ -204,7 +204,6 @@ class JsonToAvroSchemaConverter {
 
     /**
      * Generate Avro schema for a single Json field type. For example:
-     *
      * <pre> "number" -> ["double"] </pre> *
      */
     @Suppress("DEPRECATION")
@@ -393,7 +392,6 @@ class JsonToAvroSchemaConverter {
     /**
      * Take in a union of Json field definitions, and generate Avro field schema unions. For
      * example:
-     *
      * <pre> ["number", { ... }] -> ["double", { ... }] </pre> *
      */
     private fun parseJsonTypeUnion(
@@ -401,7 +399,7 @@ class JsonToAvroSchemaConverter {
         fieldNamespace: String?,
         types: ArrayNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean
+        addStringToLogicalTypes: Boolean,
     ): MutableList<Schema> {
         val schemas: List<Schema> =
             MoreIterators.toList(types.elements())
@@ -411,7 +409,7 @@ class JsonToAvroSchemaConverter {
                         fieldNamespace = fieldNamespace,
                         definition = definition,
                         appendExtraProps = appendExtraProps,
-                        addStringToLogicalTypes = addStringToLogicalTypes
+                        addStringToLogicalTypes = addStringToLogicalTypes,
                     )
                 }
                 .distinct()
@@ -424,7 +422,7 @@ class JsonToAvroSchemaConverter {
         fieldNamespace: String?,
         definition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean
+        addStringToLogicalTypes: Boolean,
     ): List<Schema> {
         return getNonNullTypes(fieldName, definition).flatMap { type: JsonSchemaType ->
             getSchema(
@@ -433,7 +431,7 @@ class JsonToAvroSchemaConverter {
                 type = type,
                 definition = definition,
                 appendExtraProps = appendExtraProps,
-                addStringToLogicalTypes = addStringToLogicalTypes
+                addStringToLogicalTypes = addStringToLogicalTypes,
             )
         }
     }
@@ -444,7 +442,7 @@ class JsonToAvroSchemaConverter {
         type: JsonSchemaType,
         definition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean
+        addStringToLogicalTypes: Boolean,
     ): List<Schema> {
         val namespace: String =
             if (fieldNamespace == null) fieldName else "$fieldNamespace.$fieldName"
@@ -470,13 +468,11 @@ class JsonToAvroSchemaConverter {
      * If there are multiple object fields, those fields are combined into one Avro record. This is
      * because Avro does not allow specifying a tuple of types (i.e. the first element is type x,
      * the second element is type y, and so on). For example, the following Json field types:
-     *
      * <pre> [ { "type": "object", "properties": { "id": { "type": "integer" } } }, { "type":
      * "object", "properties": { "id": { "type": "string" } "message": { "type": "string" } } } ]
      * </pre> *
      *
      * is converted to this Avro schema:
-     *
      * <pre> { "type": "record", "fields": [ { "name": "id", "type": ["int", "string"] }, { "name":
      * "message", "type": "string" } ] } </pre> *
      */
@@ -484,7 +480,7 @@ class JsonToAvroSchemaConverter {
         fieldName: String,
         fieldNamespace: String?,
         schemas: List<Schema>,
-        appendExtraProps: Boolean
+        appendExtraProps: Boolean,
     ): MutableList<Schema> {
         val recordFieldSchemas: LinkedHashMap<String, MutableList<Schema>> = LinkedHashMap()
         val recordFieldDocs: MutableMap<String, MutableList<String>> = HashMap()
@@ -582,7 +578,6 @@ class JsonToAvroSchemaConverter {
 
     /**
      * Take in a Json field definition, and generate a nullable Avro field schema. For example:
-     *
      * <pre> {"type": ["number", { ... }]} -> ["null", "double", { ... }] </pre> *
      */
     fun parseJsonField(
@@ -654,22 +649,21 @@ class JsonToAvroSchemaConverter {
      *
      * @param unionTypes
      * - list of union types
+     *
      * @return new Schema
      */
     private fun createUnionAndCheckLongTypesDuplications(unionTypes: List<Schema>): Schema {
         val isALong: Predicate<Schema> = Predicate { type: Schema -> type.type == Schema.Type.LONG }
-        val isPlainLong: Predicate<Schema> =
-            isALong.and { type: Schema ->
-                Objects.isNull(
-                    type.logicalType,
-                )
-            }
-        val isTimestampMicrosLong: Predicate<Schema> =
-            isALong.and { type: Schema ->
-                Objects.nonNull(
-                    type.logicalType,
-                ) && ("timestamp-micros" == type.logicalType.name)
-            }
+        val isPlainLong: Predicate<Schema> = isALong.and { type: Schema ->
+            Objects.isNull(
+                type.logicalType,
+            )
+        }
+        val isTimestampMicrosLong: Predicate<Schema> = isALong.and { type: Schema ->
+            Objects.nonNull(
+                type.logicalType,
+            ) && ("timestamp-micros" == type.logicalType.name)
+        }
 
         val hasPlainLong: Boolean = unionTypes.any { isPlainLong.test(it) }
         val hasTimestampMicrosLong: Boolean = unionTypes.any { isTimestampMicrosLong.test(it) }
