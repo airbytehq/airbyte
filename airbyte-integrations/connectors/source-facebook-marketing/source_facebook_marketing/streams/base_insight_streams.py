@@ -268,6 +268,15 @@ class AdsInsights(FBMarketingIncrementalStream):
         if job.interval.start == self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
 
+    def _pending_slices(self, account_id: str) -> List[str]:
+        """Completed slices worth persisting: only those ahead of the committed cursor.
+
+        Slices at or before the cursor are already covered by it. They are only tracked in memory, so that
+        `_advance_cursor` can walk through the lookback window, and would otherwise linger in the state forever.
+        """
+        cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+        return sorted({d.isoformat() for d in self._completed_slices[account_id] if cursor_value is None or d > cursor_value})
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         """State getter, the result can be stored by the source"""
@@ -278,7 +287,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._pending_slices(account_id)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -286,7 +295,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._pending_slices(account_id)
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -419,6 +428,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            # The sync starts `insights_lookback_window` days before the saved cursor, so the first completed slices are
+            # older than it. The committed cursor must never move backwards while they are re-read: an interrupted sync
+            # would persist the lower value and the next attempt would subtract the lookback window from it again.
+            cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+            if cursor_value is not None and ts_start <= cursor_value:
+                continue
             if self._cursor_values:
                 self._cursor_values[account_id] = ts_start
             else:
