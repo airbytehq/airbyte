@@ -2613,6 +2613,23 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Report and bulk files are downloaded from Azure Blob Storage through a short-lived pre-signed link issued by
+  # Bing Ads. Once the link is past its expiry time Azure answers 403 (AuthenticationFailed, "Signature not valid in
+  # the specified time frame"). No user credentials are sent with the download, so a 403 here is never a permission
+  # problem the user can fix, and the same link never becomes valid again: fail the stream with a transient error
+  # instead of the default 403 config error. Match on the status code only: a `predicate` or
+  # `error_message_contains` filter would parse the body of every response, including the streamed file of a
+  # successful download, leaving nothing for the decoder to read.
+  download_link_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "Bing Ads file download link is expired or no longer valid. The download request was rejected by Microsoft file storage."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2677,7 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2744,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
