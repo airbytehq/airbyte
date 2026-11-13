@@ -223,6 +223,9 @@ Your token needs at least the `repo` scope. Depending on which streams you sync,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.3 | 2026-11-10 | [91518](https://github.com/airbytehq/airbyte/pull/91518) | Update dependencies |
+| 0.2.2 | 2026-11-03 | [90564](https://github.com/airbytehq/airbyte/pull/90564) | Update dependencies |
+| 0.2.1 | 2026-10-27 | [89909](https://github.com/airbytehq/airbyte/pull/89909) | Update dependencies |
 | 0.2.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Remove the `workflow_job_steps`, `release_assets`, and `contributor_activity_weeks` streams; add `releases.asset_download_urls` |
 | 0.1.2 | 2026-10-24 | [89749](https://github.com/airbytehq/airbyte/pull/89749) | Declare `workflow_runs.pull_request_ids` and `pull_request_numbers` items as integers |
 | 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |

@@ -230,10 +230,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
-        with:
-          version: 2.3.3
+      - name: Install Poetry
+        run: uv tool install poetry==2.3.3
 
       # --- Step 2: Bump dependencies (CDK + external) ---
       - name: Bump dependencies
