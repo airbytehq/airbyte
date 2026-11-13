@@ -60,8 +60,20 @@ _RETRYABLE_400_STATUS_CODES = {
 }
 _NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
 _BULK_COMPOUND_DATA_ERROR_MESSAGE = "Selecting compound data not supported in Bulk Query"
+_UNKNOWN_STREAM_NAME = "<unknown stream>"
 
 logger = logging.getLogger("airbyte")
+
+
+def salesforce_object_not_found_message(stream_name: str = _UNKNOWN_STREAM_NAME) -> str:
+    if stream_name == _UNKNOWN_STREAM_NAME:
+        return (
+            "Salesforce object not found in this Salesforce instance. Remove the unavailable stream from the catalog or refresh the schema."
+        )
+    return (
+        f'Salesforce object "{stream_name}" not found in this Salesforce instance. '
+        "Remove the stream from the catalog or refresh the schema."
+    )
 
 
 class BulkNotSupportedException(Exception):
@@ -149,6 +161,13 @@ class SalesforceErrorHandler(ErrorHandler):
 
             if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
                 return self._handle_invalid_field(error_message)
+
+            if response.status_code == codes.not_found and error_code == "NOT_FOUND":
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    salesforce_object_not_found_message(self._stream_name),
+                )
 
             if self._is_bulk_job_creation(response) and response.status_code in [
                 codes.FORBIDDEN,
