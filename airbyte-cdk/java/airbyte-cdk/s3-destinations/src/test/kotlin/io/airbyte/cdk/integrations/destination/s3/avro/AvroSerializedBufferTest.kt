@@ -165,7 +165,7 @@ class AvroSerializedBufferTest() {
             minExpectedByte: Long,
             maxExpectedByte: Long,
             config: UploadAvroFormatConfig,
-            expectedData: String
+            expectedData: String,
         ) {
             val outputFile: File = buffer.file
             (AvroSerializedBuffer.createFunction(config, { buffer })

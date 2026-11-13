@@ -196,6 +196,18 @@ definitions:
         type: RequestOption
         field_name: apiKey
         inject_into: request_parameter
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          predicate: "{{ response.get('status') == 'FAILURE' and 'Key' in response.get('reason', '') }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Apptivo rejected the credentials: {{ response.get('reason') }}. Check the API Key and Access Key under Business Settings -> API Access."
+        - type: HttpResponseFilter
+          predicate: "{{ response.get('status') == 'FAILURE' }}"
+          action: FAIL
+          error_message: "Apptivo API returned a failure: {{ response.get('reason', response) }}"
 
 streams:
   - $ref: "#/definitions/streams/customers"

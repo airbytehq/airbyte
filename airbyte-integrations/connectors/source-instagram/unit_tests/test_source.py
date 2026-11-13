@@ -10,6 +10,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
+    Status,
     SyncMode,
 )
 
@@ -32,7 +33,7 @@ def mock_api(requests_mock, some_config):
 
     requests_mock.register_uri(
         "GET",
-        f"{GRAPH_URL}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
+        f"{GRAPH_URL}/me/accounts?access_token={some_config['access_token']}&summary=true",
         [fb_account_response],
     )
 
@@ -42,9 +43,9 @@ def test_check_connection_ok(requests_mock):
     mock_api(requests_mock, some_config)
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
 
-    ok, error_msg = get_source(config=some_config, state=None).check_connection(logger, config=some_config)
-    assert ok
-    assert not error_msg
+    result = get_source(config=some_config, state=None).check(logger, config=some_config)
+    assert result.status == Status.SUCCEEDED
+    assert not result.message
 
 
 def test_check_connection_no_date_config(requests_mock):
@@ -53,10 +54,10 @@ def test_check_connection_no_date_config(requests_mock):
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
     some_config.pop("start_date")
 
-    ok, error_msg = get_source(config=some_config, state=None).check_connection(logger, config=some_config)
+    result = get_source(config=some_config, state=None).check(logger, config=some_config)
 
-    assert ok
-    assert not error_msg
+    assert result.status == Status.SUCCEEDED
+    assert not result.message
 
 
 def test_streams(config):

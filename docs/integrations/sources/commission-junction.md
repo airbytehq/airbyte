@@ -1,27 +1,20 @@
 # Commission Junction (CJ Affiliate)
 
-CJ Affiliate (formerly Commission Junction) is an affiliate marketing network. This source syncs advertiser-side commission (transaction) data from the CJ [Commission Detail GraphQL API](https://developers.cj.com/graphql/reference/Commission%20Detail).
+CJ Affiliate is an affiliate marketing network. This connector syncs advertiser-side commissions using the [Commission Detail GraphQL API](https://developers.cj.com/graphql/reference/Commission%20Detail). It queries `advertiserCommissions`, not `publisherCommissions`.
 
-The connector queries the `advertiserCommissions` GraphQL query, so it works only for CJ **advertiser** accounts. Publisher accounts have their own `publisherCommissions` query, which this connector doesn't support.
+## Set up the source
 
-## Prerequisites
+Create a personal access token on the [CJ Developer Portal](https://developers.cj.com/account/personal-access-tokens). The API uses this token to authorize access to your advertiser company ID (CID).
 
-- A CJ advertiser account.
-- A personal access token created on the [CJ Developer Portal](https://developers.cj.com/account/personal-access-tokens). Tokens are tied to the user who creates them, and the API returns data only for the companies that user has access to. Deprecated developer keys don't work with this connector.
-- Your advertiser company ID (CID). This is the same value the CJ API reference calls `forAdvertisers`, and the token you use must have access to it.
-
-## Set up the Commission Junction source
-
-1. Sign in to the [CJ Developer Portal](https://developers.cj.com/) with your CJ account and open **Personal Access Tokens**. Create a token and copy it.
-2. In Airbyte, add a new **Commission Junction (CJ Affiliate)** source and fill in the following fields.
+In Airbyte, add a **Commission Junction (CJ Affiliate)** source and configure these required fields:
 
 | Field | Description |
 | --- | --- |
-| **Personal Access Token** | The token from step 1. Airbyte sends it as `Authorization: Bearer <token>`. |
-| **CID** | Your advertiser company ID. The connector passes this as the `forAdvertisers` argument. |
-| **start_date** | The earliest posting date to sync, in `YYYY-MM-DDTHH:MM:SSZ` format, for example `2025-02-01T00:00:00Z`. |
+| **Personal Access Token** | Your CJ personal access token, sent as a Bearer token. |
+| **CID** | Your advertiser company ID, passed as `forAdvertisers` in the query. |
+| **start_date** | Earliest posting date to request, in `YYYY-MM-DDTHH:MM:SSZ` format. Default: `2025-02-01T00:00:00Z`. |
 
-If a sync succeeds but returns no records, check that your token has access to the CID you entered. CJ answers a query whose arguments match nothing with `"count": 0` rather than an error, so a mismatched token and CID looks like an empty account.
+If a successful sync returns no records, verify that the token has access to the configured CID and check the date range. CJ documents that unmatched query arguments, including a token/CID mismatch, can return `"count": 0` rather than an error.
 
 ## Supported streams
 
@@ -29,30 +22,13 @@ If a sync succeeds but returns no records, check that your token has access to t
 | --- | --- | --- |
 | `AdvertiserCommissions` | `commissionId` | Full refresh, Incremental |
 
-`AdvertiserCommissions` returns one record per commission: action and order identifiers, publisher and website attribution, click and event dates, device and browser details, and commission, sale, discount, and CJ fee amounts in USD, advertiser currency, and publisher currency.
+The stream uses `postingDate` as its incremental cursor, requests 30-day windows, and has a configured 60-day lookback. Pagination passes `maxCommissionId` as the next `sinceCommissionId` until `payloadComplete` is `true`.
 
-Some behaviors worth knowing before you model this data downstream:
+The query includes commission and sale amounts, order identifiers, and the `original` field, but not item-level `items` data. Monetary fields are nullable strings in the connector schema. For interpreting original and corrected transactions, see **Corrections** in the [CJ reference](https://developers.cj.com/graphql/reference/Commission%20Detail).
 
-- **All monetary values are strings.** CJ returns amounts such as `saleAmountUsd` as strings, and the connector's schema keeps them that way. Cast them in your warehouse.
-- **Corrections arrive as separate delta records.** When CJ corrects or cancels a transaction, it emits a second record with the same `orderId` but a different `commissionId` and `original: false`. The correction holds the delta, not the final value, so you must sum the original and its corrections per `orderId` to get final amounts. See [Corrections](https://developers.cj.com/graphql/reference/Commission%20Detail) in the CJ reference for a worked example.
-- **Item-level detail isn't synced.** The `items` field, which carries per-item quantities and amounts for advanced sale transactions, isn't part of the query the connector sends.
+## API limits
 
-### Incremental syncs
-
-The stream is incremental on `postingDate`. The connector requests one 30-day window at a time, which keeps it under the 31-day limit CJ places on date range arguments, and paginates within each window using the `sinceCommissionId` cursor until `payloadComplete` is `true`.
-
-Each incremental sync re-reads the previous 60 days of posting dates. CJ backdates corrections and status changes onto earlier transactions, so this lookback picks up records that changed after they were first synced. Expect the connector to re-emit those records on every sync; deduplicate on `commissionId` downstream if you don't use an incremental deduped destination.
-
-## Performance considerations
-
-CJ enforces the following limits on the Commission Detail API, shared across everything using your token:
-
-- 200 calls per 5 minutes.
-- 120 concurrent connections.
-- 10,000 commissions per response. The connector's pagination handles this.
-- Date ranges of at most 31 days per query.
-
-The connector sends up to 4 concurrent requests and retries failed requests 5 times with exponential backoff. A long backfill from an early start date issues one request per 30-day window per page, so setting `start_date` no earlier than you need keeps the first sync from bumping into the call limit.
+CJ documents limits of 200 calls per 5 minutes, 120 concurrent connections, 10,000 commissions per response, and date ranges of at most 31 days per query. The connector's 30-day windows and cursor pagination accommodate the date-range and response-size limits. Its manifest configures concurrency to 4 and a maximum of 5 retries with exponential backoff.
 
 ## Changelog
 
@@ -61,6 +37,20 @@ The connector sends up to 4 concurrent requests and retries failed requests 5 ti
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2026-11-10 | [91477](https://github.com/airbytehq/airbyte/pull/91477) | Update dependencies |
+| 0.0.14 | 2026-11-03 | [90515](https://github.com/airbytehq/airbyte/pull/90515) | Update dependencies |
+| 0.0.13 | 2026-10-27 | [89858](https://github.com/airbytehq/airbyte/pull/89858) | Update dependencies |
+| 0.0.12 | 2026-10-20 | [89146](https://github.com/airbytehq/airbyte/pull/89146) | Update dependencies |
+| 0.0.11 | 2026-10-13 | [88584](https://github.com/airbytehq/airbyte/pull/88584) | Update dependencies |
+| 0.0.10 | 2026-10-06 | [87799](https://github.com/airbytehq/airbyte/pull/87799) | Update dependencies |
+| 0.0.9 | 2026-09-29 | [87102](https://github.com/airbytehq/airbyte/pull/87102) | Update dependencies |
+| 0.0.8 | 2026-09-22 | [86585](https://github.com/airbytehq/airbyte/pull/86585) | Update dependencies |
+| 0.0.7 | 2026-09-15 | [85992](https://github.com/airbytehq/airbyte/pull/85992) | Update dependencies |
+| 0.0.6 | 2026-09-08 | [85453](https://github.com/airbytehq/airbyte/pull/85453) | Update dependencies |
+| 0.0.5 | 2026-08-18 | [84537](https://github.com/airbytehq/airbyte/pull/84537) | Update dependencies |
+| 0.0.4 | 2026-08-11 | [83873](https://github.com/airbytehq/airbyte/pull/83873) | Update dependencies |
+| 0.0.3 | 2026-08-04 | [83420](https://github.com/airbytehq/airbyte/pull/83420) | Update dependencies |
+| 0.0.2 | 2026-07-28 | [82883](https://github.com/airbytehq/airbyte/pull/82883) | Update dependencies |
 | 0.0.1 | 2026-07-27 | [81336](https://github.com/airbytehq/airbyte/pull/81336) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>

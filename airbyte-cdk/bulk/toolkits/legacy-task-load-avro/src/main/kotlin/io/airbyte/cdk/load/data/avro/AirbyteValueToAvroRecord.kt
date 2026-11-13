@@ -59,7 +59,7 @@ class AirbyteValueToAvroRecord {
                             val value = (airbyteValue as ObjectValue).values[name]
                             record.put(
                                 nameMangled,
-                                convert(value ?: NullValue, airbyteField.type, avroField.schema())
+                                convert(value ?: NullValue, airbyteField.type, avroField.schema()),
                             )
                         }
                     }
@@ -103,14 +103,14 @@ class AirbyteValueToAvroRecord {
                         }
                     }
                     throw IllegalArgumentException(
-                        "No matching Avro type found for $airbyteSchema in $schema (airbyte value: ${airbyteValue.javaClass.simpleName})"
+                        "No matching Avro type found for $airbyteSchema in $schema (airbyte value: ${airbyteValue.javaClass.simpleName})",
                     )
                 }
             }
         } catch (e: Exception) {
             throw RuntimeException(
                 "Failed to convert $airbyteSchema(${airbyteValue.javaClass.simpleName}) to $schema",
-                e
+                e,
             )
         }
     }
@@ -136,7 +136,7 @@ class AirbyteValueToAvroRecord {
             is UnionType -> throw IllegalArgumentException("Nested unions are not supported")
         }
             ?: throw IllegalArgumentException(
-                "No matching Avro type found for $airbyteSchema in $avroUnionSchema"
+                "No matching Avro type found for $airbyteSchema in $avroUnionSchema",
             )
     }
 }

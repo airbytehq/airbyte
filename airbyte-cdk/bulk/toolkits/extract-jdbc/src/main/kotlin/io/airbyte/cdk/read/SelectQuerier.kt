@@ -34,7 +34,7 @@ interface SelectQuerier {
     ) {
         constructor(
             reuseResultObject: Boolean = false,
-            fetchSize: Int? = null
+            fetchSize: Int? = null,
         ) : this(reuseResultObject, fetchSize, fetchSize)
     }
 
@@ -167,7 +167,7 @@ class JdbcSelectQuerier(
                         resultRow.data[column.id] =
                             FieldValueEncoder(
                                 null,
-                                NullCodec // Use NullCodec for null values
+                                NullCodec, // Use NullCodec for null values
                             ) // Use NullCodec for null values
                     }
                 }
@@ -218,7 +218,7 @@ private val throwMultipleResultsIllegalState = {
  * @param jdbcConnectionFactory Factory for creating JDBC connections
  * @param query SQL query string to execute (should return exactly one row)
  * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before
- * execution
+ *   execution
  * @param withResultSet Lambda function to process the ResultSet and extract the desired value
  * @param noResultsCase Lambda to execute if the query returns no results
  * @param multipleResultsCase Lambda to execute if the query returns multiple results

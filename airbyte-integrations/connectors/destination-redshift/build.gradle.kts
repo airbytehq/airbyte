@@ -24,7 +24,7 @@ application {
 
 val hikariCpVersion = "7.0.2"
 val redshiftJdbcVersion = "2.2.7"
-val awsSdkV2Version = "2.31.1"
+val awsSdkV2Version = "2.57.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 
@@ -45,7 +45,7 @@ dependencies {
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
     
     // Test dependencies
-    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     
     // JUnit version alignment (required for Gradle 8.14+)

@@ -15,12 +15,12 @@ class CustomerIoCheckTest :
             listOf(
                 CheckTestConfig(
                     configContents = Files.readString(Path.of("secrets/config.json")),
-                )
+                ),
             ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(
-                    configContents = Files.readString(Path.of("secrets/invalid-config.json"))
+                    configContents = Files.readString(Path.of("secrets/invalid-config.json")),
                 ) to Pattern.compile("Expected status code to be 200 but was.*"),
             ),
     )

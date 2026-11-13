@@ -5,8 +5,6 @@
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from pendulum import parse, today
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState

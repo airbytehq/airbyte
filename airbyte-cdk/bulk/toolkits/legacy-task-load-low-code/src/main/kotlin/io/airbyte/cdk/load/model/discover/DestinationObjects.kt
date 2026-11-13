@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.model.retriever.Retriever
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = StaticDestinationObjects::class, name = "StaticDestinationObjects"),
-    JsonSubTypes.Type(value = DynamicDestinationObjects::class, name = "DynamicDestinationObjects")
+    JsonSubTypes.Type(value = DynamicDestinationObjects::class, name = "DynamicDestinationObjects"),
 )
 sealed interface DestinationObjects
 
