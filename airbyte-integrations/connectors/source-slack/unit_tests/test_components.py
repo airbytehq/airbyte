@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+from copy import deepcopy
 from unittest.mock import MagicMock
 
 import pytest
@@ -160,6 +161,47 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
+
+
+@pytest.mark.parametrize(
+    "parent_state",
+    [
+        {},
+        {"float_ts": 1753263870.0},
+        {"states": [{"partition": {"channel": "C001"}, "cursor": {"float_ts": 1753263870.0}}]},
+    ],
+)
+def test_threads_state_migration_preserves_existing_parent_state(token_config, components_module, parent_state):
+    state = {"state": {"float_ts": 1753350270.0}, "parent_state": {"channel_messages": parent_state}}
+    original_state = deepcopy(state)
+    migration = components_module.ThreadsStateMigration(token_config)
+
+    assert not migration.should_migrate(state)
+    assert migration.migrate(state) == original_state
+    assert state == original_state
+
+
+@pytest.mark.parametrize(
+    "legacy_state, expected_cursor",
+    [
+        ({"state": {"float_ts": "1753263870.0"}}, 1753177470.0),
+        ({"state": {"float_ts": "1500000000.0"}}, 1626897600.0),
+        (
+            {
+                "state": {"float_ts": "1753263870.0"},
+                "float_ts": 1753350270.0,
+                "states": [{"partition": {}, "cursor": {"float_ts": "1753436670.0"}}],
+            },
+            1753350270.0,
+        ),
+    ],
+)
+def test_threads_state_migration_includes_global_cursor(token_config, components_module, legacy_state, expected_cursor):
+    migration = components_module.ThreadsStateMigration(token_config)
+
+    assert migration.should_migrate(legacy_state)
+    migrated_state = migration.migrate(legacy_state)
+    assert migrated_state["parent_state"]["channel_messages"] == {"float_ts": expected_cursor}
 
 
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
