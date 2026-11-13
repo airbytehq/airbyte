@@ -57,6 +57,10 @@ Implemented but not added streams:
 
 GET https://www.mydatascope.com/api/external/locations
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -64,6 +68,8 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.27 | 2026-11-10 | [91336](https://github.com/airbytehq/airbyte/pull/91336) | Upgrade to source-declarative-manifest 7.47.0 |
+| 0.2.26 | 2026-11-10 | [78668](https://github.com/airbytehq/airbyte/pull/78668) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [60034](https://github.com/airbytehq/airbyte/pull/60034) | Update dependencies |
 | 0.2.24 | 2025-05-03 | [59434](https://github.com/airbytehq/airbyte/pull/59434) | Update dependencies |
 | 0.2.23 | 2025-04-26 | [58895](https://github.com/airbytehq/airbyte/pull/58895) | Update dependencies |

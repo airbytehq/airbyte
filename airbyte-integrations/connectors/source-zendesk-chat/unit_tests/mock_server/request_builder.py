@@ -27,10 +27,6 @@ class ZendeskChatRequestBuilder:
         return cls("bans", subdomain, access_token)
 
     @classmethod
-    def chats_endpoint(cls, subdomain: str, access_token: str) -> "ZendeskChatRequestBuilder":
-        return cls("incremental/chats", subdomain, access_token)
-
-    @classmethod
     def departments_endpoint(cls, subdomain: str, access_token: str) -> "ZendeskChatRequestBuilder":
         return cls("departments", subdomain, access_token)
 

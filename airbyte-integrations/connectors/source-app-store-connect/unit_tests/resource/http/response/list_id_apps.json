@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "type": "apps",
+      "id": "app-1",
+      "attributes": {
+        "name": "Example App",
+        "bundleId": "com.example.app-1",
+        "sku": "APP-1",
+        "primaryLocale": "en-US",
+        "isOrEverWasMadeForKids": false,
+        "streamlinedPurchasingEnabled": true
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps"
+  }
+}

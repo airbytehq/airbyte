@@ -29,14 +29,12 @@ definitions:
             lang: "{{ config.get('lang')}}"
             units: "{{ config.get('units')}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: RETRY
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: RETRY
         record_selector:
           type: RecordSelector
           extractor:

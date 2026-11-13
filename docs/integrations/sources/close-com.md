@@ -102,6 +102,10 @@ The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](htt
 The Close.com connector is subject to rate limits. For more information on this topic,
 [click here](https://developer.close.com/topics/rate-limits/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -109,6 +113,7 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ |:-----------| :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.6.16 | 2026-11-09 | [91327](https://github.com/airbytehq/airbyte/pull/91327) | Upgrade to source-declarative-manifest 7.47.0 (Airbyte CDK 7) |
 | 0.6.15 | 2025-05-10 | [59969](https://github.com/airbytehq/airbyte/pull/59969) | Update dependencies |
 | 0.6.14 | 2025-05-03 | [59433](https://github.com/airbytehq/airbyte/pull/59433) | Update dependencies |
 | 0.6.13 | 2025-04-26 | [58896](https://github.com/airbytehq/airbyte/pull/58896) | Update dependencies |

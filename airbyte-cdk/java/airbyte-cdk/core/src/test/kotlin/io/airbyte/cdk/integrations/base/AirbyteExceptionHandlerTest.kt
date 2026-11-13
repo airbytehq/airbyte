@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
@@ -24,6 +25,10 @@ class AirbyteExceptionHandlerTest {
     private lateinit var airbyteExceptionHandler: AirbyteExceptionHandler
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     fun setup() {
         System.setOut(PrintStream(outContent, true, StandardCharsets.UTF_8))
 
@@ -47,15 +52,15 @@ class AirbyteExceptionHandlerTest {
             Executable {
                 Assertions.assertEquals(
                     AirbyteExceptionHandler.logMessage,
-                    traceMessage.trace.error.message
+                    traceMessage.trace.error.message,
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
-                    traceMessage.trace.error.failureType
+                    traceMessage.trace.error.failureType,
                 )
-            }
+            },
         )
     }
 
@@ -79,27 +84,27 @@ class AirbyteExceptionHandlerTest {
             Executable {
                 Assertions.assertEquals(
                     "Error happened in arst_FOO_bar_zxcv (name: description)",
-                    traceMessage.trace.error.message
+                    traceMessage.trace.error.message,
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     "Error happened in arst_?_?_zxcv (?: ?)",
-                    traceMessage.trace.error.internalMessage
+                    traceMessage.trace.error.internalMessage,
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
-                    traceMessage.trace.error.failureType
+                    traceMessage.trace.error.failureType,
                 )
             },
             Executable {
                 Assertions.assertNull(
                     traceMessage.trace.error.stackTrace,
-                    "Stacktrace should be null if deinterpolating the error message"
+                    "Stacktrace should be null if deinterpolating the error message",
                 )
-            }
+            },
         )
     }
 
@@ -122,15 +127,15 @@ class AirbyteExceptionHandlerTest {
             Executable {
                 Assertions.assertEquals(
                     AirbyteExceptionHandler.logMessage,
-                    traceMessage.trace.error.message
+                    traceMessage.trace.error.message,
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     "java.lang.RuntimeException: Error happened in foobar",
-                    traceMessage.trace.error.internalMessage
+                    traceMessage.trace.error.internalMessage,
                 )
-            }
+            },
         )
     }
 
@@ -165,15 +170,15 @@ class AirbyteExceptionHandlerTest {
             Executable {
                 Assertions.assertEquals(
                     AirbyteExceptionHandler.logMessage,
-                    traceMessage.trace.error.message
+                    traceMessage.trace.error.message,
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     "java.io.IOException: Error happened in foo",
-                    traceMessage.trace.error.internalMessage
+                    traceMessage.trace.error.internalMessage,
                 )
-            }
+            },
         )
     }
 
@@ -234,7 +239,7 @@ class AirbyteExceptionHandlerTest {
                         .toString(StandardCharsets.UTF_8)
                         .split("\n".toRegex())
                         .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()
+                        .toTypedArray(),
                 )
                 .map { line: String ->
                     // these tests sometimes emit non-json stdout (e.g. log4j warnings)
@@ -242,7 +247,7 @@ class AirbyteExceptionHandlerTest {
                     try {
                         return@map Jsons.deserialize<AirbyteMessage>(
                             line,
-                            AirbyteMessage::class.java
+                            AirbyteMessage::class.java,
                         )
                     } catch (e: Exception) {
                         return@map null
@@ -254,7 +259,7 @@ class AirbyteExceptionHandlerTest {
                 .findFirst()
         Assertions.assertTrue(
             maybeTraceMessage.isPresent,
-            "Expected to find a trace message in stdout"
+            "Expected to find a trace message in stdout",
         )
         return maybeTraceMessage.get()
     }

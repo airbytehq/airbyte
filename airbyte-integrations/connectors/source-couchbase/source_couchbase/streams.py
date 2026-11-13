@@ -4,12 +4,18 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping
 
 from couchbase.cluster import Cluster
+from couchbase.exceptions import QueryIndexNotFoundException
+from couchbase.options import QueryOptions
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import CheckpointMixin
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .queries import get_documents_query
+
+
+PAGE_SIZE = 1000
 
 
 class CouchbaseStream(Stream):
@@ -74,8 +80,29 @@ class DocumentStream(CouchbaseStream, CheckpointMixin):
             self.bucket, self.scope, self.collection, self.cursor_field, cursor_value if sync_mode == SyncMode.incremental else None
         )
 
-        for row in self.cluster.query(query):
-            record = AirbyteRecordMessage(stream=self.name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
-            yield AirbyteMessage(type=Type.RECORD, record=record)
-            if sync_mode == SyncMode.incremental:
-                self.state = self.get_updated_state(self.state, record)
+        last_id = ""
+        while True:
+            rows_in_page = 0
+            for row in self._query_page(query, last_id):
+                rows_in_page += 1
+                last_id = row["_id"]
+                record = AirbyteRecordMessage(stream=self.name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
+                yield AirbyteMessage(type=Type.RECORD, record=record)
+                if sync_mode == SyncMode.incremental:
+                    self.state = self.get_updated_state(self.state, record)
+            if rows_in_page < PAGE_SIZE:
+                break
+
+    def _query_page(self, query: str, last_id: str) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from self.cluster.query(query, QueryOptions(named_parameters={"last_id": last_id, "page_size": PAGE_SIZE}))
+        except QueryIndexNotFoundException as e:
+            raise AirbyteTracedException(
+                message=(
+                    f"No primary index is available on `{self.bucket}`.`{self.scope}`.`{self.collection}`. Create one with "
+                    f"`CREATE PRIMARY INDEX ON `{self.bucket}`.`{self.scope}`.`{self.collection}`` (or grant the Airbyte user the "
+                    "'Query Manage Index' role so the connector can create it) and wait for the index to come online."
+                ),
+                internal_message=str(e),
+                failure_type=FailureType.config_error,
+            ) from e

@@ -131,9 +131,15 @@ html[data-theme="dark"] .connectorMetadata .availability .unavailable {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
 }
 
 .metricIcon svg {
   height: 12px;
   width: auto;
+}
+
+.metricLabel {
+  font-size: 12px;
+  text-transform: capitalize;
 }

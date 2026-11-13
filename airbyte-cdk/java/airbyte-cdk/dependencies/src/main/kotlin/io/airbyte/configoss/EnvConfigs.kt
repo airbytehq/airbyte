@@ -33,7 +33,7 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
         key: String,
         defaultValue: T,
         parser: Function<String, T>,
-        isSecret: Boolean
+        isSecret: Boolean,
     ): T {
         val value = getEnv.apply(key)
         if (!value.isNullOrEmpty()) {
