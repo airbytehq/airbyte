@@ -28,11 +28,11 @@ airbyteBulkConnector {
 
 dependencies {
     // Google's official, Apache-2.0 licensed BigQuery JDBC driver (java.sql.Driver via ServiceLoader).
-    implementation 'com.google.cloud:google-cloud-bigquery-jdbc:1.4.0'
+    implementation 'com.google.cloud:google-cloud-bigquery-jdbc:1.7.0'
     // Native client, used for schema discovery (nested STRUCT/ARRAY fields and primary keys).
     // Same version as the one the JDBC driver above pulls in transitively.
-    implementation 'com.google.cloud:google-cloud-bigquery:2.71.0'
-    // Storage Read API client (google-cloud-bigquerystorage 3.33.0) and Apache Arrow 17.0.0 come
+    implementation 'com.google.cloud:google-cloud-bigquery:2.74.0'
+    // Storage Read API client (google-cloud-bigquerystorage 3.36.0) and Apache Arrow 17.0.0 come
     // with the JDBC driver; the read path additionally needs Arrow's buffer decompression (LZ4
     // through commons-compress, ZSTD through zstd-jni). Same Arrow version as the driver's.
     implementation 'org.apache.arrow:arrow-compression:17.0.0'
@@ -42,7 +42,7 @@ dependencies {
     testImplementation 'org.testcontainers:gcloud:1.21.4'
 
     constraints {
-        // The BigQuery JDBC driver (even 1.6.0) pins httpcore5 5.2.5 / httpcore5-h2 5.2.4, which
+        // The BigQuery JDBC driver (even 1.7.0) pins httpcore5 5.2.5 / httpcore5-h2 5.2.4, which
         // carry CVE-2026-54399 and CVE-2026-54428 (CVSS 7.5, fixed in 5.4.3).
         implementation('org.apache.httpcomponents.core5:httpcore5:5.4.4') {
             because 'CVE-2026-54399: google-cloud-bigquery-jdbc pulls 5.2.5'
