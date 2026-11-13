@@ -83,6 +83,48 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Replace per-account cursors with the authoritative global cursor, or the oldest account cursor.
+
+    Initial:
+      {
+        "state": {"date_sent": "2026-11-10T00:00:00Z"},
+        "states": [{"partition": {"subresource_uri": "/Accounts/AC123/Messages.json"},
+                    "cursor": {"date_sent": "2022-01-01T00:00:00Z"}}]
+      }
+
+    Final:
+      {"use_global_cursor": true, "state": {"date_sent": "2026-11-10T00:00:00Z"}}
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state.get("states"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor = stream_state.get("state", {}).get("date_sent")
+        if cursor is None:
+            cursor = min(
+                (state["cursor"]["date_sent"] for state in stream_state["states"]),
+                key=self._parse_cursor,
+            )
+        migrated_state = {"use_global_cursor": True, "state": {"date_sent": cursor}}
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                migrated_state[key] = stream_state[key]
+        return migrated_state
+
+    @staticmethod
+    def _parse_cursor(value: str) -> datetime:
+        for date_format in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d %H:%M:%SZ"):
+            try:
+                parsed = datetime.strptime(value, date_format)
+                return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed
+            except ValueError:
+                continue
+        raise ValueError(f"Unsupported messages date_sent cursor: {value!r}")
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
