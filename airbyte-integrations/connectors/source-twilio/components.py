@@ -139,8 +139,10 @@ class TwilioMessagesGlobalStateMigration(StateMigration):
         return new_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return bool(stream_state) and ("states" in stream_state or "use_global_cursor" in stream_state) and not stream_state.get(
-            "use_global_cursor"
+        return (
+            bool(stream_state)
+            and ("states" in stream_state or "use_global_cursor" in stream_state)
+            and not stream_state.get("use_global_cursor")
         )
 
 

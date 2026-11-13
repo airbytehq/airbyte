@@ -668,7 +668,14 @@ class TestMessagesIncrementalState:
                 id="stale_partition_cursor_with_newer_global_cursor",
             ),
             pytest.param(
-                {"states": [{"partition": {"subresource_uri": MESSAGES_PARTITION["subresource_uri"]}, "cursor": {"date_sent": "2022-11-13T12:11:10Z"}}]},
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": MESSAGES_PARTITION["subresource_uri"]},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                        }
+                    ]
+                },
                 [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
                 id="legacy_per_partition_state_without_global_cursor",
             ),
