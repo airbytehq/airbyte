@@ -535,6 +535,79 @@ class TestIncrementalTwilioStream:
         assert _alert_state_date(output) == "2022-11-15T00:00:00Z"
 
 
+    @freeze_time("2026-05-22 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,cursor_field,resource,lower_key,upper_key",
+        [
+            ("messages", "date_sent", "Messages", "DateSent>", "DateSent<"),
+            ("recordings", "date_created", "Recordings", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_stale_partition_state_resumes_from_global_cursor(self, stream_name, cursor_field, resource, lower_key, upper_key, requests_mock):
+        """A partition whose stored cursor lags the global cursor must resume from the global cursor.
+
+        Before the fix, the stale per-partition cursor (older than the 400-day start bound) won over the recent global
+        cursor, so every sync re-requested the full 400-day window month by month and the partition cursor never advanced.
+        """
+        accounts = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"}} for sid in ("AC1", "AC2")
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts)
+        requests_by_account = {"AC1": [], "AC2": []}
+        responses = {
+            "AC1": [{"sid": "XX1", "account_sid": "AC1", cursor_field: "2026-05-22T08:00:00Z"}],
+            "AC2": [],
+        }
+        for sid in ("AC1", "AC2"):
+
+            def _callback(request, context, sid=sid):
+                query = parse_qs(urlparse(request.url).query)
+                requests_by_account[sid].append((query[lower_key][0], query[upper_key][0]))
+                return {stream_name: responses[sid]}
+
+            requests_mock.get(f"{BASE}/Accounts/{sid}/{resource}.json", json=_callback)
+
+        global_cursor = "2026-05-21 10:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "state": {cursor_field: global_cursor},
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": f"/2010-04-01/Accounts/AC1/{resource}.json", "parent_slice": {}},
+                            "cursor": {cursor_field: "2024-01-01T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": f"/2010-04-01/Accounts/AC2/{resource}.json", "parent_slice": {}},
+                            "cursor": {cursor_field: global_cursor},
+                        },
+                    ],
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+        assert [record.record.data["sid"] for record in output.records] == ["XX1"]
+        assert requests_by_account == {
+            "AC1": [(global_cursor, "2026-05-22 12:00:00Z")],
+            "AC2": [(global_cursor, "2026-05-22 12:00:00Z")],
+        }
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["state"] == {cursor_field: "2026-05-22 08:00:00Z"}
+        assert {entry["partition"]["subresource_uri"]: entry["cursor"] for entry in final_state["states"]} == {
+            f"/2010-04-01/Accounts/AC1/{resource}.json": {cursor_field: "2026-05-22 08:00:00Z"},
+            f"/2010-04-01/Accounts/AC2/{resource}.json": {cursor_field: global_cursor},
+        }
+
+
 class TestConferenceParticipantsStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_conference_participants_only_requests_active_conferences(self, requests_mock):
