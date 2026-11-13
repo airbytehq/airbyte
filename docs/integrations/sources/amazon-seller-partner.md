@@ -73,7 +73,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
 7. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
-8. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
+8. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the four vendor retail analytics streams (Vendor Sales, Vendor Inventory, Vendor Traffic, and Net Pure Product Margin) described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -107,7 +107,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 3. Enter a name for the Amazon Seller Partner connector.
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 5. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
-6. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
+6. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the four vendor retail analytics streams (Vendor Sales, Vendor Inventory, Vendor Traffic, and Net Pure Product Margin) described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -246,12 +246,12 @@ The Flat File V2 Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_F
 
 - **Role required.** Amazon requires the **Finance and Accounting** role for this report, and it's available to Seller Central sellers only. If you add the role to your app, re-authenticate the source.
 - **History is limited to about 90 days.** Amazon [retains reports for a maximum of 90 days](https://developer-docs.amazon.com/sp-api/reference/getreports), so the connector lists reports created since your **Start Date** or 89 days ago, whichever is later. Older settlement reports can't be synced through the API.
-- **Each report is synced once.** The connector downloads each listed report once. **Period In Days** and **Report Stream Lookback Window (Hours)** don't apply to this stream.
+- **Each report is downloaded once per successful sync.** If a sync fails or is cancelled partway through, the next sync downloads the same reports again. This stream has no primary key, so an append destination gets duplicate rows. **Period In Days** and **Report Stream Lookback Window (Hours)** don't apply to this stream.
 - **Report status.** The connector waits for reports that are still in progress. It skips reports with a `CANCELLED` or `FATAL` status, because they have no file.
 - **One row per charge or fee.** Each charge, fee, or credit is a row described by `amount-type`, `amount-description`, and `amount`. Amazon formats `amount` in the marketplace's local number format, for example `95,00` instead of `95.00` in EU marketplaces, so the connector emits it as a string.
-- **Timestamps.** The connector converts Amazon's timestamps, such as `2026-09-14 22:51:31 UTC`, to ISO 8601 (`2026-09-14T22:51:31+00:00`). `posted-date` contains only the date; the full timestamp is in `posted-date-time`.
+- **Timestamps.** The connector converts date-time fields such as `posted-date-time` from Amazon's format, such as `2026-09-14 22:51:31 UTC`, to ISO 8601 (`2026-09-14T22:51:31+00:00`). It passes `posted-date` through unchanged in Amazon's format. Empty date and date-time fields become `null`.
 
-Version 7.0.0 replaced the Flat File Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`), which Amazon removes on November 11, 2026, with this stream. See the [migration guide](/integrations/sources/amazon-seller-partner-migrations#upgrading-to-700).
+Version 7.0.0 replaced the Flat File Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`), which Amazon removed on November 11, 2026, with this stream. See the [migration guide](/integrations/sources/amazon-seller-partner-migrations#upgrading-to-700).
 
 ### Daily report windows
 
@@ -472,11 +472,11 @@ When the connector creates report requests, the Amazon SP-API may return HTTP 42
 
 ### Report downloads failing with 429 rate limit errors
 
-After Amazon finishes generating a report, the connector calls `getReportDocument` to get the download URL. Amazon limits this operation to about one request per minute per seller and application, shared by every report stream in the sync. See [Reports API rate limits](https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits).
+After Amazon finishes generating a report, the connector calls `getReportDocument` to get the download URL. Amazon limits this operation to about one request per minute per seller and application. Every connection and source that uses the same seller account shares this limit, including separate sources for different marketplaces. See [Reports API rate limits](https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits).
 
-From 7.0.2, the connector retries a 429 response on this call up to 30 times within one hour, using the wait time from Amazon's `x-amzn-RateLimit-Limit` header. Other errors on this call, such as 403, 5xx, and connection errors, are still retried up to 5 times within 10 minutes. Before 7.0.2, 429 responses were also capped at 5 retries within 10 minutes, so syncs with many report streams or partitions could fail with `API rate limit exceeded.` When that happened to the Flat File V2 Settlement Report stream, the next attempt downloaded the same settlement reports again, which could add duplicate rows to an append-only destination table.
+From 7.0.2, the connector retries a 429 response on this call up to 30 times within one hour, waiting about one minute between retries, based on the rate in Amazon's `x-amzn-RateLimit-Limit` header. Other errors on this call, such as 403, 5xx, and connection errors, are still retried up to 5 times within 10 minutes. Before 7.0.2, 429 responses were also capped at 5 retries within 10 minutes, so syncs with many report streams or partitions could fail with `API rate limit exceeded.` In any version, including 7.0.2, a failed, cancelled, or crashed sync can cause the Flat File V2 Settlement Report stream to download the same reports again and add duplicate rows to an append destination. This includes syncs that exhaust retries on 403 or 5xx responses from `getReportDocument`. See [Settlement reports](#settlement-reports).
 
-If downloads still exhaust the retry window, reduce how many report streams sync at the same time, for example by moving some of them to a separate connection that runs at a different time.
+If downloads still exhaust the retry window, avoid running other connections or sources for the same seller account at the same time, and reduce how many report streams this connection syncs at once.
 
 ### ListFinancialEvents stream incompatible with deduplication on BigQuery
 
