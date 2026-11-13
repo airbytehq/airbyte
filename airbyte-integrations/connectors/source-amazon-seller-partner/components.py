@@ -25,10 +25,12 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -280,6 +282,83 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         except (json.JSONDecodeError, AttributeError, TypeError):
             # If we can't parse the response, don't invalidate
             pass
+
+
+@dataclass
+class RateLimitRetryBudgetErrorHandler(DefaultErrorHandler):
+    """
+    Gives 429 (rate limited) responses a larger retry budget than every other retryable error.
+
+    `HttpClient` reads one `max_retries` / `max_time` from the error handler per request and applies it to every
+    retryable error, and a `CompositeErrorHandler` cannot split it either: it takes `max_retries` from its first
+    handler and the largest `max_time` of all of them. So this handler hands `HttpClient` the 429 budget through
+    `max_retries` / `max_time`, and cuts every other retryable error (403, 5xx, connection errors) short itself:
+    once a request has had `other_errors_max_retries` such retries, or `other_errors_max_time` seconds have passed
+    since its first such error, the next one is resolved as FAIL instead of RETRY. 429s and other errors together
+    still cannot exceed `max_retries` / `max_time`.
+
+    The request being retried is tracked per thread: `HttpClient` runs a request's whole retry loop synchronously on
+    one thread, so the thread's current request is the one being retried. It is identified by method and URL rather
+    than by the `PreparedRequest` object, because HTTP mocking libraries hand back a different request object on
+    each attempt. The tracking is cleared by any response that is not retried.
+
+    Waiting for the shared API budget happens inside the retried request, so that wait counts toward both time limits.
+    """
+
+    other_errors_max_retries: int = 5
+    other_errors_max_time: int = 60 * 10
+
+    _RETRY_ACTIONS = (ResponseAction.RETRY, ResponseAction.RATE_LIMITED, ResponseAction.REFRESH_TOKEN_THEN_RETRY)
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._current_request = threading.local()
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        resolution = super().interpret_response(response_or_exception)
+        if resolution.response_action not in self._RETRY_ACTIONS:
+            self._current_request.tracked = None
+            return resolution
+
+        request_key = self._request_key(response_or_exception)
+        tracked = getattr(self._current_request, "tracked", None)
+        if tracked is not None and tracked[0] != request_key:
+            tracked = None
+
+        if self._is_rate_limited(response_or_exception):
+            self._current_request.tracked = tracked
+            return resolution
+
+        now = time.monotonic()
+        retries, first_error_at = (tracked[1] + 1, tracked[2]) if tracked else (1, now)
+        self._current_request.tracked = (request_key, retries, first_error_at)
+        elapsed = now - first_error_at
+        if retries <= self.other_errors_max_retries and elapsed <= self.other_errors_max_time:
+            return resolution
+
+        self._current_request.tracked = None
+        return ErrorResolution(
+            response_action=ResponseAction.FAIL,
+            failure_type=resolution.failure_type or FailureType.system_error,
+            error_message=(
+                f"Exhausted available request attempts after {retries} errors over {elapsed:.0f}s "
+                f"(limit {self.other_errors_max_retries} retries / {self.other_errors_max_time}s for errors other than 429). "
+                f"Last error: {resolution.error_message or 'see logs for details'}"
+            ),
+        )
+
+    @staticmethod
+    def _is_rate_limited(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
+        return (
+            isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.too_many_requests
+        )
+
+    @staticmethod
+    def _request_key(response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[Tuple[str, str]]:
+        request = getattr(response_or_exception, "request", None)
+        if request is None:
+            return None
+        return (str(request.method), str(request.url))
 
 
 @dataclass

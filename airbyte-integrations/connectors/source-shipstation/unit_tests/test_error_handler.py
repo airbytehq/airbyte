@@ -22,6 +22,8 @@ _CONFIG = {"username": "user", "password": "pass", "start_date": "2024-01-01T00:
 _MANIFEST_PATH = Path(__file__).parents[1] / "manifest.yaml"
 _STREAM_NAMES = [
     "carriers",
+    "carrier_packages",
+    "carrier_services",
     "customers",
     "fulfillments",
     "marketplaces",
@@ -29,6 +31,7 @@ _STREAM_NAMES = [
     "products",
     "shipments",
     "stores",
+    "tags",
     "users",
     "warehouses",
     "webhooks",

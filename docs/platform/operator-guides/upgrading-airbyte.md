@@ -122,17 +122,17 @@ abctl version
 
 2. Download the latest release from the [abctl releases page](https://github.com/airbytehq/abctl/releases/latest).
 
-3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+3. Extract the archive. This creates a directory named `abctl-<version>-linux-<arch>`, which contains the executable and other needed files. Replace `<version>` with the downloaded version, including the `v` prefix, and `<arch>` with `amd64` or `arm64`.
 
     ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    tar -xvzf abctl-<version>-linux-<arch>.tar.gz
     ```
 
 4. Replace the existing executable with the new version.
 
     ```bash
-    chmod +x abctl/abctl
-    sudo mv abctl /usr/local/bin
+    chmod +x abctl-<version>-linux-<arch>/abctl
+    sudo mv abctl-<version>-linux-<arch>/abctl /usr/local/bin
     ```
 
 5. Verify the upgrade.
