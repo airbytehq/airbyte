@@ -30,11 +30,13 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
+
+UPDATES_UNFILTERED_START = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 @dataclass
@@ -260,6 +262,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 @dataclass(kw_only=True)
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
+    UPDATES_DATE_FILTER_FORMAT = "%Y-%m-%dT%H:%M"
 
     schema_loader: InlineSchemaLoader
     limit: Union[InterpolatedString, str, int] = None
@@ -431,6 +434,21 @@ class MondayGraphqlRequester(HttpRequester):
 
         return f"boards({arguments}){{{query}}}"
 
+    def _build_updates_query(self, object_name: str, field_schema: dict, stream_slice: Optional[StreamSlice], **object_arguments) -> str:
+        """
+        Root-level `updates` accept `from_date`/`to_date` creation-date filters, which must be sent together and are
+        minute-granular and inclusive. See https://developer.monday.com/api-reference/reference/updates
+        A slice starting at the epoch is a sync without state, which reads every update without a date filter.
+        """
+        start_time = (stream_slice or {}).get("start_time")
+        end_time = (stream_slice or {}).get("end_time")
+        if start_time and end_time:
+            start = ab_datetime_parse(start_time)
+            if start > UPDATES_UNFILTERED_START:
+                object_arguments["from_date"] = f'"{start.strftime(self.UPDATES_DATE_FILTER_FORMAT)}"'
+                object_arguments["to_date"] = f'"{ab_datetime_parse(end_time).strftime(self.UPDATES_DATE_FILTER_FORMAT)}"'
+        return self._build_query(object_name, field_schema, **object_arguments)
+
     def get_request_headers(
         self,
         *,
@@ -471,6 +489,8 @@ class MondayGraphqlRequester(HttpRequester):
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
         elif self.name == "teams":
             query_builder = self._build_teams_query
+        elif self.name == "updates":
+            query_builder = partial(self._build_updates_query, stream_slice=stream_slice)
         elif self.name == "activity_logs":
             page, sub_page = page if page else (None, None)
             query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_slice=stream_slice)

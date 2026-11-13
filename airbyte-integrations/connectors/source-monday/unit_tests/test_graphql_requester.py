@@ -177,3 +177,37 @@ def test_get_request_headers(monday_requester):
     headers = monday_requester.get_request_headers()
 
     assert headers == {"API-Version": "2026-01"}
+
+
+@pytest.mark.parametrize(
+    ("stream_slice", "expected_arguments"),
+    [
+        pytest.param(
+            {"start_time": "2024-01-11T08:30:00Z", "end_time": "2024-01-15T12:00:59Z"},
+            'limit:100,page:2,from_date:"2024-01-11T08:30",to_date:"2024-01-15T12:00"',
+            id="dated_slice_sends_paired_minute_filters",
+        ),
+        pytest.param(
+            {"start_time": "1970-01-01T00:00:00Z", "end_time": "2024-01-15T12:00:00Z"},
+            "limit:100,page:2",
+            id="epoch_slice_sends_no_filter",
+        ),
+        pytest.param({}, "limit:100,page:2", id="empty_slice_sends_no_filter"),
+    ],
+)
+def test_updates_request_body_maps_slice_to_from_and_to_date(components_module, stream_slice, expected_arguments):
+    requester = components_module.MondayGraphqlRequester(
+        name="updates",
+        url_base="https://api.monday.com/v2",
+        path="",
+        http_method=HttpMethod.POST,
+        schema_loader=InlineSchemaLoader(schema={"updates": {"properties": {"id": {"type": ["null", "string"]}}}}, parameters={}),
+        limit=InterpolatedString.create("100", parameters={}),
+        nested_limit=InterpolatedString.create("100", parameters={}),
+        parameters={"name": "updates"},
+        config={},
+    )
+
+    request_body = requester.get_request_body_json(stream_state={}, stream_slice=stream_slice, next_page_token={"next_page_token": 2})
+
+    assert request_body == {"query": f"{{updates({expected_arguments}){{id}}}}"}
