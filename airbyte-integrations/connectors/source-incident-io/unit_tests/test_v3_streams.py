@@ -326,6 +326,17 @@ def test_catalog_types_reads_v3_response():
     assert "semantic_type" not in schema["properties"]
 
 
+def _first_window_per_partition(requests_made):
+    """Map each partition's query params to its earliest `updated_at[date_range]` window. A resumed sync
+    emits one P30D slice per window up to now, so only the first slice starts at the state cursor."""
+    windows = {}
+    for request in requests_made:
+        window = request.qs["updated_at[date_range]"][0].lower()
+        partition = tuple(sorted((key, value[0]) for key, value in request.qs.items() if key == "incident_mode"))
+        windows[partition] = min(windows.get(partition, window), window)
+    return windows
+
+
 @pytest.mark.parametrize(
     ("stream_name", "path", "records_field"),
     [
@@ -357,7 +368,8 @@ def test_incremental_sends_a_date_range_window_and_keeps_full_timestamp(stream_n
     for request in requests_made:
         assert "updated_at[gte]" not in request.qs
         assert "updated_at[lte]" not in request.qs
-        assert request.qs["updated_at[date_range]"][0].lower().startswith(expected_start)
+    first_windows = _first_window_per_partition(requests_made)
+    assert all(window.startswith(expected_start) for window in first_windows.values())
     assert [message.record.data["id"] for message in output.records][:1] == ["r-1"]
     final_state = output.most_recent_state.stream_state.__dict__
     if stream_name in ("actions", "follow-ups"):
@@ -394,7 +406,9 @@ def test_per_partition_state_sets_each_mode_filter(stream_name, path, records_fi
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {"page_size": 250}})
         output = _read_stream(stream_name, SyncMode.incremental, state)
-        by_mode = {request.qs["incident_mode"][0]: request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history}
+        by_mode = {
+            dict(partition)["incident_mode"]: window for partition, window in _first_window_per_partition(mocker.request_history).items()
+        }
 
     # The standard partition resumes 5 minutes before its own cursor; the others from the global one.
     assert by_mode["standard"].startswith("2026-09-18t23:55:00")
