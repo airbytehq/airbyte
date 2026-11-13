@@ -180,6 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.0 | 2026-11-13 | [84446](https://github.com/airbytehq/airbyte/pull/84446) | Add authentication guide to external documentation links |
 | 5.4.0 | 2026-11-04 | [90968](https://github.com/airbytehq/airbyte/pull/90968) | Add website Place an Order metrics (`on_web_order`, `total_on_web_order_value`, `cost_per_on_web_order`, `value_per_on_web_order`, `on_web_order_rate`) to the ad, ad group and campaign daily report streams |
 | 5.3.4 | 2026-10-21 | [89016](https://github.com/airbytehq/airbyte/pull/89016) | Include the TikTok Marketing API error code in the message of sync failures caused by unhandled TikTok API errors |
 | 5.3.3 | 2026-10-20 | [89410](https://github.com/airbytehq/airbyte/pull/89410) | Update dependencies |
@@ -196,7 +197,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 5.1.13 | 2026-09-08 | [85704](https://github.com/airbytehq/airbyte/pull/85704) | Update dependencies |
 | 5.1.12 | 2026-08-18 | [84765](https://github.com/airbytehq/airbyte/pull/84765) | Update dependencies |
 | 5.1.11 | 2026-08-12 | [84290](https://github.com/airbytehq/airbyte/pull/84290) | Widen retry budget and retry transient TikTok API errors 51041 and 51004 |
-| 5.1.11 | 2026-11-13 | [84446](https://github.com/airbytehq/airbyte/pull/84446) | Add authentication guide to external documentation links |
 | 5.1.10 | 2026-08-11 | [84199](https://github.com/airbytehq/airbyte/pull/84199) | Retry transient TikTok API error 50000 |
 | 5.1.9 | 2026-08-11 | [84132](https://github.com/airbytehq/airbyte/pull/84132) | Update dependencies |
 | 5.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
