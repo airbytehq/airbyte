@@ -339,7 +339,7 @@ class StreamWriter:
                     json_columns.add(col)
                     result_typ = "string"
 
-                # if array with objects
+                # if array with objects that have defined properties
                 elif isinstance(items, dict) and item_properties:
                     # Check if nested object has properties and no mixed type objects
                     if self._is_invalid_struct_or_array(item_properties):
@@ -349,6 +349,11 @@ class StreamWriter:
                     else:
                         json_columns.add(col)
                         result_typ = "string"
+
+                # array of objects with empty or no properties (e.g., additionalProperties: true)
+                elif isinstance(items, dict) and item_type == "object":
+                    json_columns.add(col)
+                    result_typ = "string"
 
                 elif item_type and self._json_schema_type_has_mixed_types(raw_item_type):
                     json_columns.add(col)
