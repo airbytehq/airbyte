@@ -81,7 +81,7 @@ Reads the same endpoint as `item_collection`, but uses a fixed schema that match
 
 ## Rate limits
 
-All streams page through results 50 records at a time. Apify applies a [global rate limit](https://docs.apify.com/api/v2#rate-limiting) of 250,000 requests per minute per user and a default limit of 60 requests per second per resource, such as a single dataset. When Apify returns HTTP 429, the connector retries the request with exponential backoff.
+For endpoints that return lists, the connector requests 50 records per page. Apify applies a [global rate limit](https://docs.apify.com/api/v2#rate-limiting) of 250,000 requests per minute per user and a default limit of 60 requests per second per resource, such as a single dataset. When Apify returns HTTP 429, the connector retries the request with exponential backoff.
 
 ## IP allow list
 
