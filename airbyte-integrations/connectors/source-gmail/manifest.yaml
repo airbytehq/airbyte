@@ -11,26 +11,28 @@ check:
 
 api_budget:
   type: HTTPAPIBudget
-  # Each matcher weighs a call by its unit cost under Gmail's current quotas
-  # (https://developers.google.com/workspace/gmail/api/reference/quota). The per-user limit depends on the
-  # project's age: projects that used the API before May 2026 keep their previous, higher quotas, so the
-  # budget does not throttle up front. The limit is the per-project ceiling; the budget only acts on a 429,
-  # when it treats the window as spent and every worker waits for it to drain (up to a minute), whatever
-  # Retry-After says.
+  # Gmail's binding limit for one mailbox is the per-user quota
+  # (https://developers.google.com/workspace/gmail/api/reference/quota); the per-project ceiling is shared
+  # with every other user of the OAuth client, so it can't be enforced from one sync. Quotas and unit costs
+  # depend on the Google Cloud project behind the credentials. OAuth uses Airbyte's app, whose project kept
+  # the pre-May-2026 quota: 15,000 units per user per minute, `messages.get` 5, `threads.get` 10. A service
+  # account belongs to the customer's own project, which may be on the new quota: 6,000 units, and `get`
+  # without `format` (i.e. `full`) costs 60 for a message and 120 for a thread. The lower quota is assumed
+  # there, since overestimating it only trades pacing for Gmail's rate-limit backoff.
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1200000
+        - limit: "{{ 6000 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 15000 }}"
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/threads/[^/]+$
-          weight: 40
+          weight: "{{ 120 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 10 }}"
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/messages/[^/]+$
-          weight: 20
+          weight: "{{ 60 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 5 }}"
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/threads$
@@ -53,6 +55,8 @@ definitions:
     profile:
       type: DeclarativeStream
       name: profile
+      primary_key:
+        - emailAddress
       retriever:
         type: SimpleRetriever
         requester:
@@ -100,7 +104,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 500
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
       schema_loader:
@@ -157,23 +161,6 @@ definitions:
         schema:
           $ref: "#/schemas/labels_details"
     messages:
-      # Public, full-refresh stream. `users.messages.list` returns `{id,
-      # threadId}` stubs with no `internalDate`, so there is no record-level
-      # cursor value available on this stream. Exposing it as incremental
-      # would silently drop every record when selected standalone
-      # (DatetimeBasedCursor._is_within_daterange_boundaries returns False +
-      # WARN for records missing the cursor field).
-      #
-      # `messages_details` carries its own DatetimeBasedCursor on
-      # `internalDate` (which IS populated by `users.messages.get`); that
-      # cursor advances via the child's own observed records and filters
-      # records older than the prior cursor on repeat syncs. It does NOT
-      # bound this list call — bounding the list request by last-seen
-      # cursor in pure declarative is not supported because (a) parent
-      # records lack the cursor field so the parent's own cursor can't
-      # advance, and (b) declarative state migrations cannot copy the
-      # child's cursor into the parent's state. That optimisation is
-      # tracked separately and would require a custom state migration.
       type: DeclarativeStream
       name: messages
       primary_key:
@@ -205,26 +192,74 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 500
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/messages"
+    # List stubs have no date; sequential state advances only from record cursor values,
+    # so stamp each record with its slice end. Keep this parent private because the
+    # public `messages` stream must stay full refresh.
+    messages_for_details:
+      type: DeclarativeStream
+      name: messages_for_details
+      primary_key:
+        - id
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["_listed_until"]
+              value: "{{ stream_slice.end_time }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages
+          http_method: GET
+          request_parameters:
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "after:{{ stream_interval.start_time }} before:{{ (stream_interval.end_time | int) + 1 }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _listed_until
+        datetime_format: "%s"
+        cursor_datetime_formats:
+          - "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: PT1H
+        cursor_granularity: PT1S
+        step: P30D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
     messages_details:
-      # Incremental on `internalDate` (populated by `users.messages.get`).
-      # The cursor advances via this stream's own observed records, so
-      # state hygiene works correctly: repeat syncs filter records whose
-      # `internalDate` is older than the prior cursor and skip emitting
-      # them downstream.
-      #
-      # The list call (parent `messages`) is NOT bounded by the cursor:
-      # parent records lack `internalDate`, and pure declarative cannot
-      # copy the child's cursor into a parent's state without a custom
-      # Python state migration. So `users.messages.get` is still called
-      # for every id returned by the list call — the gain here is record
-      # filtering / state correctness, not API quota reduction.
       type: DeclarativeStream
       name: messages_details
       primary_key:
@@ -246,14 +281,15 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: message_id
+              incremental_dependency: true
               stream:
-                $ref: "#/definitions/streams/messages"
+                $ref: "#/definitions/streams/messages_for_details"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: internalDate
         cursor_datetime_formats:
           - "%ms"
-        datetime_format: "%s"
+        datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
@@ -294,7 +330,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 500
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
       schema_loader:
@@ -379,18 +415,18 @@ definitions:
     authenticator: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
-      # The CDK also stops retrying after 600 s (not configurable in the manifest). With the API budget's
-      # wait of up to a minute after each 429, the 10 retries fit in that window; when Gmail sends no
-      # Retry-After, the exponential fallback below reaches the 600 s limit after 6 retries.
+      # The CDK stops retrying after 600 s. A body wait may exceed that limit; the request retries
+      # after the wait, then gives up if that retry fails. Without a header or body wait, the
+      # exponential fallback below reaches the 600 s limit after 6 retries.
       max_retries: 10
       backoff_strategies:
-        # Gmail usually returns a `Retry-After` header on 429 and on 403
-        # quota-saturation responses, but not always. `WaitTimeFromHeader`
-        # reads it when present; `ExponentialBackoffStrategy` is the
-        # fallback when the header is absent so the sync still backs off
-        # instead of retrying immediately.
+        # Gmail's wait time comes from the header if present, then the body's
+        # "Retry after" timestamp; otherwise use exponential backoff.
         - type: WaitTimeFromHeader
           header: Retry-After
+        - type: WaitTimeFromResponse
+          wait_time_in_seconds: "{{ max(1, timestamp(response.error.message | regex_search('Retry after (\\S+Z)')) - now_utc().timestamp()) if (response is mapping and response.get('error') is mapping and ((response.error.message or '') | string | regex_search('Retry after (\\S+Z)'))) else '' }}"
+          max_waiting_time_in_seconds: 1800
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
@@ -710,12 +746,14 @@ schemas:
           - "null"
       messagesTotal:
         type:
-          - number
+          - integer
           - "null"
       threadsTotal:
         type:
-          - number
+          - integer
           - "null"
+    required:
+      - emailAddress
   drafts:
     type: object
     $schema: http://json-schema.org/schema#
@@ -810,11 +848,11 @@ schemas:
           - "null"
       messagesTotal:
         type:
-          - number
+          - integer
           - "null"
       messagesUnread:
         type:
-          - number
+          - integer
           - "null"
       name:
         type:
@@ -822,11 +860,11 @@ schemas:
           - "null"
       threadsTotal:
         type:
-          - number
+          - integer
           - "null"
       threadsUnread:
         type:
-          - number
+          - integer
           - "null"
     required:
       - id
@@ -916,7 +954,7 @@ schemas:
                   - "null"
               size:
                 type:
-                  - number
+                  - integer
                   - "null"
           filename:
             type:
@@ -971,7 +1009,7 @@ schemas:
                         - "null"
                     size:
                       type:
-                        - number
+                        - integer
                         - "null"
                 filename:
                   type:
@@ -1002,9 +1040,127 @@ schemas:
                   type:
                     - string
                     - "null"
+                parts:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      body:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          attachmentId:
+                            type:
+                              - string
+                              - "null"
+                          data:
+                            type:
+                              - string
+                              - "null"
+                          size:
+                            type:
+                              - integer
+                              - "null"
+                      filename:
+                        type:
+                          - string
+                          - "null"
+                      headers:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            name:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                      mimeType:
+                        type:
+                          - string
+                          - "null"
+                      partId:
+                        type:
+                          - string
+                          - "null"
+                      parts:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            body:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                attachmentId:
+                                  type:
+                                    - string
+                                    - "null"
+                                data:
+                                  type:
+                                    - string
+                                    - "null"
+                                size:
+                                  type:
+                                    - integer
+                                    - "null"
+                            filename:
+                              type:
+                                - string
+                                - "null"
+                            headers:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  name:
+                                    type:
+                                      - string
+                                      - "null"
+                                  value:
+                                    type:
+                                      - string
+                                      - "null"
+                            mimeType:
+                              type:
+                                - string
+                                - "null"
+                            partId:
+                              type:
+                                - string
+                                - "null"
+                            parts:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
       sizeEstimate:
         type:
-          - number
+          - integer
           - "null"
       snippet:
         type:
@@ -1123,7 +1279,7 @@ schemas:
                         - "null"
                     size:
                       type:
-                        - number
+                        - integer
                         - "null"
                 filename:
                   type:
@@ -1178,7 +1334,7 @@ schemas:
                               - "null"
                           size:
                             type:
-                              - number
+                              - integer
                               - "null"
                       filename:
                         type:
@@ -1209,9 +1365,127 @@ schemas:
                         type:
                           - string
                           - "null"
+                      parts:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            body:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                attachmentId:
+                                  type:
+                                    - string
+                                    - "null"
+                                data:
+                                  type:
+                                    - string
+                                    - "null"
+                                size:
+                                  type:
+                                    - integer
+                                    - "null"
+                            filename:
+                              type:
+                                - string
+                                - "null"
+                            headers:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  name:
+                                    type:
+                                      - string
+                                      - "null"
+                                  value:
+                                    type:
+                                      - string
+                                      - "null"
+                            mimeType:
+                              type:
+                                - string
+                                - "null"
+                            partId:
+                              type:
+                                - string
+                                - "null"
+                            parts:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  body:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      attachmentId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      data:
+                                        type:
+                                          - string
+                                          - "null"
+                                      size:
+                                        type:
+                                          - integer
+                                          - "null"
+                                  filename:
+                                    type:
+                                      - string
+                                      - "null"
+                                  headers:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        name:
+                                          type:
+                                            - string
+                                            - "null"
+                                        value:
+                                          type:
+                                            - string
+                                            - "null"
+                                  mimeType:
+                                    type:
+                                      - string
+                                      - "null"
+                                  partId:
+                                    type:
+                                      - string
+                                      - "null"
+                                  parts:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - object
+                                        - "null"
             sizeEstimate:
               type:
-                - number
+                - integer
                 - "null"
             snippet:
               type:

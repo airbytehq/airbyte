@@ -111,8 +111,9 @@ class JsonFormattingWriterTest {
         assertEquals(
             """
             {"_airbyte_raw_id":"0197604b-ca2e-7e7c-9126-dacc18b68e8e","_airbyte_extracted_at":1234,"_airbyte_meta":{"sync_id":123,"changes":[]},"_airbyte_generation_id":42,"_airbyte_data":{"foo":"bar"}}
-            
-            """.trimIndent(),
+
+            """
+                .trimIndent(),
             os.toByteArray().decodeToString(),
         )
     }
@@ -125,8 +126,9 @@ class JsonFormattingWriterTest {
         assertEquals(
             """
             {"_airbyte_raw_id":"0197604b-ca2e-7e7c-9126-dacc18b68e8e","_airbyte_extracted_at":1234,"_airbyte_meta":{"sync_id":123,"changes":[]},"_airbyte_generation_id":42,"foo":"bar"}
-            
-            """.trimIndent(),
+
+            """
+                .trimIndent(),
             os.toByteArray().decodeToString(),
         )
     }

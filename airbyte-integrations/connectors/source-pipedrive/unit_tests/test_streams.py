@@ -6,7 +6,7 @@ import logging
 import pytest
 from conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 BASE_URL = "https://api.pipedrive.com/"
-CONFIG = {"api_token": "tok", "replication_start_date": "2017-01-25 00:00:00Z"}
+CONFIG = {"credentials": {"auth_type": "api_token", "api_token": "tok"}, "replication_start_date": "2017-01-25 00:00:00Z"}
 V1_PAGE_DONE = {"pagination": {"start": 0, "limit": 500, "more_items_in_collection": False}}
 
 
@@ -130,8 +130,7 @@ def test_legacy_teams_reads_records():
     "status_code, body",
     [
         pytest.param(403, {"success": False, "error": "Teams feature is not enabled in your company"}, id="feature_disabled"),
-        pytest.param(404, {"success": False, "error": "Not found"}, id="endpoint_missing"),
-        pytest.param(410, {"success": False}, id="endpoint_retired"),
+        pytest.param(415, {"success": False, "error": "Feature is not enabled"}, id="feature_not_enabled"),
     ],
 )
 def test_legacy_teams_ignores_unavailable_endpoint(status_code, body):
@@ -142,6 +141,31 @@ def test_legacy_teams_ignores_unavailable_endpoint(status_code, body):
 
     assert output.records == []
     assert output.errors == []
+
+
+@pytest.mark.parametrize(
+    "status_code, body, text",
+    [
+        pytest.param(404, {"success": False, "error": "Not found"}, "404", id="endpoint_missing"),
+        pytest.param(410, {"success": False}, "permanently removed", id="endpoint_retired"),
+    ],
+)
+def test_legacy_teams_fails_when_the_endpoint_is_gone(status_code, body, text):
+    # Pipedrive documents neither status for this endpoint, so a retirement must not read as an empty stream.
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_request("v1/legacyTeams", {"api_token": "tok"}), _response(body, status_code=status_code))
+
+        output = read(
+            get_source(CONFIG),
+            CONFIG,
+            CatalogBuilder().with_stream("legacy_teams", SyncMode.full_refresh).build(),
+            expecting_exception=True,
+        )
+
+    assert output.records == []
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.system_error
+    assert text in error.message
 
 
 # Every documented project status, so deleted projects come back too (`status` example `open,completed`).

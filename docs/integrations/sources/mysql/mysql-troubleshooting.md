@@ -136,7 +136,7 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 
 ### (Advanced) Initial Load Timeout in Hours
 
-When a CDC connection syncs for the first time, the connector takes an initial load of the tables before it reads the binlog. **Initial Load Timeout in Hours** limits how long the initial load can run in a single sync attempt. When the limit is reached, the attempt ends with a transient error and the initial load continues in the next attempt. The default is 8 hours, and the valid range is 4 to 24 hours.
+For CDC connections, **Initial Load Timeout in Hours** limits the time spent reading the initial table snapshot in one sync attempt. When the limit is reached, the attempt ends with a transient error. The default is 8 hours, and the valid range is 4 to 24 hours.
 
 If you load very large tables, make sure your binlog retention covers the initial load. Otherwise, the binlog position the connector needs can expire before the load finishes. See [Under CDC incremental mode, there are still full refresh syncs](#under-cdc-incremental-mode-there-are-still-full-refresh-syncs) for retention settings.
 

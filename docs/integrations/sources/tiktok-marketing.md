@@ -180,6 +180,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.0 | 2026-11-04 | [90968](https://github.com/airbytehq/airbyte/pull/90968) | Add website Place an Order metrics (`on_web_order`, `total_on_web_order_value`, `cost_per_on_web_order`, `value_per_on_web_order`, `on_web_order_rate`) to the ad, ad group and campaign daily report streams |
+| 5.3.4 | 2026-10-21 | [89016](https://github.com/airbytehq/airbyte/pull/89016) | Include the TikTok Marketing API error code in the message of sync failures caused by unhandled TikTok API errors |
+| 5.3.3 | 2026-10-20 | [89410](https://github.com/airbytehq/airbyte/pull/89410) | Update dependencies |
+| 5.3.2 | 2026-10-16 | [89015](https://github.com/airbytehq/airbyte/pull/89015) | Retry TikTok `internal service timeout` errors (codes 51001 and 51043) instead of failing the sync |
 | 5.3.1 | 2026-10-13 | [88840](https://github.com/airbytehq/airbyte/pull/88840) | Update dependencies |
 | 5.3.0 | 2026-10-05 | [87641](https://github.com/airbytehq/airbyte/pull/87641) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step`; back off on throttling errors 40016 and 40133 |
 | 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |

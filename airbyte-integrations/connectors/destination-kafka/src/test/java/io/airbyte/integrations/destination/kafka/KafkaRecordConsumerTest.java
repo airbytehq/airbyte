@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +25,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -99,6 +102,20 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
         .withType(AirbyteMessage.Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
     consumer.close();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"default", "use_all_dns_ips", "resolve_canonical_bootstrap_servers_only"})
+  void acceptsSavedDnsLookupSettings(final String dnsLookup) {
+    final ObjectNode savedConfig = (ObjectNode) getConfig(TOPIC_NAME);
+    savedConfig.put("client_dns_lookup", dnsLookup);
+    final KafkaDestinationConfig destinationConfig = KafkaDestinationConfig.getKafkaDestinationConfig(savedConfig);
+    try {
+      assertNotNull(destinationConfig.getProducer());
+      assertEquals(dnsLookup, savedConfig.get("client_dns_lookup").asText());
+    } finally {
+      destinationConfig.getProducer().close(Duration.ZERO);
+    }
   }
 
   private JsonNode getConfig(final String topicPattern) {

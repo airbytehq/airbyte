@@ -27,7 +27,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -59,7 +59,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -91,7 +91,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -110,7 +110,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -133,7 +133,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -165,7 +165,7 @@ class SnowflakeSourceConfigurationTest {
                     KeyPairCredentialsSpecification(
                         username = "testuser",
                         privateKey = "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
-                        privateKeyPassword = "password"
+                        privateKeyPassword = "password",
                     )
             }
 
@@ -182,11 +182,11 @@ class SnowflakeSourceConfigurationTest {
         assertTrue(keyFile.name.endsWith(".p8"))
         assertEquals(
             "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
-            keyFile.readText()
+            keyFile.readText(),
         )
         assertTrue(
             !java.io.File("rsa_key.p8").exists(),
-            "the key must not be written into the working directory"
+            "the key must not be written into the working directory",
         )
         assertEquals("password", config.jdbcProperties["private_key_file_pwd"])
     }
@@ -202,7 +202,7 @@ class SnowflakeSourceConfigurationTest {
                 schema = "CUSTOM_SCHEMA"
                 credentials =
                     ProgrammaticAccessTokenCredentialsSpecification(
-                        programmaticAccessToken = "test-token"
+                        programmaticAccessToken = "test-token",
                     )
             }
 
@@ -229,13 +229,73 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
         assertThrows(ConfigErrorException::class.java) {
             factory.makeWithoutExceptionHandling(spec)
         }
+    }
+
+    @Test
+    fun testNormalizeHost() {
+        val expected: Map<String, String> =
+            mapOf(
+                // Plain hosts are unchanged.
+                "acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "acct.us-east-2.aws.snowflakecomputing.com" to
+                    "acct.us-east-2.aws.snowflakecomputing.com",
+                "" to "",
+                // What the driver tolerates is removed.
+                "  acct.snowflakecomputing.com  " to "acct.snowflakecomputing.com",
+                "https://acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "http://acct.example.com" to "acct.example.com", // # ignore-https-check
+                "https://acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com:443" to "acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",
+                "HTTPS://Acct.snowflakecomputing.com:443/" to "Acct.snowflakecomputing.com",
+                " https://acct.snowflakecomputing.com:443/ " to "acct.snowflakecomputing.com",
+                // What it cannot handle is kept for the syntax check.
+                "https://app.snowflake.com/org/acct" to "app.snowflake.com/org/acct",
+                "acct.snowflakecomputing.com/console" to "acct.snowflakecomputing.com/console",
+                "acct.snowflakecomputing.com//" to "acct.snowflakecomputing.com/",
+                "user@acct.snowflakecomputing.com" to "user@acct.snowflakecomputing.com",
+                "https://user:pw@acct.snowflakecomputing.com" to
+                    "user:pw@acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com:8443" to "acct.snowflakecomputing.com:8443",
+                "acct.snowflakecomputing.com:443:443" to "acct.snowflakecomputing.com:443",
+                "jdbc:snowflake://acct.snowflakecomputing.com" to
+                    "jdbc:snowflake://acct.snowflakecomputing.com",
+                "ftp://acct.snowflakecomputing.com" to "ftp://acct.snowflakecomputing.com",
+            )
+        for ((raw: String, normalized: String) in expected) {
+            assertEquals(
+                normalized,
+                SnowflakeSourceConfigurationFactory.normalizeHost(raw),
+                "raw '$raw'",
+            )
+        }
+    }
+
+    @Test
+    fun testHostIsNormalizedInTheConfigurationButNotInTheSpec() {
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = "https://acct.snowflakecomputing.com:443/"
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                credentials =
+                    ProgrammaticAccessTokenCredentialsSpecification(
+                        programmaticAccessToken = "test-token",
+                    )
+            }
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals("acct.snowflakecomputing.com", config.realHost)
+        assertEquals("https://acct.snowflakecomputing.com:443/", spec.host)
     }
 
     @Test
@@ -249,7 +309,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -277,7 +337,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 

@@ -78,7 +78,7 @@ class IcebergTableSynchronizerTest {
     /** Helper to build a schema with [Types.NestedField]s. */
     private fun buildSchema(
         vararg fields: Types.NestedField,
-        identifierFields: Set<Int> = emptySet()
+        identifierFields: Set<Int> = emptySet(),
     ): Schema {
         return Schema(fields.toList(), identifierFields)
     }
@@ -103,7 +103,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // We expect the original schema to be returned
@@ -132,7 +132,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // The result is a new schema after changes, but we can only verify calls on the mock
@@ -159,7 +159,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify that "age" is updated to LONG
@@ -180,7 +180,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect makeColumnOptional("make_optional") to be called
@@ -203,7 +203,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn(null, "new_col", Types.StringType.get()) }
@@ -218,9 +218,9 @@ class IcebergTableSynchronizerTest {
                     1,
                     "user_info",
                     Types.StructType.of(
-                        Types.NestedField.required(2, "nested_id", Types.IntegerType.get())
-                    )
-                )
+                        Types.NestedField.required(2, "nested_id", Types.IntegerType.get()),
+                    ),
+                ),
             )
         val incomingSchema =
             buildSchema(
@@ -231,8 +231,8 @@ class IcebergTableSynchronizerTest {
                         Types.NestedField.required(2, "nested_id", Types.IntegerType.get()),
                         // new subfield
                         Types.NestedField.optional(3, "nested_name", Types.StringType.get()),
-                    )
-                )
+                    ),
+                ),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -246,7 +246,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn("user_info", "nested_name", Types.StringType.get()) }
@@ -267,7 +267,7 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -301,7 +301,7 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -320,7 +320,7 @@ class IcebergTableSynchronizerTest {
         val incomingSchema =
             buildSchema(
                 Types.NestedField.required(3, "id", Types.StringType.get()),
-                identifierFields = setOf(3)
+                identifierFields = setOf(3),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -328,7 +328,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect setIdentifierFields(listOf("id")) to be called
@@ -344,7 +344,7 @@ class IcebergTableSynchronizerTest {
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "remove_me", Types.StringType.get()),
                 Types.NestedField.required(3, "make_optional", Types.IntegerType.get()),
-                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get())
+                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get()),
             )
         val incomingSchema =
             buildSchema(
@@ -356,7 +356,7 @@ class IcebergTableSynchronizerTest {
                 Types.NestedField.required(4, "upgrade_int", Types.LongType.get()),
                 // brand_new -> new column
                 Types.NestedField.optional(5, "brand_new", Types.FloatType.get()),
-                identifierFields = setOf(1)
+                identifierFields = setOf(1),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -366,14 +366,14 @@ class IcebergTableSynchronizerTest {
             superTypeFinder.findSuperType(
                 Types.IntegerType.get(),
                 Types.LongType.get(),
-                "upgrade_int"
+                "upgrade_int",
             )
         } returns Types.LongType.get()
 
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify calls, in any order
@@ -400,12 +400,12 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessage(
-                """Schema evolution for column "age" between int and string is not allowed."""
+                """Schema evolution for column "age" between int and string is not allowed.""",
             )
     }
 
@@ -422,7 +422,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.OVERWRITE
+                ColumnTypeChangeBehavior.OVERWRITE,
             )
 
         verify { mockUpdateSchema.deleteColumn("age") }
@@ -448,7 +448,7 @@ class IcebergTableSynchronizerTest {
         val incomingSchema =
             buildSchema(
                 Types.NestedField.required(1, "pk_col", Types.StringType.get()),
-                identifierFields = setOf(1)
+                identifierFields = setOf(1),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -467,7 +467,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.OVERWRITE
+                ColumnTypeChangeBehavior.OVERWRITE,
             )
 
         // First update: delete + add column (committed immediately due to deferred identifiers)
@@ -508,7 +508,7 @@ class IcebergTableSynchronizerTest {
                 Types.NestedField.required(
                     2,
                     "_airbyte_extracted_at",
-                    Types.TimestampType.withZone()
+                    Types.TimestampType.withZone(),
                 ),
                 Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
                 Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
@@ -581,13 +581,13 @@ class IcebergTableSynchronizerTest {
                     Meta.COLUMN_NAME_AB_META to
                         FieldType(Meta.AirbyteMetaFields.META.type, nullable = false),
                     "id" to FieldType(StringType, nullable = false),
-                )
+                ),
             )
             .toIcebergSchema(emptyList())
 
     private fun assertMetaSchemaRelaxedInPlace(
         tableName: String,
-        behavior: ColumnTypeChangeBehavior
+        behavior: ColumnTypeChangeBehavior,
     ) {
         val warehousePath = Files.createTempDirectory("iceberg-meta-nullability")
         val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
@@ -668,7 +668,7 @@ class IcebergTableSynchronizerTest {
                     Types.NestedField.required(
                         2,
                         "_airbyte_extracted_at",
-                        Types.TimestampType.withZone()
+                        Types.TimestampType.withZone(),
                     ),
                     Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
                     Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
@@ -722,7 +722,7 @@ class IcebergTableSynchronizerTest {
                     Types.NestedField.required(
                         2,
                         "_airbyte_extracted_at",
-                        Types.TimestampType.withZone()
+                        Types.TimestampType.withZone(),
                     ),
                     Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
                     Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
@@ -732,7 +732,7 @@ class IcebergTableSynchronizerTest {
                     Types.NestedField.optional(8, "impressions", Types.LongType.get()),
                 ),
                 // No identifier fields — Append mode
-                )
+            )
 
         val synchronizer = createRealSynchronizer()
         synchronizer.maybeApplySchemaChanges(
@@ -772,7 +772,7 @@ class IcebergTableSynchronizerTest {
                     Types.NestedField.required(
                         2,
                         "_airbyte_extracted_at",
-                        Types.TimestampType.withZone()
+                        Types.TimestampType.withZone(),
                     ),
                     Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
                     Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
@@ -824,7 +824,7 @@ class IcebergTableSynchronizerTest {
                     Types.NestedField.required(
                         2,
                         "_airbyte_extracted_at",
-                        Types.TimestampType.withZone()
+                        Types.TimestampType.withZone(),
                     ),
                     Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
                     Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),

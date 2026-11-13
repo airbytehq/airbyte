@@ -37,7 +37,7 @@ data class DataGenSourceConfiguration(
     override val sshConnectionOptions: SshConnectionOptions =
         SshConnectionOptions.fromAdditionalProperties(emptyMap()),
     val flavor: Flavor,
-    val maxRecords: Long
+    val maxRecords: Long,
 ) : SourceConfiguration {
     /** Required to inject [DataGenSourceConfiguration] directly. */
     @Factory
@@ -46,7 +46,9 @@ data class DataGenSourceConfiguration(
         fun dataGenSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    DataGenSourceConfigurationSpecification, DataGenSourceConfiguration>,
+                    DataGenSourceConfigurationSpecification,
+                    DataGenSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<DataGenSourceConfigurationSpecification>,
         ): DataGenSourceConfiguration = factory.make(supplier.get())
     }
@@ -58,15 +60,17 @@ class DataGenSourceConfigurationFactory
 constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
-    val socketPaths: List<String> = emptyList()
+    val socketPaths: List<String> = emptyList(),
 ) :
     SourceConfigurationFactory<
-        DataGenSourceConfigurationSpecification, DataGenSourceConfiguration> {
+        DataGenSourceConfigurationSpecification,
+        DataGenSourceConfiguration,
+    > {
 
     private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(
-        pojo: DataGenSourceConfigurationSpecification
+        pojo: DataGenSourceConfigurationSpecification,
     ): DataGenSourceConfiguration {
         if ((pojo.concurrency ?: 1) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
@@ -92,7 +96,7 @@ constructor(
         return DataGenSourceConfiguration(
             maxConcurrency = maxConcurrency,
             flavor = flavor,
-            maxRecords = pojo.maxRecords
+            maxRecords = pojo.maxRecords,
         )
     }
 }

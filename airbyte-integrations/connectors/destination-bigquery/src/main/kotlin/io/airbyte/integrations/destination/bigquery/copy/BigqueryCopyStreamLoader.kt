@@ -16,7 +16,9 @@ internal class BigqueryCopyStreamLoader(
 ) : StreamLoader {
     override val stream: DestinationStream
         get() = delegate.stream
+
     override suspend fun start() = delegate.start()
+
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         delegate.close(hadNonzeroRecords, streamFailure)
         if (

@@ -53,12 +53,12 @@ class MySqlSourceCloudHostCheckTest {
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
         Assertions.assertFalse(
             status.message.contains(CloudHostCheck.LOCAL_HOST_MESSAGE),
-            status.message
+            status.message,
         )
         // The classifier rule from application.yml for a refused connection.
         Assertions.assertTrue(
             status.message.contains(
-                "Airbyte could not reach the database at the configured host and port"
+                "Airbyte could not reach the database at the configured host and port",
             ),
             status.message,
         )
@@ -75,7 +75,7 @@ class MySqlSourceCloudHostCheckTest {
             output.traces().single { it.type == AirbyteTraceMessage.Type.ERROR }.error
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            error.failureType
+            error.failureType,
         )
         Assertions.assertEquals(message, error.message)
     }

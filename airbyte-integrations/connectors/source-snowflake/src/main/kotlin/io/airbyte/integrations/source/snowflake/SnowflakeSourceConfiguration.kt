@@ -28,7 +28,7 @@ data class SnowflakeSourceConfiguration(
         SshConnectionOptions(
             kotlin.time.Duration.ZERO,
             kotlin.time.Duration.ZERO,
-            kotlin.time.Duration.ZERO
+            kotlin.time.Duration.ZERO,
         ),
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
@@ -58,10 +58,37 @@ class SnowflakeSourceConfigurationFactory :
         SnowflakeSourceConfiguration,
     > {
 
+    companion object {
+        private val SCHEMES_THE_DRIVER_TOLERATES: List<String> =
+            listOf(
+                "https://",
+                "http://", // # ignore-https-check
+            )
+
+        /**
+         * Normalizes the `Host` field to what the Snowflake JDBC driver would use anyway: trims
+         * whitespace, drops a leading `https://` (or plain `http`) scheme in any case, one trailing
+         * `/` and a trailing `:443`, in that order. The result is the bare account domain for the
+         * common paste `https://account.snowflakecomputing.com/`. Anything else (a path,
+         * credentials, another scheme or port) is kept and left to the Cloud-only syntax check.
+         */
+        internal fun normalizeHost(raw: String): String {
+            var host: String = raw.trim()
+            val scheme: String? = SCHEMES_THE_DRIVER_TOLERATES.firstOrNull {
+                host.startsWith(it, ignoreCase = true)
+            }
+            if (scheme != null) {
+                host = host.substring(scheme.length)
+            }
+            return host.removeSuffix("/").removeSuffix(":443")
+        }
+    }
+
     override fun makeWithoutExceptionHandling(
         pojo: SnowflakeSourceConfigurationSpecification,
     ): SnowflakeSourceConfiguration {
-        val realHost: String = pojo.host
+        // The spec value is left as typed; only the host the connector uses is normalized.
+        val realHost: String = normalizeHost(pojo.host)
         val jdbcProperties = mutableMapOf<String, String>()
 
         // Handle credentials based on auth type
@@ -83,7 +110,7 @@ class SnowflakeSourceConfigurationFactory :
             }
             else ->
                 throw ConfigErrorException(
-                    "Unsupported credentials type: ${credentials?.javaClass?.name}"
+                    "Unsupported credentials type: ${credentials?.javaClass?.name}",
                 )
         }
 

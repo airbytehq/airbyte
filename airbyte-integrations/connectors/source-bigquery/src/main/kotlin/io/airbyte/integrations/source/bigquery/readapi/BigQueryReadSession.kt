@@ -54,7 +54,7 @@ data class BigQueryReadSession(
                 ReadSession.TableReadOptions.newBuilder()
                     .setArrowSerializationOptions(
                         ArrowSerializationOptions.newBuilder()
-                            .setBufferCompression(compressionCodec(arrowBufferCompression))
+                            .setBufferCompression(compressionCodec(arrowBufferCompression)),
                     )
             selectedFields?.forEach { readOptions.addSelectedFields(it) }
             val session: ReadSession.Builder =
@@ -68,8 +68,8 @@ data class BigQueryReadSession(
                         .setSnapshotTime(
                             Timestamp.newBuilder()
                                 .setSeconds(snapshotTime.epochSecond)
-                                .setNanos(snapshotTime.nano)
-                        )
+                                .setNanos(snapshotTime.nano),
+                        ),
                 )
             }
             val request: CreateReadSessionRequest =
@@ -90,7 +90,7 @@ data class BigQueryReadSession(
                     expiresAt =
                         Instant.ofEpochSecond(
                             created.expireTime.seconds,
-                            created.expireTime.nanos.toLong()
+                            created.expireTime.nanos.toLong(),
                         ),
                     readStreams = created.streamsList.map { it.name },
                     arrowSchema = created.arrowSchema.serializedSchema.toByteArray(),
@@ -112,7 +112,7 @@ data class BigQueryReadSession(
                 "ZSTD" -> ArrowSerializationOptions.CompressionCodec.ZSTD
                 else ->
                     throw IllegalArgumentException(
-                        "Unknown Arrow buffer compression '$name'; expected NONE, LZ4_FRAME or ZSTD."
+                        "Unknown Arrow buffer compression '$name'; expected NONE, LZ4_FRAME or ZSTD.",
                     )
             }
 

@@ -25,10 +25,10 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 ObjectValue(
                     linkedMapOf(
                         "sync_id" to IntegerValue(syncId),
-                        "changes" to ArrayValue(emptyList())
-                    )
+                        "changes" to ArrayValue(emptyList()),
+                    ),
                 ),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(generationId)
+            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(generationId),
         )
 
     @Test
@@ -38,8 +38,8 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 linkedMapOf(
                     "name" to StringValue("John"),
                     "age" to IntegerValue(30),
-                    "is_cool" to BooleanValue(true)
-                )
+                    "is_cool" to BooleanValue(true),
+                ),
             )
         val expected = LinkedHashMap(expectedMeta)
         expected[Meta.COLUMN_NAME_DATA] = data
@@ -48,13 +48,13 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             mockRecord.dataWithAirbyteMeta(
                 stream = stream,
                 flatten = false,
-                airbyteRawId = airbyteRawId
+                airbyteRawId = airbyteRawId,
             )
         val uuid = withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID) as StringValue
         Assertions.assertTrue(
             uuid.value.matches(
-                Regex("[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
-            )
+                Regex("[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"),
+            ),
         )
         Assertions.assertEquals(expected, withMeta.values)
     }
@@ -66,8 +66,8 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 linkedMapOf(
                     "name" to StringValue("John"),
                     "age" to IntegerValue(30),
-                    "is_cool" to BooleanValue(true)
-                )
+                    "is_cool" to BooleanValue(true),
+                ),
             )
         val expected = LinkedHashMap(expectedMeta)
         data.values.forEach { (name, value) -> expected[name] = value }
@@ -76,7 +76,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             mockRecord.dataWithAirbyteMeta(
                 stream = stream,
                 flatten = true,
-                airbyteRawId = airbyteRawId
+                airbyteRawId = airbyteRawId,
             )
         withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID)
         Assertions.assertEquals(expected, withMeta.values)
