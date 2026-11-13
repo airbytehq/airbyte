@@ -30,7 +30,7 @@ class AvroWriter(
 
 fun OutputStream.toAvroWriter(
     avroSchema: Schema,
-    config: AvroCompressionConfiguration
+    config: AvroCompressionConfiguration,
 ): AvroWriter {
     val datumWriter = GenericDatumWriter<GenericRecord>(avroSchema)
     val dataFileWriter = DataFileWriter(datumWriter)

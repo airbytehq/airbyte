@@ -53,7 +53,7 @@ private fun merge(raw: DestinationRecordSource, data: Map<String, Any>): Destina
             data.forEach { (_, v) ->
                 val airbyteVal = AirbyteValue.from(v)
                 raw.source.record.dataList.add(
-                    AirbyteValueToProtobuf().toProtobuf(airbyteVal, airbyteVal.airbyteType)
+                    AirbyteValueToProtobuf().toProtobuf(airbyteVal, airbyteVal.airbyteType),
                 )
             }
         }
@@ -81,6 +81,6 @@ private fun Map<String, Any>.toAirbyteRecordMessage() =
         .withRecord(
             AirbyteRecordMessage()
                 .withData(Jsons.convertValue(this, JsonNode::class.java))
-                .withEmittedAt(System.currentTimeMillis())
+                .withEmittedAt(System.currentTimeMillis()),
         )
         .withType(AirbyteMessage.Type.RECORD)

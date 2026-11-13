@@ -22,7 +22,7 @@ class StreamCompletionTrackerTest {
             listOf(
                 createStream("namespace1", "stream1"),
                 createStream("namespace1", "stream2"),
-                createStream("namespace2", "stream1")
+                createStream("namespace2", "stream1"),
             )
         val catalog = mockk<DestinationCatalog> { every { this@mockk.streams } returns streams }
         val tracker = StreamCompletionTracker(catalog)
@@ -47,7 +47,7 @@ class StreamCompletionTrackerTest {
             listOf(
                 createStream("namespace1", "stream1"),
                 createStream("namespace1", "stream2"),
-                createStream("namespace2", "stream1")
+                createStream("namespace2", "stream1"),
             )
         val catalog = mockk<DestinationCatalog> { every { this@mockk.streams } returns streams }
         val tracker = StreamCompletionTracker(catalog)

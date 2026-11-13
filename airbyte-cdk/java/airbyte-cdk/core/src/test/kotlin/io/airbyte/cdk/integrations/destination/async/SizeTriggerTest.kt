@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
-@SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class SizeTriggerTest {
     companion object {
         private const val SIZE_10MB = (10 * 1024 * 1024).toLong()
@@ -26,6 +25,10 @@ class SizeTriggerTest {
     private lateinit var flusher: DestinationFlushFunction
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)
         Mockito.`when`(flusher.optimalBatchSizeBytes).thenReturn(SIZE_200MB)

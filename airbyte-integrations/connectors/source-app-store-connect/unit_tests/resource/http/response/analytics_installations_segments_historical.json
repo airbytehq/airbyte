@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "type": "analyticsReportSegments",
+      "id": "segment-1",
+      "attributes": {
+        "checksum": "abc123",
+        "sizeInBytes": 42,
+        "url": "https://example.s3.amazonaws.com/app-store-connect/report.csv.gz?signature=test"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/instance-1/segments"
+  }
+}

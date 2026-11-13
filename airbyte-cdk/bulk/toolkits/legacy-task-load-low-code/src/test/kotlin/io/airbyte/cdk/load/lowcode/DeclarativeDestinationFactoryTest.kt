@@ -84,7 +84,7 @@ class DeclarativeDestinationFactoryTest {
                                     """{{ config["api_token"] }}""",
                                 ),
                         ),
-                    )
+                    ),
                 )
                 .withCatalogOperation(
                     CompositeCatalogOperations(
@@ -102,16 +102,16 @@ class DeclarativeDestinationFactoryTest {
                                                 "properties" to
                                                     mapOf(
                                                         "name" to mapOf("type" to "string"),
-                                                        "updated_at" to mapOf("type" to "string")
-                                                    )
-                                            )
+                                                        "updated_at" to mapOf("type" to "string"),
+                                                    ),
+                                            ),
                                         ),
-                                    matchingKeys = listOf(listOf("test"))
-                                )
-                            )
-                    )
+                                    matchingKeys = listOf(listOf("test")),
+                                ),
+                            ),
+                    ),
                 )
-                .build()
+                .build(),
         )
 
         mockkConstructor(BasicAccessAuthenticator::class)
@@ -124,7 +124,7 @@ class DeclarativeDestinationFactoryTest {
             verify {
                 constructedWith<BasicAccessAuthenticator>(
                         EqMatcher(VALID_API_ID),
-                        EqMatcher(VALID_API_TOKEN)
+                        EqMatcher(VALID_API_TOKEN),
                     )
                     .intercept(any())
             }
@@ -142,12 +142,12 @@ class DeclarativeDestinationFactoryTest {
                     Spec(
                         connectionSpecification =
                             Jsons.readTree(
-                                """{"type":"object","${'$'}schema":"http://json-schema.org/draft-07/schema#","required":["account_id"],"properties":{"account_id":{"type":"string","order":0,"airbyte_secret":true}}}"""
+                                """{"type":"object","${'$'}schema":"http://json-schema.org/draft-07/schema#","required":["account_id"],"properties":{"account_id":{"type":"string","order":0,"airbyte_secret":true}}}""",
                             ),
                         advancedAuth = advancedAuth,
-                    )
+                    ),
                 )
-                .build()
+                .build(),
         )
 
         val spec =
@@ -179,7 +179,7 @@ class DeclarativeDestinationFactoryTest {
                                     """{{ config["api_token"] }}""",
                                 ),
                         ),
-                    )
+                    ),
                 )
                 .withCatalogOperation(
                     CompositeCatalogOperations(
@@ -197,10 +197,10 @@ class DeclarativeDestinationFactoryTest {
                                                 "properties" to
                                                     mapOf(
                                                         "name" to mapOf("type" to "string"),
-                                                        "updated_at" to mapOf("type" to "string")
-                                                    )
-                                            )
-                                        )
+                                                        "updated_at" to mapOf("type" to "string"),
+                                                    ),
+                                            ),
+                                        ),
                                 ),
                                 StaticCatalogOperation(
                                     objectName = "position",
@@ -214,10 +214,10 @@ class DeclarativeDestinationFactoryTest {
                                                 "properties" to
                                                     mapOf(
                                                         "name" to mapOf("type" to "string"),
-                                                        "side" to mapOf("type" to "string")
-                                                    )
-                                            )
-                                        )
+                                                        "side" to mapOf("type" to "string"),
+                                                    ),
+                                            ),
+                                        ),
                                 ),
                                 StaticCatalogOperation(
                                     objectName = "stadium",
@@ -229,9 +229,9 @@ class DeclarativeDestinationFactoryTest {
                                                 "required" to listOf("name"),
                                                 "additionalProperties" to true,
                                                 "properties" to
-                                                    mapOf("name" to mapOf("type" to "string"))
-                                            )
-                                        )
+                                                    mapOf("name" to mapOf("type" to "string")),
+                                            ),
+                                        ),
                                 ),
                                 StaticCatalogOperation(
                                     objectName = "team",
@@ -243,14 +243,14 @@ class DeclarativeDestinationFactoryTest {
                                                 "required" to listOf("name"),
                                                 "additionalProperties" to true,
                                                 "properties" to
-                                                    mapOf("name" to mapOf("type" to "string"))
-                                            )
-                                        )
-                                )
-                            )
-                    )
+                                                    mapOf("name" to mapOf("type" to "string")),
+                                            ),
+                                        ),
+                                ),
+                            ),
+                    ),
                 )
-                .build()
+                .build(),
         )
 
         val expectedOperations =
@@ -267,7 +267,7 @@ class DeclarativeDestinationFactoryTest {
                         additionalProperties = true,
                         required = listOf("name"),
                     ),
-                    matchingKeys = emptyList()
+                    matchingKeys = emptyList(),
                 ),
                 DestinationOperation(
                     "position",
@@ -281,7 +281,7 @@ class DeclarativeDestinationFactoryTest {
                         additionalProperties = true,
                         required = listOf("name"),
                     ),
-                    matchingKeys = emptyList()
+                    matchingKeys = emptyList(),
                 ),
                 DestinationOperation(
                     "stadium",
@@ -294,7 +294,7 @@ class DeclarativeDestinationFactoryTest {
                         additionalProperties = true,
                         required = listOf("name"),
                     ),
-                    matchingKeys = emptyList()
+                    matchingKeys = emptyList(),
                 ),
                 DestinationOperation(
                     "team",
@@ -307,7 +307,7 @@ class DeclarativeDestinationFactoryTest {
                         additionalProperties = true,
                         required = listOf("name"),
                     ),
-                    matchingKeys = emptyList()
+                    matchingKeys = emptyList(),
                 ),
             )
 
@@ -326,8 +326,8 @@ class DeclarativeDestinationFactoryTest {
                     listOf(
                         mapOf("name" to "name", "type" to "string"),
                         mapOf("name" to "breathingForm", "type" to "art"),
-                        mapOf("name" to "age", "type" to "numberlike")
-                    )
+                        mapOf("name" to "age", "type" to "numberlike"),
+                    ),
             )
 
         val objectsResponse: Response = mockk<Response>()
@@ -353,11 +353,11 @@ class DeclarativeDestinationFactoryTest {
                                     listOf(
                                         TypesMap(
                                             apiType = listOf("string", "art"),
-                                            airbyteType = listOf(StringTypeModel)
+                                            airbyteType = listOf(StringTypeModel),
                                         ),
                                         TypesMap(
                                             apiType = listOf("numberlike"),
-                                            airbyteType = listOf(NumberTypeModel)
+                                            airbyteType = listOf(NumberTypeModel),
                                         ),
                                         TypesMap(
                                             apiType = listOf("array"),
@@ -365,11 +365,11 @@ class DeclarativeDestinationFactoryTest {
                                                 listOf(
                                                     ArrayTypeModel(
                                                         items =
-                                                            FieldTypeModel(StringTypeModel, true)
-                                                    )
-                                                )
+                                                            FieldTypeModel(StringTypeModel, true),
+                                                    ),
+                                                ),
                                         ),
-                                    )
+                                    ),
                             ),
                         schemaRetriever =
                             Retriever(
@@ -381,9 +381,9 @@ class DeclarativeDestinationFactoryTest {
                                             BasicAccessAuthenticatorModel(
                                                 username = "username",
                                                 password = "password",
-                                            )
+                                            ),
                                     ),
-                                selector = listOf("properties")
+                                selector = listOf("properties"),
                             ),
                         insertionMethods =
                             listOf(
@@ -391,12 +391,12 @@ class DeclarativeDestinationFactoryTest {
                                     destinationImportMode = InsertModel,
                                     availabilityPredicate = "{{ true }}",
                                     matchingKeyPredicate = "{{ property['type'] != 'ignore_me' }}",
-                                    requiredPredicate = ""
-                                )
-                            )
-                    )
+                                    requiredPredicate = "",
+                                ),
+                            ),
+                    ),
                 )
-                .build()
+                .build(),
         )
 
         val expectedOperations =
@@ -436,7 +436,7 @@ class DeclarativeDestinationFactoryTest {
                         mapOf(
                             "name" to "breathingStyle",
                         ),
-                    )
+                    ),
             )
 
         val schemaMockBody =
@@ -445,8 +445,8 @@ class DeclarativeDestinationFactoryTest {
                     listOf(
                         mapOf("name" to "name", "type" to "string"),
                         mapOf("name" to "isMainStyle", "type" to "bool"),
-                        mapOf("name" to "numberOfForms", "type" to "numberlike")
-                    )
+                        mapOf("name" to "numberOfForms", "type" to "numberlike"),
+                    ),
             )
 
         val objectsResponse: Response = mockk<Response>()
@@ -499,7 +499,7 @@ class DeclarativeDestinationFactoryTest {
                                                 url = "https://hashira.net/objects",
                                                 method = HttpMethod.GET,
                                             ),
-                                        selector = listOf("results")
+                                        selector = listOf("results"),
                                     ),
                                 namePath = listOf("name"),
                             ),
@@ -512,17 +512,17 @@ class DeclarativeDestinationFactoryTest {
                                     listOf(
                                         TypesMap(
                                             apiType = listOf("string", ""),
-                                            airbyteType = listOf(StringTypeModel)
+                                            airbyteType = listOf(StringTypeModel),
                                         ),
                                         TypesMap(
                                             apiType = listOf("bool"),
-                                            airbyteType = listOf(BooleanTypeModel)
+                                            airbyteType = listOf(BooleanTypeModel),
                                         ),
                                         TypesMap(
                                             apiType = listOf("numberlike"),
-                                            airbyteType = listOf(NumberTypeModel)
+                                            airbyteType = listOf(NumberTypeModel),
                                         ),
-                                    )
+                                    ),
                             ),
                         schemaRetriever =
                             Retriever(
@@ -534,9 +534,9 @@ class DeclarativeDestinationFactoryTest {
                                             BasicAccessAuthenticatorModel(
                                                 username = "username",
                                                 password = "password",
-                                            )
+                                            ),
                                     ),
-                                selector = listOf("properties")
+                                selector = listOf("properties"),
                             ),
                         insertionMethods =
                             listOf(
@@ -544,12 +544,12 @@ class DeclarativeDestinationFactoryTest {
                                     destinationImportMode = InsertModel,
                                     availabilityPredicate = "{{ true }}",
                                     matchingKeyPredicate = "{{ property['type'] != 'ignore_me' }}",
-                                    requiredPredicate = ""
-                                )
-                            )
-                    )
+                                    requiredPredicate = "",
+                                ),
+                            ),
+                    ),
                 )
-                .build()
+                .build(),
         )
 
         val expectedOperations =

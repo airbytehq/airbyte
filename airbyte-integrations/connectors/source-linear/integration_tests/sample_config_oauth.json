@@ -1,0 +1,10 @@
+{
+  "credentials": {
+    "auth_type": "OAuth2.0",
+    "client_id": "<oauth-application-client-id>",
+    "client_secret": "<oauth-application-client-secret>",
+    "refresh_token": "<oauth-refresh-token>"
+  },
+  "start_date": "2024-01-01T00:00:00.000Z",
+  "num_workers": 4
+}

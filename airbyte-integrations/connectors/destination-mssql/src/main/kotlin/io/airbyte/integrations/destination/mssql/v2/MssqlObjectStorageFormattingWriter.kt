@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import jakarta.inject.Singleton
 import java.io.OutputStream
-import javax.inject.Singleton
 
 class MSSQLCSVFormattingWriter(
     stream: DestinationStream,
@@ -20,9 +20,11 @@ class MSSQLCSVFormattingWriter(
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val mssqlRowGenerator = MSSQLCsvRowGenerator()
+
     override fun accept(record: DestinationRecordRaw) {
         printer.printRecord(mssqlRowGenerator.generate(record, finalSchema))
     }
+
     override fun flush() {
         printer.flush()
     }
@@ -36,7 +38,7 @@ class MSSQLCSVFormattingWriter(
 class MssqlObjectStorageFormattingWriterFactory : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ): ObjectStorageFormattingWriter {
         return MSSQLCSVFormattingWriter(stream, outputStream)
     }

@@ -2,11 +2,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -123,3 +124,34 @@ class TestFullRefresh(TestCase):
             assert "page_id" in record.record.data
             assert "business_account_id" in record.record.data
             assert "metric" in record.record.data
+
+    @HttpMocker()
+    def test_multi_dimension_breakdown_keeps_all_dimensions(self, http_mocker: HttpMocker) -> None:
+        """The age,gender breakdown returns two dimension values per result; both must survive the flattening."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        for breakdown in ["city", "country"]:
+            http_mocker.get(
+                _get_request().with_custom_param("breakdown", breakdown).build(),
+                _get_response().with_record(_record()).build(),
+            )
+        http_mocker.get(
+            _get_request().with_custom_param("breakdown", "age,gender").build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_age_gender", __file__)), 200),
+        )
+
+        output = self._read(config_=config())
+        age_gender_records = [r for r in output.records if r.record.data["breakdown"] == "age,gender"]
+        assert len(age_gender_records) == 1
+        assert age_gender_records[0].record.data["value"] == {
+            "18-24,F": 10,
+            "18-24,M": 7,
+            "18-24,U": 1,
+            "25-34,F": 25,
+            "25-34,M": 19,
+            "25-34,U": 2,
+        }
+        city_record = next(r for r in output.records if r.record.data["breakdown"] == "city")
+        assert city_record.record.data["value"]["London, England"] == 7
