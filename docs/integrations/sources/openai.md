@@ -30,7 +30,7 @@ ChatGPT workspace Admin keys are separate from API Platform Admin keys. An API P
 
 1. Sign in to [Admin Console](https://admin.openai.com/). Select your tenant if needed, then select the ChatGPT workspace you want to sync.
 2. Go to **Credentials** > **Admin keys** and select **Create new admin key**.
-3. Choose the permissions for the streams you plan to sync, such as read access to **Users** for the user streams and the **Conversation messages** compliance permission for the conversation streams. For the scopes each endpoint requires, see the [ChatGPT Admin API reference](https://chatgpt.com/public/admin/api-reference) and [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console).
+3. Choose the permissions for the streams you plan to sync. For example, **Users** > **Read** covers listing current workspace members for `current_users`, and syncing conversation message logs for `conversation_messages` and `conversation_messages_log` needs the **Conversation messages** permission, which only workspace owners can grant. For the scopes each endpoint requires, including `historical_users`, see the [ChatGPT Admin API reference](https://chatgpt.com/public/admin/api-reference) and [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console).
 4. Choose an expiration. When the key expires, the ChatGPT streams start failing until you create a new key and update the connector.
 5. Copy the key, and copy the workspace ID of the selected workspace.
 
