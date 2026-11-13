@@ -97,6 +97,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 1.1.32 | 2026-11-12 | [76441](https://github.com/airbytehq/airbyte/pull/76441) | Classify HTTP 403 "missing required scope" responses as `config_error` with a clearer message |
 | 1.1.31 | 2026-11-10 | [91639](https://github.com/airbytehq/airbyte/pull/91639) | Update dependencies |
 | 1.1.30 | 2026-11-03 | [90903](https://github.com/airbytehq/airbyte/pull/90903) | Require Python 3.11 or newer, retaining support through Python 3.13. |
 | 1.1.29 | 2026-11-03 | [90691](https://github.com/airbytehq/airbyte/pull/90691) | Update dependencies |
