@@ -153,4 +153,54 @@ class BigQueryDatabaseHandlerTest {
 
         assertThrows<BigQueryException> { handler.execute(Sql.of("select * from nowhere")) }
     }
+
+    @Test
+    fun `InterruptedException wrapped in BigQueryException from create is caught and rethrown with message`() {
+        val interruptedException = InterruptedException("thread was interrupted")
+        val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()) } throws bigQueryException
+        }
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+
+        val thrown =
+            assertThrows<RuntimeException> { handler.execute(Sql.of("select * from nowhere")) }
+        assertEquals(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, thrown.message)
+        assertTrue(thrown.cause is BigQueryException)
+        assertTrue(thrown.cause?.cause is InterruptedException)
+    }
+
+    @Test
+    fun `InterruptedException during job polling is caught and rethrown with message`() {
+        val job: Job = mockk {
+            every { status } returns
+                mockk {
+                    // Return RUNNING so the loop calls Thread.sleep, then interrupt the thread
+                    every { state } returns JobStatus.State.RUNNING
+                }
+        }
+        val bq: BigQuery = mockk { every { create(any(JobInfo::class), *anyVararg()) } returns job }
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+
+        // Interrupt the current thread before execute() enters the polling loop.
+        // Thread.sleep will immediately throw InterruptedException.
+        Thread.currentThread().interrupt()
+        val thrown =
+            assertThrows<RuntimeException> { handler.execute(Sql.of("select * from nowhere")) }
+        assertEquals(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, thrown.message)
+        assertTrue(thrown.cause is InterruptedException)
+    }
+
+    @Test
+    fun `non-interrupt BigQueryException from create is rethrown as-is`() {
+        val bigQueryException = BigQueryException(500, "server error")
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()) } throws bigQueryException
+        }
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+
+        val thrown =
+            assertThrows<BigQueryException> { handler.execute(Sql.of("select * from nowhere")) }
+        assertEquals("server error", thrown.message)
+    }
 }
