@@ -23,7 +23,7 @@ Recurly private API keys grant full access to your site's data, and Recurly does
 ## Set up the Recurly connector in Airbyte
 
 1. In Airbyte, go to **Sources** and add a new source. Select **Recurly**.
-2. For **API Key**, paste the [private API key](https://docs.recurly.com/docs/api-keys#add-a-private-api-key) you copied in Recurly.
+2. For **API Key**, paste the [private API key](https://docs.recurly.com/docs/api-keys#generate-an-api-key) you copied in Recurly.
 3. (Optional) For **Start Date**, enter the UTC date and time to start replicating data from, in the format `YYYY-MM-DDTHH:mm:ssZ`. If you leave it empty, the connector replicates the last five years of data.
 4. (Optional) For **End Date**, enter the UTC date and time to stop replicating data at, in the format `YYYY-MM-DDTHH:mm:ssZ`. Records updated after this time aren't replicated. If you leave it empty, the connector replicates data up to the time of the sync.
 5. (Optional) For **Number of concurrent threads**, enter the number of requests the connector sends to Recurly in parallel, from 1 to 20. The default is 10.
@@ -40,9 +40,11 @@ The Recurly source connector supports the following sync modes:
 
 The Export Dates, Gift Cards, External Subscriptions, External Subscription Payment Phases, and Usage Records streams support Full Refresh only. All other streams support incremental syncs. Most incremental streams use `updated_at` as the cursor. The Account Notes stream uses `created_at`.
 
-For a first sync or a reset, leaving **Start Date** empty starts date-filtered streams five years before the sync runs. To retrieve older history, enter an explicit start date. Subsequent incremental syncs resume from their saved progress rather than rereading five years of history. Export Dates is not filtered by these dates.
+Leaving **Start Date** empty sets the beginning of the date range to five years before each sync runs. To retrieve older history, enter an explicit start date. In Full Refresh mode, this moving five-year window applies on every sync, not just the first sync or a reset. With **Full Refresh + Overwrite**, records last updated before that window can drop out of your destination on later syncs. Set an explicit start date to retain older history.
 
-Account Coupon Redemptions, Account Notes, and Billing Infos only revisit accounts updated since their previous sync. Changes to records within an account can be missed if Recurly does not also update the account. Shipping Addresses revisits accounts within the configured date range on each sync. Unique Coupons reads codes for bulk coupons within the configured date range.
+Incremental streams use saved progress to request newer records, but some also reread accounts or coupons to find related records. Account Coupon Redemptions, Account Notes, and Billing Infos only revisit accounts updated since their previous incremental sync. Changes to records within an account can be missed if Recurly does not also update the account. Shipping Addresses rereads accounts updated within the configured date range on every sync. Unique Coupons similarly rereads bulk coupons updated within that range to find their codes; Unique Coupons Parent lists those bulk coupons.
+
+Export Dates, Gift Cards, External Subscriptions, External Subscription Payment Phases, and Usage Records ignore **Start Date** and **End Date**. Usage Records also reads all subscriptions to find their add-ons, without filtering those subscriptions by these dates.
 
 ## Supported Streams
 
@@ -75,12 +77,12 @@ The Usage Records stream includes both billed and unbilled usage.
 
 Some streams only return data when the matching feature is enabled on your Recurly site:
 
-| Stream | Required Recurly feature |
-| :----- | :----------------------- |
-| Gift Cards | Gift cards |
-| External Subscriptions, External Subscription Payment Phases | External subscriptions |
-| Usage Records | Usage-based billing |
-| Items | Item catalog, which also requires Credit Invoices |
+| Stream                                                       | Required Recurly feature                          |
+| :----------------------------------------------------------- | :------------------------------------------------ |
+| Gift Cards                                                   | Gift cards                                        |
+| External Subscriptions, External Subscription Payment Phases | External subscriptions                            |
+| Usage Records                                                | Usage-based billing                               |
+| Items                                                        | Item catalog, which also requires Credit Invoices |
 
 If Recurly reports that your site lacks the required feature for one of these streams or for Account Acquisitions, the connector logs a message, skips the stream, and the sync continues.
 
@@ -102,9 +104,7 @@ The Usage Records stream reads every subscription on every sync, then makes one 
 
 ### Authentication errors
 
-If Recurly returns HTTP 401 or 403, the sync fails with a configuration error. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field.
-
-Billing Infos reads the multiple-payment-method endpoint associated with Recurly's premium Wallet feature. Check that your site has access to the features needed by your selected streams. If a selected stream returns HTTP 403 despite a valid key, check with Recurly whether your site's permissions or feature access restrict that data, or deselect the stream. The connector does not skip forbidden streams automatically.
+If Recurly returns HTTP 401 or 403, the sync fails with a configuration error, except when a feature-aware stream receives the missing-feature response described above. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field. If HTTP 403 persists with a valid key and is not a missing-feature response, check the site's access permissions with Recurly.
 
 ## IP allow list
 
