@@ -10,7 +10,7 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 - **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
 - **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Airbyte writes data directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
-- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for faster data loading.
+- **Improved performance**: The new architecture uses ClickHouse's [`RowBinary`](https://clickhouse.com/docs/interfaces/formats/RowBinary) format and batch inserts for faster data loading.
 - **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
 
 ## Supported sync modes
@@ -29,7 +29,7 @@ Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com
 
 By default, the connector stores data only on the node that receives each insert. On a self-managed ClickHouse cluster with multiple replicas, this means reads through a load balancer may return incomplete data because the other nodes are unaware of the inserted rows. Similarly, table definitions (CREATE, ALTER, DROP) are only applied on the connected node.
 
-Two advanced options make the connector cluster-aware. ClickHouse Cloud does not need either of these — it uses `SharedMergeTree` and handles replication automatically.
+Two advanced options make the connector cluster-aware. These options are available only in Self-Managed Airbyte, not Airbyte Cloud. ClickHouse Cloud does not need either of these — it uses `SharedMergeTree` and handles replication automatically.
 
 - **Enable Replication** (`use_replicated_engines`): ensures synced data is [replicated](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication) across all cluster nodes. The replicated engine is emitted without explicit Keeper path arguments, so the server must be able to derive them — which is the case inside a database using the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated), or when `default_replica_path`/`default_replica_name` macros are configured in the server. Requires ClickHouse Keeper (or ZooKeeper).
 - **Cluster Name** (`cluster_name`): when provided, table definitions are automatically propagated to all cluster nodes. Required for clusters whose databases use the default Atomic engine. Leave empty when the target database uses the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated) — there, DDL replicates through the database itself and a cluster name is unnecessary. The name is validated against the charset `[A-Za-z0-9_.-]` and the connection is rejected if invalid characters are used.
@@ -44,13 +44,9 @@ Typical combinations:
 
 ## Deduplication
 
-For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+For deduplication in Incremental - Append + Deduped sync mode, the connector uses the cursor as the version column only when its ClickHouse type is `Int64`, `Date32`, or `DateTime64(3)`.
 
-- Integer types (`Int64`, etc.)
-- Date
-- Timestamp (`DateTime64`)
-
-If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
+If the stream has no cursor, uses a CDC cursor, or has a cursor of another type, the connector uses `_airbyte_extracted_at` for deduplication ordering. This fallback may not reflect the natural ordering of your source data.
 
 :::warning
 
@@ -154,7 +150,7 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
     - **Password**: The password for the ClickHouse user
     - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
-    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
+    - **Record Window Size** (advanced): The maximum number of records to write in a single batch (default: `100000`). Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
     - **Enable Replication** (advanced): Enable this for self-managed ClickHouse clusters with multiple replicas to ensure data is synchronized across all nodes. See [Self-managed clusters](#self-managed-clusters) for details.
     - **Cluster Name** (advanced): Name of your ClickHouse cluster. When provided, table definitions are propagated to all cluster nodes. See [Self-managed clusters](#self-managed-clusters) for details.
 
@@ -172,9 +168,11 @@ Airbyte writes each stream to its own table in ClickHouse. It creates tables in 
 
 The connector converts Airbyte data types to ClickHouse types as follows:
 
-- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
+- **Number** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
 - **Timestamp** types → `DateTime64(3)` (millisecond precision)
 - **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
+- **Date** types → `Date32`
+- **Time** types, with or without time zone → `String`
 - **Integer** types → `Int64`
 - **Boolean** types → `Bool`
 - **String** types → `String`
@@ -204,18 +202,20 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.34     | 2026-10-28 | [89658](https://github.com/airbytehq/airbyte/pull/89658)   | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139. |
+| 2.1.33     | 2026-10-27 | [90134](https://github.com/airbytehq/airbyte/pull/90134)   | Upgrade ClickHouse Java client to 0.11.0.                                      |
 | 2.1.32     | 2026-10-09 | [88421](https://github.com/airbytehq/airbyte/pull/88421)   | Upgrade ClickHouse Java client to 0.10.0; test against ClickHouse 26.7.        |
 | 2.1.31     | 2026-10-01 | [87612](https://github.com/airbytehq/airbyte/pull/87612)   | Upgrade to Bulk CDK 1.1.1.                                                     |
 | 2.1.30     | 2026-09-15 | [86332](https://github.com/airbytehq/airbyte/pull/86332)   | Version bump to republish the Cloud-specific connector spec.                   |
 | 2.1.29     | 2026-08-25 | [85033](https://github.com/airbytehq/airbyte/pull/85033)   | Support self-managed clusters: optional replicated table engines and ON CLUSTER DDL |
 | 2.1.28     | 2026-08-24 | [84983](https://github.com/airbytehq/airbyte/pull/84983)   | Upgrade to Bulk CDK 1.0.25. |
-| 2.1.27     | 2026-08-05 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
-| 2.1.26     | 2026-07-21 | [82684](https://github.com/airbytehq/airbyte/pull/82684)   | fix(destination-clickhouse): avoid failed count for missing temp tables        |
-| 2.1.25     | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
-| 2.1.24     | 2026-05-20 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
-| 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
+| 2.1.27     | 2026-08-07 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
+| 2.1.26     | 2026-07-28 | [82684](https://github.com/airbytehq/airbyte/pull/82684)   | fix(destination-clickhouse): avoid failed count for missing temp tables        |
+| 2.1.25     | 2026-07-15 | [82103](https://github.com/airbytehq/airbyte/pull/82103)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 2.1.24     | 2026-05-21 | [78229](https://github.com/airbytehq/airbyte/pull/78229)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
+| 2.1.23     | 2026-02-05 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
-| 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
+| 2.1.21     | 2026-01-26 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
 | 2.1.20     | 2026-01-15 | [71120](https://github.com/airbytehq/airbyte/pull/71120)   | Add schema and table identifier regression tests; upgrade CDK to 0.1.105       |
 | 2.1.19     | 2026-01-08 | [70996](https://github.com/airbytehq/airbyte/pull/70996)   | Upgrade to CDK 0.1.97                                                          |
 | 2.1.18     | 2025-12-17 | [70963](https://github.com/airbytehq/airbyte/pull/70963)   | Internal refactor: Remove name generator classes, simplify naming utilities    |

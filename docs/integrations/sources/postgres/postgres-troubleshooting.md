@@ -26,7 +26,7 @@ There are some notable shortcomings associated with the Xmin replication method:
 ### Version Requirements
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
-- Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
+- Use Postgres v9.3.x or above for non-CDC workflows. For CDC version requirements, see [Step 1 of CDC setup](../postgres#step-1-prepopulate-your-postgres-source-configuration).
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ### CDC Requirements
@@ -155,6 +155,8 @@ If you know there are database changes to be synced, but the connector cannot re
 When using the `Read Changes using Write-Ahead Log (CDC)` update method, you might encounter a situation where your initial sync is successful, but further syncs fail. You may also notice that the `confirmed_flush_lsn` column of the server's `pg_replication_slots` view doesn't advance as expected.
 
 This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector when dealing with low transaction volumes. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
+
+In connector version 3.8.10 and later (Debezium 3.4), the PostgreSQL JDBC driver's keep-alive thread does not advance the replication slot when **LSN commit behavior** is **While reading Data** (Debezium's `connector` mode). With the default **After loading Data in the destination** setting (`manual` mode), Airbyte manages LSN flushing rather than the JDBC keep-alive thread. On low-activity databases, configure a heartbeat query as described below.
 
 #### Simple fix (read-only)
 

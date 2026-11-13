@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 from airbyte_cdk.models import Type
 from airbyte_cdk.sources.declarative import concurrent_declarative_source as concurrent_source_module
@@ -50,6 +51,11 @@ def _stable_manifest_key(manifest: dict[str, Any]) -> str:
     return hashlib.sha256(serialized_manifest).hexdigest()
 
 
+def _manifest_stream_count() -> int:
+    with MANIFEST_PATH.open() as manifest_file:
+        return len(yaml.safe_load(manifest_file)["streams"])
+
+
 def _matches_type(value: Any, type_declaration: Any) -> bool:
     allowed = type_declaration if isinstance(type_declaration, list) else [type_declaration]
     if value is None:
@@ -64,6 +70,8 @@ def _matches_type(value: Any, type_declaration: Any) -> bool:
         return type(value) in (int, float)
     if "boolean" in allowed:
         return isinstance(value, bool)
+    if "object" in allowed:
+        return isinstance(value, dict)
     return False
 
 
@@ -179,7 +187,7 @@ def pytest_sessionfinish(session, exitstatus):
             if hasattr(item, "callspec") and "stream_name" in item.callspec.params
         }
     )
-    if len(stream_names) != 42:
+    if len(stream_names) != _manifest_stream_count():
         return
     validated_record_counts = AGGREGATED_VALIDATED_RECORD_COUNTS if is_xdist_controller else VALIDATED_RECORD_COUNTS
     missing = stream_names - validated_record_counts.keys()

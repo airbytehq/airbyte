@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
-6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+6. **GitHub Repositories** - Enter a list of GitHub organizations and repositories, e.g. `airbytehq/airbyte` for a single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. To sync all repositories from an organization, use `airbytehq/*`. You can also use prefix-based wildcards to match multiple repositories, e.g. `airbytehq/a*`.
 
    :::caution
    Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -67,12 +67,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_jobs`, `workflow_run_attempts`, `workflow_runs`, `workflows`.
 
    - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
+9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its full REST API base URL, for example `https://github.company.org/api/v3/`. Leave empty to use `https://api.github.com/`.
 10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
 
 11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. While the declarative migration is in progress this setting applies only to the streams already moved to the declarative manifest (`repositories`, `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users`, `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments`, `pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`, `commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`); the remaining streams are still read one at a time. Raising it speeds up those streams but increases the risk of hitting GitHub's secondary rate limits.
@@ -140,6 +140,7 @@ This connector outputs the following incremental streams:
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
 - [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
+- [WorkflowRunAttempts](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Entity-Relationship Diagram (ERD)
@@ -152,20 +153,55 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
+2. Streams `workflow_runs`, `workflow_jobs` and `workflow_run_attempts` are almost pure incremental:
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   - read new records and some portion of old records (the past 32 days — GitHub stops allowing a re-run 30 days after a run was created, and the connector keeps two days of margin, so an older run can no longer change) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+   `workflow_runs` holds the latest attempt of each run and nothing else: the GitHub endpoint it reads returns a single
+   record per run, so when a workflow is re-run the earlier attempts never reach your destination, and the record you do
+   get mixes the latest attempt's status with the original attempt's `created_at`. Sync `workflow_run_attempts` if you
+   need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, with each attempt's own
+   `created_at`, `conclusion`, `logs_url` and `jobs_url`.
+
+   GitHub has no endpoint that lists attempts, so each attempt of a re-run workflow costs one request. A run that was
+   never re-run costs nothing beyond the run listing: its only attempt is emitted from the listing record, with
+   `logs_url` and `jobs_url` scoped to the attempt. Its `created_at` and `updated_at` then match `workflow_runs`, and can
+   be one second earlier than GitHub's attempt endpoint reports for the same attempt, and its `pull_requests` and, for a
+   run still in progress, its `status` are as of the listing read, like in `workflow_runs`. A run can be emitted twice
+   when new runs are created while the listing is read, as in `workflow_runs`; destinations that deduplicate on the
+   primary key are unaffected. Which runs fall in
+   the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
+   run's attempts are then emitted, including ones last updated before the cursor.
+
+   Three things worth planning for before you enable it:
+
+   - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every run created since the
+     **Start Date**, so budget one listing request per 100 runs plus one request per attempt of every re-run run. An
+     authenticated token is limited to 5,000 requests an hour. That work does not accumulate across
+     syncs: a repository's cursor only advances once that repository has been read to the end, so a sync interrupted
+     part-way through one starts that repository over. Repositories that did finish are not re-read. Enabling the stream
+     on a connection that already syncs `workflow_runs` still starts from the **Start Date**: it keeps its own cursor.
+   - **The run listing is read once per selected stream.** `workflow_runs`, `workflow_jobs` and `workflow_run_attempts`
+     each page it back to 32 days before their own cursor; the streams cannot share a read yet.
+   - **More tokens help only if they belong to different accounts.** GitHub's 5,000 requests an hour is per account,
+     and it scopes secondary rate limits per account too, so extra tokens on one account buy nothing. Above that, the
+     connector holds itself to one global budget of 900 requests per minute, which caps throughput at around eleven
+     tokens' worth.
+
+   If the token cannot read Actions for a repository, GitHub answers 403 and the connector skips that repository with a
+   log line rather than failing the sync - so an empty `workflow_run_attempts` can also mean a missing `workflow` scope
+   (classic token) or `Actions: read` permission (fine-grained token), not just an absence of re-runs.
+
+3. Other incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
 
    Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. For large streams, a distant `start_date` can require many API requests. If GitHub returns errors while fetching older records, review the sync logs and consider a more recent `start_date` if you don't need the full history.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
    - `assignees`
@@ -226,7 +262,7 @@ For example, a connection syncing `docker/*` since 2026-01-01 that you widen to 
 
 To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
 
-This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+This currently affects the `repositories` and `workflow_run_attempts` streams. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
 
 #### GitHub Enterprise Server with rate limiting disabled
 
@@ -269,6 +305,10 @@ Two smaller changes in the same release:
 - `pull_requests` now fills `base.repo_id` with the id of the base repository. Earlier versions always emitted `null` there because of a bug in the record transformation; `head.repo_id` is unchanged.
 - `pull_requests` always lists a repository newest-first. Earlier versions listed it oldest-first on the very first sync of a connection, which let a failed first sync resume part-way through a repository; a failed attempt now restarts the repository, as it already did on every later sync.
 
+#### `review_comments` page size
+
+Since version 2.8.2, `review_comments` requests 100 comments per page instead of 10. On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one returns more data and takes longer, so sync speed for this stream may change compared with earlier versions. The other large streams still use 10 per page.
+
 #### Permissions and scopes
 
 If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
@@ -292,6 +332,13 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.6 | 2026-11-10 | [91494](https://github.com/airbytehq/airbyte/pull/91494) | Update dependencies |
+| 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
+| 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
+| 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
+| 2.8.2 | 2026-10-28 | [90165](https://github.com/airbytehq/airbyte/pull/90165) | Request `review_comments` with `per_page=100` to avoid GitHub timeouts on very large repositories |
+| 2.8.1 | 2026-10-27 | [89848](https://github.com/airbytehq/airbyte/pull/89848) | Update dependencies |
+| 2.8.0 | 2026-10-21 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add the `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt of each run |
 | 2.7.9 | 2026-10-20 | [89187](https://github.com/airbytehq/airbyte/pull/89187) | Update dependencies |
 | 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message, and names the skipped repository, instead of reporting a missing repository or missing token scopes. Upgrades to CDK 7.37.0 |
 | 2.7.7 | 2026-10-13 | [88598](https://github.com/airbytehq/airbyte/pull/88598) | Update dependencies |
@@ -340,7 +387,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
 | 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
 | 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
-| 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
+| 2.1.15 | 2026-04-01 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
 | 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
