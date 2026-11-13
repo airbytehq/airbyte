@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObjectProvide
 
 class DynamicOperationProvider(
     private val objectsSupplier: DestinationObjectProvider,
-    private val operationAssembler: DestinationOperationAssembler
+    private val operationAssembler: DestinationOperationAssembler,
 ) : OperationProvider {
 
     override fun get(): List<DestinationOperation> {

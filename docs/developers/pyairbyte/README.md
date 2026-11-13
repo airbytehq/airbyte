@@ -25,7 +25,7 @@ Check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get start
 
 ## PyAirbyte API Reference
 
-See the [PyAirbyte API Reference](./reference/) for a full list of classes, methods, and usage examples.
+See the [PyAirbyte API Reference](./reference/README.md) for a full list of classes, methods, and usage examples.
 
 ## Usage
 

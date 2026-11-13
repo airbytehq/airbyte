@@ -24,15 +24,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - sessions
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -46,21 +37,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /segments/v1
           http_method: GET
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - segments
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -74,21 +58,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /operations/v1
           http_method: GET
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - operations
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -106,17 +83,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - blockrules
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -134,17 +101,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - domainsettings
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -162,17 +119,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - geosettings
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -190,17 +137,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - recordingfeatures
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -220,15 +157,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - sessionTargetingRules
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -242,21 +170,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /webhooks/v1/endpoints
           http_method: GET
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - webhooks
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
+              - endpoints
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -276,19 +197,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - eventDefs
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: TokenBased
-              token_field: nextPaginationToken
-              token_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: pagination_token
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/eventDefs"
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: pagination_token
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("nextPaginationToken") }}'
+      stop_condition: '{{ not response.get("nextPaginationToken") }}'
   base_requester:
     type: HttpRequester
     url_base: https://api.fullstory.com
@@ -534,7 +456,15 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      endpoints:
+      created:
+        type:
+          - "null"
+          - string
+      enabled:
+        type:
+          - "null"
+          - boolean
+      eventTypes:
         type:
           - "null"
           - array
@@ -543,43 +473,26 @@ schemas:
             - "null"
             - object
           properties:
-            created:
+            eventName:
               type:
                 - "null"
                 - string
-            enabled:
-              type:
-                - "null"
-                - boolean
-            event_types:
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  event_name:
-                    type:
-                      - "null"
-                      - string
-                  subcategory:
-                    type:
-                      - "null"
-                      - string
-            id:
+            subcategory:
               type:
                 - "null"
                 - string
-            modified:
-              type:
-                - "null"
-                - string
-            url:
-              type:
-                - "null"
-                - string
+      id:
+        type:
+          - "null"
+          - string
+      modified:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
     title: Webhooks Schema
   eventDefs:
     type: object

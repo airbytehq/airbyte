@@ -13,11 +13,11 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.GenericFileWriterFactory;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.BaseTaskWriter;
-import org.apache.iceberg.io.FileAppenderFactory;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.types.TypeUtil;
@@ -47,13 +47,13 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
   public BaseDeltaTaskWriter(final Table table,
                              final PartitionSpec spec,
                              final FileFormat format,
-                             final FileAppenderFactory<Record> appenderFactory,
+                             final GenericFileWriterFactory writerFactory,
                              final OutputFileFactory fileFactory,
                              final FileIO io,
                              final long targetFileSize,
                              final Schema schema,
                              final Set<Integer> identifierFieldIds) {
-    super(spec, format, appenderFactory, fileFactory, io, targetFileSize);
+    super(spec, format, writerFactory, fileFactory, io, targetFileSize);
     this.table = table;
     this.schema = schema;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);
