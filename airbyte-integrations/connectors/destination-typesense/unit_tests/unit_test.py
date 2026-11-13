@@ -2,9 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+import tomllib
 from destination_typesense.writer import TypesenseWriter
+from packaging.specifiers import SpecifierSet
+
+
+@pytest.mark.parametrize("filename", ["pyproject.toml", "poetry.lock"])
+@pytest.mark.parametrize("version, supported", [("3.10.20", False), ("3.11.0", True), ("3.11.15", True), ("3.12.0", False)])
+def test_python_version_range(filename: str, version: str, supported: bool) -> None:
+    with (Path(__file__).resolve().parents[1] / filename).open("rb") as file:
+        metadata = tomllib.load(file)
+    if filename == "pyproject.toml":
+        constraint = metadata["tool"]["poetry"]["dependencies"]["python"]
+    else:
+        constraint = metadata["metadata"]["python-versions"]
+    assert (version in SpecifierSet(constraint)) is supported
 
 
 @patch("typesense.Client")
