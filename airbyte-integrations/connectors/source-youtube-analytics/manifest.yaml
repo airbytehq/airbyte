@@ -4,8 +4,10 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # Must be a report type YouTube still generates files for: a stream whose job has no report
+  # files has no slices, and the check fails. `channel_annotations_a1` was retired by YouTube.
   stream_names:
-    - channel_annotations_a1
+    - channel_basic_a3
 
 definitions:
   streams:

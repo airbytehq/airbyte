@@ -62,3 +62,11 @@ The migrations in the manifest run in order. `ReportsStateMigration` converts pr
 The new parent value can only move the cursor backward relative to the file's actual `createTime`: the old value represents a data day or earlier timestamp, while the report file is generated later. That can cause a one-time re-listing, but cannot skip a report. Legacy values that cannot be parsed, such as `99999999` in `unit_tests/test_state_migration.py`, are dropped from the parent cursor, so the stream falls back to its configured start time. `integration_tests/abnormal_state.json` uses the parseable future date `20991231`, which migrates to a 2099 `createTime` so the future-state acceptance test reads no records. The migration tests are in `unit_tests/test_state_migration.py`; end-to-end cursor and correction coverage is in `unit_tests/mock_server/test_incremental_reports.py`.
 
 **Why this matters:** The migration order preserves both old state formats and per-partition cursors while moving incremental tracking to report creation time. Reordering or changing the conversions can cause unnecessary re-reads or make the source skip corrected report files.
+
+## 7. Connection Check Reads a Real Report Stream
+
+`check` runs `CheckStream` on `channel_basic_a3`, so it walks the same job → report → download chain as a read. A stream whose job has no report files yields no slices, and the CDK then fails the check with `no stream slices were found`. That is how the check broke while it pointed at `channel_annotations_a1`, a report type YouTube retired: its job never gets new files. `unit_tests/mock_server/test_check.py` covers this.
+
+The same failure still occurs for an account that has no `channel_basic_a3` job yet: the check creates the job, but YouTube typically needs up to 48 hours to generate the first file.
+
+**Why this matters:** The check stream must be a report type YouTube currently generates. Pointing it at a retired or rarely populated report blocks source setup for every new user.
