@@ -84,42 +84,42 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 
 | Stream                                    | Environment  | Key                                        | Incremental |
 |:------------------------------------------|:-------------|:-------------------------------------------|:------------|
-| Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
-| AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
-| Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
-| Campaigns                                 | Prod,Sandbox | campaign_id                                | Yes         |
-| AdsReportsHourly                          | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
-| AdsReportsDaily                           | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
-| AdsReportsLifetime                        | Prod,Sandbox | ad_id                                      | No          |
+| Advertisers                               | Prod         | advertiser_id                              | No          |
+| AdGroups                                  | Prod         | adgroup_id                                 | Yes         |
+| Ads                                       | Prod         | ad_id                                      | Yes         |
+| Campaigns                                 | Prod         | campaign_id                                | Yes         |
+| AdsReportsHourly                          | Prod         | ad_id, stat_time_hour                      | Yes         |
+| AdsReportsDaily                           | Prod         | ad_id, stat_time_day                       | Yes         |
+| AdsReportsLifetime                        | Prod         | ad_id                                      | No          |
 | AdvertisersReportsHourly                  | Prod         | advertiser_id, stat_time_hour              | Yes         |
 | AdvertisersReportsDaily                   | Prod         | advertiser_id, stat_time_day               | Yes         |
 | AdvertisersReportsLifetime                | Prod         | advertiser_id                              | No          |
-| AdGroupsReportsHourly                     | Prod,Sandbox | adgroup_id, stat_time_hour                 | Yes         |
-| AdGroupsReportsDaily                      | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
-| AdGroupsReportsLifetime                   | Prod,Sandbox | adgroup_id                                 | No          |
-| Audiences                                 | Prod,Sandbox | audience_id                                | No          |
-| CampaignsReportsHourly                    | Prod,Sandbox | campaign_id, stat_time_hour                | Yes         |
-| CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
-| CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
-| CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
-| CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
-| CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
+| AdGroupsReportsHourly                     | Prod         | adgroup_id, stat_time_hour                 | Yes         |
+| AdGroupsReportsDaily                      | Prod         | adgroup_id, stat_time_day                  | Yes         |
+| AdGroupsReportsLifetime                   | Prod         | adgroup_id                                 | No          |
+| Audiences                                 | Prod         | audience_id                                | No          |
+| CampaignsReportsHourly                    | Prod         | campaign_id, stat_time_hour                | Yes         |
+| CampaignsReportsDaily                     | Prod         | campaign_id, stat_time_day                 | Yes         |
+| CampaignsReportsLifetime                  | Prod         | campaign_id                                | No          |
+| CreativeAssetsImages                      | Prod         | image_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod         | music_id                                   | No          |
+| CreativeAssetsPortfolios                  | Prod         | creative_portfolio_id                      | No          |
+| CreativeAssetsVideos                      | Prod         | video_id                                   | Yes         |
 | AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
 | AdvertisersAudienceReportsLifetime        | Prod         | advertiser_id, gender, age                 | No          |
-| AdGroupAudienceReportsDaily               | Prod,Sandbox | adgroup_id, stat_time_day, gender, age     | Yes         |
-| AdGroupAudienceReportsByCountryDaily      | Prod,Sandbox | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupAudienceReportsByPlatformDaily     | Prod,Sandbox | adgroup_id, stat_time_day, platform        | Yes         |
-| AdsAudienceReportsDaily                   | Prod,Sandbox | ad_id, stat_time_day, gender, age          | Yes         |
-| AdsAudienceReportsByCountryDaily          | Prod,Sandbox | ad_id, stat_time_day, country_code         | Yes         |
-| AdsAudienceReportsByPlatformDaily         | Prod,Sandbox | ad_id, stat_time_day, platform             | Yes         |
-| AdsAudienceReportsByProvinceDaily         | Prod,Sandbox | ad_id, stat_time_day, province_id          | Yes         |
-| CampaignsAudienceReportsDaily             | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
-| CampaignsAudienceReportsByCountryDaily    | Prod,Sandbox | campaign_id, stat_time_day, country_code   | Yes         |
-| CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
+| AdGroupAudienceReportsDaily               | Prod         | adgroup_id, stat_time_day, gender, age     | Yes         |
+| AdGroupAudienceReportsByCountryDaily      | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupAudienceReportsByPlatformDaily     | Prod         | adgroup_id, stat_time_day, platform        | Yes         |
+| AdsAudienceReportsDaily                   | Prod         | ad_id, stat_time_day, gender, age          | Yes         |
+| AdsAudienceReportsByCountryDaily          | Prod         | ad_id, stat_time_day, country_code         | Yes         |
+| AdsAudienceReportsByPlatformDaily         | Prod         | ad_id, stat_time_day, platform             | Yes         |
+| AdsAudienceReportsByProvinceDaily         | Prod         | ad_id, stat_time_day, province_id          | Yes         |
+| CampaignsAudienceReportsDaily             | Prod         | campaign_id, stat_time_day, gender, age    | Yes         |
+| CampaignsAudienceReportsByCountryDaily    | Prod         | campaign_id, stat_time_day, country_code   | Yes         |
+| CampaignsAudienceReportsByPlatformDaily   | Prod         | campaign_id, stat_time_day, platform       | Yes         |
 | SparkAds                                  | Prod         | spark_ads_post_id                          | No          |
 | Pixels                                    | Prod         | pixel_id                                   | No          |
 | PixelInstantPageEvents                    | Prod         | -                                          | No          |
@@ -128,8 +128,6 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
 | AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
-
-Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
