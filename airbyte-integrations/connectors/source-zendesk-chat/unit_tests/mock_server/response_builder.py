@@ -114,21 +114,6 @@ class BansRecordBuilder(ZendeskChatRecordBuilder):
         return self
 
 
-class ChatsRecordBuilder(ZendeskChatRecordBuilder):
-    @classmethod
-    def chats_record(cls) -> "ChatsRecordBuilder":
-        record_template = cls.extract_record("chats", __file__, NestedPath(["chats", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("update_timestamp"))
-
-    def with_id(self, id: str) -> "ChatsRecordBuilder":
-        self._record["id"] = id
-        return self
-
-    def with_update_timestamp(self, timestamp: str) -> "ChatsRecordBuilder":
-        self._record["update_timestamp"] = timestamp
-        return self
-
-
 class DepartmentsRecordBuilder(ZendeskChatRecordBuilder):
     @classmethod
     def departments_record(cls) -> "DepartmentsRecordBuilder":
@@ -251,16 +236,6 @@ class BansResponseBuilder(HttpResponseBuilder):
     @classmethod
     def bans_response(cls) -> "BansResponseBuilder":
         return cls(find_template("bans", __file__), FieldPath("ip_address"), SinceIdPaginationStrategy())
-
-
-class ChatsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def chats_response(cls, next_page_url: Optional[str] = None) -> "ChatsResponseBuilder":
-        return cls(
-            find_template("chats", __file__),
-            NestedPath(["chats"]),
-            NextPagePaginationStrategy(next_page_url),
-        )
 
 
 class DepartmentsResponseBuilder(HttpResponseBuilder):

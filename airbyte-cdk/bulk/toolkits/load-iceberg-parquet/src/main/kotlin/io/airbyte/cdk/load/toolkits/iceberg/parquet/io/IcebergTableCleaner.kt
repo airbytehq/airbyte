@@ -38,9 +38,12 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
     ) {
         catalog.dropTable(identifier, true)
         if (io is SupportsPrefixOperations) {
-            io.deletePrefix(tableLocation)
+            io.deletePrefix(tableDirectory(tableLocation))
         }
     }
+
+    private fun tableDirectory(tableLocation: String): String =
+        if (tableLocation.endsWith("/")) tableLocation else "$tableLocation/"
 
     fun deleteOldGenerationData(
         table: Table,
