@@ -1980,3 +1980,76 @@ class TestCheckBreakdowns:
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2
+
+
+class TestCursorDoesNotRegressAfterInterruptedSync:
+    """When a sync is interrupted partway through the lookback window, the persisted
+    ``date_start`` cursor must never move behind the cursor the sync started from.
+    Otherwise every interrupted sync pushes the next sync's start back by another
+    lookback window and the re-read range keeps growing."""
+
+    LOOKBACK_DAYS = 28
+    COMPLETED_JOBS_BEFORE_FAILURE = 5
+
+    def _run_interrupted_sync(self, mocker, api, account_id, state, start_date, end_date):
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=self.LOOKBACK_DAYS,
+        )
+
+        manager_cls = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager")
+        generated_starts = []
+
+        def completed_jobs_factory(api, jobs, account_id):
+            def completed_jobs():
+                for i, job_kwargs in enumerate(jobs):
+                    generated_starts.append(job_kwargs["interval"].start)
+                    if i == self.COMPLETED_JOBS_BEFORE_FAILURE:
+                        raise RuntimeError("AdReportRun job interrupted")
+                    job = mocker.Mock(spec=InsightAsyncJob)
+                    job.interval = job_kwargs["interval"]
+                    record = mocker.Mock()
+                    record.export_all_data.return_value = {"date_start": job.interval.start.isoformat(), "ad_id": "1"}
+                    job.get_result.return_value = [record]
+                    yield job
+
+            manager = mocker.Mock()
+            manager.completed_jobs.side_effect = completed_jobs
+            return manager
+
+        manager_cls.side_effect = completed_jobs_factory
+        mocker.patch(
+            "source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob",
+            side_effect=lambda **kwargs: kwargs,
+        )
+
+        emitted_states = []
+        with pytest.raises(RuntimeError, match="AdReportRun job interrupted"):
+            for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+                emitted_states.append(copy.deepcopy(stream.state))
+        return emitted_states, generated_starts
+
+    @freeze_time("2026-11-13")
+    def test_cursor_never_moves_behind_saved_state_on_interrupted_syncs(self, mocker, api):
+        account_id = "123"
+        start_date = datetime(2026, 1, 1)
+        end_date = datetime(2026, 11, 13)
+        cursor = date(2026, 11, 10)
+        state = {account_id: {"date_start": cursor.isoformat(), "slices": []}, "time_increment": 1}
+
+        # Two consecutive interrupted syncs, each starting from the state the previous one emitted.
+        first_states, first_starts = self._run_interrupted_sync(mocker, api, account_id, state, start_date, end_date)
+        second_states, second_starts = self._run_interrupted_sync(mocker, api, account_id, first_states[-1], start_date, end_date)
+
+        lookback_start = cursor - timedelta(days=self.LOOKBACK_DAYS)
+        # Both syncs re-read exactly the documented lookback window, starting at cursor - lookback.
+        assert first_starts[0] == lookback_start
+        assert second_starts[0] == lookback_start, "second sync start moved back: cursor regressed after interrupted sync"
+
+        # Every state checkpoint keeps the cursor at the value the sync started from.
+        for emitted in first_states + second_states:
+            assert emitted[account_id]["date_start"] == cursor.isoformat()
