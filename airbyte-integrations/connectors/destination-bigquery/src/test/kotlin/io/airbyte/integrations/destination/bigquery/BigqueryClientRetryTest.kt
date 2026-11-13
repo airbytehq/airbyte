@@ -14,21 +14,122 @@ import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.QueryJobConfiguration
+import com.google.cloud.bigquery.TableId
+import com.google.cloud.bigquery.WriteChannelConfiguration
 import com.google.cloud.http.HttpTransportOptions
+import io.airbyte.cdk.TransientErrorException
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.Sql
+import io.airbyte.cdk.output.DefaultExceptionClassifier
+import io.airbyte.cdk.output.TransientError
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoader
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
 class BigqueryClientRetryTest {
+    @ParameterizedTest
+    @CsvSource(
+        "open,400,Request had invalid euc header.,true",
+        "write,400,Request had invalid euc header.,true",
+        "close,400,Request had invalid euc header.,true",
+        "close,400,Invalid request,false",
+        "close,403,Request had invalid euc header.,false",
+    )
+    fun `upload classifies only EUC 400 as transient without replaying the batch`(
+        phase: String,
+        statusCode: Int,
+        message: String,
+        transient: Boolean,
+    ) = runTest {
+        val failure =
+            response(
+                statusCode,
+                """{"error":{"code":$statusCode,"errors":[{"domain":"global","message":"$message","reason":"invalid"}],"message":"$message","status":"INVALID_ARGUMENT"}}""",
+            )
+        val transport =
+            ScriptedHttpTransport(
+                if (phase == "open") listOf(failure)
+                else
+                    listOf(
+                        ScriptedResponse(
+                            200,
+                            "",
+                            mapOf("Location" to "https://bigquery.googleapis.com/upload/session"),
+                        ),
+                        failure,
+                    ),
+            )
+        val formatter =
+            object : RecordFormatter {
+                override fun formatRecord(record: DestinationRecordRaw): String =
+                    """{"value":"${if (phase == "write") "x".repeat(16 * 1024 * 1024) else "hello"}"}"""
+            }
+        val loader =
+            BigqueryBatchStandardInsertsLoader(
+                bigqueryClient(transport),
+                WriteChannelConfiguration.newBuilder(TableId.of("dataset", "table")).build(),
+                JobId.of("test-project", "fixed-upload-job"),
+                formatter,
+            )
+
+        val exception =
+            assertThrows<Exception> {
+                loader.accept(mockk())
+                loader.finish()
+            }
+        if (transient) {
+            assertTrue(
+                exception is TransientErrorException,
+                "Expected transient error, got $exception",
+            )
+            assertEquals(
+                TransientError(
+                    "BigQuery rejected a data upload with a temporary credential-header error.",
+                ),
+                DefaultExceptionClassifier(1).classify(exception),
+            )
+            assertTrue(exception.cause is BigQueryException)
+        } else {
+            assertTrue(exception is BigQueryException)
+            assertEquals(statusCode, (exception as BigQueryException).code)
+            assertNull(DefaultExceptionClassifier(1).classify(exception))
+        }
+        val requestCount = if (phase == "open") 1 else 2
+        assertEquals(requestCount, transport.requests.size)
+        assertEquals("POST", transport.requests.first().method)
+        assertTrue(transport.requests.first().body.contains("fixed-upload-job"))
+        if (phase != "open") {
+            val upload = transport.requests.last()
+            assertEquals("PUT", upload.method)
+            assertEquals("https://bigquery.googleapis.com/upload/session", upload.url)
+            val range =
+                upload.headers.entries
+                    .single { it.key.equals("Content-Range", ignoreCase = true) }
+                    .value
+                    .single()
+            assertEquals(phase == "write", range.endsWith("/*"))
+        }
+        loader.close()
+        assertEquals(
+            requestCount,
+            transport.requests.size,
+            "Cleanup must not commit or replay a partial batch",
+        )
+    }
+
     @ParameterizedTest
     @ValueSource(ints = [500, 502, 503, 504])
     fun `getJob retries a retryable 5xx backendError and then succeeds`(statusCode: Int) {
@@ -189,7 +290,11 @@ class BigqueryClientRetryTest {
     private fun jobJson(projectId: String, jobId: String) =
         """{"jobReference":{"projectId":"$projectId","jobId":"$jobId","location":"US"},"status":{"state":"DONE"}}"""
 
-    private data class ScriptedResponse(val statusCode: Int, val body: String)
+    private data class ScriptedResponse(
+        val statusCode: Int,
+        val body: String,
+        val headers: Map<String, String> = emptyMap(),
+    )
 
     private data class RecordedRequest(
         val method: String,
@@ -212,6 +317,11 @@ class BigqueryClientRetryTest {
                         .setStatusCode(response.statusCode)
                         .setContentType("application/json")
                         .setContent(response.body)
+                        .also { result ->
+                            response.headers.forEach { (name, value) ->
+                                result.addHeader(name, value)
+                            }
+                        }
                 }
             }
         }

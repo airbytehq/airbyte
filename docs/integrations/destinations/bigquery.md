@@ -280,6 +280,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.5 | 2026-11-12 | | Classify temporary BigQuery credential-header upload failures as transient errors instead of system errors. |
 | 3.2.4-rc.1 | 2026-11-11 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
 | 3.2.3 | 2026-10-30 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
 | 3.2.2 | 2026-10-22 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
