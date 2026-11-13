@@ -48,7 +48,7 @@ MIGRATED_STREAMS = [
     "commit_comment_reactions",
     "issue_comment_reactions",
 ]
-INCREMENTAL_STREAMS = {"project_columns", "project_cards", "commit_comment_reactions", "issue_comment_reactions"}
+INCREMENTAL_STREAMS = {"pull_request_commits", "project_columns", "project_cards", "commit_comment_reactions", "issue_comment_reactions"}
 
 _TOKEN_CONFIG = {"credentials": {"personal_access_token": "token"}}
 _START_DATE = "2022-01-01T00:00:00Z"
@@ -83,10 +83,13 @@ def _catalog(*stream_names):
     )
 
 
-def _read_messages(config, *stream_names, state=None):
+def _read_messages(config, *stream_names, state=None, full_refresh=False):
     # Parents cache their listings (`use_cache: true`); a second sync in the same test must hit the mocks again.
     shutil.rmtree(os.environ["REQUEST_CACHE_PATH"], ignore_errors=True)
     catalog = _catalog(*stream_names)
+    if full_refresh:
+        for stream in catalog.streams:
+            stream.sync_mode = SyncMode.full_refresh
     source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
@@ -97,8 +100,8 @@ def _read_messages(config, *stream_names, state=None):
     return messages, error
 
 
-def _read(config, stream_name, state=None):
-    messages, error = _read_messages(config, stream_name, state=state)
+def _read(config, stream_name, state=None, full_refresh=False):
+    messages, error = _read_messages(config, stream_name, state=state, full_refresh=full_refresh)
     records = [message.record.data for message in messages if message.type == Type.RECORD]
     statuses = [
         message.trace.stream_status.status.value for message in messages if message.type == Type.TRACE and message.trace.stream_status
@@ -147,7 +150,7 @@ SINGLE_PARENT_CASES = [
         ],
         "/pulls/7/commits",
         {"per_page": ["100"]},
-        [{"sha": "a", "repository": _REPO, "pull_number": 7}],
+        [{"sha": "a", "repository": _REPO, "pull_number": 7, "pull_request_updated_at": _AFTER_START}],
         id="pull_request_commits",
     ),
     pytest.param(
@@ -269,7 +272,10 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     assert by_name["team_memberships"].source_defined_primary_key == [["url"]]
     assert by_name["issue_timeline_events"].source_defined_primary_key == [["repository"], ["issue_number"]]
     for name in INCREMENTAL_STREAMS:
-        assert by_name[name].default_cursor_field == (["created_at"] if name.endswith("reactions") else ["updated_at"])
+        cursor = (
+            "pull_request_updated_at" if name == "pull_request_commits" else "created_at" if name.endswith("reactions") else "updated_at"
+        )
+        assert by_name[name].default_cursor_field == [cursor]
         assert by_name[name].supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
     for name in set(MIGRATED_STREAMS) - INCREMENTAL_STREAMS:
         assert by_name[name].supported_sync_modes == [SyncMode.full_refresh]
@@ -343,6 +349,76 @@ def test_parent_read_ignores_the_parent_streams_own_saved_state(rate_limit_mock_
     assert [record["sha"] for record in records] == ["a"]
 
 
+@pytest.mark.parametrize("empty", [False, True])
+def test_pull_request_commits_incremental_parent_state(empty, rate_limit_mock_response, requests_mock):
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    pulls = f"{_API}/repos/{_REPO}/pulls"
+    requests_mock.get(pulls, json=[_record(id=1, number=1, updated_at=_AFTER_START, head={}, base={})])
+    requests_mock.get(f"{pulls}/1/commits", json=[] if empty else [{"sha": "old", "commit": {"author": {"date": _BEFORE_START}}}])
+
+    records, _, states, error = _read(config, "pull_request_commits")
+
+    assert error is None
+    assert records == (
+        []
+        if empty
+        else [
+            {
+                "sha": "old",
+                "commit": {"author": {"date": _BEFORE_START}},
+                "repository": _REPO,
+                "pull_number": 1,
+                "pull_request_updated_at": _AFTER_START,
+            }
+        ]
+    )
+    first_state = states[-1].stream.stream_state.__dict__
+    assert first_state["parent_state"]["pull_requests"]["states"] == [
+        {"partition": {"repository": _REPO}, "cursor": {"updated_at": _AFTER_START}}
+    ]
+    if not empty:
+        assert first_state["state"] == {"pull_request_updated_at": _AFTER_START}
+    requests_mock.get(
+        pulls,
+        json=[
+            _record(id=3, number=3, updated_at=_LATER, head={}, base={}),
+            _record(id=2, number=2, updated_at=_AFTER_START, head={}, base={}),
+            _record(id=1, number=1, updated_at="2022-05-01T00:00:00Z", head={}, base={}),
+        ],
+    )
+    requests_mock.get(f"{pulls}/2/commits", json=[] if empty else [{"sha": "boundary"}])
+    requests_mock.get(f"{pulls}/3/commits", json=[] if empty else [{"sha": "rebased", "commit": {"author": {"date": _BEFORE_START}}}])
+    requests_mock.reset_mock()
+
+    records, _, states, error = _read(config, "pull_request_commits", state=_state_message("pull_request_commits", first_state))
+
+    assert error is None
+    assert sorted(request.path for request in _requested(requests_mock, "/commits")) == [
+        f"/repos/{_REPO}/pulls/2/commits",
+        f"/repos/{_REPO}/pulls/3/commits",
+    ]
+    assert sorted(records, key=lambda record: record["sha"]) == (
+        []
+        if empty
+        else [
+            {"sha": "boundary", "repository": _REPO, "pull_number": 2, "pull_request_updated_at": _AFTER_START},
+            {
+                "sha": "rebased",
+                "commit": {"author": {"date": _BEFORE_START}},
+                "repository": _REPO,
+                "pull_number": 3,
+                "pull_request_updated_at": _LATER,
+            },
+        ]
+    )
+    final = states[-1].stream.stream_state.__dict__
+    assert final["use_global_cursor"] is True
+    assert final["parent_state"]["pull_requests"]["states"] == [{"partition": {"repository": _REPO}, "cursor": {"updated_at": _LATER}}]
+    if not empty:
+        assert final["state"] == {"pull_request_updated_at": _LATER}
+
+
 def test_pull_request_commits_legacy_scenario(rate_limit_mock_response, requests_mock):
     """The scenario `test_stream_pull_request_commits` drove through the Python classes: three pull
     requests, one older than `start_date`, commits fetched for the other two."""
@@ -359,14 +435,14 @@ def test_pull_request_commits_legacy_scenario(rate_limit_mock_response, requests
     requests_mock.get(f"{_API}/repos/organization/repository/pulls/2/commits", json=[{"sha": 1}, {"sha": 2}])
     requests_mock.get(f"{_API}/repos/organization/repository/pulls/3/commits", json=[{"sha": 3}, {"sha": 4}])
 
-    records, _, _, error = _read(config, "pull_request_commits")
+    records, _, _, error = _read(config, "pull_request_commits", full_refresh=True)
 
     assert error is None
     assert sorted(records, key=lambda record: record["sha"]) == [
-        {"sha": 1, "repository": "organization/repository", "pull_number": 2},
-        {"sha": 2, "repository": "organization/repository", "pull_number": 2},
-        {"sha": 3, "repository": "organization/repository", "pull_number": 3},
-        {"sha": 4, "repository": "organization/repository", "pull_number": 3},
+        {"sha": 1, "repository": "organization/repository", "pull_number": 2, "pull_request_updated_at": "2022-02-02T10:10:04Z"},
+        {"sha": 2, "repository": "organization/repository", "pull_number": 2, "pull_request_updated_at": "2022-02-02T10:10:04Z"},
+        {"sha": 3, "repository": "organization/repository", "pull_number": 3, "pull_request_updated_at": "2022-02-02T10:10:06Z"},
+        {"sha": 4, "repository": "organization/repository", "pull_number": 3, "pull_request_updated_at": "2022-02-02T10:10:06Z"},
     ]
     assert _requested(requests_mock, "/pulls/1/commits") == []
 
