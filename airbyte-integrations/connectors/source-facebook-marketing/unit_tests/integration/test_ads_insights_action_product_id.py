@@ -8,8 +8,10 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Dict, List, Optional, Union
 from unittest import TestCase
+from urllib.parse import parse_qs
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -28,7 +30,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
-from .request_builder import RequestBuilder, get_account_request
+from .request_builder import API_VERSION, RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, encode_request_body, read_output
 
@@ -243,6 +245,41 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
+
+
+@pytest.mark.parametrize("top_level", [False, True])
+@pytest.mark.parametrize("per_insight", [None, False, True])
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
+def test_custom_insights_incrementality_request(top_level, per_insight, requests_mock):
+    config_builder = config()
+    custom_insight = {
+        "name": "incrementality",
+        "fields": ["ad_id", "actions"],
+        "breakdowns": ["product_id"],
+        "action_breakdowns": [],
+        "level": "ad",
+    }
+    if per_insight is not None:
+        custom_insight["include_incrementality"] = per_insight
+    config_builder.build().update(include_incrementality=top_level, custom_insights=[custom_insight])
+
+    base_url = f"https://graph.facebook.com/{API_VERSION}"
+    requests_mock.get(f"{base_url}/act_{ACCOUNT_ID}/", json={"account_id": ACCOUNT_ID, "timezone_name": "Etc/UTC"})
+    requests_mock.get(f"{base_url}/act_{ACCOUNT_ID}/insights", json={}, headers=_update_api_throttle_limit_response().headers)
+    job_request = requests_mock.post(f"{base_url}/act_{ACCOUNT_ID}/insights", json={"report_run_id": _REPORT_RUN_ID})
+    requests_mock.post(f"{base_url}/", text=_job_status_response(_JOB_ID).body)
+    requests_mock.get(f"{base_url}/{_JOB_ID}/insights", json={"data": []})
+
+    output = read_output(config_builder, "customincrementality", SyncMode.full_refresh)
+    assert not output.records
+    assert not output.errors
+    assert job_request.call_count == 1
+    params = parse_qs(job_request.last_request.text)
+    windows = json.loads(params["action_attribution_windows"][0])
+    expected_windows = ["1d_click", "7d_click", "28d_click", "1d_view"]
+    if top_level or per_insight:
+        expected_windows.append("incrementality")
+    assert windows == expected_windows
 
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
