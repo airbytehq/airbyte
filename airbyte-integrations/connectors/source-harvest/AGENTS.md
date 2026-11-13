@@ -9,10 +9,12 @@ declarative connector patterns. Read this before making changes to the connector
 
 ## 1. Graceful Degradation on 401/403/404
 
-Every stream in source-harvest uses a `CompositeErrorHandler` that **ignores** (rather than fails on)
-HTTP 401, 403, and 404 responses. This means if a user's credentials lack permission to access a
-specific stream, or the account ID is incorrect for a particular resource, that stream silently produces
-zero records instead of failing the entire sync.
+Every stream except `company` (the connection-check stream) uses the shared `DefaultErrorHandler` at
+`#/definitions/error_handler`, which **ignores** (rather than fails on) HTTP 401, 403, and 404 responses.
+This means if a user's credentials lack permission to access a specific stream, or the account ID is
+incorrect for a particular resource, that stream silently produces zero records instead of failing the
+entire sync. The same handler honors `Retry-After` on 429, and new streams should `$ref` it rather than
+defining their own handler.
 
 **Why this matters:** This is an intentional design choice because Harvest's permission model is
 granular -- a user may have access to time entries but not invoices, for example. However, it also means
