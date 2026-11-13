@@ -2613,6 +2613,21 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Bing Ads returns report and bulk files as pre-signed Azure Blob Storage links that expire after a few minutes.
+  # Azure answers an expired link with a 403, which the CDK would otherwise report as a permission problem (config_error),
+  # although the user has no permissions to change on a link that Bing Ads issued.
+  # Match on the status code only: error_message_contains and predicate make the CDK read the body of every response,
+  # including successful ones, which consumes the streamed file before the download decoder reads it.
+  expired_download_link_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: Download link issued by Bing Ads for the report or bulk file is expired or no longer valid. The file was not downloaded.
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2675,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/expired_download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2743,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/expired_download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
