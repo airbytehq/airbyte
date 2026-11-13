@@ -29,6 +29,7 @@ class BlocksRetriever(SimpleRetriever):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._has_saved_cursor_state = self.cursor is not None and bool(self.cursor.state.get("state") or self.cursor.state.get("states"))
 
     def read_records(
         self,
@@ -53,5 +54,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+            if not self._has_saved_cursor_state or self.cursor.should_be_synced(stream_data):
                 yield stream_data
