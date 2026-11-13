@@ -39,6 +39,7 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 
 /** Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
+private const val SQLSTATE_UNDEFINED_COLUMN = "42703"
 
 @Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
@@ -147,7 +148,12 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            if (!isTableNotFoundException(e)) throw e else 0L
+            when {
+                isTableNotFoundException(e) -> 0L
+                e.sqlState == SQLSTATE_UNDEFINED_COLUMN ->
+                    throw missingAirbyteColumnsException(tableName, e)
+                else -> throw e
+            }
         }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
@@ -160,17 +166,7 @@ class RedshiftAirbyteClient(
 
         val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
         if (!hasAllAirbyteColumns) {
-            val message =
-                """
-                The target table (${tableName.namespace}.${tableName.name}) already exists \
-                in the destination, but does not contain Airbyte's internal columns. \
-                Airbyte can only sync to Airbyte-controlled tables. To fix this error, \
-                you must either delete the target table or add a prefix in the connection \
-                configuration in order to sync to a separate table in the destination.
-                """
-                    .trimIndent()
-            log.error { message }
-            throw ConfigErrorException(message)
+            throw missingAirbyteColumnsException(tableName)
         }
 
         // Filter out Airbyte meta columns — return only user columns
@@ -396,6 +392,18 @@ class RedshiftAirbyteClient(
 
             throw e
         }
+    }
+
+    private fun missingAirbyteColumnsException(
+        tableName: TableName,
+        cause: SQLException? = null,
+    ): ConfigErrorException {
+        val message =
+            "The target table (${tableName.namespace}.${tableName.name}) already exists in the destination, " +
+                "but does not contain Airbyte's internal columns. " +
+                "Delete or rename the target table, or set a stream prefix in the connection configuration to sync to a separate table."
+        log.error { message }
+        return ConfigErrorException(message, cause)
     }
 
     private fun isTableNotFoundException(e: SQLException): Boolean =
