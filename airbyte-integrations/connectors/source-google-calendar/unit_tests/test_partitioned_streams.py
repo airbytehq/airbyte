@@ -139,7 +139,14 @@ def test_missing_child_calendar_is_skipped(stream: str, sync_mode: SyncMode, sta
             [_HOLIDAYS] if len(calendars) == 2 else []
         )
         http_mocker.assert_number_of_calls(missing, 1)
-        assert any("Skipped a calendar" in log.log.message for log in output.logs)
+        skip_logs = [log.log.message for log in output.logs if log.log.message.startswith("Skipping ")]
+        assert len(skip_logs) == 1 and _ENCODED[_ME] in skip_logs[0]
+        expected_cause = "not found or the account does not have access" if status == 404 else "deleted or the account no longer has access"
+        assert expected_cause in skip_logs[0]
+        if sync_mode == SyncMode.incremental:
+            # The global cursor still advances from the calendars that were read.
+            expected_cursor = output.records[-1].record.data["updated"] if output.records else cursor
+            assert _stream_state(output)["state"]["updated"] == expected_cursor
 
 
 @pytest.mark.parametrize("stream", ["events", "acl", "freebusy"])
@@ -306,7 +313,7 @@ def test_acl_emits_deleted_rules() -> None:
         assert [r.record.data for r in output.records] == [{"id": "user:a", "role": "none", "calendar_id": _ME}]
 
 
-@pytest.mark.parametrize(("status_code", "reason"), [(403, "forbidden"), (404, "notFound")])
+@pytest.mark.parametrize(("status_code", "reason"), [(403, "forbidden"), (404, "notFound"), (410, "deleted")])
 def test_acl_of_a_calendar_the_account_does_not_own_is_skipped(status_code, reason):
     with HttpMocker() as http_mocker:
         _mock_calendar_list(http_mocker, _ME, _HOLIDAYS, min_access_role="owner")

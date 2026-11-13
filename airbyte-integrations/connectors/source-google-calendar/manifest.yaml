@@ -266,11 +266,8 @@ definitions:
                   - 403
                 action: IGNORE
                 error_message: "Skipped the ACL of a calendar the account does not own; Google only shows sharing rules to calendar owners."
-              - type: HttpResponseFilter
-                http_codes:
-                  - 404
-                action: IGNORE
-                error_message: "Skipped the ACL of a calendar that no longer exists or is no longer shared with the account."
+              - $ref: "#/definitions/error_filters/skip_missing_calendar"
+              - $ref: "#/definitions/error_filters/skip_deleted_calendar"
               - $ref: "#/definitions/error_filters/too_many_requests"
               - $ref: "#/definitions/error_filters/server_errors"
         record_selector:
@@ -488,12 +485,13 @@ definitions:
       http_codes:
         - 404
       action: IGNORE
-      error_message: "Skipped a calendar that no longer exists or is no longer shared with the account."
+      # Google answers 404 both for a missing calendar and for one the account cannot access; the body does not tell them apart.
+      error_message: "Skipping {{ request_url }}: the calendar was not found or the account does not have access to it."
     skip_deleted_calendar:
       type: HttpResponseFilter
       predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string and 'fullSyncRequired' not in response.get('error', {}) | string }}"
       action: IGNORE
-      error_message: "Skipped a calendar that was removed or is no longer shared with the account."
+      error_message: "Skipping {{ request_url }}: the calendar was deleted or the account no longer has access to it."
     forbidden:
       type: HttpResponseFilter
       http_codes:
