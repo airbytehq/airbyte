@@ -76,3 +76,19 @@ def test_requests_use_organization_header_and_boards_reads_paginated_folders(sou
     assert all(record.data["type"] == "folders" for record in records)
     assert len(set(requests_sent)) == 56
     assert requests_sent.count("/api/v2/folders") == 2
+
+
+def test_every_stream_uses_a_single_rate_limit_error_handler():
+    manifest = yaml.safe_load((Path(__file__).parents[1] / "manifest.yaml").read_text())
+    streams = manifest["definitions"]["streams"].values()
+    assert len(streams) == 56
+    for stream in streams:
+        error_handler = stream["retriever"]["requester"]["error_handler"]
+        assert error_handler == {
+            "type": "DefaultErrorHandler",
+            "max_retries": 4,
+            "response_filters": [
+                {"type": "HttpResponseFilter", "action": "RATE_LIMITED", "http_codes": [429], "error_message": "Rate limits hit"}
+            ],
+            "backoff_strategies": [{"type": "ExponentialBackoffStrategy", "factor": 2}],
+        }, stream["name"]

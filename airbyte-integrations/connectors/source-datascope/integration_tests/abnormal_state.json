@@ -1,5 +1,24 @@
-{
-  "answers": {
-    "created_at": "01/01/9999 00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "answers"
+      },
+      "stream_state": {
+        "created_at": "01/01/9999 00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "notifications"
+      },
+      "stream_state": {
+        "created_at": "01/01/9999 00:00"
+      }
+    }
   }
-}
+]

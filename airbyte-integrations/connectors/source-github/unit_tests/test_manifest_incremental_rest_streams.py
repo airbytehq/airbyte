@@ -17,10 +17,12 @@ budget is re-asserted here.
 """
 
 import logging
+import time
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+import requests
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -35,6 +37,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget
 
 from .utils import make_source
 
@@ -123,6 +126,10 @@ def _next_link(url):
 
 def _listings(requests_mock, endpoint):
     return [request for request in requests_mock.request_history if request.path.endswith(f"/{endpoint}")]
+
+
+def _sleep_times(sleep_mock):
+    return [call.args[0] for call in sleep_mock.call_args_list]
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
@@ -503,6 +510,127 @@ def test_review_comments_retries_five_times(sleep_mock, rate_limit_mock_response
     assert statuses[-1] == "INCOMPLETE"
     assert error is not None
     assert listing.call_count == 6  # the first attempt plus five retries
+
+
+@patch("time.sleep")
+def test_review_comments_500_with_reset_header_uses_exponential_backoff(sleep_mock, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        [
+            {
+                "status_code": 500,
+                "headers": {
+                    "X-RateLimit-Reset": str(int(time.time()) + 3000),
+                    "X-RateLimit-Remaining": "4000",
+                },
+                "json": {"message": "Server Error"},
+            },
+            {"json": []},
+        ],
+    )
+
+    _, statuses, _, error = _read(config, "review_comments")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert _sleep_times(sleep_mock)
+    assert all(wait < 600 for wait in _sleep_times(sleep_mock))
+    assert not any(2990 <= wait <= 3001 for wait in _sleep_times(sleep_mock))
+
+
+@patch("time.sleep")
+def test_review_comments_primary_rate_limit_waits_for_reset(sleep_mock, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    reset_at = int(time.time()) + 3000
+    requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        [
+            {
+                "status_code": 403,
+                "headers": {
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(reset_at),
+                },
+                "json": {"message": "API rate limit exceeded."},
+            },
+            {"json": []},
+        ],
+    )
+
+    _, statuses, _, error = _read(config, "review_comments")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert any(2990 <= wait <= 3001 for wait in _sleep_times(sleep_mock))
+
+
+@patch("time.sleep")
+def test_review_comments_429_waits_for_retry_after(sleep_mock, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        [
+            {"status_code": 429, "headers": {"Retry-After": "120"}, "json": {"message": "Rate limited"}},
+            {"json": []},
+        ],
+    )
+
+    update_from_response = HttpAPIBudget.update_from_response
+
+    def update_budget(api_budget, request, response):
+        if response.status_code != 429:
+            update_from_response(api_budget, request, response)
+
+    with patch.object(HttpAPIBudget, "update_from_response", autospec=True, side_effect=update_budget):
+        _, statuses, _, error = _read(config, "review_comments")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert listing.call_count == 2
+    # The CDK adds one second to Retry-After to cover fractional-second differences.
+    assert 121 in _sleep_times(sleep_mock)
+
+
+@pytest.mark.parametrize("status_code", [502, 504])
+@patch("time.sleep")
+def test_review_comments_headerless_server_errors_use_exponential_backoff(sleep_mock, status_code, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        status_code=status_code,
+        json={"message": "Server Error"},
+    )
+
+    _, statuses, _, error = _read(config, "review_comments")
+
+    assert statuses[-1] == "INCOMPLETE"
+    assert error is not None
+    assert listing.call_count == 6
+    assert _sleep_times(sleep_mock)
+    assert all(wait < 60 for wait in _sleep_times(sleep_mock))
+
+
+@patch("time.sleep")
+def test_review_comments_read_timeout_uses_exponential_backoff(sleep_mock, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        exc=requests.exceptions.ReadTimeout("Read timed out"),
+    )
+
+    _, statuses, _, error = _read(config, "review_comments")
+
+    assert statuses[-1] == "INCOMPLETE"
+    assert error is not None
+    assert listing.call_count == 6
+    assert _sleep_times(sleep_mock)
+    assert all(wait < 60 for wait in _sleep_times(sleep_mock))
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
