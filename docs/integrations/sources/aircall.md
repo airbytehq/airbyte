@@ -56,7 +56,7 @@ Create an Aircall API key:
 | **API Token** | Yes | The API token shown with the API ID when you created the key. |
 | **Window size (days)** | No | Days of calls requested at a time, from 1 to 365. The default is 1. A window that holds more than 10,000 calls is split and partly read again, so a larger window only saves requests for companies with few calls. If a sync fails with `could not split its request window`, lower this setting. See [10,000-result limit](#10000-result-limit). |
 | **Contacts window size (days)** | No | Days of newly created contacts requested at a time, from 1 to 365. The default is 30. Lower it if a sync fails with the 10,000-results error for contacts. |
-| **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. All workers share one [rate limit](#rate-limit). |
+| **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. The connector never runs fewer than 2 workers, so a value of 1 runs 2. All workers share one [rate limit](#rate-limit). |
 | **Sync conversation intelligence (AI Assist)** | No | Adds the six [conversation intelligence](#conversation-intelligence) streams. Off by default. They need the AI Assist or AI Assist Pro package and cost one request per call for each selected stream on every sync. |
 
 Connections created before version 0.5.0 also have a Start date. The connector no longer uses it, and the form hides it.
@@ -99,6 +99,8 @@ Every other stream is full refresh only. Aircall filters some of these lists, su
 | [`contacts`](https://developers.aircall.io/api-references/#list-all-contacts) | Full refresh | `id` | All plans |
 | [`conversation_engagements`](https://developers.aircall.io/api-references/#list-the-engagements-of-a-conversation) | Full refresh, incremental | `id` | Conversations API |
 | [`conversations`](https://developers.aircall.io/api-references/#list-all-conversations) | Full refresh, incremental | `id` | Conversations API |
+| [`dialer_campaign_phone_numbers`](https://developers.aircall.io/api-references/#retrieve-phone-numbers) | Full refresh | `user_id`, `id` | Power Dialer (Professional or Enterprise plan) |
+| [`dialer_campaigns`](https://developers.aircall.io/api-references/#retrieve-a-dialer-campaign) | Full refresh | `user_id`, `id` | Power Dialer (Professional or Enterprise plan) |
 | [`numbers`](https://developers.aircall.io/api-references/#list-all-numbers) | Full refresh | `id` | All plans |
 | [`sms_templates`](https://developers.aircall.io/api-references/#list-sms-templates) | Full refresh | `id` | All plans |
 | [`tags`](https://developers.aircall.io/api-references/#list-all-tags) | Full refresh | `id` | All plans |
@@ -106,8 +108,6 @@ Every other stream is full refresh only. Aircall filters some of these lists, su
 | [`trackers`](https://developers.aircall.io/api-references/#list-all-trackers) | Full refresh | `id` | AI Assist or AI Assist Pro |
 | [`user_availability`](https://developers.aircall.io/api-references/#retrieve-list-of-users-availability) | Full refresh | `id` | All plans |
 | [`user_numbers`](https://developers.aircall.io/api-references/#list-all-numbers-for-a-user-v2) | Full refresh | `user_id`, `id` | All plans |
-| [`dialer_campaigns`](https://developers.aircall.io/api-references/#retrieve-a-dialer-campaign) | Full refresh | `user_id`, `id` | All plans (Power Dialer) |
-| [`dialer_campaign_phone_numbers`](https://developers.aircall.io/api-references/#retrieve-phone-numbers) | Full refresh | `user_id`, `id` | All plans (Power Dialer) |
 | [`users`](https://developers.aircall.io/api-references/#list-all-users-v2) | Full refresh | `id` | All plans |
 | [`webhooks`](https://developers.aircall.io/api-references/#list-all-webhooks) | Full refresh | `webhook_id` | All plans |
 | [`whatsapp_templates`](https://developers.aircall.io/api-references/#list-whatsapp-templates) | Full refresh | `number_id`, `id` | Numbers registered for WhatsApp |
@@ -149,7 +149,7 @@ Aircall keeps only six months of call history in the API ([List all Calls](https
 
 ### Rate limit
 
-Aircall allows 120 requests per minute per company, shared by every API key and integration on your Aircall account ([Rate limiting](https://developers.aircall.io/api-references/#rate-limiting)). Each sync uses at most 100 of them and, when Aircall rejects a request for exceeding the limit, waits until Aircall resets the counter. Raising **Concurrent workers** doesn't raise the limit. Aircall Support can raise the limit for your API keys. A higher limit saves the waits when your syncs and other integrations together exceed it, but a single sync still sends at most 100 requests per minute.
+Aircall allows 120 requests per minute per company, shared by every API key and integration on your Aircall account ([Rate limiting](https://developers.aircall.io/api-references/#rate-limiting)). Each sync uses at most 100 of them and, when Aircall rejects a request for exceeding the limit, waits until Aircall resets the counter. Requests that fail with a server error (HTTP 500, 502, 503 or 504) are retried with exponential backoff. Raising **Concurrent workers** doesn't raise the limit. Aircall Support can raise the limit for your API keys. A higher limit saves the waits when your syncs and other integrations together exceed it, but a single sync still sends at most 100 requests per minute.
 
 ### Streams that sync no records
 
@@ -159,6 +159,7 @@ Some streams need an Aircall add-on or a specific number setup. When your compan
 | :--- | :--- |
 | `conversations`, `conversation_engagements` | The Conversations API must be enabled for your company ([List all Conversations](https://developers.aircall.io/api-references/#list-all-conversations)). Without it, each sync still spends one request per 30 days since January 2014 on each of the two streams, about 157 each, so deselect both streams. |
 | `trackers` | The AI Assist or AI Assist Pro package ([List all Trackers](https://developers.aircall.io/api-references/#list-all-trackers)). |
+| `dialer_campaigns`, `dialer_campaign_phone_numbers` | Power Dialer, included in the Aircall [Professional and Enterprise plans](https://aircall.io/pricing/). Users without an active Power Dialer campaign are skipped. |
 | `whatsapp_templates` | Only numbers registered for WhatsApp return templates ([List WhatsApp Templates](https://developers.aircall.io/api-references/#list-whatsapp-templates)). |
 
 If a sync fails with `Aircall rejected the API ID and API token` or `Aircall returned HTTP 403`, the API key is wrong or was deleted, or your Aircall plan doesn't include that data. Create a new API key and update the source, or check your plan. For the conversation intelligence streams, see [Conversation intelligence](#conversation-intelligence).
