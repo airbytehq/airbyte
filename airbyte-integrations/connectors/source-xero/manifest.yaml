@@ -444,38 +444,29 @@ definitions:
         - credentials
         - auth_type
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 30
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [401]
-              error_message: "Failed to authorize request"
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes: [403]
-        # Stop immediately if Daily Limit reached
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [429]
-              error_message: "daily limit"
-        # Retry standard rate limits (e.g. 60/min)
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
-              factor: 2
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes: [429]
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          http_codes: [401]
+          error_message: Xero rejected the access credentials. Re-authenticate the source or update the credentials in the connector configuration.
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [403]
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: transient_error
+          predicate: "{{ headers.get('X-Rate-Limit-Problem', '') | lower == 'day' }}"
+          error_message: Xero daily API call limit is reached for the connected organisation.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [429]
 
 streams:
   - $ref: "#/definitions/streams/bank_transactions"
