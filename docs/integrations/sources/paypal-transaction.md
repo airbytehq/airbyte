@@ -135,7 +135,7 @@ This stream retrieves details for each product individually using the parent `li
 | :------------------------- | :-------------------------- |
 | Dispute Start Date Range   | Timestamp with TZ (with ms) |
 | Number of days per request | Max 31, default 7           |
-| Pagination                 | Page token                  |
+| Pagination                 | Page increment              |
 | Page size                  | 50 (F)                      |
 | Full Refresh               | Yes                         |
 | Incremental                | Yes (D)                     |
