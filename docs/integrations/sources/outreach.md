@@ -21,7 +21,7 @@ The Outreach source reads data from the [Outreach REST API](https://developers.o
 
 ## Setup guide
 
-### Step 1: Configure an Outreach app
+### Configure an Outreach app
 
 1. Create an app in the [Outreach Developer Portal](https://developers.outreach.io/). See [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth).
 2. On the app's **API access** tab, register a redirect URI. Use exactly the same URI when authorizing the app and configuring the Airbyte source.
@@ -47,7 +47,7 @@ OAuth scopes do not override Outreach governance permissions. The authorizing ac
 
 Outreach provides development credentials immediately and production credentials after publishing and review. Development credentials can require weekly reauthorization for users outside the app's organization or beyond its first 10 users. See [Limitations of development credentials](https://developers.outreach.io/api/oauth/#limitations-of-development-credentials).
 
-### Step 2: Get a refresh token
+### Get a refresh token
 
 1. Open the following URL in a browser. Replace the placeholders with your client ID, registered redirect URI, and space-separated scopes. URL-encode the redirect URI and scopes.
 
@@ -72,7 +72,7 @@ Outreach provides development credentials immediately and production credentials
 
 See [API access (OAuth)](https://developers.outreach.io/api/oauth/) for the full authorization procedure.
 
-### Step 3: Configure the Airbyte source
+### Configure the Airbyte source
 
 1. Enter your **Client ID**, **Client Secret**, **Refresh Token**, and **Redirect URI**.
 2. Enter a **Start Date** in UTC using `YYYY-MM-DDTHH:MM:SSZ`, for example `2020-11-16T00:00:00Z`. Incremental syncs initially read records whose cursor is on or after this date. The cursor is `createdAt` for `events` and `updatedAt` for other incremental streams. The full refresh stream `duties` does not use this date.
@@ -122,7 +122,7 @@ The `events` cursor tracks when Outreach recorded the event (`createdAt`), rathe
 Incremental filters include the saved cursor value, so records at that boundary can be read again on the next sync. The connector flattens attributes into top-level fields and represents relationships with embedded record identifiers as arrays of related IDs.
 
 :::warning Prospects contact histogram
-Outreach is removing `contactHistogram` from the default `/prospects` response. The connector does not explicitly request this attribute, so when Outreach omits it, newly synced records will not contain its value. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for the current announcement.
+Outreach is removing `contactHistogram` from the default `/prospects` response. The connector doesn't explicitly request this attribute, so when Outreach omits it, newly synced records don't contain its value. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for the current announcement.
 
 If you need this attribute, retrieve it directly from the Outreach API using `fields[prospect]`. This parameter returns only the attributes you list, so include every attribute you need. The connector does not expose a configuration option for this parameter.
 :::
@@ -152,7 +152,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.3.0 | 2026-11-13 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
+| 1.3.0 | 2026-11-13 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the `events`, `teams`, `roles`, `profiles`, `duties`, `rulesets`, `favorites`, and `mail_aliases` streams |
 | 1.2.0 | 2026-11-12 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
 | 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
