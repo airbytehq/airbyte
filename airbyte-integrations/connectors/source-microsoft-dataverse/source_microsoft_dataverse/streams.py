@@ -4,11 +4,12 @@
 
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import requests
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -20,13 +21,13 @@ class MicrosoftDataverseStream(HttpStream, ABC):
     primary_key = ""
 
     def __init__(self, url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, **kwargs):
-        super().__init__(**kwargs)
         self.url_base = url + "/api/data/v9.2/"
         self.stream_name = stream_name
         self.stream_path = stream_path
         self.primary_key = primary_key
         self.schema = schema
         self.odata_maxpagesize = odata_maxpagesize
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:
@@ -35,6 +36,20 @@ class MicrosoftDataverseStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.schema
+
+    @property
+    def is_resumable(self) -> bool:
+        # Together these opt full refresh out of CDK RFR; incremental streams stay resumable, matching CDK 0.80 behavior.
+        return self.supports_incremental
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping]:
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -58,15 +73,10 @@ class MicrosoftDataverseStream(HttpStream, ABC):
         """
         :return a dict containing the parameters to be used in the request
         """
-        request_params = super().request_params(stream_state)
-        # If there is not a nextLink(contains "next_page_token") in the response, means it is the last page.
-        # In this case, the deltatoken is passed instead.
-        if next_page_token is None:
-            request_params.update(stream_state)
-            return request_params
-        elif next_page_token is not None:
+        request_params = super().request_params(stream_state, stream_slice, next_page_token)
+        if next_page_token is not None:
             request_params.update(next_page_token)
-            return request_params
+        return request_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -101,12 +111,14 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
     state_checkpoint_interval = None  # For now we just use the change tracking as state, and it is only emitted on last page
 
     def __init__(self, url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, config_cursor_field, **kwargs):
-        super().__init__(url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, **kwargs)
         self._cursor_value = None
         self.config_cursor_field = config_cursor_field
+        super().__init__(url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, **kwargs)
 
     @property
     def state(self) -> Mapping[str, Any]:
+        if self._cursor_value is None:
+            return {}
         return {self.delta_token_field: str(self._cursor_value)}
 
     @property
@@ -116,7 +128,17 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
     # Sets the state got by state getter. "value" is the return of state getter -> dict
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.delta_token_field]
+        self._cursor_value = (value or {}).get(self.delta_token_field)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        request_params = super().request_params(stream_state, stream_slice, next_page_token)
+        if next_page_token is None:
+            request_params.update(stream_state or {})
+        else:
+            request_params.update(next_page_token)
+        return request_params
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
