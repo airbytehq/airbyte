@@ -189,8 +189,14 @@ class MondayActivityExtractor(RecordExtractor):
             for board_data in response_body["data"]["boards"]:
                 if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                     continue
-                for record in board_data.get("activity_logs", []):
-                    json_data = json.loads(record["data"])
+                activity_logs = board_data["activity_logs"]
+                records = [record for record in activity_logs if isinstance(record, dict)]
+                if len(records) < len(activity_logs):
+                    logger.warning(
+                        f"Skipped {len(activity_logs) - len(records)} null entries in a board's activity_logs list; GraphQL errors: {response_body.get('errors')}"
+                    )
+                for record in records:
+                    json_data = json.loads(record["data"]) if record.get("data") else {}
                     new_record = record
                     if record.get("created_at"):
                         new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
