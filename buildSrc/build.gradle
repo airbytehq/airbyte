@@ -4,6 +4,11 @@ plugins {
 
 repositories {
     // Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+    // The plugin portal redirects ordinary dependencies to Maven Central, which rate-limits shared runner IPs.
+    maven {
+        name = 'maven-central-mirror'
+        url = 'https://maven-central.storage-download.googleapis.com/maven2/'
+    }
     gradlePluginPortal()
 }
 
