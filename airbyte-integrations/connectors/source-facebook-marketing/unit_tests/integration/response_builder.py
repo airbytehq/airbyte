@@ -31,3 +31,10 @@ def error_reduce_amount_of_data_response() -> HttpResponse:
         "error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"},
     }
     return build_response(body=response, status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def error_bad_request_response() -> HttpResponse:
+    response = {
+        "error": {"code": 100, "type": "OAuthException", "message": "Unsupported get request"},
+    }
+    return build_response(body=response, status_code=HTTPStatus.BAD_REQUEST)
