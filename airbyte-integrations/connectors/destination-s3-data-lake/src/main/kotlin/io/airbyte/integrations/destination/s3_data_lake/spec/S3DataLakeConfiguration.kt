@@ -41,6 +41,7 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
+    val normalizeColumnNames: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -71,13 +72,14 @@ class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
 
     override fun makeWithoutExceptionHandling(
-        pojo: S3DataLakeSpecification
+        pojo: S3DataLakeSpecification,
     ): S3DataLakeConfiguration {
         return S3DataLakeConfiguration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
+            normalizeColumnNames = pojo.normalizeColumnNames ?: false,
         )
     }
 }

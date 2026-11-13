@@ -17,7 +17,7 @@ class MockDestinationCheckTest :
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(MockDestinationSpecification.BAD_CONFIG) to
-                    Pattern.compile("Foo should be 0")
+                    Pattern.compile("Foo should be 0"),
             ),
         additionalMicronautEnvs = listOf(MOCK_TEST_MICRONAUT_ENVIRONMENT),
     ) {

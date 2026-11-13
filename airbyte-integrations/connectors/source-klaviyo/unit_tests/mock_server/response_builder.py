@@ -137,6 +137,31 @@ def create_response(resource_name: str, status_code: int = 200, has_next: bool =
     return HttpResponse(body, status_code)
 
 
+def metrics_response(metric_ids: List[str]) -> HttpResponse:
+    """Create a /metrics response carrying the given metric IDs, the parent of both report streams."""
+    return HttpResponse(
+        body=json.dumps(
+            {
+                "data": [
+                    {
+                        "type": "metric",
+                        "id": metric_id,
+                        "attributes": {
+                            "name": f"Metric {metric_id}",
+                            "created": "2024-01-01T00:00:00+00:00",
+                            "updated": "2024-01-15T00:00:00+00:00",
+                            "integration": {"id": "int_001", "name": "API"},
+                        },
+                    }
+                    for metric_id in metric_ids
+                ],
+                "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
+            }
+        ),
+        status_code=200,
+    )
+
+
 def error_response(status_code: int, error_message: str = "Error occurred") -> HttpResponse:
     """Create error response (401, 403, 429, etc.)"""
     error_body = {

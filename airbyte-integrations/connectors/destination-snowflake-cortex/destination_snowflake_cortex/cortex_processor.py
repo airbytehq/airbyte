@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import dpath
 import sqlalchemy
-from airbyte._processors.file.jsonl import JsonlWriter
+from airbyte._writers.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
 from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based import embedder
@@ -20,9 +20,9 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
-from airbyte_protocol.models import AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteRecordMessage
 from overrides import overrides
-from pydantic import Field
+from pydantic.v1 import Field
 from snowflake import connector
 from snowflake.sqlalchemy import URL, VARIANT
 from sqlalchemy.engine import Connection

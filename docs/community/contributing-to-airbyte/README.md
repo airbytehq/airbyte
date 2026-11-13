@@ -6,7 +6,7 @@ description: "We love contributions to Airbyte, big or small."
 
 Thank you for your interest in contributing! Airbyte accepts community contributions to its open-source data replication connectors in the [`airbyte`](https://github.com/airbytehq/airbyte) repository. Airbyte Agents does not accept community code contributions.
 
-We appreciate first-time contributors and are happy to help you get started. Join our [Airbyte Community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#help-connector-development` channel](https://airbytehq.slack.com/archives/C027KKE4BCZ).
+We appreciate first-time contributors and are happy to help you get started. Join our [Airbyte Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg) and feel free to reach out with questions in [`#help-connector-development` channel](https://airbytehq.slack.com/archives/C027KKE4BCZ).
 
 If you're interacting in Slack, codebases, mailing lists, events, or any other Airbyte activity, you must follow the [Code of Conduct](/community/code-of-conduct). Please review it before getting started.
 
@@ -85,4 +85,4 @@ For examples of good connector docs, see the [Salesforce source connector](/inte
 
 ## Engage with the Community
 
-Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://slack.airbyte.io). Refer to our [Issues and Feature Requests](issues-and-requests.md) guide to learn about the best ways to report bugs.
+Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg). Refer to our [Issues and Feature Requests](issues-and-requests.md) guide to learn about the best ways to report bugs.
