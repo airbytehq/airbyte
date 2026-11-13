@@ -67,7 +67,12 @@ def saved_state(output: EntrypointOutput) -> dict[str, Any]:
 def now_is(moment: datetime.datetime) -> Iterator[None]:
     """Set the time the manifest's `now_utc` and `day_delta` macros read. Every other clock keeps running."""
 
-    class _Datetime(datetime.datetime):
+    class _AnyDatetime(type):
+        # The macros ask `isinstance(value, datetime.datetime)`, and a real datetime has to pass.
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return isinstance(instance, datetime.datetime)
+
+    class _Datetime(datetime.datetime, metaclass=_AnyDatetime):
         @classmethod
         def now(cls, tz: datetime.tzinfo | None = None) -> datetime.datetime:
             return moment.astimezone(tz) if tz else moment.replace(tzinfo=None)

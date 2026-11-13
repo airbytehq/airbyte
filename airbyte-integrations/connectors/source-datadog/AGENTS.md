@@ -35,7 +35,7 @@ Each paginated stream sends the largest page size the vendor documents, or the d
 | Stream | Size sent | What the vendor states | Next page |
 | --- | --- | --- | --- |
 | `audit_logs` | `page[limit]=1000` | default 10, maximum 1000 (`ListAuditLogs`) | `page[cursor]` from `meta.page.after` |
-| `logs` | `page[limit]=5000` | default 10, maximum 5000 (`ListLogsGet`); 5001 is a 400 "Limit can't be more than 5000" (live, 2026-11-12) | `page[cursor]` from `meta.page.after` |
+| `logs` | `page[limit]` from the `max_records_per_request` spec field, 5000 by default | default 10, maximum 5000 (`ListLogsGet`); 5001 is a 400 "Limit can't be more than 5000" (live, 2026-11-12) | `page[cursor]` from `meta.page.after` |
 | `incidents` | `page[size]=100` | default 10, "The maximum allowed value is 100" (`ListIncidents`) | `page[offset]`, counted on the records read |
 | `dashboards` | `count=100` | default 100, no maximum stated (`ListDashboards`) | `start`, counted on the records read |
 | `service_level_objectives` | `limit=1000` | default 1000, no maximum stated (`ListSLOs`) | `offset`, counted on the records read |
@@ -53,16 +53,21 @@ The first request is the one Datadog's own client sends ([datadog-api-client-pyt
 
 **Why this matters:** A larger size is a 400 on `logs` and `metrics`. Adding `page` to `monitors` switches that endpoint to pages of 100. Following `next_offset` on `incidents` hangs the sync as soon as an account holds an incident.
 
-## 3. `logs` and `audit_logs` Send Microsecond Bounds Because the End Bound Is Exclusive
+## 3. `logs` and `audit_logs` Windows Share Their Boundary Because the End Bound Is Exclusive
 
-Both streams share one `DatetimeBasedCursor` (`definitions.timestamp_cursor`) on `sync_date`, a copy of `attributes.timestamp` made by `definitions.sync_date_from_timestamp`. They are the only incremental streams: `ListLogsGet` and `ListAuditLogs` are the only list operations the connector calls that take a time bound (`filter[from]`, `filter[to]`). The window applies to full refresh syncs as well.
+Both streams share one `DatetimeBasedCursor` (`definitions.timestamp_cursor`) on `sync_date`, a copy of `attributes.timestamp` made by `definitions.sync_date_from_timestamp`. They are the only incremental streams: `ListLogsGet` and `ListAuditLogs` are the only list operations the connector calls that take a time bound (`filter[from]`, `filter[to]`). The window applies to full refresh syncs as well. Before 2.1.0 `audit_logs` sent no time bound and ignored `start_date` and `end_date`. It follows both now, so a connection with an `end_date` in the past gets audit events only up to that date.
 
-Datadog reads `filter[from]` as inclusive and `filter[to]` as exclusive, at millisecond precision. The spec only says "Minimum timestamp" and "Maximum timestamp". Read live on 2026-11-13 on both endpoints: a `filter[to]` equal to a record's timestamp does not return the record, one millisecond later does; a `filter[from]` equal to the timestamp returns it, one millisecond later does not.
+Datadog reads `filter[from]` as inclusive and `filter[to]` as exclusive, and it cuts both bounds down to the millisecond before it compares. The spec only says "Minimum timestamp" and "Maximum timestamp". Read live on 2026-11-13 on both endpoints: a `filter[to]` equal to a record's timestamp does not return the record, and neither does one 999 microseconds after it; one millisecond after it does. A `filter[from]` 999 microseconds after the timestamp still returns the record; one millisecond after it does not.
 
-The range is cut into monthly windows (`step: P1M`), and each window ends one `cursor_granularity` before the next one starts. The cursor writes its bounds as `%Y-%m-%dT%H:%M:%S.%fZ` with a granularity of one microsecond, so two windows meet at `...T23:59:59.999999Z` and `...T00:00:00.000000Z`. Record timestamps have millisecond precision, so no record falls between them. Both endpoints accept six fractional digits (live, 2026-11-13).
+The range is cut into monthly windows (`step: P1M`), and each window sends the start of the next window as its `filter[to]`. With an inclusive start and an exclusive end, two windows that share that instant read every record once: it is the shared instant that closes the gap, not the precision of the bound. Two windows meet at `filter[to]=...-11-01T00:00:00.000000Z` and `filter[from]=...-11-01T00:00:00.000000Z`.
 
-Two other settings look equivalent and are not:
+The cursor cannot send that bound itself. In the CDK a window ends one `cursor_granularity` (one microsecond) before the next one starts, at `...T23:59:59.999999Z`. So the cursor declares no `end_time_option`, and `filter[to]` comes from `request_parameters` as the end of the window plus one microsecond (`definitions.window_end_bound`, shared by both streams). The last window sends its end plus one microsecond too, which Datadog reads as the end itself. Both endpoints accept six fractional digits (live, 2026-11-13).
 
+The cursor writes its bounds and its state as `%Y-%m-%dT%H:%M:%S.%fZ`. The microseconds are there for the CDK, not for Datadog: the format has to be as fine as `cursor_granularity`, or the CDK cannot see that two windows are adjacent and the state never advances.
+
+Three other settings look equivalent and are not:
+
+- Sending the cursor's own end as `filter[to]` (`...T23:59:59.999999Z`, then `...T00:00:00.000000Z`) loses every record stamped `...T23:59:59.999Z`. Datadog reads that end as `...59.999`, exclusive, and the next window starts at `...00.000`.
 - Second-precision bounds with a step of one second (`...T23:59:59Z`, then `...T00:00:00Z`) lose every record of the last second of each window, because the end bound is exclusive.
 - Second-precision bounds with the microsecond step, which the connector had before 2.1.0, never advance the cursor. Adjacent windows look one second apart, the CDK cannot merge them, and the saved state stays in the first window, so every sync reads the whole range again.
 
@@ -72,7 +77,7 @@ The saved state is the timestamp of the newest record, for example `{"sync_date"
 
 `logs` sends the `query` config field as `filter[query]`. `audit_logs` does not: the field holds a log search, and `ListAuditLogs` takes "Search query following Audit Logs syntax".
 
-**Why this matters:** A change to `datetime_format`, `cursor_granularity` or `cursor_datetime_formats` changes which records are read at the seam of two windows and whether a saved state still parses. The state in `integration_tests/abnormal_state.json` must be in the format the cursor writes, or the standard tests fail.
+**Why this matters:** A record lost at the seam of two windows is lost for good: the next sync starts one day before the saved state and never goes back that far. A change to `datetime_format`, `cursor_granularity`, `cursor_datetime_formats` or `definitions.window_end_bound` changes which records are read at a seam and whether a saved state still parses. The state in `integration_tests/abnormal_state.json` must be in the format the cursor writes, or the standard tests fail.
 
 ## 4. Deleted Dashboards and SLOs Come From a Second Request
 
@@ -174,6 +179,6 @@ These are known and deliberately untouched, because fixing them changes a key, a
 - `downtimes` reads the deprecated v1 list ("This endpoint has been deprecated. Please use v2 endpoints."), which does not return downtimes created with the v2 API. The v2 list has another record shape and needs the `monitors_downtime` permission.
 - `synthetic_tests` declares no primary key.
 - Several timestamp fields of existing streams are declared as plain strings or numbers, without `format: date-time`. `sync_date` of `logs` and `audit_logs` is among them: a format added to a field that is already declared is a breaking change, and a unit test keeps it out.
-- The spec fields `max_records_per_request` and `queries` are read by no stream.
+- The spec field `queries` is read by no stream.
 
 **Why this matters:** Each of these is a breaking change for existing connections. Do not fold one into a minor release.

@@ -22,6 +22,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/audit/events
           http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,6 +211,8 @@ definitions:
           http_method: GET
           request_parameters:
             filter[query]: "{{ config['query'] }}"
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
           error_handler:
             $ref: "#/definitions/error_handler"
             response_filters:
@@ -242,7 +247,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 5000
+            page_size: "{{ config.get('max_records_per_request', 5000) }}"
             cursor_value: >-
               {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
             stop_condition: >-
@@ -549,10 +554,6 @@ definitions:
       type: RequestOption
       field_name: filter[from]
       inject_into: request_parameter
-    end_time_option:
-      type: RequestOption
-      field_name: filter[to]
-      inject_into: request_parameter
     end_datetime:
       type: MinMaxDatetime
       datetime: >-
@@ -560,6 +561,9 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     step: P1M
     cursor_granularity: PT0.000001S
+  window_end_bound: >-
+    {{ format_datetime(str_to_datetime(stream_interval['end_time']) +
+    duration('PT0.000001S'), '%Y-%m-%dT%H:%M:%S.%fZ') }}
   sync_date_from_timestamp:
     type: AddFields
     fields:
@@ -723,7 +727,9 @@ spec:
           - "2022-10-01T00:00:00Z"
       max_records_per_request:
         type: integer
-        description: Maximum number of records to collect per request.
+        description: >-
+          Maximum number of records to collect per request. This is the page
+          size of the logs stream.
         order: 6
         title: Max records per requests
         default: 5000

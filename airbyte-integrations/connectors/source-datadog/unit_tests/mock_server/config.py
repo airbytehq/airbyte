@@ -21,6 +21,10 @@ class ConfigBuilder:
         self._config["query"] = query
         return self
 
+    def with_max_records_per_request(self, max_records_per_request: int) -> "ConfigBuilder":
+        self._config["max_records_per_request"] = max_records_per_request
+        return self
+
     def with_num_workers(self, num_workers: int) -> "ConfigBuilder":
         self._config["num_workers"] = num_workers
         return self

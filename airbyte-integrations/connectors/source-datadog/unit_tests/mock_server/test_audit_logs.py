@@ -14,7 +14,8 @@ from unit_tests.mock_server.response_builder import DatadogPaginatedResponseBuil
 _CONFIG = ConfigBuilder().with_start_date("2026-10-05T00:00:00Z").with_end_date("2026-10-06T00:00:00Z").build()
 
 
-def _request(start: str = "2026-10-05T00:00:00.000000Z", end: str = "2026-10-06T00:00:00.000000Z") -> DatadogRequestBuilder:
+# A window sends the start of the next window as `filter[to]`: its own end plus one microsecond.
+def _request(start: str = "2026-10-05T00:00:00.000000Z", end: str = "2026-10-06T00:00:00.000001Z") -> DatadogRequestBuilder:
     return (
         DatadogRequestBuilder.audit_logs_endpoint()
         .with_query_param("filter[from]", start)
@@ -149,11 +150,11 @@ class TestAuditLogsStream(TestCase):
     def test_monthly_windows_leave_no_gap(self, http_mocker: HttpMocker) -> None:
         config = ConfigBuilder().with_start_date("2026-10-01T00:00:00Z").with_end_date("2026-11-12T22:00:00Z").build()
         http_mocker.get(
-            _request(start="2026-10-01T00:00:00.000000Z", end="2026-10-31T23:59:59.999999Z").build(),
+            _request(start="2026-10-01T00:00:00.000000Z", end="2026-11-01T00:00:00.000000Z").build(),
             _page(_event("event-1", "2026-10-31T23:59:59.999Z")),
         )
         http_mocker.get(
-            _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-12T22:00:00.000000Z").build(),
+            _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-12T22:00:00.000001Z").build(),
             _page(_event("event-2", "2026-11-12T21:01:40.305Z")),
         )
 

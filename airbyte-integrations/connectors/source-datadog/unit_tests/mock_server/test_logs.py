@@ -17,7 +17,8 @@ from unit_tests.mock_server.response_builder import UNEXPECTED_ERROR_BODIES, Dat
 _CONFIG = ConfigBuilder().with_start_date("2026-10-05T00:00:00Z").with_end_date("2026-10-06T00:00:00Z").build()
 
 
-def _request(start: str = "2026-10-05T00:00:00.000000Z", end: str = "2026-10-06T00:00:00.000000Z") -> DatadogRequestBuilder:
+# A window sends the start of the next window as `filter[to]`: its own end plus one microsecond.
+def _request(start: str = "2026-10-05T00:00:00.000000Z", end: str = "2026-10-06T00:00:00.000001Z") -> DatadogRequestBuilder:
     return (
         DatadogRequestBuilder.logs_endpoint()
         .with_query_param("filter[from]", start)
@@ -96,6 +97,24 @@ class TestLogsStream(TestCase):
         ]
 
     @HttpMocker()
+    def test_page_size_follows_max_records_per_request(self, http_mocker: HttpMocker) -> None:
+        config = (
+            ConfigBuilder()
+            .with_start_date("2026-10-05T00:00:00Z")
+            .with_end_date("2026-10-06T00:00:00Z")
+            .with_max_records_per_request(100)
+            .build()
+        )
+        request = _request().with_query_param("page[limit]", 100).build()
+        http_mocker.get(request, _page(_log("log-1")))
+
+        output = read_stream("logs", config=config)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["log-1"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
     def test_first_sync_saves_the_time_of_the_newest_log(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(_request().build(), _page(_log("log-2", "2026-10-05T11:30:00.456Z"), _log("log-1", "2026-10-05T10:00:00.123Z")))
 
@@ -135,14 +154,15 @@ class TestLogsStream(TestCase):
 
     @HttpMocker()
     def test_monthly_windows_leave_no_gap(self, http_mocker: HttpMocker) -> None:
-        # Datadog reads `filter[to]` as exclusive, so a window that ended at 23:59:59 would lose its last second.
+        # Datadog cuts a bound to the millisecond and reads `filter[to]` as exclusive, so a window that ended
+        # before the next one starts would lose the records of its last millisecond.
         config = ConfigBuilder().with_start_date("2026-10-01T00:00:00Z").with_end_date("2026-11-12T22:00:00Z").build()
         http_mocker.get(
-            _request(start="2026-10-01T00:00:00.000000Z", end="2026-10-31T23:59:59.999999Z").build(),
+            _request(start="2026-10-01T00:00:00.000000Z", end="2026-11-01T00:00:00.000000Z").build(),
             _page(_log("log-1", "2026-10-31T23:59:59.999Z")),
         )
         http_mocker.get(
-            _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-12T22:00:00.000000Z").build(),
+            _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-12T22:00:00.000001Z").build(),
             _page(_log("log-2", "2026-11-12T21:01:40.305Z")),
         )
 
@@ -155,7 +175,7 @@ class TestLogsStream(TestCase):
     @HttpMocker()
     def test_with_no_end_date_the_window_ends_at_the_time_of_the_sync(self, http_mocker: HttpMocker) -> None:
         config = ConfigBuilder().with_start_date("2026-11-01T00:00:00Z").build()
-        request = _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-13T10:00:05.000000Z").build()
+        request = _request(start="2026-11-01T00:00:00.000000Z", end="2026-11-13T10:00:05.000001Z").build()
         http_mocker.get(request, _page())
 
         with now_is(datetime.datetime(2026, 11, 13, 10, 0, 5, 250000, tzinfo=datetime.timezone.utc)):
