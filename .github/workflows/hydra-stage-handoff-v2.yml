@@ -402,7 +402,7 @@ jobs:
               && exit 1
             local KEY_FIELDS="pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION"
             if [[ "$NEXT_ACTION" == escalate ]]; then
-              KEY_FIELDS+="; reason_hash=$(printf '%s' "$REASON" | sha256sum | cut -c1-16)"
+              KEY_FIELDS+="; reason_hash=$(printf '%s' "$REASON" | sed -E 's/[0-9]+/N/g' | sha256sum | cut -c1-16)"
             fi
             local KEY="<!-- hydra_handoff_v2: $KEY_FIELDS -->"
             echo "idempotency_key=$KEY_FIELDS" | tee -a "$GITHUB_OUTPUT"
