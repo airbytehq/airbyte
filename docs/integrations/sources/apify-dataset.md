@@ -54,7 +54,7 @@ None of the streams have a cursor, so every sync reads the full result set again
 
 ### `dataset_collection`
 
-Lists the datasets your API token can access. This stream doesn't use the dataset ID from your configuration.
+Lists the datasets in your Apify account. This stream doesn't use the dataset ID from your configuration.
 
 The Apify API returns only named datasets by default, and the connector doesn't request unnamed ones. The default dataset that each Actor run creates is unnamed, so it doesn't appear in this stream unless you [name it](https://docs.apify.com/platform/storage/usage#named-and-unnamed-storages). The `dataset`, `item_collection`, and `item_collection_website_content_crawler` streams work with any dataset ID, named or unnamed.
 
