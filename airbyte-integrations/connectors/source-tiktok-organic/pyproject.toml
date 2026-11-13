@@ -1,0 +1,28 @@
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-tiktok-organic"
+version = "2.0.28"
+description = "custom source for tiktok organic endpoints"
+authors = ["hemanth-thirdi <80522401+Hemanth2332@users.noreply.github.com>"]
+packages = [
+    { include = "source_tiktok_organic" }
+]
+include = [
+    "source_tiktok_organic/manifest.yaml",
+    "source_tiktok_organic/spec.json",
+    "source_tiktok_organic/schemas/*.json",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+airbyte-cdk = ">=7.17.0,<8.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=9.0.3,<10.0.0"
+requests-mock = ">=1.12.1,<2.0.0"
+
+[tool.poetry.scripts]
+source-tiktok-organic = "source_tiktok_organic.run:run"
