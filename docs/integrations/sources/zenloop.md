@@ -1,64 +1,52 @@
 # Zenloop
 
-This page contains the setup guide and reference information for the Zenloop source connector.
+This page contains the setup guide and reference information for the [Zenloop](https://www.zenloop.com/) source connector. The connector syncs surveys, survey groups, survey properties, and survey answers from the [Zenloop API](https://docs.zenloop.com/reference/introduction).
 
 ## Prerequisites
 
-<!-- env:cloud -->
+- A Zenloop account.
+- A Zenloop API token. To get your token, go to the [API settings page](https://app.zenloop.com/settings/api) in Zenloop and copy the token. The token is bound to the permissions of the user who generated it, so generate it as a user who can access the surveys you want to sync. For more information, see [Authentication](https://docs.zenloop.com/reference/authentication) in the Zenloop API documentation.
 
-**For Airbyte Cloud:**
+## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces).
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Zenloop** from the Source type dropdown.
-4. Enter the name for the Zenloop connector.
-5. Enter your **API token**
-6. For **Date from**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Enter your **Survey ID**. Zenloop Survey ID. Can be found <a href="https://app.zenloop.com/settings/api">here</a>. Leave empty to pull answers from all surveys. (Optional)
-8. Enter your **Survey Group ID**. Zenloop Survey Group ID. Can be found by pulling All Survey Groups via SurveyGroups stream. Leave empty to pull answers from all survey groups. (Optional)
-9. Click **Set up source**.
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Zenloop** from the Source type dropdown.
-4. Enter the name for the Zenloop connector.
-5. Enter your **API token**
-6. For **Date from**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Enter your **Survey ID**. Zenloop Survey ID. Can be found <a href="https://app.zenloop.com/settings/api">here</a>. Leave empty to pull answers from all surveys. (Optional)
-8. Enter your **Survey Group ID**. Zenloop Survey Group ID. Can be found by pulling All Survey Groups via SurveyGroups stream. Leave empty to pull answers from all survey groups. (Optional)
-9. Click **Set up source**.
-<!-- /env:oss -->
+1. In Airbyte, go to **Sources** and click **+ New source**.
+2. Select **Zenloop**.
+3. Enter a name for the connector.
+4. For **API Token**, enter your Zenloop API token.
+5. (Optional) For **Date from**, enter the date from which you want to replicate answers, in `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ssZ` format. The connector uses only the date portion of this value, so syncs start at midnight UTC on that date. If you leave this field empty, the `answers` and `answers_survey_group` streams start from the current UTC date and don't replicate historical answers.
+6. (Optional) For **Survey ID**, enter the public hash ID of a single survey to limit the `answers` and `properties` streams to that survey. You can find survey IDs in the `public_hash_id` field of the `surveys` stream. Leave this field empty to sync all surveys.
+7. (Optional) For **Survey Group ID**, enter the public hash ID of a single survey group to limit the `answers_survey_group` stream to that group. You can find survey group IDs in the `public_hash_id` field of the `survey_groups` stream. Leave this field empty to sync all survey groups.
+8. Click **Set up source**.
 
 ## Supported sync modes
 
 The Zenloop source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported?\(Yes/No\) |
-| :---------------- | :------------------- |
-| Full Refresh Sync | Yes                  |
-| Incremental Sync  | Yes                  |
-| Namespaces        | No                   |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
-This Source is capable of syncing the following core Streams:
+| Stream | API endpoint | Sync modes | Description |
+| :----- | :----------- | :--------- | :---------- |
+| `surveys` | [Get List of Surveys](https://docs.zenloop.com/reference/get-list-of-surveys) | Full Refresh | All surveys in your account. |
+| `survey_groups` | [Get List of Survey Groups](https://docs.zenloop.com/reference/get-list-of-survey-groups) | Full Refresh | All survey groups and the surveys they contain. |
+| `properties` | [Get List of Properties](https://docs.zenloop.com/reference/get-list-of-properties) | Full Refresh | Properties for each survey, or only for the survey set in **Survey ID**. |
+| `answers` | [Get Answers](https://docs.zenloop.com/reference/get-answers) | Full Refresh, Incremental | Answers for each survey, or only for the survey set in **Survey ID**. |
+| `answers_survey_group` | [Get Answers for Survey Group](https://docs.zenloop.com/reference/get-answers-for-survey-group) | Full Refresh, Incremental | Answers for each survey group, or only for the survey group set in **Survey Group ID**. |
 
-- [Answers](https://docs.zenloop.com/reference#get-answers) \(Incremental\)
-- [Surveys](https://docs.zenloop.com/reference#get-list-of-surveys)
-- [AnswersSurveyGroup](https://docs.zenloop.com/reference#get-answers-for-survey-group) \(Incremental\)
-- [SurveyGroups](https://docs.zenloop.com/reference#get-list-of-survey-groups)
-- [Properties](https://docs.zenloop.com/reference#get-list-of-properties)
+The `properties`, `answers`, and `answers_survey_group` streams depend on a parent stream. When you leave **Survey ID** or **Survey Group ID** empty, the connector first reads all surveys or survey groups, then requests data for each one.
 
-The `Answers`, `AnswersSurveyGroup` and `Properties` stream respectively have an optional survey_id parameter that can be set by filling the `public_hash_id` field of the connector configuration. If not provided answers for all surveys (groups) will be pulled.
+### Incremental sync
+
+The `answers` and `answers_survey_group` streams support incremental sync using the `inserted_at` field as the cursor. The connector tracks state separately for each survey or survey group, and requests answers in one-month windows from **Date from**, or the last synced cursor value, through the current UTC date.
 
 ## Performance considerations
 
-The Zenloop connector should not run into Zenloop API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Zenloop API returns a `429 Too Many Requests` error when you exceed its rate limit. Zenloop doesn't publish the specific limits. The connector automatically retries rate-limited requests. If you see rate limit errors that aren't retried successfully, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 ## Data type map
 
