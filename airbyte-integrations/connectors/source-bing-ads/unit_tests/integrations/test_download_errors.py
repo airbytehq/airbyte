@@ -54,8 +54,7 @@ def test_download_error_trace(download_read, stream_name, azure_message, failure
         download_request = RequestBuilder().build_report_url()
 
     body = (
-        '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>'
-        f"<Message>{azure_message}</Message></Error>"
+        '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>' f"<Message>{azure_message}</Message></Error>"
         if azure_message
         else ""
     )
