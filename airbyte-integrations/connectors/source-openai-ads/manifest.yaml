@@ -856,6 +856,18 @@ schemas:
     properties:
       id:
         type: string
+      creative_optimization_opt_in:
+        type:
+          - boolean
+          - 'null'
+      geographic_serving_country_code:
+        type:
+          - string
+          - 'null'
+      geographic_serving_scope:
+        type:
+          - string
+          - 'null'
       name:
         type:
           - string
@@ -899,6 +911,10 @@ schemas:
         additionalProperties: true
         properties:
           status:
+            type:
+              - string
+              - 'null'
+          reason:
             type:
               - string
               - 'null'
@@ -997,6 +1013,10 @@ schemas:
           - 'null'
         items:
           type: string
+      conversion_event_settings_automatically_attached:
+        type:
+          - boolean
+          - 'null'
       targeting:
         type:
           - object
@@ -1146,6 +1166,10 @@ schemas:
           - 'null'
         items:
           type: string
+      hide_product_prices:
+        type:
+          - boolean
+          - 'null'
       bidding_config:
         type:
           - object

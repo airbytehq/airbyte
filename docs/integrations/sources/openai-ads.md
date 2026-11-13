@@ -98,10 +98,6 @@ The conversions streams come from the [conversions insights](https://developers.
 
 OpenAI credits a conversion to the ad click or view that led to it for as long as the report's attribution window, so the conversions of a past day keep changing after that day. The connector doesn't set attribution parameters on its requests, so OpenAI applies its [defaults](https://developers.openai.com/ads/reporting#understand-attribution): a 30-day click window and a 1-day view window. OpenAI also needs at least one day to process conversions, and spend can be finalized later than impressions and clicks (see [Data Freshness & Retention](https://developers.openai.com/ads/reporting#data-freshness--retention)). On every sync, incremental report streams re-read the data inside the lookback window and update those rows. The default of 32 days covers the 30-day click window plus 2 days of processing. Use the **Incremental | Append + Deduped** sync mode so the updated rows replace the earlier ones. Lower the window only if you sync delivery metrics without conversions and want fewer requests.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Performance considerations
 
 The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff, or after the wait in the `Retry-After` header when the API sends one.
@@ -110,6 +106,10 @@ Insights are requested in 14 day slices with up to 2,000 rows per page and curso
 
 Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as `campaign_budget_daily`) are in the account currency. Fields ending in `_micros` on the entity and spend limit streams are in micros (1,000,000 micros equal one unit of currency). An `ad_account_budget_lifetime` of 1,000,000,000 means no lifetime limit is set.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -117,7 +117,7 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare the connector for certification |
+| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, enable acceptance tests |
 | 0.1.9 | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies |
 | 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |

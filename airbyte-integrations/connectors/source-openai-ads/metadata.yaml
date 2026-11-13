@@ -1,6 +1,15 @@
 metadataSpecVersion: "1.0"
 data:
   maxSecondsBetweenMessages: 3600
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-OPENAI-ADS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   allowedHosts:
     hosts:
       - "api.ads.openai.com"

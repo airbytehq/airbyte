@@ -18,7 +18,7 @@ A `404` from `/conversions/pixels` is ignored because pixel management may not b
 
 OpenAI documents limits of 600 requests per minute per endpoint and 1,200 per minute overall, enforced per ad account and per IP ([rate limits](https://developers.openai.com/ads/api-overview#rate-limits)). The connector uses one 600-per-minute `MovingWindowCallRatePolicy` with no matchers. The CDK assigns each request to one policy, so the per-endpoint and overall limits cannot both be modeled; the single global limit remains under both.
 
-Airbyte Cloud connections share egress IPs, so their IP-scoped quota is shared ([Cloud IP allow list](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)). The connector does not declare a `ratelimit_remaining_header`: the actual vendor header names have not been verified without a test credential.
+Airbyte Cloud connections share egress IPs, so their IP-scoped quota is shared ([Cloud IP allow list](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)). A live GET response exposed no `x-ratelimit-*`, `ratelimit-*`, or `Retry-After` header names, so `ratelimit_remaining_header` remains unset.
 
 **Why this matters:** Raising the single global policy above 600 requests per minute could exceed OpenAI's per-endpoint limit, and a Cloud connection's IP quota is shared with other connections.
 
@@ -38,8 +38,8 @@ List endpoints use `CursorPagination` with `limit` and `after` request parameter
 
 **Why this matters:** Do not add cursor pagination to the conversions endpoint or assume the same page-size ceiling applies to every stream.
 
-## 6. Mock-Only Testing
+## 6. GSM Acceptance Tests and Mocked Unit Tests
 
-There is no test credential or vendor sandbox for this connector; certification work tracks this gap in [issue 18389](https://github.com/airbytehq/airbyte-internal-issues/issues/18389). Unit tests use `requests_mock` for API responses. Live reads and `check` are not part of local verification.
+Acceptance tests use a GSM-managed credential for one test ad account, whose insights are mostly empty. Unit tests continue to use `requests_mock` for API responses ([authentication](https://developers.openai.com/ads/api-reference/authentication); credential tracking: [issue 18389](https://github.com/airbytehq/airbyte-internal-issues/issues/18389)).
 
-**Why this matters:** New endpoint behavior must be covered with deterministic mocked responses until a test credential or sandbox is available.
+**Why this matters:** Keep live coverage scoped to the test account and use deterministic mocked responses for unit-test behavior.
