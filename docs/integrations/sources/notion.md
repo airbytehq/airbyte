@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the Notion sour
 ## Prerequisites
 
 - Access to a [Notion](https://notion.so/login) workspace
-- To authenticate with an access token, or with your own OAuth connection in Airbyte Open Source, you must be a [Workspace Owner](https://www.notion.com/help/add-members-admins-guests-and-groups) in Notion so you can create a connection
+- A [Workspace Owner](https://www.notion.com/help/add-members-admins-guests-and-groups) to create an internal connection for access-token authentication
 
 ## Setup guide
 
@@ -51,7 +51,7 @@ The connector only syncs pages and data sources that you share with your connect
 
 To use OAuth2.0 in Airbyte Open Source, create a public connection instead of an internal connection, then complete Notion's OAuth flow to get an access token.
 
-1. In the [Developer portal](https://app.notion.com/developers/connections), in the **Build** section of the sidebar, select **Public connections**, then click **Create new connection**.
+1. In the [Developer portal](https://app.notion.com/developers/connections), in the **Build** section of the sidebar, select **Connections**, then click **Create new connection**. For installation scope, choose **Any workspace**.
 2. Fill in the required fields, including a redirect URI, and enable the capabilities listed in [Step 1](#step-1-create-an-integration-in-notion).
 3. In the connection's **Configuration** tab, copy the **OAuth client ID** and **OAuth client secret**.
 4. Use the connection's authorization URL to choose the pages to share and exchange the returned code for an access token. Notion's [authorization guide](https://developers.notion.com/guides/get-started/authorization#public-connection-auth-flow-set-up) explains each step. When you have your client ID, client secret, and access token, continue to the next step.
@@ -118,7 +118,7 @@ The connector reshapes some fields so they have a consistent structure in your d
 
 ## Performance considerations
 
-Notion rate limits each connection to an average of three requests per second on most plans, and ten requests per second on Business and Enterprise plans. Notion also enforces a separate limit shared across all connections in a workspace. When the connector receives an HTTP 429 response, it waits for the time in the `Retry-After` header and retries the request. Rate-limited requests don't count toward the maximum retry limit, so syncs continue until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
+Notion rate limits each connection to an average of three requests per second on most plans, and ten requests per second on Business and Enterprise plans. Notion also enforces a separate limit shared across all connections in a workspace. When the connector receives an HTTP 429 response, it waits for the time in the `Retry-After` header and retries the request. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
 
 The connector sends requests in parallel. Use the **Number of concurrent workers** setting (1 to 10, default 3) to control parallelism. More workers can speed up large syncs, but make it more likely that the connector hits Notion's rate limits.
 
@@ -136,7 +136,7 @@ Notion [personal access tokens](https://developers.notion.com/guides/get-started
 
 The connector only syncs content that you share with your connection. If pages, data sources, or blocks are missing, confirm that you shared the parent page with your connection, or that you selected the page during the OAuth flow.
 
-For the Pages, Data Sources, Comments, and Blocks streams, the connector skips any request that Notion answers with an HTTP 400 or 404 error instead of failing the sync. Notion returns a 404 error for content that isn't shared with your connection, and a 400 error for problems such as an invalid pagination cursor. The sync still succeeds, but the records from the skipped request are missing. The Users stream doesn't skip these errors.
+For the Pages, Data Sources, Comments, and Blocks streams, the connector skips any request that Notion answers with an HTTP 400 or 404 error instead of failing the sync. Notion returns a 404 error for content that isn't shared with your connection, and a 400 error for problems such as an invalid pagination cursor. A sync can therefore succeed with records missing from the skipped request. The Users stream doesn't skip these errors.
 
 ## IP allow list
 
@@ -149,6 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.33 | 2026-11-10 | [91664](https://github.com/airbytehq/airbyte/pull/91664) | Update dependencies |
 | 4.0.32 | 2026-11-05 | [90393](https://github.com/airbytehq/airbyte/pull/90393) | Consolidate each stream's error handling into a single error handler |
 | 4.0.31 | 2026-11-03 | [90664](https://github.com/airbytehq/airbyte/pull/90664) | Update dependencies |
 | 4.0.30 | 2026-10-27 | [90033](https://github.com/airbytehq/airbyte/pull/90033) | Update dependencies |

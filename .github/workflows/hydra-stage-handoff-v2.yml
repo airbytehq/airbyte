@@ -5,11 +5,12 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #
 # Shape:
 #   1. Trigger fires: workflow_dispatch, repository_dispatch (session
-#      completion), or a required CI check completing (check_run for the
-#      octavia-bot Summary check, workflow_run for the other six). CI wakes
-#      exit in the `gate` job until all 7 required checks have completed. The
-#      remaining Phase 2 triggers — pull_request synchronize/labeled and the
-#      weekend cron — land in separate PRs.
+#      completion), `hyd-chain-v2` being added to a PR (pull_request labeled),
+#      or a required CI check completing (check_run for the octavia-bot
+#      Summary check, workflow_run for the other six). CI wakes exit in the
+#      `gate` job until all 7 required checks have completed. The remaining
+#      Phase 2 triggers — pull_request synchronize and the weekend cron — land
+#      in separate PRs.
 #   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
 #      no community/fork. The v2 label is intentionally separate from `hyd-chain`
 #      so this workflow and the existing hydra-stage-handoff.yml can run in
@@ -23,11 +24,15 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      blockers array.
 #   4. Switch on next_action and dispatch the matching slash-command workflow
 #      via curl. No Devin session is launched for the decision itself.
+#      fix_ci and rework fix message the PR's original fix session, with the
+#      same dry-run mode.
 #   5. Idempotency (HYD-372): each dispatch first records a hidden
 #      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
 #      and skips when that key is already on the PR, so repeat wakes on the
 #      same head don't dispatch the same stage twice. A new push changes the
 #      key. To retry a stage on the same head, dispatch with `force: true`.
+#   6. Post actionable assess results (including dry-runs) to Slack in
+#      #hydra-handoff-watcher, excluding idempotency skips.
 #
 # Dry-run: controlled by workflow_dispatch input (preferred) or by the
 # HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
@@ -37,9 +42,7 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #
 # This workflow does not yet handle:
 #   - `escalate`: template-fire path (HYD-382).
-#   - `fix_ci`:   thin-LLM CI-relatedness classifier (Phase 3).
-# Both are logged and exited; the daily sweep and author/human handle them
-# meanwhile.
+# Escalations are logged; the daily sweep and author/human handle them meanwhile.
 
 on:
   # Dispatcher-emitted completion signals. The slash-command workflows pivoted
@@ -47,6 +50,12 @@ on:
   # {pr, head_sha, source_stage} in the client_payload.
   repository_dispatch:
     types: [handoff]
+  # Opt-in kickstart: one handoff pass when `hyd-chain-v2` is added,
+  # instead of waiting for the next stage or CI wake. The gate's `if:` drops
+  # every other label. Labels added with GITHUB_TOKEN don't fire this, so
+  # automation that adds the label must use an App token.
+  pull_request:
+    types: [labeled]
   # Required-CI-check completions. The 7 required checks on `master` come
   # from two kinds of producer, and each needs its own trigger:
   #   - "Connector CI Checks Summary" is posted by the octavia-bot GitHub App
@@ -88,7 +97,7 @@ on:
         type: boolean
         default: false
 
-run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
+run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.pull_request.number || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
 
 # GITHUB_TOKEN is unused: all reads/writes go through the Octavia app token.
 permissions: {}
@@ -98,15 +107,20 @@ jobs:
   # handoff's concurrency group. CI wakes only pass once all 7 required checks
   # on the PR head SHA have completed (any conclusion; red CI still routes to
   # fix_ci). The Connector CI Checks Summary only rolls up Connector CI's own
-  # jobs, so it can't stand in for the 7. Dispatch wakes pass straight through.
+  # jobs, so it can't stand in for the 7. Dispatch and label wakes pass straight through.
   gate:
     name: Wait for required checks
     runs-on: ubuntu-latest
-    # Drop CI events that aren't a required check on a same-repo PR before the
+    # Drop CI events that aren't a required check on a same-repo PR, and
+    # label events other than hyd-chain-v2 on a same-repo PR, before the
     # runner starts. Fork PRs (and pushes to master) have empty
     # pull_requests[], so the index check drops them.
     if: |
-      (github.event_name != 'check_run' && github.event_name != 'workflow_run') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'pull_request' &&
+        github.event.label.name == 'hyd-chain-v2' &&
+        github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'check_run' &&
         github.event.check_run.pull_requests[0] != null &&
         github.event.check_run.name == 'Connector CI Checks Summary') ||
@@ -118,18 +132,19 @@ jobs:
         env:
           INPUT_PR: ${{ github.event.inputs.pr }}
           CLIENT_PR: ${{ github.event.client_payload.pr }}
+          LABELED_PR: ${{ github.event.pull_request.number }}
           CHECK_PR: ${{ github.event.check_run.pull_requests[0].number }}
           WORKFLOW_RUN_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
         run: |
           set -euo pipefail
-          PR="${INPUT_PR:-${CLIENT_PR:-${CHECK_PR:-$WORKFLOW_RUN_PR}}}"
+          PR="${INPUT_PR:-${CLIENT_PR:-${LABELED_PR:-${CHECK_PR:-$WORKFLOW_RUN_PR}}}}"
           if [[ -z "$PR" ]]; then
-            echo "::error::no PR number resolved from inputs, client_payload, check_run, or workflow_run"
+            echo "::error::no PR number resolved from inputs, client_payload, pull_request, check_run, or workflow_run"
             exit 1
           fi
           echo "number=$PR" | tee -a "$GITHUB_OUTPUT"
 
-      - name: Pass dispatch wakes through
+      - name: Pass dispatch and label wakes through
         id: ci-wake
         if: github.event_name != 'check_run' && github.event_name != 'workflow_run'
         run: echo "ready=true" | tee -a "$GITHUB_OUTPUT"
@@ -288,7 +303,7 @@ jobs:
           # Pin a specific hydrakit release. Update HYDRA_VERSION and
           # HYDRA_SHA256 together whenever bumping — the sha256 lives in the
           # release's SHA256SUMS.
-          HYDRA_VERSION: "v0.1.0"
+          HYDRA_VERSION: "v0.4.1"
           HYDRA_SHA256: ""
         run: |
           set -euo pipefail
@@ -307,13 +322,27 @@ jobs:
           DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
           DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
           HYDRA_EXPERIMENTAL_ASSESS: "1"
+          REASSESS_DELAY_SECONDS: "60"
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
           set -euo pipefail
           OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
-          echo "::group::hydra output"
+          echo "::group::hydra output (pass 1)"
           echo "$OUT"
           echo "::endgroup::"
+          REASSESSED=false
+          # A Stop-hook wake can arrive before the Devin session stops reporting working.
+          if jq -e '.assessment | .next_action == "wait" and
+            (.owner == "hydra" or ((.reason // "") | startswith("substantive-change judgment in progress")))' <<<"$OUT" >/dev/null; then
+            WAIT_REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
+            echo "::notice::Re-assessing after ${REASSESS_DELAY_SECONDS}s: $WAIT_REASON"
+            sleep "$REASSESS_DELAY_SECONDS"
+            OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
+            echo "::group::hydra output (pass 2)"
+            echo "$OUT"
+            echo "::endgroup::"
+            REASSESSED=true
+          fi
           NEXT_ACTION=$(jq -r '.assessment.next_action // "unknown"' <<<"$OUT")
           REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
           TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
@@ -322,8 +351,24 @@ jobs:
           # The head hydra assessed, so the idempotency key matches the decision.
           HEAD_SHA=$(jq -r --arg ref "airbytehq/airbyte#$PR_NUMBER" \
             'first(.prs[]? | select(.ref == $ref) | .facts.head_sha) // ""' <<<"$OUT")
+          PR_STATE=$(jq --arg ref "airbytehq/airbyte#$PR_NUMBER" 'first(.prs[]? | select(.ref == $ref)) // {}' <<<"$OUT")
+          echo "author_kind=$(jq -r '.facts.author_kind // ""' <<<"$PR_STATE")" | tee -a "$GITHUB_OUTPUT"
+          echo "fix_run=$(jq -r '.named_by_fix_run // ""' <<<"$PR_STATE")" | tee -a "$GITHUB_OUTPUT"
+          echo "issue_url=$(jq -r '.issues[0].url // ""' <<<"$OUT")" | tee -a "$GITHUB_OUTPUT"
+          DELIMITER="hydra_$(openssl rand -hex 16)"
+          {
+            echo "failing_checks<<$DELIMITER"
+            jq -r '.facts.ci_failing[]? | "\(.name): \(.url)"' <<<"$PR_STATE"
+            echo "$DELIMITER"
+            echo "stage_findings<<$DELIMITER"
+            jq -r --argjson pr "$PR_STATE" '.runs as $runs | $pr.pr_stages[]? |
+              .latest_with_outcome as $id | $runs[]? | select(.id == $id) |
+              select(.outcome != "PROVEN" and .outcome != "PASS") | "\(.kind) \(.outcome): \(.url)"' <<<"$OUT"
+            echo "$DELIMITER"
+          } | tee -a "$GITHUB_OUTPUT"
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+          echo "reassessed=$REASSESSED" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "blockers=$BLOCKERS" >> "$GITHUB_OUTPUT"
@@ -458,6 +503,10 @@ jobs:
               dispatch_airbyte "ai-resolve-conflicts-command.yml"
               ;;
             fix|triage)
+              if [[ "$NEXT_ACTION" == "fix" && "$TARGET" == "airbytehq/airbyte#$PR_NUMBER" ]]; then
+                echo "route=fix_session" | tee -a "$GITHUB_OUTPUT"
+                exit 0
+              fi
               # The oncall workflows only take oncall issues; the group's issue
               # can live elsewhere (e.g. airbyte-internal-issues).
               if [[ ! "$TARGET" =~ ^airbytehq/oncall#([0-9]+)$ ]]; then
@@ -467,11 +516,7 @@ jobs:
               dispatch_oncall "ai-$NEXT_ACTION-command.yml" "${BASH_REMATCH[1]}"
               ;;
             fix_ci)
-              # TODO (Phase 3): thin-LLM relatedness classifier reads the
-              # failing checks and decides to dispatch /ai-prove-fix anyway
-              # (unrelated) or exit (related, author/human fixes). Until then,
-              # log and exit — the daily sweep's §2.5.5 path still covers it.
-              echo "::warning::fix_ci next_action — no automatic handling yet (Phase 3). Blockers: $BLOCKERS"
+              echo "route=fix_session" | tee -a "$GITHUB_OUTPUT"
               ;;
             escalate)
               # TODO (HYD-382): template-fire escalation via MCP with
@@ -493,10 +538,179 @@ jobs:
               ;;
           esac
 
+      - name: Route to fix session
+        id: fix-session
+        if: steps.dispatch.outputs.route == 'fix_session'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          DEVIN_AI_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          AUTHOR_KIND: ${{ steps.assess.outputs.author_kind }}
+          FIX_RUN: ${{ steps.assess.outputs.fix_run }}
+          FAILING_CHECKS: ${{ steps.assess.outputs.failing_checks }}
+          ISSUE_URL: ${{ steps.assess.outputs.issue_url }}
+          STAGE_FINDINGS: ${{ steps.assess.outputs.stage_findings }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        run: |
+          set -eEuo pipefail
+          result() { echo "fix_session_result=$*" | tee -a "$GITHUB_OUTPUT"; }
+          escalate() { echo "::warning::$*"; result "escalate: $*"; }
+          trap 'result failed' ERR
+          if [[ "$AUTHOR_KIND" != "devin" ]]; then
+            if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
+              echo "::notice::not a Devin PR; author fixes CI"
+              result "no_action: not a Devin PR; author fixes CI"
+            else
+              escalate "not a Devin PR; author must rework it"
+            fi
+            exit 0
+          fi
+          SESSION=$FIX_RUN
+          SESSION=${SESSION#devin:}
+          SESSION=${SESSION#devin-}
+          API="https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions"
+          RESPONSE="$RUNNER_TEMP/fix-session-response"
+          HEADERS="$RUNNER_TEMP/fix-session-headers"
+          request() {
+            local METHOD="$1" URL="$2" DATA="${3:-}" RC=0 DELAY RETRY_AFTER ATTEMPT
+            if [[ -z "${DEVIN_AI_API_KEY:-}" ]]; then HTTP=401; return 0; fi
+            for ATTEMPT in 0 1 2 3 4; do
+              RC=0
+              HTTP=$(curl -sS --connect-timeout 30 --max-time 120 -X "$METHOD" \
+                -H "Authorization: Bearer $DEVIN_AI_API_KEY" -H 'Content-Type: application/json' \
+                ${DATA:+--data-binary "$DATA"} -D "$HEADERS" -o "$RESPONSE" -w '%{http_code}' "$URL") || RC=$?
+              [[ "$RC" == 0 ]] || { HTTP=000; return 0; }
+              [[ "$HTTP" == 429 && "$ATTEMPT" -lt 4 ]] || return 0
+              DELAY=$((60 * (2 ** ATTEMPT)))
+              RETRY_AFTER=$(awk 'tolower($1) == "retry-after:" {gsub("\r", "", $2); print $2}' "$HEADERS" | tail -1)
+              if [[ "$RETRY_AFTER" =~ ^[0-9]+$ ]] && (( RETRY_AFTER > DELAY )); then DELAY=$RETRY_AFTER; fi
+              echo "::notice::Devin API rate limited; retrying same request"
+              sleep "$((DELAY + RANDOM % 31))"
+            done
+          }
+          if [[ -z "$SESSION" ]]; then
+            escalate "no reachable fix session: hydra named no fix run"
+            exit 0
+          fi
+          if [[ -n "$SESSION" ]]; then
+            request GET "$API/devin-$SESSION"
+            if [[ "$HTTP" == 2* ]]; then
+              STATUS=$(jq -r '.status // ""' "$RESPONSE")
+              STATUS_DETAIL=$(jq -r '.status_detail // ""' "$RESPONSE")
+              if [[ "$STATUS" =~ ^(new|claimed|resuming)$ || ( "$STATUS" == running && "$STATUS_DETAIL" == working ) ]]; then
+                echo "::notice::fix session still working"
+                result "no_action: fix session still working"
+                exit 0
+              fi
+              if [[ "$STATUS" == running && ! "$STATUS_DETAIL" =~ ^(waiting_for_user|waiting_for_approval|finished)$ ]]; then
+                escalate "running fix session $SESSION has unknown activity (status_detail: ${STATUS_DETAIL:-missing})"
+                exit 0
+              fi
+              if jq -e '.origin != "api" and .parent_session_id == null and .service_user_id == null' "$RESPONSE" >/dev/null; then
+                escalate "human-started session $SESSION; contact the person named Requested by on the PR"
+                exit 0
+              fi
+            elif [[ "$HTTP" == 429 ]]; then
+              escalate "session lookup capacity exhausted (HTTP 429)"
+              exit 1
+            else
+              escalate "no reachable fix session $SESSION (HTTP $HTTP)"
+              exit 0
+            fi
+          fi
+          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,url)
+          PR_URL=$(jq -r '.url' <<<"$PR_JSON")
+          BRANCH=$(jq -r '.headRefName' <<<"$PR_JSON")
+          if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
+            PROMPT="Hands-Free triage: CI is red on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. Oncall issue: ${ISSUE_URL:-unknown}.
+          Fix the failing required checks on the same branch, push, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed to fix these checks.
+          Record this request in ci_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules. If the red check is not caused by this PR's change (flaky test, credentials, infra), push nothing and record NOT_PR_CAUSED."
+          else
+            PROMPT="Hands-Free triage: hydra assessed $REASON on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing stage runs: $STAGE_FINDINGS. Findings to address: the failing gates and findings in the latest Fix Validation Evidence or AI review comment on the PR at this head. Oncall issue: ${ISSUE_URL:-unknown}.
+          Check out the existing branch, make the change these findings call for, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed for these findings.
+          Record this request in review_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules."
+          fi
+          if [[ "$DRY_RUN" == true ]]; then
+            echo "::notice::WOULD message session $SESSION"
+            result would_message
+            printf '%s\n' "$PROMPT"
+            exit 0
+          fi
+          request POST "$API/devin-$SESSION/messages" "$(jq -n --arg message "$PROMPT" '{message: $message}')"
+          case "$HTTP" in
+            2*) result messaged ;;
+            429) escalate "message capacity exhausted (HTTP 429)"; echo "::error::Fix message rate limit exhausted"; exit 1 ;;
+            5*|000) escalate "message outcome uncertain (HTTP $HTTP)"; echo "::error::Fix message outcome uncertain"; exit 1 ;;
+            *) escalate "fix session $SESSION rejected message (HTTP $HTTP)" ;;
+          esac
+
+      - name: Resolve Variables
+        id: resolve-vars
+        if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
+        env:
+          SLACK_CHANNEL: C0CF6T8MVNH # #hydra-handoff-watcher
+          REASSESSED: ${{ steps.assess.outputs.reassessed }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          TARGET: ${{ steps.assess.outputs.target }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+          IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+          FIX_SESSION_RESULT: ${{ steps.fix-session.outputs.fix_session_result }}
+        run: |
+          set -euo pipefail
+          NOTIFY=$(jq -nr 'env | .NEXT_ACTION as $action |
+            (["prove", "review", "ready", "resolve_conflicts", "fix", "triage", "fix_ci", "escalate"] | index($action) != null)
+            and (.IDEMPOTENCY != "skipped")')
+          echo "notify=$NOTIFY" | tee -a "$GITHUB_OUTPUT"
+          PAYLOAD_FILE="$RUNNER_TEMP/handoff-slack-payload.json"
+          jq -n 'env |
+            (if .FIX_SESSION_RESULT != "" then .FIX_SESSION_RESULT
+             elif .DISPATCH_OUTCOME != "success" then "failed (step outcome: \(.DISPATCH_OUTCOME))"
+             elif .NEXT_ACTION == "fix_ci" or .NEXT_ACTION == "escalate" then "not handled (\(.NEXT_ACTION))"
+             elif ((["prove", "review", "ready", "resolve_conflicts"] | index(env.NEXT_ACTION) != null)
+                   and .TARGET != "airbytehq/airbyte#\(.PR_NUMBER)")
+                  or ((["fix", "triage"] | index(env.NEXT_ACTION) != null)
+                      and (.TARGET | test("^airbytehq/oncall#[0-9]+$") | not))
+               then "skipped because target is another item"
+             elif .DRY_RUN == "true" then "would dispatch"
+             else "dispatched" end) as $dispatch |
+            (.TARGET | capture("^(?<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?<number>[0-9]+)$")? // null) as $target |
+            (if $target != null then "<\(.GITHUB_SERVER_URL)/\($target.repo)/issues/\($target.number)|\(.TARGET)>"
+             else .TARGET end) as $target_text |
+            {channel: .SLACK_CHANNEL, unfurl_links: false, unfurl_media: false,
+             text: ([("next_action: \(.NEXT_ACTION)" +
+                      (if .TARGET != "" then " | target: \($target_text)" else "" end) +
+                      (if .TARGET == "" or .TARGET != "\(.GITHUB_REPOSITORY)#\(.PR_NUMBER)"
+                       then " | PR: <\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)|#\(.PR_NUMBER)>" else "" end)),
+                     "Reason: \(.REASON) | reassessed: \(.REASSESSED)",
+                     (if .BLOCKERS != "" then "Blockers: \(.BLOCKERS)" else empty end),
+                     "Head: \(.HEAD_SHA[0:7]) | dry-run: \(if .DRY_RUN == "true" then "yes" else "no" end)",
+                     "Dispatch: \($dispatch)",
+                     "<\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/actions/runs/\(.GITHUB_RUN_ID)|Workflow run>"] | join("\n"))}' \
+            > "$PAYLOAD_FILE"
+          echo "payload-file=$PAYLOAD_FILE" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Post assess result to Slack
+        if: ${{ !cancelled() && steps.resolve-vars.outputs.notify == 'true' }}
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: ${{ steps.resolve-vars.outputs.payload-file }}
+
       - name: Summarize
         if: always()
         env:
           ELIGIBLE: ${{ steps.eligibility.outputs.eligible }}
+          REASSESSED: ${{ steps.assess.outputs.reassessed }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
           REASON: ${{ steps.assess.outputs.reason }}
           TARGET: ${{ steps.assess.outputs.target }}
@@ -504,6 +718,7 @@ jobs:
           HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
           IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
           IDEMPOTENCY_KEY: ${{ steps.dispatch.outputs.idempotency_key }}
+          FIX_SESSION_RESULT: ${{ steps.fix-session.outputs.fix_session_result }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
@@ -512,11 +727,13 @@ jobs:
             echo "- PR: #${PR_NUMBER}"
             echo "- Eligible: ${ELIGIBLE:-n/a}"
             echo "- next_action: \`${NEXT_ACTION:-n/a}\`"
+            echo "- Reassessed: ${REASSESSED:-n/a}"
             [[ -n "${REASON:-}" ]] && echo "- Reason: ${REASON}"
             [[ -n "${TARGET:-}" ]] && echo "- Target: ${TARGET}"
             [[ -n "${BLOCKERS:-}" ]] && echo "- Blockers: ${BLOCKERS}"
             [[ -n "${HEAD_SHA:-}" ]] && echo "- Head SHA: \`${HEAD_SHA}\`"
             [[ -n "${IDEMPOTENCY:-}" ]] && echo "- Idempotency: ${IDEMPOTENCY} (\`${IDEMPOTENCY_KEY}\`)"
             echo "- Dry run: ${DRY_RUN:-unknown}"
+            [[ -n "${FIX_SESSION_RESULT:-}" ]] && echo "- Fix session: ${FIX_SESSION_RESULT}"
             true
           } | tee -a "$GITHUB_STEP_SUMMARY"

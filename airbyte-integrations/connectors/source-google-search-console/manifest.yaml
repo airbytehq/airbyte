@@ -23,11 +23,13 @@ spec:
         items:
           type: string
         title: Website URL Property
-        description: The URLs of the website property attached to your GSC account.
+        description: Enter each Search Console property exactly. Domain properties use
+          sc-domain:example.com; URL-prefix properties use the full URL, including protocol
+          and trailing slash, e.g. https://www.example.com/.
           Learn more about properties <a href="https://support.google.com/webmasters/answer/34592?hl=en">here</a>.
         examples:
-        - https://example1.com/
         - sc-domain:example2.com
+        - https://example1.com/
         order: 0
       start_date:
         type: string

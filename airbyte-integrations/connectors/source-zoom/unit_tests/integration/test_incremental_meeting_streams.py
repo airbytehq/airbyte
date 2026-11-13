@@ -21,7 +21,7 @@ from .zoom_mocks import (
 
 
 _USER_ID = "u1"
-_MEETINGS_REQUEST = request(f"/users/{_USER_ID}/meetings", {"page_size": "30"})
+_MEETINGS_REQUEST = request(f"/users/{_USER_ID}/meetings", {"page_size": "300"})
 _MEETINGS = [
     {"id": 111, "created_at": "2026-09-01T10:00:00Z"},
     {"id": 222, "created_at": "2026-10-01T10:00:00Z"},

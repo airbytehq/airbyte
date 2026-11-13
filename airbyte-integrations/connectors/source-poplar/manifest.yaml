@@ -25,15 +25,13 @@ definitions:
           path: /v1/campaigns
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - $ref: "#/definitions/rate_limit_error_handler"
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Forbidden
+            $ref: "#/definitions/rate_limit_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: Forbidden
         record_selector:
           type: RecordSelector
           extractor:
@@ -87,15 +85,13 @@ definitions:
           path: /v1/audiences
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - $ref: "#/definitions/rate_limit_error_handler"
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Forbidden
+            $ref: "#/definitions/rate_limit_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: Forbidden
         record_selector:
           type: RecordSelector
           extractor:
@@ -119,15 +115,13 @@ definitions:
           path: /v1/campaign/{{ stream_partition['cmp_id'] }}/mailings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - $ref: "#/definitions/rate_limit_error_handler"
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Forbidden
+            $ref: "#/definitions/rate_limit_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: Forbidden
         record_selector:
           type: RecordSelector
           extractor:
@@ -198,15 +192,13 @@ definitions:
           path: /v1/me
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - $ref: "#/definitions/rate_limit_error_handler"
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Forbidden
+            $ref: "#/definitions/rate_limit_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: Forbidden
         record_selector:
           type: RecordSelector
           extractor:
