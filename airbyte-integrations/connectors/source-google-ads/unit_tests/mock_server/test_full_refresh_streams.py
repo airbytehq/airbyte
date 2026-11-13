@@ -14,6 +14,7 @@ from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
+    build_error_response,
     build_full_refresh_query,
     build_google_ads_query_error_response,
     build_stream_response,
@@ -22,6 +23,8 @@ from unit_tests.mock_server.helpers import (
 
 
 _CUSTOMER_ID = "1234567890"
+_CUSTOM_QUERY = "SELECT asset_group_asset.asset, asset_group_asset.performance_label FROM asset_group_asset"
+_CUSTOM_QUERY_STREAM = "asset_group_asset_report"
 
 _STREAM_RECORDS = {
     "label": {
@@ -119,6 +122,38 @@ FULL_REFRESH_STREAMS = [
 ]
 
 
+@pytest.fixture
+def mock_custom_query_schema_loader(mocker):
+    data_type = namedtuple("DataType", ["name"])
+    node = namedtuple("Node", ["data_type", "enum_values", "is_repeated"])
+    fields_metadata = {
+        "asset_group_asset.asset": node(data_type("STRING"), [], False),
+        "asset_group_asset.performance_label": node(data_type("ENUM"), ["UNSPECIFIED", "UNKNOWN", "BEST"], False),
+    }
+    mocker.patch.object(
+        CustomGAQuerySchemaLoader,
+        "google_ads_client",
+        return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata),
+    )
+
+
+def _read_custom_query(response):
+    config = ConfigBuilder().with_custom_queries([{"query": _CUSTOM_QUERY, "table_name": _CUSTOM_QUERY_STREAM}]).build()
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        http_mocker.post(
+            HttpRequest(
+                url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
+                body=json.dumps({"query": _CUSTOM_QUERY}),
+            ),
+            response,
+        )
+
+        catalog = CatalogBuilder().with_stream(_CUSTOM_QUERY_STREAM, SyncMode.full_refresh).build()
+        source = create_source(config=config, catalog=catalog)
+        return read(source, config=config, catalog=catalog)
+
+
 @pytest.mark.parametrize(
     "stream_name",
     [pytest.param(s, id=s) for s in FULL_REFRESH_STREAMS],
@@ -194,34 +229,73 @@ def test_full_refresh_403_ignored(stream_name):
     assert len(output.records) == 0
 
 
-def test_custom_query_unrecognized_field_error_fails_as_config_error(mocker):
-    query = "SELECT campaign.id, campaign.start_date, campaign.end_date FROM campaign"
-    stream_name = "custom_campaign_query"
-    config = ConfigBuilder().with_custom_queries([{"query": query, "table_name": stream_name}]).build()
-
-    data_type = namedtuple("DataType", ["name"])
-    node = namedtuple("Node", ["data_type", "enum_values", "is_repeated"])
-    fields_metadata = {
-        "campaign.id": node(data_type("INT64"), [], False),
-        "campaign.start_date": node(data_type("DATE"), [], False),
-        "campaign.end_date": node(data_type("DATE"), [], False),
-    }
-    mocker.patch.object(
-        CustomGAQuerySchemaLoader,
-        "google_ads_client",
-        return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata),
+@pytest.mark.parametrize("wrap_in_list", [True, False], ids=["list-wrapped", "object-wrapped"])
+def test_custom_query_400_fails_as_config_error_with_google_message(wrap_in_list, mock_custom_query_schema_loader):
+    output = _read_custom_query(
+        build_google_ads_query_error_response(
+            query_error="UNRECOGNIZED_FIELD",
+            message="Unrecognized field in the query: 'asset_group_asset.performance_label'.",
+            wrap_in_list=wrap_in_list,
+        )
     )
 
+    assert not output.records
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type.value == "config_error"
+    assert (
+        error.message
+        == "Google Ads rejected the custom query for stream 'asset_group_asset_report': Unrecognized field in the query: 'asset_group_asset.performance_label'. Correct or remove the invalid field or clause in the custom query configuration."
+    )
+
+
+def test_custom_query_400_without_details_falls_back_to_error_message(mock_custom_query_schema_loader):
+    output = _read_custom_query(build_error_response(400, "Request contains an invalid argument."))
+
+    assert not output.records
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type.value == "config_error"
+    assert (
+        error.message
+        == "Google Ads rejected the custom query for stream 'asset_group_asset_report': Request contains an invalid argument. Correct or remove the invalid field or clause in the custom query configuration."
+    )
+
+
+def test_custom_query_successful_response_body_not_parsed_by_error_handler(mocker, mock_custom_query_schema_loader):
+    from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+
+    spy = mocker.spy(HttpResponseFilter, "_safe_response_json")
+    output = _read_custom_query(
+        build_stream_response(
+            [
+                {
+                    "assetGroupAsset": {
+                        "asset": "customers/1234567890/assets/1",
+                        "performanceLabel": "BEST",
+                    }
+                }
+            ]
+        )
+    )
+
+    assert len(output.records) == 1
+    assert spy.call_count == 0
+
+
+def test_builtin_stream_400_remains_system_error():
+    stream_name = "label"
+    config = ConfigBuilder().build()
     with HttpMocker() as http_mocker:
         setup_full_refresh_parent_mocks(http_mocker)
         http_mocker.post(
             HttpRequest(
                 url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
-                body=json.dumps({"query": query}),
+                body=json.dumps({"query": build_full_refresh_query(stream_name)}),
             ),
             build_google_ads_query_error_response(
                 query_error="UNRECOGNIZED_FIELD",
-                message="Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'.",
+                message="Unrecognized field in the query: 'asset_group_asset.performance_label'.",
             ),
         )
 
@@ -229,8 +303,6 @@ def test_custom_query_unrecognized_field_error_fails_as_config_error(mocker):
         source = create_source(config=config, catalog=catalog)
         output = read(source, config=config, catalog=catalog)
 
-    assert len(output.records) == 0
+    assert not output.records
     assert output.errors
-    error = output.errors[0].trace.error
-    assert error.failure_type.value == "config_error"
-    assert error.message == "Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'."
+    assert output.errors[0].trace.error.failure_type.value == "system_error"

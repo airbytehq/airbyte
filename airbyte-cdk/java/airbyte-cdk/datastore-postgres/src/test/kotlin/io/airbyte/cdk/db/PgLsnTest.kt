@@ -13,22 +13,22 @@ import org.junit.jupiter.api.Test
 internal class PgLsnTest {
     @Test
     fun testLsnToLong() {
-        TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 value,
                 lsnToLong(key),
-                String.format("Conversion failed. lsn: %s long value: %s", key, value)
+                String.format("Conversion failed. lsn: %s long value: %s", key, value),
             )
         }
     }
 
     @Test
     fun testLongToLsn() {
-        TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 key,
                 longToLsn(value),
-                String.format("Conversion failed. lsn: %s long value: %s", key, value)
+                String.format("Conversion failed. lsn: %s long value: %s", key, value),
             )
         }
     }
@@ -36,11 +36,11 @@ internal class PgLsnTest {
     // Added Test Case to test .toString() method in PgLsn.java
     @Test
     fun testLsnToString() {
-        EXPECTED_TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        EXPECTED_TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 key,
                 fromLong(value).toString(),
-                String.format("Conversion failed. string: %s lsn: %s", key, value)
+                String.format("Conversion failed. string: %s lsn: %s", key, value),
             )
         }
     }

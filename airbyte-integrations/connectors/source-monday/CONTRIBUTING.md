@@ -30,7 +30,13 @@ Monday.com's `items_page`/`next_items_page` pagination cursors expire after 60 m
 
 The connector handles this by triggering `RESET_PAGINATION`, which restarts pagination from the beginning of the current stream. This means all records fetched before the expiration are re-read. See [Monday.com community discussion](https://developer-community.monday.com/api-apps-framework-4/cursor-used-for-pagination-expires-alternate-way-to-paginate-4083) for API context.
 
-**Why this matters:** For large boards, cursor expiration can cause repeated full re-reads if processing consistently takes longer than an hour. Each reset restarts from page 1, so syncs may never complete for very large boards if the processing time per page exceeds the cursor TTL.
+Two API facts make this unavoidable rather than a bug that can be fixed locally: cursors are generated on the first request for a board and are cached for 60 minutes ([Monday `items_page` cursor docs](https://developer.monday.com/api-reference/reference/items-page#cursor-based-pagination-using-next_items_page)), and the API does **not** guarantee a stable item order. Because items are unordered, the connector cannot checkpoint partial progress within a board and resume — it can only restart from the beginning (the code resets pagination on `CursorExpiredError`; see the `RESET_PAGINATION` predicate in `manifest.yaml`).
+
+**Why this matters:** For large boards, cursor expiration can cause repeated full re-reads if processing consistently takes longer than an hour. Each reset restarts from page 1, so syncs may never complete for very large boards if the processing time per page exceeds the cursor TTL. Historically this problem was *first misdiagnosed* as a `ComplexityException` (`status_code: 429`) before it was traced to the expiring cursor, so a `429` on the items stream may be correlated with cursor expiration — but the connector only explicitly resets on `CursorExpiredError`, so check for that error code when diagnosing.
+
+## 4. Streams Need an Explicit Page Size
+
+The GraphQL `limit` argument comes from each stream's `items_per_page` `$parameters` value. A stream that inherits the shared paginator but omits `items_per_page` sends no `limit` argument, so Monday.com applies its own default page size. When that default is smaller than the paginator's `page_size`, the first page looks short and `PageIncrement` stops there, silently truncating the stream. Some streams (for example `users` on `API-Version: 2026-01`) are unaffected because their no-limit behavior is not a smaller default, so check the API reference for the stream before assuming either way.
 
 ## Incremental Stream Considerations
 

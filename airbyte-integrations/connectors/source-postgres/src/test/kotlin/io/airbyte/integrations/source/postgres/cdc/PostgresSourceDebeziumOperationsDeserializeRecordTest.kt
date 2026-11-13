@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.source.postgres.cdc
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.ArrayFieldType
+import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -16,227 +17,252 @@ import io.airbyte.cdk.read.FieldValueChange
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
+import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
+/**
+ * testing `deserializeRecord` for socket/protobuf output path: every field of the stream schema
+ * ends up in the payload, including the ones whose value is NULL, whose key is missing from the
+ * Debezium image, or whose mapping failed.
+ *
+ * The protobuf record consumer reuses one builder for the whole sync and only overwrites the slots
+ * of the fields present in the payload, so a field left out of the payload keeps the previous
+ * record's value on the wire (oncall 13042).
+ */
 class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
-    private val config = mockk<PostgresSourceConfiguration>(relaxed = true)
-    private val connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(relaxed = true)
-    private val replicationSlotManager = mockk<ReplicationSlotManager>(relaxed = true)
+    companion object {
+        private const val TRANSACTION_MILLIS: Long = 1_762_000_000_000L
+        private const val LSN: Long = 3_575_761_602_216L
 
-    private val operations =
-        PostgresSourceDebeziumOperations(config, connectionFactory, replicationSlotManager, null)
+        private val ID = EmittedField("id", IntFieldType)
+        private val NAME = EmittedField("name", StringFieldType)
+        private val AMOUNT = EmittedField("amount", BigDecimalFieldType)
+        private val TAGS = EmittedField("tags", ArrayFieldType(StringFieldType))
+        private val NOTES = EmittedField("notes", ArrayFieldType(StringFieldType))
 
-    private fun buildStream(
-        fields: Set<EmittedField>,
-    ): Stream =
+        private val SCHEMA: Set<DataOrMetaField> =
+            setOf(
+                ID,
+                NAME,
+                AMOUNT,
+                TAGS,
+                NOTES,
+                PostgresSourceCdcMetaFields.CDC_LSN,
+                CommonMetaField.CDC_UPDATED_AT,
+                CommonMetaField.CDC_DELETED_AT,
+            )
+    }
+
+    private val ops =
+        PostgresSourceDebeziumOperations(
+            config = mockk<PostgresSourceConfiguration>(relaxed = true),
+            connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(relaxed = true),
+            replicationSlotManager = mockk<ReplicationSlotManager>(relaxed = true),
+            startupState = null,
+        )
+
+    private val stream =
         Stream(
             id =
                 StreamIdentifier.from(
-                    io.airbyte.protocol.models.v0
-                        .StreamDescriptor()
-                        .withName("test_table")
-                        .withNamespace("public")
+                    StreamDescriptor().withName("test_table").withNamespace("public"),
                 ),
-            schema =
-                fields +
-                    setOf(
-                        CommonMetaField.CDC_UPDATED_AT,
-                        CommonMetaField.CDC_DELETED_AT,
-                        PostgresSourceCdcMetaFields.CDC_LSN,
-                    ),
+            schema = SCHEMA,
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
-            configuredPrimaryKey = null,
+            configuredPrimaryKey = listOf(ID),
             configuredCursor = null,
         )
 
-    private fun buildDebeziumValue(after: JsonNode): DebeziumRecordValue {
-        val wrapped =
-            Jsons.objectNode().apply {
-                set<JsonNode>("before", Jsons.nullNode())
-                set<JsonNode>("after", after)
-                set<JsonNode>(
-                    "source",
-                    Jsons.objectNode().apply {
-                        put("ts_ms", 1700000000000L)
-                        put("lsn", 12345L)
-                        put("schema", "public")
-                        put("table", "test_table")
-                    },
-                )
-                put("op", "c")
-            }
-        return DebeziumRecordValue(wrapped)
-    }
-
-    private fun buildDebeziumKey(): DebeziumRecordKey =
-        DebeziumRecordKey(Jsons.objectNode().put("id", 1))
-
     @Test
-    fun `array field with proper ArrayNode is deserialized correctly`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("tags", ArrayFieldType(StringFieldType)),
-                ),
-            )
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                set<JsonNode>("tags", Jsons.arrayNode().add("a").add("b"))
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        assertTrue(
-            record.changes.isEmpty(),
-            "Expected no deserialization failures for proper ArrayNode"
-        )
+    fun `a NULL array is written as an explicit null`() {
+        val record = deserialize("""{"id": 1, "name": "null first", "tags": null}""")
+
+        assertExplicitNull(record, "tags")
+        assertTrue(record.changes.isEmpty(), "a NULL value is not a change: ${record.changes}")
+        assertAllSchemaFieldsPresent(record)
     }
 
     @Test
-    fun `array field with TextNode containing valid JSON array is recovered`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("tags", ArrayFieldType(StringFieldType)),
-                ),
-            )
-        // Debezium may emit array columns as a text node containing a JSON array string
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                put("tags", "[\"x\",\"y\"]")
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        // The text should be parsed into a JSON array successfully
-        assertTrue(
-            record.changes.none { it.value == FieldValueChange.DESERIALIZATION_FAILURE_TOTAL },
-            "Expected TextNode with valid JSON array to be recovered without total failure",
-        )
+    fun `absent column from the image is written as an explicit null`() {
+        val record = deserialize("""{"id": 1, "name": "no tags key"}""")
+
+        assertExplicitNull(record, "tags")
+        assertTrue(record.changes.isEmpty(), "an absent key is not a change: ${record.changes}")
+        assertAllSchemaFieldsPresent(record)
     }
 
     @Test
-    fun `array field with TextNode containing non-JSON text results in deserialization failure`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("tags", ArrayFieldType(StringFieldType)),
-                ),
-            )
-        // Postgres-style array literal that is not valid JSON
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                put("tags", "{hello,world}")
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        val arrayField = EmittedField("tags", ArrayFieldType(StringFieldType))
+    fun `an empty array stays an empty array`() {
+        val record = deserialize("""{"id": 1, "tags": []}""")
+
+        val tags = assertNotNull(record.data["tags"])
+        assertEquals(emptyList<String>(), tags.fieldValue)
+        assertTrue(record.changes.isEmpty())
+    }
+
+    @Test
+    fun `a populated array is decoded element by element`() {
+        val record = deserialize("""{"id": 1, "tags": ["Other", "previously-resolved"]}""")
+
+        val tags = assertNotNull(record.data["tags"])
+        assertEquals(listOf("Other", "previously-resolved"), tags.fieldValue)
+        assertTrue(record.changes.isEmpty())
+    }
+
+    @Test
+    fun `array columns are independent of each other within a record`() {
+        val record = deserialize("""{"id": 1, "tags": null, "notes": ["kept"]}""")
+
+        assertExplicitNull(record, "tags")
+        assertEquals(listOf("kept"), assertNotNull(record.data["notes"]).fieldValue)
+    }
+
+    @Test
+    fun `an array emitted as text holding a JSON array is recovered`() {
+        val record = deserialize("""{"id": 1, "tags": "[\"x\",\"y\"]"}""")
+
+        assertEquals(listOf("x", "y"), assertNotNull(record.data["tags"]).fieldValue)
+        assertTrue(record.changes.isEmpty(), "unexpected changes: ${record.changes}")
+    }
+
+    @Test
+    fun `an array emitted as non-JSON text is written as an explicit null and flagged`() {
+        val record = deserialize("""{"id": 1, "tags": "{hello,world}"}""")
+
+        assertExplicitNull(record, "tags")
+        assertEquals(FieldValueChange.DESERIALIZATION_FAILURE_TOTAL, record.changes[TAGS])
+        assertAllSchemaFieldsPresent(record)
+    }
+
+    @Test
+    fun `an array emitted as scalar text is written as an explicit null and flagged`() {
+        val record = deserialize("""{"id": 1, "tags": "42"}""")
+
+        assertExplicitNull(record, "tags")
+        assertEquals(FieldValueChange.DESERIALIZATION_FAILURE_TOTAL, record.changes[TAGS])
+        assertAllSchemaFieldsPresent(record)
+    }
+
+    @Test
+    fun `a NULL scalar is written as an explicit null`() {
+        val record = deserialize("""{"id": 1, "name": null}""")
+
+        assertExplicitNull(record, "name")
+        assertTrue(record.changes.isEmpty())
+    }
+
+    @Test
+    fun `a scalar whose key is absent from the image is written as an explicit null`() {
+        val record = deserialize("""{"id": 1}""")
+
+        assertExplicitNull(record, "name")
+        assertTrue(record.changes.isEmpty(), "an absent key is not a change: ${record.changes}")
+        assertAllSchemaFieldsPresent(record)
+    }
+
+    @Test
+    fun `a bigDecimal whose mapping fails is written as an explicit null and flagged`() {
+        // mapValue() should return a failure and the mapped value is a Kotlin null.
+        val record = deserialize("""{"id": 1, "amount": "not-a-number"}""")
+
+        assertExplicitNull(record, "amount")
         assertEquals(
             FieldValueChange.DESERIALIZATION_FAILURE_TOTAL,
-            record.changes[arrayField],
-            "Expected DESERIALIZATION_FAILURE_TOTAL for unparseable text array value",
+            record.changes[AMOUNT],
+            "a failed mapping must be flagged in _airbyte_meta.changes",
         )
     }
 
     @Test
-    fun `array field with numeric TextNode results in deserialization failure`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("vals", ArrayFieldType(IntFieldType)),
-                ),
-            )
-        // A plain number TextNode, not an array at all
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                put("vals", "42")
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        val arrayField = EmittedField("vals", ArrayFieldType(IntFieldType))
+    fun `a delete image carrying only the primary key writes explicit nulls for the rest`() {
+        // With REPLICA IDENTITY DEFAULT the `before` image of a delete holds the primary key -
+        // every other column has to be nulled out rather than left to the reused
+        // protobuf builder.
+        val record = deserialize(before = """{"id": 42}""", after = "null")
+
+        assertEquals(42, assertNotNull(record.data["id"]).fieldValue)
+        assertExplicitNull(record, "name")
+        assertExplicitNull(record, "amount")
+        assertExplicitNull(record, "tags")
+        assertExplicitNull(record, "notes")
+        assertAllSchemaFieldsPresent(record)
+
         assertEquals(
-            FieldValueChange.DESERIALIZATION_FAILURE_TOTAL,
-            record.changes[arrayField],
-            "Expected DESERIALIZATION_FAILURE_TOTAL for scalar text in array field",
+            transactionTimestamp,
+            assertNotNull(record.data[CommonMetaField.CDC_DELETED_AT.id]).fieldValue,
         )
     }
 
     @Test
-    fun `array field with null value is handled`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("tags", ArrayFieldType(StringFieldType)),
-                ),
-            )
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                putNull("tags")
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        assertTrue(
-            record.changes.isEmpty(),
-            "Expected no deserialization failures for null array value"
+    fun `cdc meta fields survive the schema loop`() {
+        val record = deserialize("""{"id": 1, "tags": null}""")
+
+        assertEquals(
+            transactionTimestamp,
+            assertNotNull(record.data[CommonMetaField.CDC_UPDATED_AT.id]).fieldValue,
         )
+        assertEquals(
+            LSN.toBigDecimal(),
+            assertNotNull(record.data[PostgresSourceCdcMetaFields.CDC_LSN.id]).fieldValue,
+        )
+        // Not a delete, so the deletion timestamp is an explicit null.
+        assertExplicitNull(record, CommonMetaField.CDC_DELETED_AT.id)
     }
 
-    @Test
-    fun `array field missing from data is handled`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("tags", ArrayFieldType(StringFieldType)),
+    private val transactionTimestamp: OffsetDateTime
+        get() = OffsetDateTime.ofInstant(Instant.ofEpochMilli(TRANSACTION_MILLIS), ZoneOffset.UTC)
+
+    /**
+     * A [before] of `"null"` is an insert. An [after] of `"null"` is a delete, which is how
+     * `deserializeRecord` tells them apart (`isDelete = after.isNull`).
+     */
+    private fun deserialize(after: String, before: String = "null"): DeserializedRecord {
+        val value =
+            DebeziumRecordValue(
+                Jsons.readTree(
+                    """
+                    {
+                      "before": $before,
+                      "after": $after,
+                      "source": {
+                        "schema": "public",
+                        "table": "test_table",
+                        "ts_ms": $TRANSACTION_MILLIS,
+                        "lsn": $LSN
+                      }
+                    }
+                    """
+                        .trimIndent(),
                 ),
             )
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                // "tags" field is absent
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        assertTrue(
-            record.changes.isEmpty(),
-            "Expected no deserialization failures for missing array field"
-        )
+        return ops.deserializeRecord(DebeziumRecordKey(Jsons.objectNode()), value, stream)
     }
 
-    @Test
-    fun `non-array fields still work correctly alongside array fix`() {
-        val stream =
-            buildStream(
-                setOf(
-                    EmittedField("id", IntFieldType),
-                    EmittedField("name", StringFieldType),
-                ),
-            )
-        val after =
-            Jsons.objectNode().apply {
-                put("id", 1)
-                put("name", "test")
-            }
-        val record =
-            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
-        assertTrue(
-            record.changes.isEmpty(),
-            "Expected no deserialization failures for non-array fields"
+    private fun assertExplicitNull(record: DeserializedRecord, column: String) {
+        val fve = assertNotNull(record.data[column], "$column is missing from the record payload")
+        assertNull(fve.fieldValue, "$column should hold a null value")
+        assertEquals(NullCodec, fve.jsonEncoder, "$column should be encoded with NullCodec")
+    }
+
+    private fun assertAllSchemaFieldsPresent(record: DeserializedRecord) {
+        assertEquals(
+            SCHEMA.map { it.id }.toSet(),
+            record.data.keys,
+            "every schema field must be written, otherwise its protobuf slot keeps the previous " +
+                "record's value",
         )
     }
 }

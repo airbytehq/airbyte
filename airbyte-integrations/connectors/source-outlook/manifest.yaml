@@ -2,6 +2,7 @@ version: 6.60.9
 
 type: DeclarativeSource
 
+# Connector description for source-outlook
 description: >-
   Outlook is the email service provided by Microsoft. This connector enables you
   to sync emails, mailboxes, and conversations from Microsoft Outlook/Exchange
