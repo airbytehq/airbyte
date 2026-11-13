@@ -29,6 +29,8 @@ Follow the steps in the [Basecamp authentication guide](https://github.com/basec
 - Authorization: `https://launchpad.37signals.com/authorization/new`
 - Token exchange: `https://launchpad.37signals.com/authorization/token`
 
+According to the [37signals authentication documentation](https://github.com/basecamp/api/blob/master/sections/authentication.md), access tokens currently expire after two weeks. The connector uses your refresh token to request new access tokens.
+
 Any OAuth 2.0 client library can perform this flow. If you'd prefer a ready-made tool, the community-maintained [basecampy3](https://github.com/phistrom/basecampy3) CLI walks you through the flow and prints the resulting tokens. Record the `refresh_token` value; that's what Airbyte needs.
 
 Refresh tokens issued by 37signals do not expire unless you revoke the integration, so you can reuse the same value across syncs.
@@ -113,7 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.38 | 2026-06-02 | [78583](https://github.com/airbytehq/airbyte/pull/78583) | Update dependencies |
 | 0.0.37 | 2026-04-28 | [77177](https://github.com/airbytehq/airbyte/pull/77177) | Update dependencies |
 | 0.0.36 | 2026-04-21 | [76843](https://github.com/airbytehq/airbyte/pull/76843) | Bump SDM base image to stable 7.17.2 |
-| 0.0.35 | 2026-03-31 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.0.35 | 2026-04-02 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
 | 0.0.33 | 2026-03-17 | [75000](https://github.com/airbytehq/airbyte/pull/75000) | Update dependencies |
 | 0.0.32 | 2026-02-24 | [73800](https://github.com/airbytehq/airbyte/pull/73800) | Update dependencies |

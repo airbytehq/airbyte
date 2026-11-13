@@ -77,10 +77,6 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 5. Log in and authorize access to your Snapchat account.
 6. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
 
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
-
 7. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced. If left blank, the connector syncs up through today.
 8. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
 9. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
@@ -100,10 +96,6 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Enter the **Client ID**, **Client Secret**, and **Refresh Token** from Step 1.
 5. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
-
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
 
 6. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced.
 7. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
