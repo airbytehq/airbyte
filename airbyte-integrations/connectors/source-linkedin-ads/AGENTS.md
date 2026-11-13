@@ -182,6 +182,24 @@ both behaviors: the InMail tests use the body captured from the live API, a `UGC
 body naming a share URN must fail the stream, and the null-reference test mocks no `posts/None`
 request, so it fails if that request is ever sent.
 
+## 9. lead_form_responses Incremental Filter Lives in the Path
+
+The `lead_form_responses` stream supports incremental sync on `submittedAt` (epoch ms) via LinkedIn's
+`submittedAtTimeRange=(start:<ms>,end:<ms>)` filter. The filter is a Rest.li composite parameter that
+must reach the API unencoded, so it is appended directly to the requester `path` inside a Jinja
+conditional instead of using a `RequestOption` (`request_parameters` would URL-encode the parentheses
+and colons, and the API rejects the encoded form).
+
+The conditional omits the filter entirely when `stream_interval.start_time` renders as `0` (epoch),
+which is the configured cursor start. This keeps full refresh and the first incremental sync
+unfiltered, so the stream reads full lead history regardless of the configured `start_date`. Cursor
+state is stored per account partition as an epoch-millisecond string under `submittedAt`.
+
+**Why this matters:** If you move the filter into `request_parameters` or make the path unconditional,
+resuming syncs will either break on the encoded composite or silently re-read all history. The
+`submittedAt` cursor is a millisecond timestamp, so the stream declares only `"%ms"` in
+`cursor_datetime_formats`/`datetime_format`.
+
 ## Incremental Stream Considerations
 
 The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 18 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
@@ -207,7 +225,7 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | creatives | medium | child | lastModifiedAt | lastModifiedAt | incremental |  |
 | custom_analytics_report | medium | child | end_date | end_date | incremental |  |
 | custom_statistics_report | medium | child | end_date | end_date | incremental |  |
-| lead_form_responses | medium | child | none | none | deferred_child |  |
+| lead_form_responses | medium | child | submittedAt | submittedAtTimeRange | incremental | Server-side filter appended to path only when resuming from state |
 | lead_forms | medium | child | none | none | deferred_child |  |
 | videos | medium | child | none | none | deferred_child | Videos referenced by ad creatives, resolved creative -> post -> video by URN (the account-level finder is application-gated); `/videos` exposes no modification timestamp, so incremental is not available |
 | organizations | small | top-level | none | none | deferred_no_api_support | Organization ACL rows of the authenticated member (`organizationAcls?q=roleAssignee`); the endpoint exposes no modification timestamp, so incremental is not available |
@@ -215,4 +233,4 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 ### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
-- **Child streams (3 streams):** `lead_form_responses`, `lead_forms`, `videos` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support for the lead-form streams; `videos` has no usable cursor on the API side.
+- **Child streams (2 streams):** `lead_forms`, `videos` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support for `lead_forms`; `videos` has no usable cursor on the API side.

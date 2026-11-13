@@ -191,7 +191,7 @@ request, so it fails if that request is ever sent.
 
 ## Incremental Stream Considerations
 
-The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 17 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
+The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 18 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -213,10 +213,10 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | conversions | medium | child | lastModified | lastModified | incremental |  |
 | creatives | medium | child | lastModifiedAt | lastModifiedAt | incremental |  |
 | custom_analytics_report | medium | child | end_date | end_date | incremental |  |
-| lead_form_responses | medium | child | none | none | deferred_child |  |
+| lead_form_responses | medium | child | submittedAt | submittedAtTimeRange | incremental | Server-side filter appended to path only when resuming from state |
 | lead_forms | medium | child | none | none | deferred_child |  |
 
 ### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
-- **Child streams (2 streams):** `lead_form_responses`, `lead_forms` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **Child streams (1 stream):** `lead_forms` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

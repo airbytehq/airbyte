@@ -224,7 +224,7 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 ### Lead forms and Lead form responses
 
-The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+The **Lead form responses** stream supports Incremental sync on its `submittedAt` cursor using LinkedIn's server-side `submittedAtTimeRange` filter. The first sync reads the full lead history regardless of the configured start date, and the configured lookback window applies to subsequent syncs. The **Lead forms** stream supports Full Refresh sync mode only.
 
 ### Videos
 
@@ -255,6 +255,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 6.3.0 | 2026-10-16 | [89050](https://github.com/airbytehq/airbyte/pull/89050) | Add incremental sync to the `lead_form_responses` stream using LinkedIn's `submittedAtTimeRange` filter |
 | 6.2.11 | 2026-11-10 | [86483](https://github.com/airbytehq/airbyte/pull/86483) | Replace YAML anchors with declarative `$ref` for the shared analytics property list (no functional change) |
 | 6.2.10 | 2026-11-10 | [91628](https://github.com/airbytehq/airbyte/pull/91628) | Update dependencies |
 | 6.2.9 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
