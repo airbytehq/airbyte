@@ -129,11 +129,13 @@ Workloads are designed to be more scalable, reliable and maintainable than the p
 
 One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for resource-constrained environments with spiky job scheduling.
 
-Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
+Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. A workload stays queued until a Launcher has room to start it, it's canceled, or the [Workload Monitor](#workload-monitor) fails it for waiting too long. This allows for better back pressure and self-healing in resource-constrained environments. On Cloud Pro and Enterprise Flex, syncs can also wait in the [`queued` state](#queued-state-cloud-pro-and-enterprise-flex) until data worker capacity is available.
 
 Dumb workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
 
-The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles job creation based on available resources, minimising deadlock situations.
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job, such as Kubernetes pods. It launches a limited number of workloads at a time and waits for each pod to start or fail to start. Other workloads wait in the queue. This limits how many pods are starting at once, minimizing deadlock situations.
+
+The Launcher doesn't check available cluster resources before it creates a pod. If the cluster can't schedule the pod, the Launcher waits until Kubernetes schedules the pod and its init container finishes, or until the [15-minute launch time limit](#troubleshooting-workload-launch-delays) runs out.
 
 With this set up, Airbyte now supports:
 
@@ -154,6 +156,8 @@ Common causes of delay include:
 - **Container images** need to be pulled for the first time on a new node.
 - **Init containers** must complete before the main containers start.
 - **Cluster capacity** is insufficient and pods remain in a `Pending` state until resources free up.
+
+The Launcher waits up to 15 minutes for Kubernetes to schedule the pod and for its init container to complete, including any time spent adding a node to the cluster. If the init container hasn't finished by then, the Launcher stops waiting and fails the workload. The platform logs show an error that includes _"Unable to start the REPLICATION pod. This may be due to insufficient system resources."_ For check, discover, and spec pods, the error names `CHECK`, `DISCOVER`, or `SPEC` instead of `REPLICATION`. If you manage the cluster and the pod stayed `Pending` because the cluster was full, add capacity or enable [node autoscaling](../operator-guides/scaling-airbyte.md#use-node-pools-and-auto-scaling).
 
 To diagnose long delays, check the Kubernetes pod events (`kubectl describe pod <pod-name> -n <namespace>`) for scheduling or image-pull issues.
 
