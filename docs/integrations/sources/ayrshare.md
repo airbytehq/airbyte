@@ -71,6 +71,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-11-13 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New Source: Ayrshare |
+| 0.1.0 | 2026-11-13 | [92983](https://github.com/airbytehq/airbyte/pull/92983) | New Source: Ayrshare |
 
 </details>
