@@ -36,7 +36,6 @@ Outreach returns errors as `{"errors": [{"id", "title", "detail"}]}`
 
 | Status | Action | Source |
 | :----- | :----- | :----- |
-| 401 | Refresh the access token, then retry | Expired access token. Manifest filter |
 | 403 | Fail as a configuration error. The message quotes `errors[0].detail`, which names the missing OAuth scope | `unauthorizedOauthScope`, seen on a live request with a token that lacks the scope. Manifest filter |
 | 404 | Fail as a system error | `resourceNotFound`. No list endpoint documents a benign 404. CDK default |
 | 422 | Fail as a system error | CDK default for an unmapped status |
@@ -78,10 +77,7 @@ The backoff strategies run in order:
 
 - `unit_tests/mock_server/` has one test file per stream plus `test_error_handling.py` and `test_spec.py`. They need
   no Outreach account. Run them from `unit_tests/` with `poetry run pytest mock_server/ -vv`.
-- The acceptance tests read the CI secret `SECRET_SOURCE-OUTREACH_CREDS`. Outreach issues a new refresh token with
-  every access token and a refresh token stays active for 14 days
-  ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
-  receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
+- The acceptance tests read the CI secret `SECRET_SOURCE-OUTREACH_CREDS`.
 - `sequence_states` is the only stream the test account cannot seed; its mock-server test is its only coverage.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
