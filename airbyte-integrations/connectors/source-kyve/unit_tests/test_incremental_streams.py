@@ -40,8 +40,8 @@ def test_stream_slices(patch_incremental_base_class):
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [None]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
+    expected_stream_slice = [{}]
+    assert list(stream.stream_slices(**inputs)) == expected_stream_slice
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
