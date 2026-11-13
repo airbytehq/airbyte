@@ -14,9 +14,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 @freeze_time("2025-01-01")
 @pytest.mark.parametrize("stream_name", ["keywords", "ad_performance_report_daily"])
 @pytest.mark.parametrize("expired", [True, False], ids=["expired_signature", "other_forbidden"])
-def test_download_error_classification(
-    stream_name, expired, config, mock_auth_token, mock_user_query, mock_account_query, requests_mock
-):
+def test_download_error_classification(stream_name, expired, config, mock_auth_token, mock_user_query, mock_account_query, requests_mock):
     config["reports_start_date"] = "2024-12-31"
     requests_mock.post(
         "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
@@ -45,9 +43,7 @@ def test_download_error_classification(
 
     code = "AuthenticationFailed" if expired else "AuthorizationPermissionMismatch"
     message = (
-        "Signature not valid in the specified time frame: Start [...] - Expiry [...] - Current [...]"
-        if expired
-        else "Permission denied."
+        "Signature not valid in the specified time frame: Start [...] - Expiry [...] - Current [...]" if expired else "Permission denied."
     )
     download = requests_mock.get(
         download_url,
