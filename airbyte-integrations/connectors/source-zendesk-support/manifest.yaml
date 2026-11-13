@@ -1624,11 +1624,15 @@ spec:
     type: object
     required:
       - subdomain
+      - credentials
+      - num_workers
+      - page_size
+      - ticket_search_lookback_days
     additionalProperties: true
     properties:
       start_date:
         type: string
-        title: Start Date
+        title: Start date
         description: >-
           The UTC date and time from which you'd like to replicate data, in the
           format YYYY-MM-DDT00:00:00Z. All data generated after this date will be
@@ -1672,31 +1676,33 @@ spec:
                 type: string
                 title: Client ID
                 description: >-
-                  The OAuth client's ID. See <a
-                  href="https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/">Zendesk
-                  OAuth grant-type tokens documentation</a> for more information.
+                  The unique identifier of your OAuth client in Zendesk. See our <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-oauth-credentials">OAuth setup
+                  guide</a> for instructions to register the client and save its ID.
                 airbyte_secret: true
               client_secret:
                 type: string
-                title: Client Secret
+                title: Client secret
                 description: >-
-                  The OAuth client secret. See <a
-                  href="https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/">Zendesk
-                  OAuth grant-type tokens documentation</a> for more information.
+                  The secret for your OAuth client in Zendesk. See our <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-oauth-credentials">OAuth setup
+                  guide</a> for instructions to register the client and save its secret.
                 airbyte_secret: true
               access_token:
                 type: string
-                title: Access Token
+                title: Access token
                 description: Access Token for making authenticated requests.
                 airbyte_secret: true
               token_expiry_date:
                 type: string
-                title: Token Expiry Date
-                description: The date-time when the access token should be refreshed.
+                title: Token expiry date
+                description: >-
+                  The UTC date and time when the current access token expires. When it expires,
+                  the connector uses the refresh token to obtain a new access token and continue syncing.
                 format: date-time
               refresh_token:
                 type: string
-                title: Refresh Token
+                title: Refresh token
                 description: >-
                   The refresh token used to obtain new access tokens. Note that Zendesk uses
                   rotating refresh tokens - each refresh will return a new refresh token and
@@ -1718,12 +1724,13 @@ spec:
                 type: string
                 description: The user email for your Zendesk account.
               api_token:
-                title: API Token
+                title: API token
                 type: string
                 description: >-
-                  The value of the API token generated. See our <a
-                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide">full
-                  documentation</a> for more information on generating this token.
+                  The active API token for your Zendesk account. Zendesk no longer allows new tokens to be
+                  created as of October 27, 2026. See our <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-an-api-token">API token
+                  setup guide</a> for details.
                 airbyte_secret: true
           - title: OAuth2.0 (Legacy)
             type: object
@@ -1737,27 +1744,26 @@ spec:
                 order: 0
               access_token:
                 type: string
-                title: Access Token
+                title: Access token
                 description: >-
-                  The OAuth access token. See the <a
-                  href="https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/">Zendesk
-                  docs</a> for more information on generating this token.
+                  The access token for an existing OAuth 2.0 Legacy connection. For OAuth setup guidance, see our
+                  <a href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-oauth-credentials">OAuth setup guide</a>.
                 airbyte_secret: true
               client_id:
                 type: string
                 title: Client ID
                 description: >-
-                  The OAuth client's ID. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
+                  The unique identifier of your OAuth client in Zendesk. See our <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-oauth-credentials">OAuth setup
+                  guide</a> for instructions to register the client and save its ID.
                 airbyte_secret: true
               client_secret:
                 type: string
-                title: Client Secret
+                title: Client secret
                 description: >-
-                  The OAuth client secret. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
+                  The secret for your OAuth client in Zendesk. See our <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-support#generate-oauth-credentials">OAuth setup
+                  guide</a> for instructions to register the client and save its secret.
                 airbyte_secret: true
       ignore_pagination:
         type: boolean
@@ -1785,7 +1791,7 @@ spec:
         order: 3
       page_size:
         type: integer
-        title: Page Size (ticket_comments)
+        title: Page size (ticket_comments)
         minimum: 1
         maximum: 1000
         default: 100
@@ -1799,7 +1805,7 @@ spec:
         order: 4
       ticket_search_lookback_days:
         type: integer
-        title: Tickets Search Lookback Window (days)
+        title: Tickets search lookback window (days)
         minimum: 0
         default: 0
         examples:
