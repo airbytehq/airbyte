@@ -1003,3 +1003,93 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+MESSAGES_PATH = "/Accounts/AC123/Messages.json"
+MESSAGES_PARTITION = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}}
+STALE_MESSAGES_CURSOR = "2022-01-01T00:00:00Z"
+RECENT_MESSAGES_CURSOR = "2022-11-13T12:11:10Z"
+
+
+class TestMessagesGlobalCursor:
+    """`messages` must resume from the stream-level `date_sent` cursor, never from a stale per-account partition cursor."""
+
+    @staticmethod
+    def _register_messages(requests_mock, records_by_lower_bound):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        seen_windows = []
+
+        def _callback(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            window = (query["DateSent>"][0], query["DateSent<"][0])
+            seen_windows.append(window)
+            context.status_code = 200
+            return {"messages": records_by_lower_bound.get(window[0], [])}
+
+        requests_mock.get(f"{BASE}{MESSAGES_PATH}", json=_callback)
+        return seen_windows
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stale_partition",
+        [
+            pytest.param(MESSAGES_PARTITION, id="low_code_partition"),
+            pytest.param({"subresource_uri": MESSAGES_PARTITION["subresource_uri"]}, id="legacy_partition_without_parent_slice"),
+        ],
+    )
+    def test_mixed_state_resumes_from_global_cursor_not_stale_partition(self, stale_partition, requests_mock):
+        stream_state = {
+            "use_global_cursor": False,
+            "states": [{"partition": stale_partition, "cursor": {"date_sent": STALE_MESSAGES_CURSOR}}],
+            "state": {"date_sent": RECENT_MESSAGES_CURSOR},
+            "lookback_window": 0,
+        }
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        windows = self._register_messages(
+            requests_mock,
+            {"2022-11-13 12:11:10Z": [{"sid": "SM_NEW", "account_sid": "AC123", "date_sent": "2022-11-15T10:00:00Z"}]},
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert windows == [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM_NEW"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_per_partition_state_without_global_resumes_from_oldest_partition(self, requests_mock):
+        stream_state = {
+            "states": [
+                {"partition": MESSAGES_PARTITION, "cursor": {"date_sent": "2022-11-14T00:00:00Z"}},
+                {
+                    "partition": {"subresource_uri": "/2010-04-01/Accounts/AC999/Messages.json", "parent_slice": {}},
+                    "cursor": {"date_sent": "2022-11-15T00:00:00Z"},
+                },
+            ]
+        }
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        windows = self._register_messages(
+            requests_mock,
+            {"2022-11-14 00:00:00Z": [{"sid": "SM_NEW", "account_sid": "AC123", "date_sent": "2022-11-15T10:00:00Z"}]},
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert windows == [("2022-11-14 00:00:00Z", "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM_NEW"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_global_state_is_used_on_next_sync(self, requests_mock):
+        stream_state = {"use_global_cursor": True, "state": {"date_sent": RECENT_MESSAGES_CURSOR}, "lookback_window": 0}
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        windows = self._register_messages(requests_mock, {})
+
+        read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert windows == [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")]
