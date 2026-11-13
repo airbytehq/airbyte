@@ -83,7 +83,7 @@ The backoff strategies run in order:
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
 - `sequence_states` is the only stream the test account cannot seed; its mock-server test is its only coverage.
-- `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
-  schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
-  returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and
-  needs its own major version.
+- `snippets` and `templates` have records in the test account, so the basic-read test validates them against their
+  schemas. Version 2.0.0 typed `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as
+  arrays of strings, as the API returns them; before that the records failed schema validation. The mock-server tests
+  for both streams validate a record carrying these arrays against the discovered schema.

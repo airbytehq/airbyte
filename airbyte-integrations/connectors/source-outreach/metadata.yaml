@@ -16,6 +16,21 @@ data:
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      2.0.0:
+        message: >-
+          Version 2.0.0 corrects the types of five fields to match the arrays of strings the Outreach API returns:
+          `tags` on `snippets`, and `tags`, `toRecipients`, `ccRecipients` and `bccRecipients` on `templates`.
+          Each was declared a string and is now an array of strings. Destinations that type their columns change
+          these columns from a string type to an array or JSON type, and rows synced before the upgrade keep the
+          array serialized as text. After upgrading, refresh the source schema and refresh the `snippets` and
+          `templates` streams, removing their existing records. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/outreach-migrations#upgrading-to-200).
+        upgradeDeadline: "2026-12-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "snippets"
+              - "templates"
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
@@ -35,7 +50,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 1.2.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg

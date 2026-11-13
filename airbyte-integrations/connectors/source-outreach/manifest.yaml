@@ -5605,7 +5605,9 @@ schemas:
       tags:
         type:
           - "null"
-          - string
+          - array
+        items:
+          type: string
       updatedAt:
         type:
           - "null"
@@ -5971,7 +5973,9 @@ schemas:
       bccRecipients:
         type:
           - "null"
-          - string
+          - array
+        items:
+          type: string
       bodyHtml:
         type:
           - "null"
@@ -5987,7 +5991,9 @@ schemas:
       ccRecipients:
         type:
           - "null"
-          - string
+          - array
+        items:
+          type: string
       clickCount:
         type:
           - "null"
@@ -6111,11 +6117,15 @@ schemas:
       tags:
         type:
           - "null"
-          - string
+          - array
+        items:
+          type: string
       toRecipients:
         type:
           - "null"
-          - string
+          - array
+        items:
+          type: string
       trackLinks:
         type:
           - "null"

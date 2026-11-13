@@ -1,6 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import logging
 from typing import Any, Optional
+
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -37,3 +40,19 @@ def record_ids(output: EntrypointOutput) -> list[Any]:
 
 def stream_state(output: EntrypointOutput) -> dict[str, Any]:
     return output.most_recent_state.stream_state.__dict__
+
+
+def stream_json_schema(stream_name: str) -> dict[str, Any]:
+    config = ConfigBuilder().build()
+    catalog = build_source(config).discover(logging.getLogger("airbyte"), config)
+    return next(stream.json_schema for stream in catalog.streams if stream.name == stream_name)
+
+
+def schema_errors(output: EntrypointOutput, stream_name: str) -> list[str]:
+    """Validate every record against the discovered stream schema, as the basic-read acceptance test does."""
+    validator = Draft7Validator(stream_json_schema(stream_name))
+    return [
+        f"{'.'.join(map(str, error.path))}: {error.message}"
+        for record in output.records
+        for error in validator.iter_errors(record.record.data)
+    ]
