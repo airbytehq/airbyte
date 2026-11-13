@@ -1205,6 +1205,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       latest_customer_activity_time:
         type:
           - "null"
@@ -1251,8 +1252,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
       associated_account_ids:
         type:
           - "null"
@@ -1415,6 +1415,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       first_response_seconds:
         type:
           - "null"
@@ -1427,6 +1428,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       resolution_seconds:
         type:
           - "null"
@@ -1439,10 +1441,12 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       snoozed_until_time:
         type:
           - "null"
           - string
+        format: date-time
       number_of_touches:
         type:
           - "null"
@@ -1480,8 +1484,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
       custom_fields:
         type:
           - "null"
@@ -1930,6 +1933,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       is_private:
         type:
           - "null"
@@ -2326,10 +2330,12 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       updated_at:
         type:
           - "null"
           - string
+        format: date-time
       default_value:
         type:
           - "null"
