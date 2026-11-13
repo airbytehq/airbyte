@@ -28,6 +28,10 @@ on:
 
 jobs:
   init-workflow:
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     name: "Initialize Workflow"
     runs-on: ubuntu-24.04
     steps:
@@ -43,7 +47,7 @@ jobs:
 
       - name: Append start comment
         id: append-start-comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         if: success()
         with:
           comment-id: ${{ inputs.comment-id }}
@@ -58,8 +62,9 @@ jobs:
             > [Check job output.](${{ steps.job-vars.outputs.run-url }})
 
       - name: Repo Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
+          persist-credentials: false
           repository: ${{ inputs.repo || github.repository }}
           ref: ${{ inputs.gitref || '' }}
           # Use fetch-depth: 0 to ensure we can access the full commit history
@@ -90,15 +95,17 @@ jobs:
       comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
       connector: ${{ matrix.connector }}
-    secrets: inherit
 
   post-end-comment:
+    permissions:
+      issues: write
+      pull-requests: write
     name: "Post Completion Comment"
     needs: [init-workflow, call-connector-ci-build]
     runs-on: ubuntu-24.04
     steps:
       - name: Append end comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ needs.init-workflow.outputs.comment-id }}
           issue-number: ${{ needs.init-workflow.outputs.pr-number }}

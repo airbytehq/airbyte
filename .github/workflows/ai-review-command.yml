@@ -16,6 +16,14 @@ on:
         description: "Comment ID"
         required: false
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      DEVIN_AI_API_KEY:
+        required: false
+      OCTAVIA_BOT_APP_ID:
+        required: false
+      OCTAVIA_BOT_PRIVATE_KEY:
+        required: false
     inputs:
       pr:
         description: "PR number"
@@ -43,7 +51,7 @@ jobs:
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
 
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v3.0.0

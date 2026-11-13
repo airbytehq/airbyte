@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Add Auto-Merge Notice
         if: github.event.action == 'auto_merge_enabled'
-        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        uses: bcgov/action-pr-description-add@v2.0.0
         with:
           add_markdown: |
             > [!IMPORTANT]
@@ -37,7 +37,7 @@ jobs:
 
       - name: Remove Auto-Merge Notice
         if: github.event.action == 'auto_merge_disabled'
-        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        uses: bcgov/action-pr-description-add@v2.0.0
         with:
           add_markdown: |
             > [!NOTE]
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"

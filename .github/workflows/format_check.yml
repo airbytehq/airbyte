@@ -14,11 +14,11 @@ jobs:
     name: "Format Check"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@v6.0.2
       - name: Detect non-Markdown changes
         if: github.event_name == 'pull_request'
         id: changes
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        uses: dorny/paths-filter@v4.0.1
         with:
           predicate-quantifier: every
           filters: |
@@ -27,13 +27,13 @@ jobs:
               - '!**/*.md'
       - name: Setup Java
         if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        uses: actions/setup-java@v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Setup Python
         if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: "3.11"
           cache: "pip"
@@ -41,7 +41,7 @@ jobs:
           update-environment: true
       - name: Run Pre-Commit
         if: github.event_name != 'pull_request' || steps.changes.outputs.non_markdown == 'true'
-        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        uses: pre-commit/action@v3.0.1
         id: format-check
         with:
           extra_args: --all-files
@@ -52,7 +52,7 @@ jobs:
           github.ref == 'refs/heads/master' &&
           github.event.pull_request.head.repo.fork == false
         id: match-github-to-slack-user
-        uses: ./.github/actions/match-github-to-slack-user
+        uses: $/.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
           always() && steps.format-check.outcome == 'failure' &&
           github.ref == 'refs/heads/master' &&
           github.event.pull_request.head.repo.fork == false
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage

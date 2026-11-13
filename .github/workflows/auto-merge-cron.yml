@@ -21,7 +21,7 @@ jobs:
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-hoard-token
         with:
           owner: "airbytehq"
@@ -50,7 +50,7 @@ jobs:
       - name: Fetch required checks for master branch
         id: required-checks
         if: fromJSON(steps.normal-prs.outputs.normal-count) > 0
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7.1.0
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -89,7 +89,7 @@ jobs:
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-hoard-token
         with:
           owner: "airbytehq"
@@ -130,7 +130,7 @@ jobs:
       - name: Verify required status checks pass
         if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
         id: verify-checks
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7.1.0
         env:
           REQUIRED_CHECKS_JSON: ${{ needs.list-candidates.outputs.required-checks }}
         with:
@@ -177,7 +177,7 @@ jobs:
       - name: Verify Vercel preview deployments are not failing
         if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'true'
         id: verify-deployments
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7.1.0
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -253,7 +253,7 @@ jobs:
       # ---------- Approve and merge ----------
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.eligible.outputs.result == 'true'
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"

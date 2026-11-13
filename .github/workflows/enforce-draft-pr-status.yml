@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -53,7 +53,7 @@ jobs:
           gh pr ready --undo "$PR_NUMBER" --repo "${{ github.repository }}"
 
       - name: Add comment explaining draft status
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           issue-number: ${{ github.event.pull_request.number }}

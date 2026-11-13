@@ -46,6 +46,10 @@ concurrency:
 
 jobs:
   init:
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     name: Initialize Pre-release Publish
     runs-on: ubuntu-24.04
     outputs:
@@ -57,8 +61,9 @@ jobs:
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
     steps:
       - name: Checkout to get commit SHA
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
+          persist-credentials: false
           repository: ${{ inputs.repo || github.repository }}
           ref: refs/pull/${{ inputs.pr }}/head
           fetch-depth: 0
@@ -129,7 +134,7 @@ jobs:
       - name: Append start comment
         id: append-start-comment
         if: inputs.comment-id != '' || inputs.pr != ''
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ steps.job-vars.outputs.pr-number }}
@@ -154,9 +159,23 @@ jobs:
       with-semver-suffix: preview
       gitref: refs/pull/${{ inputs.pr }}/head
       pr: ${{ format('{0}', inputs.pr) }}
-    secrets: inherit
+    secrets:
+      CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+      CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      METADATA_SERVICE_DEV_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      OCTAVIA_PUBLISH_BOT_APP_ID: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+      OCTAVIA_PUBLISH_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      SLACK_AIRBYTE_TEAM_READ_USERS: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
 
   post-completion:
+    permissions:
+      issues: write
+      pull-requests: write
     name: Post Completion Status
     needs: [init, publish]
     runs-on: ubuntu-24.04
@@ -201,7 +220,7 @@ jobs:
 
       - name: Append completion comment (success)
         if: needs.publish.result == 'success'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ needs.init.outputs.comment-id }}
           issue-number: ${{ needs.init.outputs.pr-number }}
@@ -219,7 +238,7 @@ jobs:
 
       - name: Append completion comment (failure)
         if: needs.publish.result != 'success'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ needs.init.outputs.comment-id }}
           issue-number: ${{ needs.init.outputs.pr-number }}

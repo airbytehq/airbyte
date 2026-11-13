@@ -84,7 +84,7 @@ jobs:
 
       - name: Authenticate as GitHub App
         if: steps.validate.outputs.valid == 'true'
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -94,7 +94,7 @@ jobs:
 
       - name: Post error comment (missing PR input)
         if: steps.validate.outputs.valid == 'false' && inputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           token: ${{ github.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -110,7 +110,7 @@ jobs:
 
       - name: Checkout PR code
         if: steps.validate.outputs.valid == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
           # Use refs/pull/N/head which works for both fork and non-fork PRs
@@ -151,7 +151,7 @@ jobs:
 
       - name: Post start comment
         if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -164,7 +164,7 @@ jobs:
 
       - name: Post skip comment (no connector changes)
         if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'false'
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -193,7 +193,7 @@ jobs:
 
       - name: Post failure comment
         if: failure() && inputs.comment-id != '' && steps.validate.outputs.valid == 'true'
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token || github.token }}
           comment-id: ${{ inputs.comment-id }}
