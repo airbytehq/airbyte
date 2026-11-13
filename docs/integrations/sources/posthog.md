@@ -36,7 +36,7 @@ For more details, see PostHog's [personal API keys documentation](https://postho
 2. Select **PostHog** from the list of sources.
 3. Enter a name for the source.
 4. For **API Key**, enter the personal API key you created in Step 1.
-5. For **Start Date**, enter the UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2021-01-01T00:00:00Z`. The connector only uses this value for the `events` stream. It doesn't sync events with a timestamp earlier than this date. Other streams always sync all records.
+5. For **Start Date**, enter the UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2021-01-01T00:00:00Z`. The connector uses this value for `events` when no saved cursor is available. Saved per-project or legacy shared cursors take precedence, even if they are earlier than this date. Other streams use full refresh.
 6. (Optional) For **Base URL**, enter the URL of your PostHog instance. The default is `https://app.posthog.com`. If your project is on PostHog EU Cloud, enter `https://eu.posthog.com`. If you self-host PostHog, enter your instance's domain, for example `https://posthog.example.com`. Don't include the `/api` path, because the connector adds it.
 7. (Optional) For **Events stream slice step size (in days)**, enter the number of days of events the connector requests in each time window. The default is `30`, and the allowed range is `1` to `91`. Lower this value if syncs of the `events` stream fail or run for a long time. See [Limitations](#limitations).
 8. Click **Set up source**.
@@ -72,8 +72,8 @@ The `events` stream uses the event `timestamp` field as its cursor. The connecto
 
 PostHog has [deprecated the events API](https://posthog.com/docs/api/events) that the `events` stream uses and plans to remove it at a future date. PostHog currently applies these restrictions to that API:
 
-- Pagination offsets larger than 50,000 are disabled. The connector pages through each project's time window using offsets, 10,000 events per page. If a single project has more events in one time window than this offset limit allows, lower the **Events stream slice step size** setting so each window contains fewer events.
-- The range between the `after` and `before` parameters must be less than one year. The connector's maximum step size of 91 days stays within this limit.
+- Pagination offsets larger than 50,000 are disabled. There is also a lower, connector-specific limit: the connector requests 10,000 events per page, but PostHog returns at most 1,000. Its current paginator stops when a page contains fewer than the requested 10,000 records, so it can silently omit events after the first 1,000 in each project's time window. Lowering **Events stream slice step size** reduces this risk, but cannot prevent truncation if even a one-day window contains more than 1,000 events.
+- The range between the `after` and `before` parameters must be less than one year. Normal windows are at most 91 days, but if a saved cursor is earlier than a newly configured **Start Date**, the first request can span from that cursor to the end of the new window and exceed this limit. Changing Start Date alone doesn't reset saved state. Keep it at or before saved cursors unless you deliberately restart the stream with cleared state.
 
 For large or recurring event exports, PostHog recommends [batch exports](https://posthog.com/docs/data-pipelines/batch-exports) instead of the events API.
 
