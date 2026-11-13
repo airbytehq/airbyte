@@ -1,0 +1,6 @@
+{
+  "uri": "redis://localhost:12000/0?read_timeout=30s&write_timeout=30s",
+  "connection_type": "redis",
+  "schemas": ["public"],
+  "batch_size": 1024
+}
