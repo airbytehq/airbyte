@@ -13,6 +13,11 @@ on:
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
 permissions: {}
 
+# Queue overlapping runs (cron plus manual dispatch) so their merges don't race each other.
+concurrency:
+  group: auto-merge-cron
+  cancel-in-progress: false
+
 jobs:
   # ---------- Job 1: Discover candidate PRs ----------
   list-candidates:
@@ -81,6 +86,8 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
+      # Merge one PR at a time: parallel squash merges fail with "Base branch was modified".
+      max-parallel: 1
       matrix:
         pr: ${{ fromJSON(needs.list-candidates.outputs.normal-matrix) }}
     env:
