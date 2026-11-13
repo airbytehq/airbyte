@@ -16,9 +16,13 @@ import jakarta.inject.Singleton
 
 private const val oauthConnectorInputSpecification: String =
     """{
-    "consent_url": "https://app.hubspot.com/oauth/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ redirect_uri_value | urlencode }}&{{ scope_key }}={{ scope_value | urlencode }}&optional_scope={{ optional_scope | urlencode }}&{{ state_key }}={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}",
+    "consent_url": "https://app.hubspot.com/oauth/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ redirect_uri_value | urlencode }}&{{ scope_key }}={{ scope_value | urlencode }}&optional_scope={{ optional_scope | urlencode }}&{{ state_key }}={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256",
     "scope": "crm.schemas.appointments.read crm.schemas.carts.read crm.schemas.commercepayments.read crm.schemas.companies.read crm.schemas.contacts.read crm.schemas.courses.read crm.schemas.custom.read crm.schemas.deals.read crm.schemas.invoices.read crm.schemas.listings.read crm.schemas.orders.read crm.schemas.services.read crm.schemas.subscriptions.read",
     "optional_scope": "crm.objects.appointments.write crm.objects.carts.write crm.objects.commercepayments.write crm.objects.companies.write crm.objects.contacts.write crm.objects.courses.write crm.objects.custom.write crm.objects.deals.write crm.objects.invoices.write crm.objects.listings.write crm.objects.orders.write crm.objects.products.write crm.objects.services.write crm.objects.subscriptions.write",
+    "state": {
+        "min": 43,
+        "max": 128
+    },
     "access_token_url": "https://api.hubapi.com/oauth/v1/token",
     "extract_output":  ["access_token", "refresh_token", "expires_in"],
     "access_token_headers": {
@@ -28,6 +32,7 @@ private const val oauthConnectorInputSpecification: String =
       "client_id": "{{ client_id_value }}",
       "client_secret": "{{ client_secret_value }}",
       "code": "{{ auth_code_value }}",
+      "code_verifier": "{{ state_value }}",
       "grant_type": "authorization_code",
       "redirect_uri": "{{ redirect_uri_value }}"
     }

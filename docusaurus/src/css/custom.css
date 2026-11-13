@@ -395,6 +395,20 @@ nav a.navbar__link--active {
   margin-top: 1.5rem;
 }
 
+html[class*="docs-doc-id-connector-development/config-based/understanding-the-yaml-file/reference/"] .header-with-button {
+  min-width: 0;
+  gap: 1rem;
+}
+
+html[class*="docs-doc-id-connector-development/config-based/understanding-the-yaml-file/reference/"] .header-with-button h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+html[class*="docs-doc-id-connector-development/config-based/understanding-the-yaml-file/reference/"] .header-with-button > :last-child {
+  flex-shrink: 0;
+}
+
 header h1 {
   margin-bottom: 1.5rem;
   margin-top: 1.5rem;

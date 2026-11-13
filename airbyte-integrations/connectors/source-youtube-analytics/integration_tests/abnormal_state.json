@@ -1,56 +1,722 @@
-{
-  "channel_annotations_a1": {
-    "date": 20991231
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_annotations_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "3c568ea7-7a7c-4049-b6b0-066242516703",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_basic_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_basic_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "d5e785bf-6df5-490f-b1d7-7dfb861bc032",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_cards_a1": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_cards_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "04283192-57f7-4531-b54b-a963dcfd04a5",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_combined_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_combined_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "2577ffe6-0729-42fd-935b-770351e81770",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_demographics_a1": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_demographics_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "4c12564b-3a3c-4b6d-82e7-2eb3b98e5e28",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_device_os_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_device_os_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "f7be375c-f308-4d81-a4b3-b9d0598465e4",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_end_screens_a1": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_end_screens_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "e6adf90e-fb05-4062-b4c2-cedd85a7fd2f",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_playback_location_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_playback_location_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "257d7d68-2f8e-4ac5-b4a9-727e15096de1",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_province_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_province_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "cdf03e9e-56b1-44b6-a37e-21b916169b0e",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_sharing_service_a1": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_reach_basic_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "64c9116f-e57c-4a5f-a350-319dc40b3d9f",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_subtitles_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_reach_combined_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "cc0283d9-e33d-434c-9447-db9e6f446d7c",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "channel_traffic_source_a3": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_sharing_service_a1"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "b5150382-87e2-4791-9f57-2d38db05e746",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_basic_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_subtitles_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "739ccf10-2a41-4678-8402-9630c769399d",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_combined_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_traffic_source_a3"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "15509830-f965-4749-a0b7-bd74094a1f13",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_device_os_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_basic_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "9014e5b9-a001-48f6-85f2-2a00cc4fb69d",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_playback_location_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_combined_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "465c21e1-f890-4941-ac0f-4b1fd06840a4",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_province_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_device_os_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "eeee3c5d-3306-4278-bc41-9602208c9826",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   },
-  "playlist_traffic_source_a2": {
-    "date": 20991231
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_playback_location_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "1316d440-0569-4bc2-8004-132b11f2af01",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_province_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "edf56b51-a324-4264-81ce-ef7fbae725f0",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "playlist_traffic_source_a2"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "date": "20991231"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "report": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "id": "d54b2ea8-08fb-4029-b1b2-2169f9f9639e",
+                  "parent_slice": {}
+                },
+                "cursor": {
+                  "createTime": "2099-12-31T00:00:00.000000Z"
+                }
+              }
+            ],
+            "state": {
+              "createTime": "2099-12-31T00:00:00.000000Z"
+            },
+            "lookback_window": 0
+          }
+        }
+      }
+    }
   }
-}
+]

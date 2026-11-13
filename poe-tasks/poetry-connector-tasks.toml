@@ -86,6 +86,8 @@ fi
 #
 # A connector whose pinned CDK predates the suite gets a warning annotation and a step summary line
 # instead of a failure: making it run needs a CDK upgrade, which is a code migration, not a test fix.
+# In CI it also sets the step output `docker-read-fallback=true`, so that the container tests read
+# the connector from its image instead.
 pytest-standard-tests.shell = '''
 set -eu # Ensure we return non-zero exit code upon failure
 
@@ -129,9 +131,14 @@ STATUS=${PROBE%% *}
 CDK_VERSION=${PROBE#* }
 
 if [ "$STATUS" = "too-old" ]; then
-  MESSAGE="pinned airbyte-cdk ${CDK_VERSION} lacks the standard tests; bump the CDK to 6.46.0 or later to run them. Only the Docker subset (airbyte-cdk image test) runs for this connector."
+  MESSAGE="pinned airbyte-cdk ${CDK_VERSION} lacks the standard tests; bump the CDK to 6.46.0 or later to run them. Until then, the container tests (airbyte-cdk image test) read the connector from its image instead."
   echo "::warning title=${CONNECTOR_NAME}: in-process standard tests not run::${MESSAGE}"
   summary "⚠️ \`${CONNECTOR_NAME}\`: ${MESSAGE}"
+  # This connector gets no in-process read, so ask "Container Tests" to turn on the Docker read,
+  # which is off by default (airbytehq/airbyte-internal-issues#17137).
+  if [ -n "${GITHUB_OUTPUT:-}" ]; then
+    echo "docker-read-fallback=true" >> "$GITHUB_OUTPUT"
+  fi
   exit 0
 fi
 if [ "$STATUS" = "no-pytest" ]; then
