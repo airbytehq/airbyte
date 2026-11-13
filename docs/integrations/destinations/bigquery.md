@@ -85,7 +85,7 @@ You cannot change the location later.
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 :::note
-Be sure to copy all contents in the Account Key JSON file including the brackets.
+Be sure to copy all contents in the Account Key JSON file including the surrounding braces.
 :::
 
 11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
@@ -113,7 +113,8 @@ concurrent rate limit, making it easier to start many queries at once.
 
 :::note
 Query, load, and copy jobs then run against the job project's quotas, while data still lands in
-datasets under **Project ID**. The service account needs the
+datasets under **Project ID**. With **Legacy raw tables** enabled, the queries that inspect existing
+raw tables at sync startup still run in the **Project ID** project. The service account needs the
 [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
 role on the job project, in addition to its existing roles on the dataset project.
 :::
@@ -200,7 +201,11 @@ namespace with `n` for converted namespaces.
 
 ### Permission errors
 
-The service account does not have the proper permissions.
+The service account does not have the proper permissions. With **Legacy raw tables** turned off,
+Airbyte classifies HTTP `401` and `403` errors encountered while checking existing tables at sync
+startup as configuration errors. Check the service account's credentials and permissions before retrying.
+A `403` error with reason `rateLimitExceeded` is excluded from this classification and remains
+eligible for retry.
 
 - Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles or
   equivalent permissions as those two roles.
@@ -280,23 +285,23 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.4-rc.1 | 2026-11-11 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
-| 3.2.3 | 2026-10-30 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
-| 3.2.2 | 2026-10-22 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
-| 3.2.1 | 2026-10-06 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
-| 3.2.0 | 2026-10-01 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
-| 3.1.2 | 2026-09-09 |[85804](https://github.com/airbytehq/airbyte/pull/85804 | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
+| 3.2.4-rc.1 | 2026-11-12 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
+| 3.2.3 | 2026-11-11 | [87606](https://github.com/airbytehq/airbyte/pull/87606) | Retry transient BigQuery 5xx errors on all API calls, including job inserts and uploads. |
+| 3.2.2 | 2026-10-30 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
+| 3.2.1 | 2026-10-09 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
+| 3.2.0 | 2026-10-02 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
+| 3.1.2 | 2026-09-10 | [85804](https://github.com/airbytehq/airbyte/pull/85804) | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
 | 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
-| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
+| 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
-| 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 3.0.23 | 2026-07-16 | [82102](https://github.com/airbytehq/airbyte/pull/82102) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
 | 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
-| 3.0.20 | 2026-06-26 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
-| 3.0.19 | 2026-05-21 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Promoting release candidate 3.0.19-rc.1 to a main version. |
-| 3.0.19-rc.1 | 2026-05-19 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
+| 3.0.20 | 2026-06-29 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
+| 3.0.19 | 2026-05-22 | [78333](https://github.com/airbytehq/airbyte/pull/78333) | Promoting release candidate 3.0.19-rc.1 to a main version. |
+| 3.0.19-rc.1 | 2026-05-20 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
-| 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
+| 3.0.18-rc.1 | 2026-03-30 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
 | 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
