@@ -1,12 +1,11 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import datetime, timezone
 from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-
-import json
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
