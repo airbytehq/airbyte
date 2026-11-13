@@ -86,6 +86,9 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_playback_location_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-playback-locations)
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
+- [reporting_jobs](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list) - The YouTube Reporting API jobs for the channel or content owner, including each job's report type and creation time. Full refresh only.
+
+The connection check lists the account's reporting jobs; it does not create a job or read a report, so it succeeds before YouTube has generated any report file.
 
 Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
 
@@ -140,6 +143,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.1.0 | 2026-11-13 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix connection check failing with "no stream slices were found" before YouTube has generated a report; add the `reporting_jobs` stream |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |

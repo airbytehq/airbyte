@@ -5,7 +5,11 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    # `reporting_jobs` only lists `/v1/jobs`, so the check validates the credentials and channel
+    # access without needing a report file. Report streams cannot be used: YouTube takes up to
+    # 48 hours to generate the first report after a job is created, so on a new channel their
+    # check finds no report to read and fails with "no stream slices were found".
+    - reporting_jobs
 
 definitions:
   streams:
@@ -30,6 +34,28 @@ definitions:
             condition: "{{ record['reportTypeId'] == parameters['report_type_id'] }}"
         paginator:
           $ref: "#/definitions/next_page_token_paginator"
+    reporting_jobs:
+      type: DeclarativeStream
+      name: reporting_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reporting_jobs"
     report:
       type: DeclarativeStream
       name: report
@@ -628,6 +654,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/reporting_jobs"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -762,6 +789,41 @@ metadata:
   assist: {}
 
 schemas:
+  reporting_jobs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        description: The server-generated ID of the reporting job.
+        type: string
+      reportTypeId:
+        description: The type of report the job creates, for example `channel_basic_a3`.
+        type:
+          - "null"
+          - string
+      name:
+        description: The name of the reporting job.
+        type:
+          - "null"
+          - string
+      createTime:
+        description: The date and time when the job was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      expireTime:
+        description: The date and time when the job expires, if it does.
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        description: Whether YouTube created the job rather than a user or application.
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

@@ -14,6 +14,12 @@ Only report downloads handle a 404. The download requester puts an `action: IGNO
 
 **Why this matters:** The first read of a report stream can create a YouTube job, and data rows come from downloaded CSV files rather than the job or report listing responses. Emitted value types follow the stream schemas, so changing a schema type changes what destinations receive. A missing report file is skipped rather than failing the sync, so a sync can succeed with rows missing.
 
+## 1a. Connection Check Uses `reporting_jobs`, Not a Report Stream
+
+`check` reads the full-refresh `reporting_jobs` stream, a plain `GET /v1/jobs` listing through `ContentOwnerRequester` with no job filter and no job creation. A report stream cannot be the check stream: `DefaultStream.check_availability` needs at least one partition, and a report stream has none until YouTube has generated a report file for its job, which takes up to 48 hours after the job is created. Before 2.1.0 the check used `channel_annotations_a1`, so every channel without an annotations report file failed setup with `Cannot attempt to connect to stream channel_annotations_a1 - no stream slices were found`. `unit_tests/mock_server/test_check.py` covers this.
+
+**Why this matters:** Pointing `check` back at any report stream reintroduces the new-channel setup failure. The check also no longer creates a reporting job, so the first job creation happens in the first sync.
+
 ## 2. Incremental Cursor Lives on the Parent `report` Stream
 
 The parent `report` stream tracks `createTime` and sends it to YouTube as `createdAfter`. Its global substream cursor and the child streams' incremental dependency let each report stream download only files created since the prior sync. Child report streams retain their own `date` cursor in `%Y%m%d` format; `date` is a CSV column and part of each child's primary key.
