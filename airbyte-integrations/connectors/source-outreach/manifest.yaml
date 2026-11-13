@@ -873,23 +873,6 @@ definitions:
       refresh_token: "{{ config['refresh_token'] }}"
       token_refresh_endpoint: https://api.outreach.io/oauth/token
       grant_type: refresh_token
-      refresh_token_updater:
-        refresh_token_name: refresh_token
-        access_token_config_path:
-          - access_token
-        refresh_token_config_path:
-          - refresh_token
-        token_expiry_date_config_path:
-          - token_expiry_date
-      refresh_token_error_status_codes:
-        - 400
-        - 401
-      refresh_token_error_key: error
-      refresh_token_error_values:
-        - invalid_grant
-        - invalid_permissions
-        - invalid_client
-        - unauthorized_client
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
@@ -903,10 +886,6 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
-        - type: HttpResponseFilter
-          http_codes:
-            - 401
-          action: REFRESH_TOKEN_THEN_RETRY
         - type: HttpResponseFilter
           http_codes:
             - 403
@@ -993,24 +972,6 @@ spec:
         minimum: 2
         maximum: 10
         order: 5
-      access_token:
-        type: string
-        title: Access Token
-        description: >-
-          The access token that Outreach returns when the connector refreshes
-          your OAuth credentials. Leave this field out; the connector fills it in.
-        airbyte_secret: true
-        airbyte_hidden: true
-        order: 6
-      token_expiry_date:
-        type: string
-        title: Token Expiry Date
-        description: >-
-          The date and time when the current access token expires. Leave this
-          field out; the connector fills it in.
-        format: date-time
-        airbyte_hidden: true
-        order: 7
     additionalProperties: true
 
 metadata:
