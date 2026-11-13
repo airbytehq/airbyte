@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired Download Links Are Not Permission Errors
+
+Bulk and report download URLs are short-lived Azure SAS links. `BingAdsReportDownloadRequester` re-polls the completed job immediately before downloading: bulk jobs use `DownloadRequestId`/`RequestId` and `ResultFileUrl`, while report jobs use `ReportRequestId` and `ReportRequestStatus.ReportDownloadUrl`. An HTTP 403 containing both `AuthenticationFailed` and the signature time-window detail returns control to this requester instead of retrying the stale URL in the HTTP client. The requester re-polls and retries the download once; persistent expiry raises a stream-specific `transient_error`. Other 403 responses retain the default permission/configuration error.
+
+**Why this matters:** Queued downloads can outlive a link even after a job completes. Retrying the same URL cannot recover, and classifying expiry as a configuration error incorrectly blames account permissions.

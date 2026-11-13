@@ -2723,9 +2723,16 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
+      poll_url: https://bulk.api.bingads.microsoft.com/Bulk/v13/BulkDownloadStatus/Query
+      creation_request_id_field: DownloadRequestId
+      poll_request_id_field: RequestId
+      download_url_field: ResultFileUrl
+      poll_response_field: null
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder

@@ -9,20 +9,24 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, TypeGuard, Union
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger(__name__)
@@ -576,18 +580,33 @@ class BingAdsGzipCsvDecoder(Decoder):
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
 
 
+def _is_expired_download_response(response: requests.Response | Exception | None) -> TypeGuard[requests.Response]:
+    return (
+        isinstance(response, requests.Response)
+        and response.status_code == 403
+        and "AuthenticationFailed" in response.text
+        and "Signature not valid in the specified time frame" in response.text
+    )
+
+
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    def interpret_response(self, response_or_exception: requests.Response | Exception | None) -> ErrorResolution:
+        if _is_expired_download_response(response_or_exception):
+            # Return to the download requester to renew the URL, not the HTTP client's stale-URL retry loop.
+            return SUCCESS_RESOLUTION
+        return super().interpret_response(response_or_exception)
+
+
 @dataclass
 class BingAdsReportDownloadRequester(HttpRequester):
-    """Custom download requester that re-polls Bing Ads for a fresh SAS URL before downloading.
-
-    When many streams are synced concurrently, the SAS download URL obtained at
-    poll-completion time may expire (10-minute TTL) before the download begins.
-    This requester makes a lightweight re-poll request to obtain a fresh URL
-    immediately before each download, preventing ``AuthenticationFailed`` errors
-    from Azure Blob Storage.
-    """
+    """Renew short-lived bulk/report download URLs before downloading and once on SAS expiry."""
 
     report_poll_authenticator: Optional[DeclarativeAuthenticator] = None
+    poll_url: str = BING_ADS_REPORTING_POLL_URL
+    creation_request_id_field: str = "ReportRequestId"
+    poll_request_id_field: str = "ReportRequestId"
+    download_url_field: str = "ReportDownloadUrl"
+    poll_response_field: str | None = "ReportRequestStatus"
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         # When instantiated via create_custom_component, stream_response is not
@@ -596,6 +615,8 @@ class BingAdsReportDownloadRequester(HttpRequester):
         # response.raw (e.g. BingAdsReportZipCsvDecoder) work correctly.
         if self.decoder and hasattr(self.decoder, "is_stream_response"):
             self.stream_response = self.decoder.is_stream_response()
+        if self.error_handler is None:
+            self.error_handler = BingAdsDownloadErrorHandler(config=self.config, parameters=parameters)
         super().__post_init__(parameters)
 
     def send_request(
@@ -610,36 +631,49 @@ class BingAdsReportDownloadRequester(HttpRequester):
         request_body_json: Optional[Mapping[str, Any]] = None,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
-        if stream_slice:
-            fresh_url = self._get_fresh_download_url(stream_slice)
-            if fresh_url:
-                stream_slice = StreamSlice(
-                    partition=stream_slice.partition,
-                    cursor_slice=stream_slice.cursor_slice,
-                    extra_fields={
-                        **stream_slice.extra_fields,
-                        "download_target": fresh_url,
-                    },
-                )
+        for attempt in range(2):
+            if stream_slice:
+                fresh_url = self._get_fresh_download_url(stream_slice)
+                if fresh_url:
+                    stream_slice = StreamSlice(
+                        partition=stream_slice.partition,
+                        cursor_slice=stream_slice.cursor_slice,
+                        extra_fields={
+                            **stream_slice.extra_fields,
+                            "download_target": fresh_url,
+                        },
+                    )
 
-        return super().send_request(
-            stream_state=stream_state,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token,
-            path=path,
-            request_headers=request_headers,
-            request_params=request_params,
-            request_body_data=request_body_data,
-            request_body_json=request_body_json,
-            log_formatter=log_formatter,
-        )
+            response = super().send_request(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+            if not _is_expired_download_response(response):
+                return response
+
+            internal_message = f"Bing Ads download URL renewal exhausted. Azure response: {response.text}"
+            response.close()
+            if attempt == 1 or not stream_slice:
+                raise AirbyteTracedException(
+                    message=f"The Bing Ads download link for stream '{self.name.removeprefix('job download - ')}' is expired.",
+                    internal_message=internal_message,
+                    failure_type=FailureType.transient_error,
+                )
+        return None
 
     def _get_fresh_download_url(self, stream_slice: StreamSlice) -> Optional[str]:
-        """Re-poll Bing Ads Reporting API to obtain a fresh SAS download URL."""
+        """Re-poll the completed Bing Ads job to obtain a fresh SAS download URL."""
         creation_response = stream_slice.extra_fields.get("creation_response", {})
-        report_request_id = creation_response.get("ReportRequestId")
+        report_request_id = creation_response.get(self.creation_request_id_field)
         if not report_request_id:
-            logger.warning("No ReportRequestId in creation_response; using existing download URL")
+            logger.warning("No %s in creation_response; using existing download URL", self.creation_request_id_field)
             return None
 
         account_id = stream_slice.partition.get("account_id", "")
@@ -664,21 +698,23 @@ class BingAdsReportDownloadRequester(HttpRequester):
             )
             _, response = http_client.send_request(
                 http_method="POST",
-                url=BING_ADS_REPORTING_POLL_URL,
+                url=self.poll_url,
                 headers=headers,
-                json={"ReportRequestId": str(report_request_id)},
+                json={self.poll_request_id_field: str(report_request_id)},
                 request_kwargs={"timeout": 30},
             )
             data = response.json()
-            fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
+            if self.poll_response_field:
+                data = data.get(self.poll_response_field, {})
+            fresh_url = data.get(self.download_url_field)
             if fresh_url:
-                logger.info("Obtained fresh download URL via re-poll for report request %s", report_request_id)
+                logger.info("Obtained fresh download URL via re-poll for request %s", report_request_id)
                 return fresh_url
-            logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
+            logger.warning("Re-poll did not return a %s for request %s", self.download_url_field, report_request_id)
             return None
         except Exception:
             logger.warning(
-                "Re-poll failed for report request %s; falling back to existing download URL",
+                "Re-poll failed for request %s; falling back to existing download URL",
                 report_request_id,
                 exc_info=True,
             )
