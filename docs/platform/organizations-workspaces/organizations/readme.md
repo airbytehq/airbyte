@@ -10,7 +10,7 @@ The highest level of structure in Airbyte is an **organization**. Organizations 
 
 Self-Managed deployments only have one organization, but you can deploy Airbyte multiple times to establish different organizations.
 
-Organizations contain one or more [workspaces](../workspaces). From your organization's home page, you can view all of your workspaces and the current status of all syncs. Use this ability to identify workspaces with failed syncs that might need your attention.
+Organizations contain one or more [workspaces](../workspaces/readme.md). From your organization's home page, you can view all of your workspaces and the current status of all syncs. Use this ability to identify workspaces with failed syncs that might need your attention.
 
 ![Organization home page](../../images/organization-homepage.png)
 

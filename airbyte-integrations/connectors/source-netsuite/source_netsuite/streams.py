@@ -4,17 +4,20 @@
 
 
 from abc import ABC
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from requests_oauthlib import OAuth1
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
+    MAX_NETSUITE_UTC_OFFSET_HOURS,
     META_PATH,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
@@ -22,6 +25,7 @@ from source_netsuite.constraints import (
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
+    SLICE_DATE_FORMAT,
     USLESS_SCHEMA_ELEMENTS,
 )
 from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
@@ -41,6 +45,8 @@ class NetsuiteStream(HttpStream, ABC):
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
         self.schemas = {}  # store subschemas to reduce API calls
+        self._records_attempted = 0
+        self._user_error_skipped = 0
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -146,11 +152,11 @@ class NetsuiteStream(HttpStream, ABC):
         args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
         prep_req = self._session.prepare_request(requests.Request(**args))
         response = self._send_request(prep_req, request_kwargs)
-        # sometimes response.status_code == 400,
-        # but contains json elements with error description,
-        # to avoid passing it as {TYPE: RECORD}, we filter response by status
+        self._records_attempted += 1
         if response.status_code == requests.codes.ok:
             yield response.json()
+        elif response.status_code == 400:
+            self._track_skipped_record(response)
 
     def parse_response(
         self,
@@ -189,19 +195,69 @@ class NetsuiteStream(HttpStream, ABC):
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
 
                     # handle other known errors
-                    self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
+                    self.logger.error(f"Stream `{self.name}`: {error_code} error occurred, full error message: {detail_message}")
                     return False
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
 
+    def _track_skipped_record(self, response: requests.Response) -> None:
+        try:
+            error_details = response.json().get("o:errorDetails", [])
+            if isinstance(error_details, list) and error_details:
+                error_code = error_details[0].get("o:errorCode", "")
+                if error_code == "USER_ERROR":
+                    self._user_error_skipped += 1
+        except (ValueError, KeyError, IndexError):
+            self.logger.debug("Could not parse error details from 400 response", exc_info=True)
+
+    def _emit_skipped_records_summary(self) -> None:
+        if self._user_error_skipped == 0:
+            return
+
+        skipped = self._user_error_skipped
+        total = self._records_attempted
+        self.logger.warning(
+            f"Stream `{self.name}`: {skipped} of {total} records skipped due to USER_ERROR "
+            f"(records locked by user-defined workflows). Consider modifying your NetSuite "
+            f"workflow Lock Record action to exclude REST API contexts."
+        )
+
+        if total > 0 and (skipped / total) > 0.5:
+            raise AirbyteTracedException(
+                message=(
+                    f"Stream `{self.name}` has incomplete data: {skipped} of {total} records "
+                    f"inaccessible due to NetSuite workflow locks."
+                ),
+                internal_message=(
+                    f"More than 50% of records ({skipped}/{total}) returned HTTP 400 USER_ERROR "
+                    f"indicating records locked by user-defined workflows. The sync is marked as "
+                    f"failed to prevent silent data loss."
+                ),
+                failure_type=FailureType.system_error,
+            )
+
     def read_records(
         self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
+        skipped_before = self._user_error_skipped
         try:
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-        except DateFormatExeption:
-            """continue trying other formats, until the list is exhausted"""
+            # `should_retry` advances `index_datetime_format` and raises `DateFormatExeption` when
+            # NetSuite rejects the date format used for this slice's bounds. Re-read the same slice
+            # under the next candidate format rather than moving on: the bounds are rendered at
+            # request time, and simply swallowing the exception would drop every record in this
+            # slice's window with nothing to ever re-read it.
+            while True:
+                try:
+                    yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
+                    return
+                except DateFormatExeption:
+                    if self.index_datetime_format >= len(NETSUITE_INPUT_DATE_FORMATS):
+                        self.logger.error(f"Stream `{self.name}`: no known date format accepted for slice {stream_slice}, skipping it.")
+                        return
+        finally:
+            if self._user_error_skipped > skipped_before:
+                self._emit_skipped_records_summary()
 
 
 class IncrementalNetsuiteStream(NetsuiteStream):
@@ -254,33 +310,48 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         current_cursor = current_stream_state.get(self.cursor_field, self.start_datetime)
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
+    def format_slice_bound(self, bound: str) -> str:
+        """
+        Render an internal slice bound in the date format this account accepts.
+
+        Deferring the formatting to request time is what lets a `DateFormatExeption` fallback
+        re-issue the very same slice under the next candidate format.
+        """
+        return datetime.strptime(bound, SLICE_DATE_FORMAT).strftime(self.default_datetime_format)
+
     def request_params(
         self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
-            params.update(
-                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
-            )
+            start = self.format_slice_bound(stream_slice["start"])
+            end = self.format_slice_bound(stream_slice["end"])
+            params.update(**{"q": f'{self.cursor_field} AFTER "{start}" AND {self.cursor_field} BEFORE "{end}"'})
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
 
-        slices = []
         state = self.get_state_value(stream_state)
-        start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+        cursor = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT)
+
+        # The `q` filter accepts only bare dates, which NetSuite resolves in the account's own
+        # timezone. Truncating the cursor to its own date would ask for records after
+        # account-local midnight, which on any account behind UTC falls *after* the cursor --
+        # so records modified in between are never requested, by this sync or any later one.
+        # Backing the cursor off by the widest negative offset NetSuite supports keeps the
+        # window opening at or before the cursor on every account. The resulting re-read
+        # overlap is discarded by `filter_records_newer_than_state`, so nothing duplicates.
+        start = (cursor - timedelta(hours=MAX_NETSUITE_UTC_OFFSET_HOURS)).date()
+        today = datetime.now(timezone.utc).date()
         # handle abnormal state values
-        if start > date.today():
-            return slices
-        else:
-            while start <= date.today():
-                next_day = start + timedelta(days=self.window_in_days)
-                slice_start = start.strftime(self.default_datetime_format)
-                slice_end = next_day.strftime(self.default_datetime_format)
-                yield {"start": slice_start, "end": slice_end}
-                start = next_day
+        if start > today:
+            return
+        while start <= today:
+            next_day = start + timedelta(days=self.window_in_days)
+            yield {"start": start.strftime(SLICE_DATE_FORMAT), "end": next_day.strftime(SLICE_DATE_FORMAT)}
+            start = next_day
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
