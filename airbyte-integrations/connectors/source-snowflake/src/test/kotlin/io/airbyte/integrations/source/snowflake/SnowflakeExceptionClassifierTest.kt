@@ -100,6 +100,25 @@ class SnowflakeExceptionClassifierTest {
     }
 
     @Test
+    fun invalidIdentifierIsAConfigError() {
+        val message =
+            "SQL compilation error: error line 33 at position 0\ninvalid identifier 'CAMPAIGN_NAME'"
+        val exception =
+            RuntimeException(
+                "Column name discovery query failed: $message",
+                SQLException(message, "42000", 904),
+            )
+
+        val result = jdbcClassifier.classify(exception)
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
+        Assertions.assertTrue((result as ConfigError).displayMessage.contains("no longer exists"))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            handler.handle(exception).failureType,
+        )
+    }
+
+    @Test
     fun unknownSqlErrorIsASystemErrorWithTheCode() {
         val wrapped = RuntimeException("query failed", SQLException("boom", "XX000", 999999))
         val result = jdbcClassifier.classify(wrapped)

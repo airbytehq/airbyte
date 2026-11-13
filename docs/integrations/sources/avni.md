@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [Avni](http
 
 ## Prerequisites
 
-- An Avni account on the Avni hosted service at `app.avniproject.org`. The connector sends all requests to `https://app.avniproject.org/api` and signs in through the Avni hosted service's Amazon Cognito user pool, so it doesn't work with self-hosted Avni servers.
+- An Avni account on the Avni hosted service at `app.avniproject.org`. The connector uses fixed URLs for this service's data API and Amazon Cognito authentication; it has no option to configure a self-hosted Avni server.
 - The username and password of an Avni user that the connector can sign in as.
 
 ## Setup guide
@@ -18,8 +18,8 @@ This page contains the setup guide and reference information for the [Avni](http
 
 1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 2. On the source setup page, select **Avni** from the Source type dropdown and enter a name for this connector.
-3. Enter the **username** and **password** of your Avni user.
-4. Enter the **start_date**. The connector syncs records that were last modified after this date and time. Use the format `yyyy-MM-ddTHH:mm:ss.SSSZ`, for example `2000-10-31T01:30:00.000Z`. The default is `2000-06-23T01:30:00.000Z`. To sync all data, use a date earlier than your oldest Avni record.
+3. Provide the `username` and `password` of your Avni user.
+4. Provide `start_date`. The connector syncs records that were last modified after this date and time. Use the format `yyyy-MM-ddTHH:mm:ss.SSSZ`, for example `2000-10-31T01:30:00.000Z`. The default is `2000-06-23T01:30:00.000Z`. To sync all data, use a date earlier than your oldest Avni record.
 5. Click **Set up source**.
 
 If Avni rejects the username or password, the connection check fails with an `Avni login failed` error that includes the message returned by Avni's authentication service.
@@ -59,6 +59,9 @@ The connector requests 100 records per page.
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.1.5 | 2026-11-10 | [91344](https://github.com/airbytehq/airbyte/pull/91344) | Update dependencies |
+| 0.1.4 | 2026-11-03 | [90466](https://github.com/airbytehq/airbyte/pull/90466) | Update dependencies |
+| 0.1.3 | 2026-10-27 | [78581](https://github.com/airbytehq/airbyte/pull/78581) | Update dependencies |
 | 0.1.2 | 2026-10-20 | [88141](https://github.com/airbytehq/airbyte/pull/88141) | Migrate to manifest-only and replace the custom Cognito authenticator with declarative authentication; removes the boto3 dependency. |
 | 0.1.1 | 2025-02-27 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock version |
 | 0.1.0 | 2024-03-27 | [30222](https://github.com/airbytehq/airbyte/pull/30222) | Avni Source Connector |

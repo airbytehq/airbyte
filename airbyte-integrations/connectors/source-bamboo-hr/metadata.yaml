@@ -6,11 +6,25 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
   connectorType: source
   definitionId: 90916976-a132-4ce9-8bce-82a03dd58788
-  dockerImageTag: 0.9.3
+  dockerImageTag: 0.10.0
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - employees_directory_stream
+      - employees
+      - time_off_requests_stream
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   dockerRepository: airbyte/source-bamboo-hr
   documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
   githubIssueLabel: source-bamboo-hr
@@ -46,10 +60,25 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-    - title: API documentation
-      url: https://documentation.bamboohr.com/docs
+    - title: API reference
+      url: https://documentation.bamboohr.com/reference
       type: api_reference
+    - title: OpenAPI specification
+      url: https://raw.githubusercontent.com/BambooHR/bhr-api-python/main/specs/public.yaml
+      type: openapi_spec
+    - title: OpenAPI spec repository
+      url: https://github.com/BambooHR/bhr-api-python
+      type: spec_repository
     - title: Authentication
       url: https://documentation.bamboohr.com/docs/getting-started
       type: authentication_guide
+    - title: API details and throttling
+      url: https://documentation.bamboohr.com/docs/api-details
+      type: rate_limits
+    - title: Past changes to the API
+      url: https://documentation.bamboohr.com/docs/past-changes-to-the-api
+      type: api_release_history
+    - title: Planned changes to the API
+      url: https://documentation.bamboohr.com/docs/planned-changes-to-the-api
+      type: api_deprecations
 metadataSpecVersion: "1.0"
