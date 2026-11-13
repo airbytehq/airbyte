@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -308,3 +308,67 @@ class TwilioConferencesStateMigration(StateMigration):
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Raise per-partition cursors that are older than the stream-level cursor up to the stream-level cursor.
+
+    The stream-level cursor is only advanced after every partition has been read in a successful sync, so
+    a partition cursor that is older than it points at data that was already synced. The CDK prefers the
+    per-partition cursor when one exists, so without this migration such a partition re-reads its history.
+
+    The stream-level cursor is read from `state` (low-code shape) or from the top level (legacy shape).
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2021-11-20T00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-13T12:11:10Z" }
+      }
+
+    Final:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-11-13T12:11:10Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-13T12:11:10Z" }
+      }
+    """
+
+    @staticmethod
+    def _stale_cursors(stream_state: Mapping[str, Any]) -> list[tuple[dict[str, Any], str, Any]]:
+        """Return (partition cursor, cursor field, stream-level value) for every partition cursor behind the stream-level one."""
+        if not isinstance(stream_state, Mapping):
+            return []
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping):
+            global_state = {}
+
+        stale = []
+        for state in stream_state.get("states") or []:
+            cursor = state.get("cursor")
+            if not isinstance(cursor, dict):
+                continue
+            for cursor_field, partition_value in cursor.items():
+                global_value = global_state.get(cursor_field) or stream_state.get(cursor_field)
+                partition_datetime = ab_datetime_try_parse(partition_value) if isinstance(partition_value, str) else None
+                global_datetime = ab_datetime_try_parse(global_value) if isinstance(global_value, str) else None
+                if partition_datetime and global_datetime and partition_datetime < global_datetime:
+                    stale.append((cursor, cursor_field, global_value))
+        return stale
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        for cursor, cursor_field, global_value in self._stale_cursors(stream_state):
+            cursor[cursor_field] = global_value
+        return stream_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(self._stale_cursors(stream_state))

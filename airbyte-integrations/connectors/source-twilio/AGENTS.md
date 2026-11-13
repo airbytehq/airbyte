@@ -25,3 +25,13 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Stale per-partition state
+
+`calls`, `conferences`, `messages` and `recordings` run `TwilioStalePartitionStateMigration` on their incoming state:
+
+- The CDK resumes a partition from its own entry in `states` whenever one exists, even when the stream-level cursor in `state` is newer.
+- The stream-level cursor only advances after every partition finished in a sync, so a partition cursor older than it points at data already synced. The migration raises such cursors to the stream-level value; cursors that are ahead are left alone.
+- It also accepts the legacy shape where the stream-level cursor sits at the top level of the state next to `states`.
+- `global_substream_cursor: true` alone does not help existing connections: the saved `use_global_cursor` flag overrides it and saved `states` entries are still used.
+- `usage_records` and `message_media` don't run this migration.

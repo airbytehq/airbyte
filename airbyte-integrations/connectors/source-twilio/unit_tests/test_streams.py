@@ -255,6 +255,127 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key,state,record_cursor,expected_window,expected_cursor",
+        [
+            pytest.param(
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2021-11-20 00:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-13 12:11:10Z"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+                "2022-11-14T10:00:00Z",
+                ("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z"),
+                "2022-11-14 10:00:00Z",
+                id="messages_stale_partition_behind_stream_level_state",
+            ),
+            pytest.param(
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2021-11-20T00:00:00Z"},
+                        }
+                    ],
+                    "date_sent": "2022-11-13T12:11:10Z",
+                },
+                "2022-11-14T10:00:00Z",
+                ("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z"),
+                "2022-11-14 10:00:00Z",
+                id="messages_stale_partition_behind_legacy_top_level_cursor",
+            ),
+            pytest.param(
+                "calls",
+                "/Accounts/AC123/Calls.json",
+                "end_time",
+                "EndTime>",
+                "EndTime<",
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Calls.json", "parent_slice": {}},
+                            "cursor": {"end_time": "2021-11-20"},
+                        }
+                    ],
+                    "state": {"end_time": "2022-11-13"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+                "2022-11-14T10:00:00Z",
+                ("2022-11-13", "2022-11-16"),
+                "2022-11-14",
+                id="calls_stale_partition_behind_stream_level_state",
+            ),
+            pytest.param(
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-15 08:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-13 12:11:10Z"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+                "2022-11-15T10:00:00Z",
+                ("2022-11-15 08:00:00Z", "2022-11-16 12:03:11Z"),
+                "2022-11-15 10:00:00Z",
+                id="messages_partition_ahead_of_stream_level_state_is_kept",
+            ),
+        ],
+    )
+    def test_stale_partition_state_resumes_from_stream_level_cursor(
+        self, stream_name, path, cursor_field, lower_key, upper_key, state, record_cursor, expected_window, expected_cursor, requests_mock
+    ):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        child_matcher = requests_mock.get(
+            f"{BASE}{path}", json={stream_name: [{"sid": "REC1", cursor_field: record_cursor}]}, status_code=200
+        )
+
+        output = read_from_stream(
+            {**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"},
+            stream_name,
+            SyncMode.incremental,
+            StateBuilder().with_stream_state(stream_name, state).build(),
+        )
+
+        requested_windows = [
+            (parse_qs(urlparse(request.url).query)[lower_key][0], parse_qs(urlparse(request.url).query)[upper_key][0])
+            for request in child_matcher.request_history
+        ]
+        assert requested_windows == [expected_window]
+        assert [record.record.data["sid"] for record in output.records] == ["REC1"]
+
+        emitted_state = output.most_recent_state.stream_state.__dict__
+        assert [partition_state["cursor"] for partition_state in emitted_state["states"]] == [{cursor_field: expected_cursor}]
+        assert emitted_state["state"] == {cursor_field: expected_cursor}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
