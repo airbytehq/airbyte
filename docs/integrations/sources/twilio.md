@@ -167,7 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.11 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Resume `messages` incremental syncs from the stream-level `date_sent` cursor instead of stale per-account cursors that re-read message history |
+| 1.1.11 | 2026-11-12 | [92883](https://github.com/airbytehq/airbyte/pull/92883) | Resume `messages` incremental syncs from the stream-level `date_sent` cursor instead of stale per-account cursors that re-read message history |
 | 1.1.10 | 2026-11-10 | [91752](https://github.com/airbytehq/airbyte/pull/91752) | Update dependencies |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
