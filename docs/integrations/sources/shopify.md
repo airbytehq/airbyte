@@ -378,7 +378,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 4.3.7 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Emit `transactions` whose order was updated since the saved state, so status changes of existing transactions (e.g. refunds moving from `PENDING` to `SUCCESS`) are synced incrementally |
+| 4.3.7 | 2026-11-12 | [92810](https://github.com/airbytehq/airbyte/pull/92810) | Emit `transactions` whose order was updated since the saved state, so status changes of existing transactions (e.g. refunds moving from `PENDING` to `SUCCESS`) are synced incrementally |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
