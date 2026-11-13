@@ -255,6 +255,63 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "incoming_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2021-01-01T00:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-15T08:00:00Z"},
+                    "lookback_window": 0,
+                },
+                "2022-11-15 08:00:00Z",
+                id="stale_partition_cursor_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-14T10:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-15T10:00:00Z"},
+                        },
+                    ]
+                },
+                "2022-11-14 10:00:00Z",
+                id="legacy_per_partition_state_resumes_from_oldest_partition",
+            ),
+        ],
+    )
+    def test_messages_resumes_from_global_date_sent_cursor(self, incoming_state, expected_lower_bound, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        messages_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": "2022-11-16T09:00:00Z"}]},
+            status_code=200,
+        )
+        state = StateBuilder().with_stream_state("messages", incoming_state).build()
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        assert [parse_qs(urlparse(request.url).query)["DateSent>"] for request in messages_matcher.request_history] == [
+            [expected_lower_bound]
+        ]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-16 09:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
