@@ -72,10 +72,10 @@ The `events` stream uses the event `timestamp` field as its cursor. The connecto
 
 PostHog has [deprecated the events API](https://posthog.com/docs/api/events) that the `events` stream uses and plans to remove it at a future date. PostHog currently applies these restrictions to that API:
 
-- Pagination offsets larger than 50,000 are disabled. The connector pages through each time window using offsets, so a single project and time window that contains more events than this allows can cause the sync to fail. If this happens, lower the **Events stream slice step size** setting so each window contains fewer events.
+- Pagination offsets larger than 50,000 are disabled. The connector pages through each project's time window using offsets, 10,000 events per page. If a single project has more events in one time window than this offset limit allows, lower the **Events stream slice step size** setting so each window contains fewer events.
 - The range between the `after` and `before` parameters must be less than one year. The connector's maximum step size of 91 days stays within this limit.
 
-For large or recurring event exports, PostHog recommends [batch exports](https://posthog.com/docs/cdp/batch-exports) instead of the events API.
+For large or recurring event exports, PostHog recommends [batch exports](https://posthog.com/docs/data-pipelines/batch-exports) instead of the events API.
 
 ### Rate limiting
 
@@ -95,7 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                 |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
 | 1.1.31 | 2026-11-10 | [91639](https://github.com/airbytehq/airbyte/pull/91639) | Update dependencies |
 | 1.1.30 | 2026-11-03 | [90903](https://github.com/airbytehq/airbyte/pull/90903) | Require Python 3.11 or newer, retaining support through Python 3.13. |
