@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,63 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    def _mock_daily_jobs(self, http_mocker: HttpMocker, days: List[datetime], failing_day: Optional[datetime] = None) -> None:
+        report_run_ids = [f"15718600600195{i:02d}" for i in range(len(days))]
+        job_ids = [f"10499373796016{i:02d}" for i in range(len(days))]
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+            if day == failing_day:
+                insights_response = build_response(
+                    body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                    status_code=HTTPStatus.BAD_REQUEST,
+                )
+            else:
+                insights_response = _insights_response().with_record(_ads_insights_action_product_id_record()).build()
+            http_mocker.get(_get_insights_request(job_id).build(), insights_response)
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+
+    @staticmethod
+    def _emitted_cursor_values(output: EntrypointOutput) -> List[str]:
+        return [
+            AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][ACCOUNT_ID].get(_CURSOR_FIELD)
+            for message in output.state_messages
+        ]
+
+    @HttpMocker()
+    def test_given_state_when_sync_fails_during_lookback_then_emitted_cursor_is_not_moved_back(self, http_mocker: HttpMocker) -> None:
+        cursor_value = NOW - timedelta(days=1)
+        lookback_day = cursor_value - timedelta(days=1)
+        self._mock_daily_jobs(http_mocker, days=[lookback_day, cursor_value], failing_day=cursor_value)
+
+        output = self._read(
+            config().with_start_date(NOW - timedelta(days=9)).with_end_date(cursor_value).with_insights_lookback_window(1),
+            state=StateBuilder().with_stream_state(_STREAM_NAME, {ACCOUNT_ID: {_CURSOR_FIELD: cursor_value.strftime(DATE_FORMAT)}}).build(),
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        assert output.state_messages
+        assert self._emitted_cursor_values(output) == [cursor_value.strftime(DATE_FORMAT)] * len(output.state_messages)
+
+    @HttpMocker()
+    def test_given_state_when_lookback_and_new_days_read_then_cursor_only_moves_forward(self, http_mocker: HttpMocker) -> None:
+        end_date = NOW - timedelta(days=1)
+        cursor_value = end_date - timedelta(days=1)
+        lookback_day = cursor_value - timedelta(days=1)
+        self._mock_daily_jobs(http_mocker, days=[lookback_day, cursor_value, end_date])
+
+        output = self._read(
+            config().with_start_date(NOW - timedelta(days=9)).with_end_date(end_date).with_insights_lookback_window(1),
+            state=StateBuilder().with_stream_state(_STREAM_NAME, {ACCOUNT_ID: {_CURSOR_FIELD: cursor_value.strftime(DATE_FORMAT)}}).build(),
+        )
+
+        assert len(output.records) == 3
+        assert self._emitted_cursor_values(output) == [
+            cursor_value.strftime(DATE_FORMAT),
+            cursor_value.strftime(DATE_FORMAT),
+            end_date.strftime(DATE_FORMAT),
+        ]
