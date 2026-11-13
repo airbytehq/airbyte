@@ -260,6 +260,56 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-11-12")
+    @pytest.mark.parametrize("empty_results", [False, True])
+    def test_read_records_cursor_does_not_regress_during_lookback(self, mocker, api, account_id, empty_results):
+        saved_cursor = date(2026, 11, 7)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 11, 11),
+            insights_lookback_window=28,
+        )
+        record = mocker.Mock()
+        record.export_all_data.side_effect = lambda: {"date_start": "2026-10-10"}
+
+        def make_job(**kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = kwargs["interval"]
+            job.get_result.return_value = [] if empty_results else [record]
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=make_job)
+        manager = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager")
+        manager.side_effect = lambda **kwargs: mocker.Mock(completed_jobs=lambda: kwargs["jobs"])
+        slices = iter(
+            stream.stream_slices(
+                sync_mode=SyncMode.incremental,
+                stream_state={account_id: {"date_start": saved_cursor.isoformat()}, "time_increment": 1},
+            )
+        )
+        first_slice = next(slices)
+        assert first_slice["insight_job"].interval.start == saved_cursor - timedelta(days=28)
+        assert len(list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=first_slice))) == (0 if empty_results else 1)
+        assert stream.state[account_id] == {"date_start": saved_cursor.isoformat(), "slices": []}
+
+        failed_slice = next(slices)
+        failed_slice["insight_job"].get_result.side_effect = RuntimeError("interrupted read")
+        with pytest.raises(RuntimeError, match="interrupted read"):
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=failed_slice))
+        assert stream.state[account_id] == {"date_start": saved_cursor.isoformat(), "slices": []}
+
+        failed_slice["insight_job"].get_result.side_effect = None
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=failed_slice))
+        for stream_slice in slices:
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            completed_date = stream_slice["insight_job"].interval.start
+            assert stream.state[account_id] == {"date_start": max(saved_cursor, completed_date).isoformat(), "slices": []}
+            if completed_date > saved_cursor:
+                break
+        assert stream.state[account_id]["date_start"] == "2026-11-08"
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
