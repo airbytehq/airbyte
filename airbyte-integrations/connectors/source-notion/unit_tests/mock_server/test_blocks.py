@@ -3,13 +3,12 @@
 import json
 from typing import Any, Dict, List, Mapping, Optional
 
-from unit_tests.conftest import get_source
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 
 _CONFIG = {"credentials": {"auth_type": "token", "token": "test-token"}, "start_date": "2020-01-01T00:00:00.000Z"}
@@ -51,7 +50,11 @@ def _mock_workspace(http_mocker: HttpMocker, nested_child_last_edited_time: str,
     http_mocker.post(
         HttpRequest(
             url=f"{_API}/search",
-            body={"sort": {"direction": "descending", "timestamp": "last_edited_time"}, "filter": {"property": "object", "value": "page"}, "page_size": 100},
+            body={
+                "sort": {"direction": "descending", "timestamp": "last_edited_time"},
+                "filter": {"property": "object", "value": "page"},
+                "page_size": 100,
+            },
         ),
         _results([_page("page-1", _SECOND_SYNC), _page("page-2", _OLD)]),
     )
@@ -63,11 +66,15 @@ def _mock_workspace(http_mocker: HttpMocker, nested_child_last_edited_time: str,
         HttpRequest(url=f"{_API}/blocks/unchanged-parent/children", query_params={"page_size": "100"}),
         _results([_block("nested-child", nested_child_last_edited_time)]),
     )
-    http_mocker.get(HttpRequest(url=f"{_API}/blocks/page-2/children", query_params={"page_size": "100"}), _results([_block("old-block", _OLD)]))
+    http_mocker.get(
+        HttpRequest(url=f"{_API}/blocks/page-2/children", query_params={"page_size": "100"}), _results([_block("old-block", _OLD)])
+    )
 
 
 def _read_blocks(state: Optional[Mapping[str, Any]]) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("blocks").with_sync_mode(SyncMode.incremental)).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("blocks").with_sync_mode(SyncMode.incremental)).build()
+    )
     built_state = StateBuilder().with_stream_state("blocks", state).build() if state is not None else StateBuilder().build()
     return read(get_source(_CONFIG, built_state), config=_CONFIG, catalog=catalog, state=built_state)
 
