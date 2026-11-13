@@ -190,7 +190,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                 fixture.assertPending(flush)
                 assertTrue(
                     Files.exists(upload.path),
-                    "The real archive service still owns this file"
+                    "The real archive service still owns this file",
                 )
                 upload.result.complete(Unit)
                 val thrown = flush.await().exceptionOrNull()
@@ -271,7 +271,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "VALUE"
+                "VALUE",
             )
         private val schema =
             ColumnSchema(
@@ -318,7 +318,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                     Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234),
                     Meta.COLUMN_NAME_AB_META to StringValue("{}"),
                     Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
-                )
+                ),
             )
             path = requireNotNull(buffer.csvFilePath)
             assertEquals(1, buffer.recordCount)
@@ -354,7 +354,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                                         withTimeout(10_000) { releaseReader.await() }
                                         assertTrue(
                                             Files.exists(path),
-                                            "Buffer deleted a live reader's file"
+                                            "Buffer deleted a live reader's file",
                                         )
                                         assertTrue(reader.readBytes().isNotEmpty())
                                     }

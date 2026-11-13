@@ -36,16 +36,9 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        ignored_fields:
-          team:
-            - name: members
-              bypass_reason: ignore changing value in full_refresh of acceptance-tests
-            - name: last_active
-              bypass_reason: ignore changing value in full_refresh of acceptance-tests
   spec:
     tests:
       - spec_path: manifest.yaml
-        timeout_seconds: 1200
         backward_compatibility_tests_config:
           disable_for_version: 0.1.12 # All the parent Ids are now taken from responses itself
   incremental:

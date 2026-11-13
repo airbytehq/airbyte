@@ -313,8 +313,8 @@ class TestIssuesStream(TestCase):
         Test JQL pagination using nextPageToken.
 
         NOTE: This test validates pagination for the 'issues' stream using the jql_paginator,
-        which uses nextPageToken instead of startAt. Currently, only the issues stream uses
-        this paginator configuration.
+        which uses nextPageToken instead of startAt. The issues, board_issues and sprint_issues
+        streams use this paginator configuration.
 
         The JQL paginator uses nextPageToken instead of startAt for pagination.
         """

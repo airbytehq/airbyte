@@ -3,9 +3,11 @@
 from datetime import timedelta
 
 import requests
-from conftest import base_config, get_source
+import yaml
+from conftest import _MANIFEST_PATH, base_config, get_source
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel, HttpRequestRegexMatcher, Rate
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
 
 def _runtime_matcher(source, manifest_matcher: dict):
@@ -34,12 +36,18 @@ def test_api_budget_resolves_separate_campaign_and_report_policies() -> None:
 
     assert limits == [(400, timedelta(minutes=1)), (60, timedelta(minutes=1))]
     requests_by_path = {
-        "/api/v3/ad_accounts/a2_x/ads": requests.Request("GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/ads").prepare(),
-        "/api/v3/ad_accounts/a2_x/campaigns": requests.Request(
-            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/campaigns"
+        "/api/v3/ad_accounts/a2_abc123": requests.Request("GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123").prepare(),
+        "/api/v3/ad_accounts/a2_abc123/ad_groups": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ad_groups"
         ).prepare(),
-        "/api/v3/ad_accounts/a2_x/reports": requests.Request(
-            "POST", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/reports"
+        "/api/v3/ad_accounts/a2_abc123/ads": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ads"
+        ).prepare(),
+        "/api/v3/ad_accounts/a2_abc123/campaigns": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/campaigns"
+        ).prepare(),
+        "/api/v3/ad_accounts/a2_abc123/reports": requests.Request(
+            "POST", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/reports"
         ).prepare(),
     }
     matched = {
@@ -48,9 +56,11 @@ def test_api_budget_resolves_separate_campaign_and_report_policies() -> None:
     }
 
     assert matched == {
-        "/api/v3/ad_accounts/a2_x/ads": [0],
-        "/api/v3/ad_accounts/a2_x/campaigns": [0],
-        "/api/v3/ad_accounts/a2_x/reports": [1],
+        "/api/v3/ad_accounts/a2_abc123": [0],
+        "/api/v3/ad_accounts/a2_abc123/ad_groups": [0],
+        "/api/v3/ad_accounts/a2_abc123/ads": [0],
+        "/api/v3/ad_accounts/a2_abc123/campaigns": [0],
+        "/api/v3/ad_accounts/a2_abc123/reports": [1],
     }
     assert source.resolved_manifest["api_budget"]["status_codes_for_ratelimit_hit"] == [429]
 
@@ -112,3 +122,25 @@ def test_spec_fields_are_human_readable_and_keep_sensitive_fields_secret() -> No
     assert properties["num_workers"]["minimum"] == 1
     assert properties["num_workers"]["maximum"] == 10
     assert "num_workers" not in source.resolved_manifest["spec"]["connection_specification"]["required"]
+
+
+def test_report_lookback_window_spec_is_optional_and_bounded() -> None:
+    source = get_source()
+    connection_specification = source.resolved_manifest["spec"]["connection_specification"]
+    field = connection_specification["properties"]["report_lookback_window_days"]
+
+    assert field["title"] == "Report Lookback Window (Days)"
+    assert field["default"] == 7
+    assert field["minimum"] == 0
+    assert field["maximum"] == 30
+    assert "report_lookback_window_days" not in connection_specification["required"]
+
+
+def test_report_schemas_resolve_without_yaml_merge_keys() -> None:
+    # yaml.BaseLoader ignores YAML merge keys, like the platform's Jackson parser when the connector is forked in the Connector Builder.
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.load(_MANIFEST_PATH.read_text(), Loader=yaml.BaseLoader))
+    report_streams = [stream for stream in manifest["streams"] if stream["name"].endswith("_report")]
+
+    assert len(report_streams) == 4
+    for stream in report_streams:
+        assert {"impressions", "spend"} <= stream["schema_loader"]["schema"]["properties"].keys(), stream["name"]

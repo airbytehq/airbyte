@@ -1074,6 +1074,84 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
+  # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
+  # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` incremental export
+  # returns, and that endpoint does return audits for archived tickets. The cost is one request per
+  # created or updated ticket against the account-wide plan limit. Like the per-ticket
+  # `ticket_metrics` calls, the endpoint has no `api_budget` policy: it runs at the connector's
+  # concurrency and relies on 429 + Retry-After backoff.
+  # Each changed ticket re-emits all of its audits; `id` deduplicates them. The cursor mirrors the
+  # stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`),
+  # but uses a global substream cursor: a per-ticket state would grow one entry per ticket.
+  ticket_audits_per_ticket_stream:
+    type: DeclarativeStream
+    name: "ticket_audits_per_ticket"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_audits_per_ticket"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      cursor_field: "_ab_updated_at"
+      start_datetime:
+        datetime: "0" # the parent `tickets` stream applies `start_date`; this cursor only tracks state
+      global_substream_cursor: true
+    retriever:
+      type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/audits.json"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          # Keyed on the status code only: Zendesk does not guarantee a JSON body on these
+          # responses, and a refusal is scoped to one ticket, not to the stream. See AGENTS.md §5.
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403]
+              action: IGNORE
+              error_message: "Skipping audits for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Skipping audits for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
+      # Cursor pagination (page[size] up to 100, meta.has_more, links.next). Zendesk returns audits
+      # for archived tickets unpaginated; with no `meta.has_more` the paginator stops after one page.
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["audits"]
+        schema_normalization: Default
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            extra_fields:
+              - ["generated_timestamp"]
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "_ab_updated_at"
+            value: "{{ stream_slice.extra_fields['generated_timestamp'] }}"
+            value_type: "integer"
+
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -1490,6 +1568,7 @@ streams:
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
+  - $ref: "#/definitions/ticket_audits_per_ticket_stream"
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/side_conversations_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
@@ -3390,6 +3469,38 @@ schemas:
                 - "null"
                 - integer
           additionalProperties: true
+  # Same record shape as `ticket_audits` plus the `_ab_updated_at` cursor. Each property points at
+  # the `ticket_audits` definition so the two schemas cannot drift (a unit test checks that every
+  # `ticket_audits` property is listed here); `ticket_audits` itself is unchanged.
+  ticket_audits_per_ticket:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      events:
+        $ref: "#/schemas/ticket_audits/properties/events"
+      author_id:
+        $ref: "#/schemas/ticket_audits/properties/author_id"
+      metadata:
+        $ref: "#/schemas/ticket_audits/properties/metadata"
+      id:
+        $ref: "#/schemas/ticket_audits/properties/id"
+      created_at:
+        $ref: "#/schemas/ticket_audits/properties/created_at"
+      ticket_id:
+        $ref: "#/schemas/ticket_audits/properties/ticket_id"
+      via:
+        $ref: "#/schemas/ticket_audits/properties/via"
+      attachments:
+        $ref: "#/schemas/ticket_audits/properties/attachments"
+      _ab_updated_at:
+        description:
+          Cursor field managed by Airbyte. The `generated_timestamp` of the parent ticket when its
+          audits were read.
+        type:
+          - "null"
+          - integer
   ticket_comments:
     $schema: https://json-schema.org/draft-07/schema#
     type:

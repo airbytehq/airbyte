@@ -23,7 +23,7 @@ class AirbyteTypeToAvroSchemaTest {
                 properties =
                     linkedMapOf(
                         "1d_view" to FieldType(type = StringType, nullable = false),
-                    )
+                    ),
             )
         val descriptor = DestinationStream.Descriptor("test", "stream")
         assertDoesNotThrow { schema.toAvroSchema(descriptor) }
@@ -37,23 +37,23 @@ class AirbyteTypeToAvroSchemaTest {
 
         assertEquals(
             avroSchema.getField(Meta.COLUMN_NAME_AB_RAW_ID).schema().type,
-            Schema.Type.STRING
+            Schema.Type.STRING,
         )
         assertEquals(
             avroSchema.getField(Meta.COLUMN_NAME_AB_RAW_ID).schema().logicalType,
-            LogicalTypes.uuid()
+            LogicalTypes.uuid(),
         )
         assertEquals(
             avroSchema.getField(Meta.COLUMN_NAME_AB_EXTRACTED_AT).schema().type,
-            Schema.Type.LONG
+            Schema.Type.LONG,
         )
         assertEquals(
             avroSchema.getField(Meta.COLUMN_NAME_AB_EXTRACTED_AT).schema().logicalType,
-            LogicalTypes.timestampMillis()
+            LogicalTypes.timestampMillis(),
         )
         assertEquals(
             avroSchema.getField(Meta.COLUMN_NAME_AB_GENERATION_ID).schema().type,
-            Schema.Type.LONG
+            Schema.Type.LONG,
         )
 
         val metaSchema = avroSchema.getField(Meta.COLUMN_NAME_AB_META).schema()

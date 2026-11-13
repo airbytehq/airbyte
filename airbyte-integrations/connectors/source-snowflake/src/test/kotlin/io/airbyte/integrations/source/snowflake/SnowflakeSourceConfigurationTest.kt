@@ -27,7 +27,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -59,7 +59,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -91,7 +91,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -110,7 +110,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -133,7 +133,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -165,7 +165,7 @@ class SnowflakeSourceConfigurationTest {
                     KeyPairCredentialsSpecification(
                         username = "testuser",
                         privateKey = "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
-                        privateKeyPassword = "password"
+                        privateKeyPassword = "password",
                     )
             }
 
@@ -182,11 +182,11 @@ class SnowflakeSourceConfigurationTest {
         assertTrue(keyFile.name.endsWith(".p8"))
         assertEquals(
             "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
-            keyFile.readText()
+            keyFile.readText(),
         )
         assertTrue(
             !java.io.File("rsa_key.p8").exists(),
-            "the key must not be written into the working directory"
+            "the key must not be written into the working directory",
         )
         assertEquals("password", config.jdbcProperties["private_key_file_pwd"])
     }
@@ -202,7 +202,7 @@ class SnowflakeSourceConfigurationTest {
                 schema = "CUSTOM_SCHEMA"
                 credentials =
                     ProgrammaticAccessTokenCredentialsSpecification(
-                        programmaticAccessToken = "test-token"
+                        programmaticAccessToken = "test-token",
                     )
             }
 
@@ -229,7 +229,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -273,7 +273,7 @@ class SnowflakeSourceConfigurationTest {
             assertEquals(
                 normalized,
                 SnowflakeSourceConfigurationFactory.normalizeHost(raw),
-                "raw '$raw'"
+                "raw '$raw'",
             )
         }
     }
@@ -288,7 +288,7 @@ class SnowflakeSourceConfigurationTest {
                 database = "TEST_DATABASE"
                 credentials =
                     ProgrammaticAccessTokenCredentialsSpecification(
-                        programmaticAccessToken = "test-token"
+                        programmaticAccessToken = "test-token",
                     )
             }
 
@@ -309,7 +309,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 
@@ -337,7 +337,7 @@ class SnowflakeSourceConfigurationTest {
                 credentials =
                     UsernamePasswordCredentialsSpecification(
                         username = "testuser",
-                        password = "testpass"
+                        password = "testpass",
                     )
             }
 

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-track-pms
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: aa0373c1-a7a6-48ff-8277-e5fe6cecff75
-  dockerImageTag: 4.3.21
+  dockerImageTag: 4.4.0
   dockerRepository: airbyte/source-track-pms
   githubIssueLabel: source-track-pms
   icon: icon.svg
@@ -50,6 +50,24 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Track PMS API
-      url: https://www.trackhs.com/api
+    - title: Track PMS API reference
+      url: https://developer.trackhs.com/reference/
       type: api_reference
+    - title: Track PMS OpenAPI specifications
+      url: https://developer.trackhs.com/openapi/
+      type: openapi_spec
+    - title: Track PMS authentication
+      url: https://developer.trackhs.com/docs/authentication
+      type: authentication_guide
+    - title: Track PMS rate limits
+      url: https://developer.trackhs.com/docs/rate-limits
+      type: rate_limits
+    - title: Track PMS API changelog
+      url: https://developer.trackhs.com/changelog
+      type: api_release_history
+    - title: Track PMS deprecation policy
+      url: https://developer.trackhs.com/docs/deprecation-policy
+      type: api_deprecations
+    - title: Track PMS status
+      url: https://status.trackhs.com/
+      type: status_page
