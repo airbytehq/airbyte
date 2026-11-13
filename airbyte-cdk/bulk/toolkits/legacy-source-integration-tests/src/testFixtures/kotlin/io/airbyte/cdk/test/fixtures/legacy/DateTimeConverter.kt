@@ -18,7 +18,7 @@ object DateTimeConverter {
 
     val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
-            "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]",
+            "HH:mm:ss[.][SSSSSSSSS][SSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]",
         )
     private var loggedUnknownTimeWithTimeZoneClass = false
     private var loggedUnknownTimeClass = false
