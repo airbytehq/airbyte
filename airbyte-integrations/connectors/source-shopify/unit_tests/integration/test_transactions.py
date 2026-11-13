@@ -94,7 +94,8 @@ def _mock_bulk_job(http_mocker: HttpMocker, job_id: str, lower_boundary: str, re
         additional_matcher=lambda request: "bulkOperationRunQuery" in request.text and orders_filter in request.text,
     )
     filename = f"bulk-{job_id.rsplit('/', 1)[-1]}.jsonl"
-    result_url = f"{_JOB_RESULT_URL}?response-content-disposition=attachment%3B+filename%3D%22{filename}%22%3B+filename%2A%3DUTF-8%27%27{filename}"
+    content_disposition = f"attachment%3B+filename%3D%22{filename}%22%3B+filename%2A%3DUTF-8%27%27{filename}"
+    result_url = f"{_JOB_RESULT_URL}?response-content-disposition={content_disposition}"
     http_mocker.post(
         create_job_status_request(_SHOP_NAME, job_id),
         JobStatusResponseBuilder().with_completed_status(job_id, result_url if result_lines else None).build(),
