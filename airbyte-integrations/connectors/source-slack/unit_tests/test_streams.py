@@ -138,6 +138,85 @@ def test_threads_stream_accepts_fractional_cursor_state(token_config):
     assert stream.name == "threads"
 
 
+def test_threads_read_preserves_per_channel_parent_cursors(requests_mock, token_config):
+    token_config["start_date"] = "2021-01-01T00:00:00Z"
+    token_config["end_date"] = "2021-07-24T20:00:00Z"
+    cursors = {"airbyte-for-beginners": 1626984000.0, "good-reads": 1627070400.0}
+    state = StateBuilder().with_stream_state(
+        "threads",
+        {
+            "states": [],
+            "parent_state": {
+                "channel_messages": {
+                    "states": [
+                        {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
+                        for channel, cursor in cursors.items()
+                    ]
+                }
+            },
+        },
+    ).build()
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "threads", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+    output = read(get_source(token_config, "threads", state), config=token_config, catalog=catalog, state=state)
+
+    assert not output.errors
+    oldest_by_channel = {}
+    for request in requests_mock.request_history:
+        if request.path == "/api/conversations.history":
+            oldest_by_channel.setdefault(request.qs["channel"][0], float(request.qs["oldest"][0]))
+    assert oldest_by_channel == {channel: cursor - 86400 for channel, cursor in cursors.items()}
+
+
+def test_channel_messages_read_excludes_archived_non_members(requests_mock, token_config):
+    token_config.update(
+        {
+            "include_archived_channels": True,
+            "join_channels": True,
+            "channel_filter": [],
+        }
+    )
+    channels = [
+        {"id": "member", "name": "member", "is_member": True, "is_archived": True},
+        {"id": "joinable", "name": "joinable", "is_member": False, "is_archived": False},
+        {"id": "archived", "name": "archived", "is_member": False, "is_archived": True},
+    ]
+    requests_mock.get("https://slack.com/api/conversations.list", json={"ok": True, "channels": channels})
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    state = StateBuilder().build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_messages", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+    output = read(get_source(token_config, "channel_messages", state), config=token_config, catalog=catalog, state=state)
+
+    assert not output.errors
+    requested_channels = {
+        request.qs["channel"][0] for request in requests_mock.request_history if request.path == "/api/conversations.history"
+    }
+    assert requested_channels == {"member", "joinable"}
+
+
 def test_threads_request_params(authenticator, token_config):
     stream = get_stream_by_name("threads", token_config)
     threads_slice = {"parent_slice": {"channel": "airbyte-for-beginners"}}
