@@ -123,9 +123,7 @@ class TwilioMessagesGlobalCursorStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         cursor_value = (stream_state.get("state") or {}).get(self.cursor_field)
         if not cursor_value:
-            partition_cursor_values = [
-                (state.get("cursor") or {}).get(self.cursor_field) for state in stream_state.get("states") or []
-            ]
+            partition_cursor_values = [(state.get("cursor") or {}).get(self.cursor_field) for state in stream_state.get("states") or []]
             partition_cursor_values = [value for value in partition_cursor_values if value]
             if partition_cursor_values:
                 cursor_value = min(partition_cursor_values, key=ab_datetime_parse)
