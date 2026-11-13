@@ -12,7 +12,7 @@ class AirbyteRecordMessageFile {
         bytes: Long? = null,
         fileRelativePath: String? = null,
         modified: Long? = null,
-        sourceFileUrl: String? = null
+        sourceFileUrl: String? = null,
     ) {
         this.fileUrl = fileUrl
         this.bytes = bytes
@@ -20,13 +20,14 @@ class AirbyteRecordMessageFile {
         this.modified = modified
         this.sourceFileUrl = sourceFileUrl
     }
+
     constructor() :
         this(
             fileUrl = null,
             bytes = null,
             fileRelativePath = null,
             modified = null,
-            sourceFileUrl = null
+            sourceFileUrl = null,
         )
 
     @get:JsonProperty("file_url")

@@ -15,36 +15,71 @@ definitions:
       if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token',
       '') }}"
     
+  retry_after_backoff:
+    type: WaitTimeFromHeader
+    header: retry-after
+  rate_limited_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    http_codes:
+      - 429
+  bad_request_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 400
+  object_not_found_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 404
   error_handler:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: retry-after
-        response_filters:
-          - type: HttpResponseFilter
-            action: RATE_LIMITED
-            http_codes:
-              - 429
-      - type: DefaultErrorHandler
-        response_filters:
-          - type: HttpResponseFilter
-            action: IGNORE
-            http_codes:
-              - 400
-            error_message_contains: "The start_cursor provided is invalid:"
-          - type: HttpResponseFilter
-            action: IGNORE
-            http_codes:
-              - 404
-            error_message_contains: "Make sure the relevant pages and databases are shared with your integration."
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - $ref: "#/definitions/retry_after_backoff"
+    response_filters:
+      - $ref: "#/definitions/rate_limited_filter"
+      - $ref: "#/definitions/bad_request_filter"
+      - $ref: "#/definitions/object_not_found_filter"
   record_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
       field_path:
         - results
+  # Pivot the properties map into a list of {name, value} objects
+  properties_to_name_value_list:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - properties
+        value: >-
+          {%- set properties_list = [] -%}
+          {%- for name, property in (record.get('properties') or {}).items() -%}
+          {%- set _ = properties_list.append({'name': name, 'value': property}) -%}
+          {%- endfor -%}
+          {{ properties_list }}
+  # Move bot.owner[<owner type>] to bot.owner.info when it is set
+  bot_owner_to_info:
+    type: AddFields
+    condition: >-
+      {%- set owner = (record.get('bot') or {}).get('owner') or {} -%}
+      {{ true if owner.get('type') and owner.get(owner.get('type')) else false }}
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - bot
+          - owner
+        value: >-
+          {%- set owner = (record.get('bot') or {}).get('owner') or {} -%}
+          {%- set owner_type = owner.get('type') -%}
+          {%- set new_owner = {} -%}
+          {%- for key, item in owner.items() if key != owner_type -%}
+          {%- set _ = new_owner.update({key: item}) -%}
+          {%- endfor -%}
+          {%- set _ = new_owner.update({'info': owner.get(owner_type)}) -%}
+          {{ new_owner }}
   request_parameter_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -122,8 +157,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/client_side_incremental_sync"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+      - $ref: "#/definitions/properties_to_name_value_list"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -143,28 +177,21 @@ streams:
         request_parameters: {}
         request_body_json: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: retry-after
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RATE_LIMITED
-                  http_codes:
-                    - 429
-                - type: HttpResponseFilter
-                  action: FAIL
-                  predicate: "{{ response.get('code') == 'restricted_resource' }}"
-                  error_message: Notion integration lacks read user information for the Users stream. Enable it in Notion or disable the Users stream.
-                  failure_type: config_error
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - $ref: "#/definitions/retry_after_backoff"
+          response_filters:
+            - $ref: "#/definitions/rate_limited_filter"
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.get('code') == 'restricted_resource' }}"
+              error_message: Notion integration lacks read user information for the Users stream. Enable it in Notion or disable the Users stream.
+              failure_type: config_error
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
       partition_router: []
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionUserTransformation
+      - $ref: "#/definitions/bot_owner_to_info"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -189,8 +216,7 @@ streams:
     incremental_sync:
       $ref: "#/definitions/client_side_incremental_sync"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+      - $ref: "#/definitions/properties_to_name_value_list"
     schema_loader:
       type: InlineSchemaLoader
       schema:

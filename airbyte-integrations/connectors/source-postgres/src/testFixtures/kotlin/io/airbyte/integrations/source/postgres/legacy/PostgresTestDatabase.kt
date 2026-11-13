@@ -44,8 +44,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         NETWORK("withNetwork"),
         SSL("withSSL"),
         WAL_LEVEL_LOGICAL("withWalLevelLogical"),
-        CERT("withCert"),
-        ;
+        CERT("withCert");
 
         val methodName: String
 
@@ -57,7 +56,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
         return Stream.of<Stream<String>>(
             psqlCmd(
-                Stream.of<String?>(
+                Stream.of<String>(
                     String.format("CREATE DATABASE %s", databaseName),
                     String.format("CREATE USER %s PASSWORD '%s'", userName, password),
                     String.format(
@@ -84,7 +83,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     fun dropDatabaseAndUser() {
         execInContainer(
             psqlCmd(
-                Stream.of<String?>(
+                Stream.of<String>(
                     String.format("DROP DATABASE %s", databaseName),
                     String.format("DROP OWNED BY %s", userName),
                     String.format("DROP USER %s", userName),
@@ -151,7 +150,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     data class Certificates(
         val caCertificate: String?,
         val clientCertificate: String?,
-        val clientKey: String?
+        val clientKey: String?,
     )
 
     override fun configBuilder(): PostgresConfigBuilder {
@@ -194,7 +193,12 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
 
         @JvmOverloads
         fun withCdcReplication(
-            LsnCommitBehaviour: String = "While reading Data"
+            LsnCommitBehaviour: String = "While reading Data",
+            // The connector arms its CDC watchdog with this value before the Debezium engine
+            // starts, and the first event it can see is the 10 s Debezium heartbeat. The CDK
+            // default of 15 s leaves Debezium 3.4 engine start-up (2-3 s, more on a loaded CI
+            // host) no margin.
+            initialWaitingSeconds: Long = 60,
         ): PostgresConfigBuilder {
             return this.with("is_test", true)
                 .with(
@@ -204,8 +208,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
                             "method" to "CDC",
                             "replication_slot" to testDatabase.replicationSlotName,
                             "publication" to testDatabase.publicationName,
-                            "initial_waiting_seconds" to
-                                DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+                            "initial_waiting_seconds" to initialWaitingSeconds,
                             "lsn_commit_behaviour" to LsnCommitBehaviour,
                         ),
                     ),
@@ -228,10 +231,10 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         @Suppress("deprecation")
         fun `in`(baseImage: BaseImage, vararg modifiers: ContainerModifier?): PostgresTestDatabase {
             val methodNames =
-                Stream.of<ContainerModifier>(
+                Stream.of<ContainerModifier?>(
                         *modifiers,
                     )
-                    .map<String?> { im: ContainerModifier -> im.methodName }
+                    .map<String> { im: ContainerModifier? -> im!!.methodName }
                     .toList()
                     .toTypedArray<String>()
             val container: PostgreSQLContainer<*> =

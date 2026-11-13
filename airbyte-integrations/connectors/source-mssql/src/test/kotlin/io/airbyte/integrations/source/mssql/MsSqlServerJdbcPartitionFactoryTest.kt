@@ -81,14 +81,14 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                metadataQuerierFactory
+                metadataQuerierFactory,
             )
         val msSqlServerCdcJdbcPartitionFactory =
             MsSqlServerJdbcPartitionFactory(
                 cdcSharedState,
                 selectQueryGenerator,
                 config,
-                metadataQuerierFactory
+                metadataQuerierFactory,
             )
 
         val fieldId = EmittedField("id", IntFieldType)
@@ -97,7 +97,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("test_table")
+                        StreamDescriptor().withNamespace("dbo").withName("test_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -110,7 +110,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("timestamp_table")
+                        StreamDescriptor().withNamespace("dbo").withName("timestamp_table"),
                     ),
                 schema = setOf(timestampFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -124,7 +124,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("binary_table")
+                        StreamDescriptor().withNamespace("dbo").withName("binary_table"),
                     ),
                 schema = setOf(binaryFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -138,7 +138,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("datetime_table")
+                        StreamDescriptor().withNamespace("dbo").withName("datetime_table"),
                     ),
                 schema = setOf(datetimeFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -173,13 +173,13 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
-                ResourceAcquirer(emptyList())
+                ResourceAcquirer(emptyList()),
             )
         }
 
         private fun streamFeedBootstrap(
             stream: Stream,
-            incumbentStateValue: OpaqueStateValue? = null
+            incumbentStateValue: OpaqueStateValue? = null,
         ) =
             StreamFeedBootstrap(
                 outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
@@ -192,14 +192,14 @@ class MsSqlServerJdbcPartitionFactoryTest {
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: ObjectNode
+                            recordData: ObjectNode,
                         ) {}
 
                         override fun decorateRecordData(
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: NativeRecordPayload
+                            recordData: NativeRecordPayload,
                         ) {
                             // no-op
                         }
@@ -232,7 +232,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("no_pk_table")
+                        StreamDescriptor().withNamespace("dbo").withName("no_pk_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -251,18 +251,19 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-              "cursor": "12345",
-              "version": 3,
-              "state_type": "cursor_based",
-              "stream_name": "test_table",
-              "cursor_field": [
-                "id"
-              ],
-              "stream_namespace": "dbo",
-              "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                "cursor": "12345",
+                "version": 3,
+                "state_type": "cursor_based",
+                "stream_name": "test_table",
+                "cursor_field": [
+                  "id"
+                ],
+                "stream_namespace": "dbo",
+                "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -276,7 +277,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("empty_table")
+                        StreamDescriptor().withNamespace("dbo").withName("empty_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
@@ -315,7 +316,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
     )
     fun testResumeFromCompletedCursorBasedReadTimestamp(
         cursorVal: String,
-        expectedLowerBound: String
+        expectedLowerBound: String,
     ) {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
@@ -331,18 +332,19 @@ class MsSqlServerJdbcPartitionFactoryTest {
                   "stream_namespace": "dbo",
                   "cursor_record_count": 1 
               } 
-        """.trimIndent()
+        """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(
-                streamFeedBootstrap(timestampStream, incomingStateValue)
+                streamFeedBootstrap(timestampStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree(expectedLowerBound),
-            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound,
         )
     }
 
@@ -351,29 +353,30 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-                  "cursor": "2025-01-20T10:30:45.123",
-                  "version": 3,
-                  "state_type": "cursor_based",
-                  "stream_name": "datetime_table",
-                  "cursor_field": [
-                    "datetime_col"
-                  ],
-                  "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                    "cursor": "2025-01-20T10:30:45.123",
+                    "version": 3,
+                    "state_type": "cursor_based",
+                    "stream_name": "datetime_table",
+                    "cursor_field": [
+                      "datetime_col"
+                    ],
+                    "stream_namespace": "dbo",
+                    "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(
-                streamFeedBootstrap(datetimeStream, incomingStateValue)
+                streamFeedBootstrap(datetimeStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree("2025-01-20T10:30:45.123000"),
-            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound,
         )
     }
 
@@ -382,14 +385,15 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-                      {
-                      "pk_val": "100000",
-                      "pk_name": "id",
-                      "version": 3,
-                      "state_type": "primary_key",
-                      "incremental_state": {}  
-                      }
-        """.trimIndent()
+                {
+                "pk_val": "100000",
+                "pk_name": "id",
+                "version": 3,
+                "state_type": "primary_key",
+                "incremental_state": {}  
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -403,19 +407,20 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-            {
-            "pk_val": "50000",
-            "pk_name": "id",
-            "version": 3,
-            "state_type": "primary_key",
-            "incremental_state": {}
-            }
-        """.trimIndent()
+                {
+                "pk_val": "50000",
+                "pk_name": "id",
+                "version": 3,
+                "state_type": "primary_key",
+                "incremental_state": {}
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerCdcJdbcPartitionFactory.create(
-                streamFeedBootstrap(stream, incomingStateValue)
+                streamFeedBootstrap(stream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MsSqlServerJdbcCdcSnapshotPartition)
     }
@@ -425,19 +430,72 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-        {
-        "stream_name": "test_table",
-        "cursor_field": [],
-        "stream_namespace": "dbo"
-        }
-        """.trimIndent()
+                {
+                "stream_name": "test_table",
+                "cursor_field": [],
+                "stream_namespace": "dbo"
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerCdcJdbcPartitionFactory.create(
-                streamFeedBootstrap(stream, incomingStateValue)
+                streamFeedBootstrap(stream, incomingStateValue),
             )
         assertNull(jdbcPartition)
+    }
+
+    @Test
+    fun testCdcIncrementalWithEmptyObjectStateColdStarts() {
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.readTree("{}")),
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCdcSnapshotPartition)
+        assertNull((jdbcPartition as MsSqlServerJdbcCdcSnapshotPartition).lowerBound)
+    }
+
+    @Test
+    fun testCdcSnapshotCompletedStateStillReturnsNull() {
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(
+                    stream,
+                    MsSqlServerCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream),
+                ),
+            )
+        assertNull(jdbcPartition)
+    }
+
+    @Test
+    fun testCdcFullRefreshWithEmptyObjectStateColdStarts() {
+        val fullRefreshStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("cdc_full_refresh_table"),
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(),
+                configuredCursor = null,
+            )
+
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(fullRefreshStream, Jsons.readTree("{}")),
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcNonResumableSnapshotPartition)
+    }
+
+    @Test
+    fun testCursorBasedWithEmptyObjectStateColdStarts() {
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.readTree("{}")),
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
     }
 
     @Test
@@ -445,29 +503,30 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-                  "cursor": "QUJDREVGRw==",
-                  "version": 3,
-                  "state_type": "cursor_based",
-                  "stream_name": "binary_table",
-                  "cursor_field": [
-                    "binary_col"
-                  ],
-                  "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
-        """.trimIndent()
+                {
+                    "cursor": "QUJDREVGRw==",
+                    "version": 3,
+                    "state_type": "cursor_based",
+                    "stream_name": "binary_table",
+                    "cursor_field": [
+                      "binary_col"
+                    ],
+                    "stream_namespace": "dbo",
+                    "cursor_record_count": 1 
+                } 
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(
-                streamFeedBootstrap(binaryStream, incomingStateValue)
+                streamFeedBootstrap(binaryStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree<BinaryNode>(Base64.getDecoder().decode("QUJDREVGRw==")),
-            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound,
         )
     }
 
@@ -477,7 +536,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("full_refresh_table")
+                        StreamDescriptor().withNamespace("dbo").withName("full_refresh_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
@@ -496,7 +555,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("cdc_full_refresh_table")
+                        StreamDescriptor().withNamespace("dbo").withName("cdc_full_refresh_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
@@ -527,17 +586,18 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-              "version": 2,
-              "state_type": "cursor_based",
-              "stream_name": "test_table",
-              "cursor_field": [
-                "id"
-              ],
-              "stream_namespace": "dbo",
-              "cursor_record_count": 1
-              }
-        """.trimIndent()
+                {
+                "version": 2,
+                "state_type": "cursor_based",
+                "stream_name": "test_table",
+                "cursor_field": [
+                  "id"
+                ],
+                "stream_namespace": "dbo",
+                "cursor_record_count": 1
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
@@ -553,18 +613,19 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-              "version": 2,
-              "state_type": "cursor_based",
-              "stream_name": "test_table",
-              "cursor_field": [
-                "id"
-              ],
-              "cursor": "12345",
-              "stream_namespace": "dbo",
-              "cursor_record_count": 1
-              }
-        """.trimIndent()
+                {
+                "version": 2,
+                "state_type": "cursor_based",
+                "stream_name": "test_table",
+                "cursor_field": [
+                  "id"
+                ],
+                "cursor": "12345",
+                "stream_namespace": "dbo",
+                "cursor_record_count": 1
+                }
+                """
+                    .trimIndent(),
             )
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
@@ -582,7 +643,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("numeric_table")
+                        StreamDescriptor().withNamespace("dbo").withName("numeric_table"),
                     ),
                 schema = setOf(numericField),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -601,7 +662,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
               "cursor": 13,
               "cursor_record_count": 0
               }
-            """
+            """,
             )
 
         // Create a mock StreamFeedBootstrap with the state
@@ -629,7 +690,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("regular_table")
+                        StreamDescriptor().withNamespace("dbo").withName("regular_table"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -653,7 +714,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(tableStream))
@@ -668,7 +729,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("vw_test_view")
+                        StreamDescriptor().withNamespace("dbo").withName("vw_test_view"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -692,7 +753,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
@@ -700,7 +761,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // Views should use non-resumable partitions to skip sampling entirely
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
-            "Views should use non-resumable partitions to avoid sampling"
+            "Views should use non-resumable partitions to avoid sampling",
         )
     }
 
@@ -711,7 +772,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("unknown_object")
+                        StreamDescriptor().withNamespace("dbo").withName("unknown_object"),
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -734,7 +795,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(unknownStream))
@@ -750,7 +811,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("VW_FICHES_PRODUITS")
+                        StreamDescriptor().withNamespace("dbo").withName("VW_FICHES_PRODUITS"),
                     ),
                 schema = setOf(fieldId, fieldName),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -770,7 +831,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                   "cursor_field": ["name"],
                   "cursor": null
                 }
-                """
+                """,
             )
 
         // Mock the metadata querier to return a VIEW type
@@ -789,7 +850,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
@@ -798,7 +859,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // to avoid TABLESAMPLE which fails on views
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
-            "Views with configured PK resuming from state should use non-resumable partitions to avoid TABLESAMPLE"
+            "Views with configured PK resuming from state should use non-resumable partitions to avoid TABLESAMPLE",
         )
     }
 
@@ -809,7 +870,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("vw_simple_view")
+                        StreamDescriptor().withNamespace("dbo").withName("vw_simple_view"),
                     ),
                 schema = setOf(fieldId, fieldName),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -833,7 +894,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
@@ -841,7 +902,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // Views without configured PK should also use non-resumable partitions
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
-            "Views without configured PK should use non-resumable partitions"
+            "Views without configured PK should use non-resumable partitions",
         )
     }
 
@@ -852,7 +913,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("vw_fullrefresh_view")
+                        StreamDescriptor().withNamespace("dbo").withName("vw_fullrefresh_view"),
                     ),
                 schema = setOf(fieldId, fieldName),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
@@ -876,7 +937,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
@@ -884,7 +945,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // Views in full refresh without PK should use non-resumable partitions
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotPartition,
-            "Views in full refresh mode should use non-resumable partitions"
+            "Views in full refresh mode should use non-resumable partitions",
         )
     }
 
@@ -897,23 +958,24 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
-              {
-                  "cursor": "2026-04-23T12:54:31.693333",
-                  "version": 3,
-                  "state_type": "cursor_based",
-                  "stream_name": "datetime_table",
-                  "cursor_field": [
-                    "datetime_col"
-                  ],
-                  "stream_namespace": "dbo",
-                  "cursor_record_count": 1
-              }
-        """.trimIndent()
+                {
+                    "cursor": "2026-04-23T12:54:31.693333",
+                    "version": 3,
+                    "state_type": "cursor_based",
+                    "stream_name": "datetime_table",
+                    "cursor_field": [
+                      "datetime_col"
+                    ],
+                    "stream_namespace": "dbo",
+                    "cursor_record_count": 1
+                }
+                """
+                    .trimIndent(),
             )
 
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(
-                streamFeedBootstrap(datetimeStream, incomingStateValue)
+                streamFeedBootstrap(datetimeStream, incomingStateValue),
             )
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
 
@@ -921,7 +983,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertNull(
             partition.upperBound,
             "upperBound must be null to avoid excluding datetime2(7) rows " +
-                "whose 7th fractional digit makes them greater than the truncated max"
+                "whose 7th fractional digit makes them greater than the truncated max",
         )
     }
 
@@ -933,7 +995,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("view_test_table")
+                        StreamDescriptor().withNamespace("dbo").withName("view_test_table"),
                     ),
                 schema = setOf(fieldId, fieldName),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -952,7 +1014,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
               "cursor": "2026-04-19T15:05:22.349252",
               "cursor_record_count": 1
             }
-            """
+            """,
             )
 
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
@@ -970,7 +1032,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerierFactory
+                mockMetadataQuerierFactory,
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
@@ -978,7 +1040,66 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(
             partition is MsSqlServerJdbcNonResumableCursorIncrementalPartition,
             "Views in cursor-incremental phase must use the non-resumable cursor partition " +
-                "to avoid TABLESAMPLE on views."
+                "to avoid TABLESAMPLE on views.",
         )
+    }
+
+    @Test
+    fun testEmptyObjectStateColdStartsFullRefreshStreamWithOrderedColumn() {
+        val fullRefreshStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("rfr_table"),
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = null,
+            )
+
+        val factoryWithUpperBound =
+            object :
+                MsSqlServerJdbcPartitionFactory(
+                    sharedState,
+                    selectQueryGenerator,
+                    config,
+                    metadataQuerierFactory,
+                ) {
+                override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.numberNode(100)
+            }
+
+        val partition =
+            factoryWithUpperBound.create(streamFeedBootstrap(fullRefreshStream, Jsons.objectNode()))
+        assertTrue(partition is MsSqlServerJdbcRfrSnapshotPartition)
+        partition as MsSqlServerJdbcRfrSnapshotPartition
+        assertNull(partition.lowerBound)
+        assertEquals(listOf(Jsons.numberNode(100)), partition.upperBound)
+    }
+
+    @Test
+    fun testUnknownLegacyStateColdStartsCursorBasedStream() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+                {
+                "unknown_field": "unknown_value"
+                }
+                """
+                    .trimIndent(),
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+        assertNull((jdbcPartition as MsSqlServerJdbcSnapshotWithCursorPartition).lowerBound)
+    }
+
+    @Test
+    fun testNullNodeStateCursorBasedIsComplete() {
+        // A nullNode state is the "sync already complete" marker (empty table / all-NULL cursor).
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, Jsons.nullNode()))
+        assertNull(jdbcPartition)
     }
 }
