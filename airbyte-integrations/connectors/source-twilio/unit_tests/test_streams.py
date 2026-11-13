@@ -632,6 +632,84 @@ class TestConferenceParticipantsStream:
         assert len(records) == 0
 
 
+MESSAGES_PARTITION = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}}
+
+
+class TestMessagesIncrementalState:
+    """`messages` resumes from the stream-level `date_sent` cursor, not from stale per-account partition cursors."""
+
+    @staticmethod
+    def _register_messages(requests_mock):
+        windows = []
+
+        def _callback(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            windows.append((query["DateSent>"][0], query["DateSent<"][0]))
+            context.status_code = 200
+            if query["DateSent<"][0] == "2022-11-16 12:03:11Z":
+                return {"messages": [{"sid": "SM_NEW", "account_sid": "AC123", "date_sent": "2022-11-15T10:00:00Z"}]}
+            return {"messages": [{"sid": f"SM_OLD_{len(windows)}", "account_sid": "AC123", "date_sent": "2022-02-01T00:00:00Z"}]}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_callback)
+        return windows
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_state,expected_windows",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [{"partition": MESSAGES_PARTITION, "cursor": {"date_sent": "2022-01-01 00:00:00Z"}}],
+                    "state": {"date_sent": "2022-11-13 12:11:10Z"},
+                    "lookback_window": 0,
+                },
+                [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
+                id="stale_partition_cursor_with_newer_global_cursor",
+            ),
+            pytest.param(
+                {"states": [{"partition": {"subresource_uri": MESSAGES_PARTITION["subresource_uri"]}, "cursor": {"date_sent": "2022-11-13T12:11:10Z"}}]},
+                [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
+                id="legacy_per_partition_state_without_global_cursor",
+            ),
+            pytest.param(
+                {"use_global_cursor": True, "state": {"date_sent": "2022-11-13 12:11:10Z"}, "lookback_window": 0},
+                [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
+                id="global_state",
+            ),
+        ],
+    )
+    def test_messages_resume_from_stream_cursor(self, stream_state, expected_windows, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        windows = self._register_messages(requests_mock)
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert sorted(windows) == expected_windows
+        assert [record.record.data["sid"] for record in output.records] == ["SM_NEW"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+        assert "states" not in final_state
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_second_sync_resumes_from_emitted_state(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        windows = self._register_messages(requests_mock)
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-13T12:11:10Z"}
+
+        first = read_from_stream(cfg, "messages", SyncMode.incremental)
+        first_state = first.most_recent_state.stream_state.__dict__
+        windows.clear()
+
+        state = StateBuilder().with_stream_state("messages", first_state).build()
+        second = read_from_stream(cfg, "messages", SyncMode.incremental, state)
+
+        assert windows == [("2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in second.records] == ["SM_NEW"]
+
+
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):

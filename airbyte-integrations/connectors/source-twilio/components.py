@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,67 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioMessagesGlobalStateMigration(StateMigration):
+    """
+    Migrate per-account `messages` state to the stream-level (global) `date_sent` cursor.
+
+    `messages` used to keep one cursor per account partition. The CDK resumes each known partition from its
+    own cursor and only uses the stream-level `state` for partitions it has not seen before, so a stale
+    partition cursor made the stream re-read up to 400 days of messages even though `state.date_sent` was
+    recent. The stream now uses `global_substream_cursor`, but the CDK keeps the persisted
+    `use_global_cursor: false`, so the state has to be rewritten here.
+
+    The stream-level `state.date_sent` is used when present: the CDK only advances it after a sync read
+    every account up to the end of the sync. Without it, the oldest partition cursor is used so no account
+    skips messages it has not read yet. `lookback_window` and `parent_state` are kept.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-13 12:11:10Z" },
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2022-11-13 12:11:10Z" },
+        "lookback_window": 0
+      }
+    """
+
+    _CURSOR_FIELD = "date_sent"
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        new_state: dict[str, Any] = {"use_global_cursor": True}
+        cursor_value = (stream_state.get("state") or {}).get(self._CURSOR_FIELD)
+        if not cursor_value:
+            partition_cursor_values = [
+                state["cursor"][self._CURSOR_FIELD]
+                for state in stream_state.get("states", [])
+                if (state.get("cursor") or {}).get(self._CURSOR_FIELD)
+            ]
+            if partition_cursor_values:
+                cursor_value = min(partition_cursor_values, key=ab_datetime_parse)
+        if cursor_value:
+            new_state["state"] = {self._CURSOR_FIELD: cursor_value}
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                new_state[key] = copy.deepcopy(stream_state[key])
+        return new_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and ("states" in stream_state or "use_global_cursor" in stream_state) and not stream_state.get(
+            "use_global_cursor"
+        )
 
 
 class TwilioAlertsStateMigration(StateMigration):
