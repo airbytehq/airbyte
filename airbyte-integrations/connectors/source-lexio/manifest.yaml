@@ -1,0 +1,1979 @@
+version: 7.0.4
+type: DeclarativeSource
+description: Sync the fleet, catalogue, customers, rentals and maintenance records of a Lexio Rent organization,
+  plus its rental change feed, from the Lexio Rent API v1.
+check:
+  type: CheckStream
+  stream_names:
+  - categories
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: '{{ config.get(''api_url'') or ''https://api.lexio.rent/api/external/v1'' }}'
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+        - 429
+        - 500
+        - 502
+        - 503
+        - 504
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+        - 401
+        - 403
+        error_message: 'Lexio refused the API key or its scopes: {{ response.get(''detail'') }}'
+      backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+  paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ response.get(''nextCursor'') }}'
+      stop_condition: '{{ not response.get(''nextCursor'') or response.get(''data'', []) | length < 100
+        }}'
+streams:
+- type: DeclarativeStream
+  name: vehicles
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /vehicles
+      request_parameters:
+        isArchived: 'false'
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/vehicles'
+- type: DeclarativeStream
+  name: categories
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /categories
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/categories'
+- type: DeclarativeStream
+  name: locations
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /locations
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/locations'
+- type: DeclarativeStream
+  name: options
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /options
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/options'
+- type: DeclarativeStream
+  name: deductibles
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /deductibles
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/deductibles'
+- type: DeclarativeStream
+  name: deposits
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /deposits
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/deposits'
+- type: DeclarativeStream
+  name: mileage_packages
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /mileage-packages
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/mileage_packages'
+- type: DeclarativeStream
+  name: customers
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /customers
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/customers'
+- type: DeclarativeStream
+  name: rentals
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /rentals
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/rentals'
+- type: DeclarativeStream
+  name: maintenance_records
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /maintenance-records
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/maintenance_records'
+- type: DeclarativeStream
+  name: events
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /events
+      request_parameters:
+        start: EARLIEST
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/events'
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: occurredAt
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%S.%f%z'
+    - '%Y-%m-%dT%H:%M:%S%z'
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ (now_utc() - duration(''P29D'')).strftime(''%Y-%m-%dT%H:%M:%S.%f'') ~ ''+0000'' }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+    is_client_side_incremental: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+    - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Lexio API key (starts with lck_). Create it in Lexio under Settings > Developer >
+          API tokens. API access is part of the Business plan.
+        airbyte_secret: true
+        order: 0
+      api_url:
+        type: string
+        title: API URL
+        description: Base URL of the Lexio Rent API v1. Leave the default unless Lexio support tells you
+          otherwise.
+        default: https://api.lexio.rent/api/external/v1
+        order: 1
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    vehicles: false
+    categories: false
+    locations: false
+    options: false
+    deductibles: false
+    deposits: false
+    mileage_packages: false
+    customers: false
+    rentals: false
+    maintenance_records: false
+    events: false
+schemas:
+  vehicles:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant du véhicule.
+      plate:
+        description: Immatriculation, en majuscules ; null si le véhicule n’en a pas. Une plaque ou un
+          numéro de série est toujours présent.
+        type:
+        - string
+        - 'null'
+      serialNumber:
+        description: Numéro de série (deux-roues non immatriculé, par exemple) ; null si absent.
+        type:
+        - string
+        - 'null'
+      vin:
+        anyOf:
+        - type: string
+          maxLength: 17
+        - type: 'null'
+        description: Numéro d’identification du véhicule (VIN, 17 caractères au plus) ; null si absent.
+      name:
+        anyOf:
+        - type: string
+          maxLength: 100
+        - type: 'null'
+        description: Nom d’usage donné par le loueur (ex. « 208 blanche ») ; null si absent.
+      brand:
+        type: string
+        maxLength: 50
+        description: Marque (ex. Peugeot).
+      model:
+        type: string
+        maxLength: 50
+        description: Modèle (ex. 208).
+      description:
+        anyOf:
+        - type: string
+          maxLength: 1000
+        - type: 'null'
+        description: Description libre ; null si absente.
+      color:
+        anyOf:
+        - type: string
+          maxLength: 30
+        - type: 'null'
+        description: Couleur, en texte libre ; null si absente.
+      vehicleType:
+        type: string
+        enum:
+        - CITY
+        - COMPACT
+        - CROSSOVER
+        - SEDAN
+        - BREAK
+        - SUV
+        - OFF_ROAD
+        - PICKUP
+        - MINIVAN
+        - VAN
+        - UTILITY
+        - COUPE
+        - CONVERTIBLE
+        - SPORT
+        - LUXURY
+        - MOTORCYCLE
+        - SCOOTER
+        description: 'Type de véhicule : il fixe la famille et les champs applicables.'
+      family:
+        type: string
+        enum:
+        - CAR
+        - TWO_WHEELER
+        description: Famille, déduite de `vehicleType`.
+      energy:
+        type: string
+        enum:
+        - FUEL
+        - ELECTRIC
+        description: Énergie, déduite de `fuelType`.
+      fuelType:
+        type: string
+        enum:
+        - PETROL
+        - DIESEL
+        - LPG
+        - HYBRID
+        - PLUGIN_HYBRID
+        - ELECTRIC
+        description: 'Carburant ou motorisation : il fixe l’énergie et les champs applicables.'
+      transmission:
+        anyOf:
+        - type: string
+          enum:
+          - MANUAL
+          - AUTOMATIC
+        - type: 'null'
+        description: Boîte de vitesses ; null si non applicable au profil (deux-roues électrique).
+      seats:
+        type: integer
+        minimum: 1
+        maximum: 50
+        description: 'Nombre de places : 1 à 50 pour une voiture, 1 à 3 pour un deux-roues.'
+      doors:
+        anyOf:
+        - type: integer
+          minimum: 2
+          maximum: 10
+        - type: 'null'
+        description: Nombre de portes ; null pour un deux-roues.
+      modelYear:
+        anyOf:
+        - type: integer
+          minimum: 1900
+          maximum: 2100
+        - type: 'null'
+        description: Année modèle ; null si inconnue.
+      registrationDate:
+        anyOf:
+        - type: string
+          format: date
+        - type: 'null'
+        description: Date de première immatriculation (`YYYY-MM-DD`), jamais dans le futur ; null si inconnue.
+      odometerKm:
+        type: integer
+        minimum: 0
+        maximum: 10000000
+        description: Kilométrage au compteur, en km.
+      powerKw:
+        anyOf:
+        - type: integer
+          minimum: 0
+          maximum: 2000
+        - type: 'null'
+        description: Puissance en kW ; null si inconnue. Un thermique va jusqu’à 1471 kW (2000 ch), un
+          électrique jusqu’à 2000 kW.
+      fuelCapacityLiters:
+        anyOf:
+        - type: number
+          minimum: 0
+          maximum: 500
+          description: Au plus 1 décimale.
+        - type: 'null'
+        description: Capacité du réservoir, en litres ; null pour un électrique ou si inconnue.
+      batteryCapacityKwh:
+        anyOf:
+        - type: number
+          exclusiveMinimum: 0
+          maximum: 300
+          description: Au plus 2 décimales.
+        - type: 'null'
+        description: Capacité de la batterie de traction, en kWh ; null si non applicable ou inconnue.
+      rangeKm:
+        anyOf:
+        - type: integer
+          minimum: 0
+          maximum: 2000
+        - type: 'null'
+        description: Autonomie électrique, en km ; null si non applicable ou inconnue.
+      chargePortType:
+        anyOf:
+        - type: string
+          enum:
+          - TYPE_1
+          - TYPE_2
+          - CCS
+          - CHADEMO
+          - DC
+          - DOMESTIC
+        - type: 'null'
+        description: Prise de recharge ; null si non applicable ou inconnue.
+      equipment:
+        maxItems: 40
+        type: array
+        items:
+          type: string
+          enum:
+          - AIR_CONDITIONING
+          - HEATED_SEATS
+          - LEATHER_SEATS
+          - KEYLESS_START
+          - ELECTRIC_TRUNK
+          - CONVERTIBLE_ROOF
+          - SUNROOF
+          - PANORAMIC_ROOF
+          - GPS
+          - BLUETOOTH
+          - CARPLAY
+          - ANDROID_AUTO
+          - WIRELESS_CHARGING
+          - ABS
+          - ESP
+          - CRUISE_CONTROL
+          - ADAPTIVE_CRUISE_CONTROL
+          - BLIND_SPOT_MONITOR
+          - PARKING_SENSORS
+          - REAR_CAMERA
+          - PARKING_ASSIST
+          - DASHCAM
+          - TURBO
+          - POWER_STEERING
+          - START_STOP
+          - ADBLUE
+          - TOW_BAR
+          - TOP_CASE
+          - WINDSHIELD
+          - HEATED_GRIPS
+          - USB_PORT
+          - TRACTION_CONTROL
+          - ANTI_THEFT_ALARM
+          - REMOVABLE_BATTERY
+          - SPARE_BATTERY
+        description: Équipements présents, parmi ceux de la famille et de l’énergie du véhicule.
+      categoryId:
+        anyOf:
+        - type: string
+          format: uuid
+        - type: 'null'
+        description: 'Catégorie tarifaire (`GET /categories/{categoryId}`) ; null : véhicule sans prix,
+          non réservable (`NO_PRICING_CATEGORY`).'
+      status:
+        type: string
+        enum:
+        - OPERATIONAL
+        - BREAKDOWN
+        description: '`BREAKDOWN` : véhicule en panne, non réservable. `OPERATIONAL` sinon, location en
+          cours comprise.'
+      isActive:
+        type: boolean
+        description: 'false : véhicule mis hors service par le loueur, non réservable (`INACTIVE`).'
+      isArchived:
+        type: boolean
+        description: 'true : véhicule archivé, sorti de la flotte et non modifiable.'
+      isBookable:
+        type: boolean
+        description: 'true si `notBookableReasons` est vide. Ne dit rien de l’occupation sur une période
+          : voir `GET /availability`.'
+      notBookableReasons:
+        maxItems: 5
+        type: array
+        items:
+          type: string
+          enum:
+          - INACTIVE
+          - ARCHIVED
+          - BREAKDOWN
+          - MAINTENANCE_OVERDUE
+          - NO_PRICING_CATEGORY
+        description: 'Raisons durables qui empêchent toute réservation ; `MAINTENANCE_OVERDUE` : entretien
+          ou contrôle technique en retard, quand le loueur bloque les réservations sur ce retard.'
+      isMaintenanceTracked:
+        type: boolean
+        description: true une fois le suivi d’entretien démarré (`maintenanceTrackingMode`) ; il ne s’arrête
+          plus.
+      maintenanceTrackingMode:
+        anyOf:
+        - type: string
+          enum:
+          - FROM_ZERO
+          - ASSUME_UP_TO_DATE
+          - MANUAL_HISTORY
+        - type: 'null'
+        description: 'Mode de démarrage du suivi d’entretien, définitif une fois posé ; null : suivi non
+          démarré. `FROM_ZERO` (véhicule neuf ou sans historique fiable) et `MANUAL_HISTORY` (historique
+          saisi par `POST /maintenance-records`) comptent les échéances depuis 0 km et la première immatriculation
+          ; `ASSUME_UP_TO_D'
+      displayOrder:
+        type: integer
+        description: Rang d’affichage choisi dans Lexio ; ordre de la liste.
+      imageUrls:
+        maxItems: 30
+        type: array
+        items:
+          type: string
+          format: uri
+        description: Photos de présentation, URL publiques stables, dans l’ordre choisi dans Lexio.
+      createdAt:
+        type: string
+        format: date-time
+        description: Création, heure du loueur avec décalage.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  categories:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de la catégorie tarifaire.
+      name:
+        type: string
+        maxLength: 100
+        description: Nom de la catégorie, unique dans l’organisation (casse ignorée).
+      description:
+        anyOf:
+        - type: string
+          maxLength: 500
+        - type: 'null'
+        description: Description libre ; null si absente.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      baseDailyPriceHT:
+        type: number
+        description: 'Prix journalier HT de base. Le prix de chaque saison en découle : base × `priceFactor`
+          de la saison (`GET /seasons`).'
+      seasonPrices:
+        maxItems: 50
+        type: array
+        items:
+          type: object
+          properties:
+            seasonSlug:
+              type: string
+              minLength: 1
+              maxLength: 50
+              pattern: ^[a-z0-9_]+$
+              description: Saison (`GET /seasons/{slug}`).
+            dailyPriceHT:
+              type: number
+              description: Prix journalier HT de la catégorie dans cette saison.
+          required:
+          - seasonSlug
+          - dailyPriceHT
+        description: Prix journalier HT par saison, une entrée par saison de l’organisation ; recalculé
+          par Lexio quand le prix de base ou un `priceFactor` change.
+      overageRatePerKmHT:
+        anyOf:
+        - type: number
+          minimum: 0
+          maximum: 999999.9999
+          description: Au plus 4 décimales.
+        - type: 'null'
+        description: 'Prix HT de chaque kilomètre au-delà des kilomètres inclus, 4 décimales au plus ;
+          null : aucun prix de dépassement défini.'
+      vehicleCount:
+        type: integer
+        minimum: 0
+        description: Véhicules rattachés, archivés et inactifs compris ; non nul, il empêche la suppression.
+      activeVehicleCount:
+        type: integer
+        minimum: 0
+        description: Véhicules rattachés, actifs et non archivés.
+      createdAt:
+        type: string
+        format: date-time
+        description: Création, heure du loueur avec décalage.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  locations:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant du lieu.
+      name:
+        type: string
+        description: Nom affiché au client.
+      address:
+        type: string
+        description: Adresse postale, en une ligne.
+      type:
+        type: string
+        enum:
+        - AGENCY
+        - AIRPORT
+        - STATION
+        - HOTEL
+        - OTHER
+        description: Nature du lieu.
+      isActive:
+        type: boolean
+        description: 'false : lieu qui n’est plus proposé.'
+      displayOrder:
+        type: integer
+        description: Rang d’affichage ; ordre de la liste.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  options:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de l’option.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: Nom affiché au client.
+      description:
+        anyOf:
+        - type: string
+          maxLength: 500
+        - type: 'null'
+        description: Description libre ; null si absente.
+      kind:
+        type: string
+        enum:
+        - STANDARD
+        - ADDITIONAL_DRIVER
+        - YOUNG_DRIVER
+        description: '`STANDARD` : option vendue à la quantité. `ADDITIONAL_DRIVER` : conducteur additionnel,
+          réservable par une clé interne seulement. `YOUNG_DRIVER` : supplément jeune conducteur, appliqué
+          par Lexio d’après l’âge des conducteurs, jamais demandé directement. Une seule option de chacun
+          de ces deux dernier'
+      group:
+        type: string
+        enum:
+        - COMFORT
+        - PROTECTION
+        - ACCESSORIES
+        - DELIVERY
+        - SERVICES
+        - OTHER
+        description: Rubrique d’affichage de l’option.
+      price:
+        type: object
+        properties:
+          unit:
+            type: string
+            enum:
+            - DAY
+            - HOUR
+            - WEEK
+            - RENTAL
+            description: '`DAY` : par jour facturé ; `HOUR` : par heure de location ; `WEEK` : par semaine
+              entamée ; `RENTAL` : une fois par location.'
+          amountHT:
+            type: number
+            description: 'Prix HT d’une unité de `unit`, pour un exemplaire ; 0 : option offerte antérieure.'
+          maxAmountHT:
+            anyOf:
+            - type: number
+              description: Montant en unités majeures, sur la grille de la devise de la ressource.
+            - type: 'null'
+            description: 'Plafond HT par exemplaire sur toute la location ; null : sans plafond.'
+        required:
+        - unit
+        - amountHT
+        - maxAmountHT
+        description: Prix HT de l’option et son plafond.
+      maxQuantity:
+        type: integer
+        minimum: 1
+        maximum: 100
+        description: 'Exemplaires au plus par location. Une option conducteur vaut toujours 1 ici : le
+          conducteur additionnel se réserve jusqu’à 4 fois, borne lue dans `choices.options[].maxBookableQuantity`
+          du devis.'
+      stockCount:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        description: Exemplaires louables en même temps, toutes locations confondues ; ignoré pour une
+          option conducteur. Le reste disponible sur une période se lit dans `maxBookableQuantity` du
+          devis.
+      availableMonths:
+        maxItems: 12
+        type: array
+        items:
+          type: integer
+          minimum: 1
+          maximum: 12
+        description: 'Mois où l’option se vend (1 = janvier), chacun une fois : elle est proposée si la
+          location touche l’un d’eux ; [] : toute l’année.'
+      youngDriverAgeThreshold:
+        anyOf:
+        - type: integer
+          minimum: 16
+          maximum: 99
+        - type: 'null'
+        description: Âge au départ en dessous duquel le supplément s’applique à un conducteur ; null pour
+          une option qui n’est pas `YOUNG_DRIVER`.
+      imageUrls:
+        maxItems: 1
+        type: array
+        items:
+          type: string
+          format: uri
+        description: Image de l’option, URL signée valable une heure, à ne pas stocker ; [] sans image
+          ; se dépose dans Lexio.
+      isActive:
+        type: boolean
+        description: 'false : option retirée de la vente.'
+      displayOrder:
+        type: integer
+        minimum: 0
+        description: Rang d’affichage ; ordre de la liste.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  deductibles:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de la franchise.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: Nom affiché au client.
+      description:
+        anyOf:
+        - type: string
+          maxLength: 500
+        - type: 'null'
+        description: Description libre ; null si absente.
+      categoryId:
+        anyOf:
+        - type: string
+          format: uuid
+        - type: 'null'
+        description: 'Catégorie tarifaire à laquelle l’élément est réservé ; null : toutes les catégories.'
+      excessAmount:
+        type: number
+        description: 'Montant laissé à la charge du client en cas de sinistre. Hors total de la location
+          et sans TVA : il n’est pas facturé.'
+      price:
+        oneOf:
+        - type: object
+          properties:
+            mode:
+              type: string
+              const: FIXED_PER_DAY
+              description: Prix fixe par jour facturé.
+            amountHT:
+              type: number
+              description: 'Prix HT par jour facturé ; 0 : offert.'
+          required:
+          - mode
+          - amountHT
+        - type: object
+          properties:
+            mode:
+              type: string
+              const: PERCENT_OF_RENTAL
+              description: Pourcentage du prix de location du véhicule.
+            percent:
+              type: number
+              minimum: 0.01
+              maximum: 100
+              description: Pourcentage du prix HT de location du véhicule, hors options. Au plus 2 décimales.
+          required:
+          - mode
+          - percent
+        description: Prix HT de cette franchise (son rachat) pour le client.
+        type: object
+      linkedDepositId:
+        anyOf:
+        - type: string
+          format: uuid
+        - type: 'null'
+        description: 'Caution retenue avec cette franchise quand une offre omet `depositId`, si elle est
+          active ; null (ou caution inactive) : la caution par défaut s’applique (`isDefault` des cautions).
+          Pour une offre sans caution, envoyez `depositId: null`. À l’écriture : caution active, globale
+          ou de la catégorie de l'
+      isDefault:
+        type: boolean
+        description: 'Franchise retenue quand une offre omet `deductibleId` : défaut de la catégorie du
+          véhicule, sinon défaut global. Un seul défaut par catégorie et un seul global ; en désigner
+          un autre retire ce statut à l’ancien. Un défaut est toujours actif.'
+      isActive:
+        type: boolean
+        description: 'false : retiré de la vente ; les locations qui le portent le gardent.'
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  deposits:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de la caution.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: Nom affiché au client.
+      description:
+        anyOf:
+        - type: string
+          maxLength: 500
+        - type: 'null'
+        description: Description libre ; null si absente.
+      categoryId:
+        anyOf:
+        - type: string
+          format: uuid
+        - type: 'null'
+        description: 'Catégorie tarifaire à laquelle l’élément est réservé ; null : toutes les catégories.'
+      depositAmount:
+        type: number
+        description: Montant demandé en garantie au client, rendu après la location sauf retenue décidée
+          par le loueur. Hors total de la location et sans TVA.
+      method:
+        type: string
+        enum:
+        - CREDIT_CARD
+        - CASH
+        - TRANSFER
+        - CHECK
+        - SWIKLY
+        - STRIPE
+        - TYLLT
+        - MOBILE_MONEY
+        - OTHER
+        description: Moyen par lequel la caution est garantie. Une caution `STRIPE` ne se saisit pas sur
+          une location par `POST /rentals/{rentalId}/payments`.
+      isDefault:
+        type: boolean
+        description: 'Caution retenue quand une offre omet `depositId` et que la franchise retenue n’a
+          pas de caution liée active : défaut de la catégorie du véhicule, sinon défaut global. Un seul
+          défaut par catégorie et un seul global ; un défaut est toujours actif.'
+      isActive:
+        type: boolean
+        description: 'false : retiré de la vente ; les locations qui le portent le gardent.'
+      displayOrder:
+        type: integer
+        minimum: 0
+        description: Rang d’affichage ; ordre de la liste.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  mileage_packages:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant du forfait kilométrique.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: Nom affiché au client.
+      description:
+        anyOf:
+        - type: string
+          maxLength: 500
+        - type: 'null'
+        description: Description libre ; null si absente.
+      price:
+        oneOf:
+        - type: object
+          properties:
+            mode:
+              type: string
+              const: FIXED_PER_DAY
+              description: Prix fixe par jour facturé.
+            amountHT:
+              type: number
+              description: 'Prix HT par jour facturé ; 0 : offert.'
+          required:
+          - mode
+          - amountHT
+        - type: object
+          properties:
+            mode:
+              type: string
+              const: PERCENT_OF_RENTAL
+              description: Pourcentage du prix de location du véhicule.
+            percent:
+              type: number
+              minimum: 0.01
+              maximum: 100
+              description: Pourcentage du tarif journalier HT moyen, par jour facturé, avant remises et
+                majorations. Au plus 2 décimales.
+          required:
+          - mode
+          - percent
+        description: Prix HT du forfait pour le client.
+        type: object
+      tiers:
+        minItems: 1
+        maxItems: 20
+        type: array
+        items:
+          type: object
+          properties:
+            fromDay:
+              type: integer
+              minimum: 1
+              description: Le palier vaut pour une location d’au moins ce nombre de jours facturés.
+            dailyKm:
+              anyOf:
+              - type: integer
+                minimum: 0
+              - type: 'null'
+              description: 'Kilomètres inclus par jour facturé ; null : kilométrage illimité.'
+          required:
+          - fromDay
+          - dailyKm
+        description: 'Kilomètres inclus par jour selon la durée : s’applique le palier de plus grand `fromDay`
+          atteint par les jours facturés. Le prix HT du kilomètre au-delà se règle par catégorie (`overageRatePerKmHT`,
+          `PATCH /categories/{categoryId}`).'
+      isDefault:
+        type: boolean
+        description: 'Forfait retenu quand une offre omet `mileagePackageId`. Au plus un par organisation
+          : en désigner un autre retire ce statut à l’ancien ; un forfait par défaut est toujours actif.
+          Sans forfait par défaut : kilométrage illimité.'
+      isActive:
+        type: boolean
+        description: 'false : forfait retiré de la vente.'
+      displayOrder:
+        type: integer
+        minimum: 0
+        description: Rang d’affichage ; ordre de la liste.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  customers:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant du client.
+      isCompany:
+        type: boolean
+        description: 'true : société ; false : particulier. Les champs de l’autre type valent null.'
+      partnerCode:
+        anyOf:
+        - type: string
+          maxLength: 50
+        - type: 'null'
+        description: Code partenaire de la plateforme dont une réservation a créé ce client ; null pour
+          un client du loueur.
+      firstName:
+        description: Prénom (particulier) ; null pour une société ou une fiche anonymisée.
+        type:
+        - string
+        - 'null'
+      lastName:
+        description: Nom de famille (particulier), publié en majuscules ; null pour une société ou une
+          fiche anonymisée.
+        type:
+        - string
+        - 'null'
+      companyName:
+        description: Raison sociale (société) ; null pour un particulier.
+        type:
+        - string
+        - 'null'
+      email:
+        description: Email, en minuscules ; celui d’un particulier est unique pour un même `partnerCode`.
+          null si absent.
+        type:
+        - string
+        - 'null'
+      phone:
+        description: Téléphone, au format international quand le pays est connu ; null si absent.
+        type:
+        - string
+        - 'null'
+      birthDate:
+        anyOf:
+        - type: string
+          format: date
+        - type: 'null'
+        description: Date de naissance (particulier), `YYYY-MM-DD`.
+      birthCity:
+        description: Lieu de naissance (particulier).
+        type:
+        - string
+        - 'null'
+      nationality:
+        description: Nationalité, en texte libre (particulier).
+        type:
+        - string
+        - 'null'
+      licenseNumber:
+        description: Numéro du permis de conduire (particulier).
+        type:
+        - string
+        - 'null'
+      licenseIssueDate:
+        anyOf:
+        - type: string
+          format: date
+        - type: 'null'
+        description: Date de délivrance du permis de conduire (particulier), `YYYY-MM-DD`.
+      address:
+        anyOf:
+        - type: object
+          properties:
+            street:
+              description: Numéro et voie.
+              type:
+              - string
+              - 'null'
+            complement:
+              description: Complément d’adresse (bâtiment, étage…).
+              type:
+              - string
+              - 'null'
+            postalCode:
+              description: Code postal.
+              type:
+              - string
+              - 'null'
+            city:
+              description: Ville.
+              type:
+              - string
+              - 'null'
+            country:
+              anyOf:
+              - type: string
+                pattern: ^[A-Z]{2}$
+              - type: 'null'
+              description: Pays, code ISO 3166-1 alpha-2 ; null pour une ancienne valeur illisible.
+          required:
+          - street
+          - complement
+          - postalCode
+          - city
+          - country
+        - type: 'null'
+        description: Adresse postale ; null si aucune.
+      companyRegistrationNumber:
+        description: 'Numéro d’immatriculation de la société. En France et dans les DROM : SIREN, 9 chiffres,
+          requis pour une société ; ailleurs, format du pays. Pays : celui de l’adresse, sinon celui du
+          loueur.'
+        type:
+        - string
+        - 'null'
+      companyEstablishmentNumber:
+        description: 'Numéro de l’établissement (en France : SIRET, 14 chiffres).'
+        type:
+        - string
+        - 'null'
+      vatNumber:
+        description: Numéro de TVA intracommunautaire de la société.
+        type:
+        - string
+        - 'null'
+      acquisitionSource:
+        anyOf:
+        - type: string
+          enum:
+          - ONLINE
+          - PHONE
+          - WALKIN
+          - PARTNER
+          - OTHER
+        - type: 'null'
+        description: Canal par lequel le client est arrivé. null si inconnu.
+      isBlocked:
+        type: boolean
+        description: 'true : client bloqué par le loueur, une nouvelle location à son nom est refusée.'
+      anonymizedAt:
+        anyOf:
+        - type: string
+          format: date-time
+        - type: 'null'
+        description: 'Date de l’anonymisation : données personnelles effacées, fiche en lecture seule.
+          null sinon.'
+      createdAt:
+        type: string
+        format: date-time
+        description: Création, heure du loueur avec décalage.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  rentals:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de la location.
+      number:
+        type: string
+        description: Numéro de la location dans Lexio, unique dans l’organisation et jamais réattribué.
+      status:
+        type: string
+        enum:
+        - RESERVED
+        - PENDING_APPROVAL
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+        description: '`PENDING_APPROVAL` : demande à approuver par le loueur ; `RESERVED` : réservée ;
+          `IN_PROGRESS` : véhicule remis ; `COMPLETED` : véhicule rendu ; `CANCELLED` : annulée.'
+      source:
+        type: string
+        enum:
+        - ONLINE
+        - PHONE
+        - WALKIN
+        - PARTNER
+        - OTHER
+        description: 'Canal de vente : `ONLINE` (en ligne), `PHONE` (téléphone), `WALKIN` (sur place),
+          `PARTNER` (partenaire, toute location créée par une clé partenaire), `OTHER`.'
+      partnerCode:
+        anyOf:
+        - type: string
+          maxLength: 50
+        - type: 'null'
+        description: Code partenaire de la clé qui a créé la location ; null hors partenaire.
+      partnerReference:
+        anyOf:
+        - type: string
+          maxLength: 255
+        - type: 'null'
+        description: Numéro de commande du partenaire, unique par code partenaire ; null si absent.
+      period:
+        type: object
+        properties:
+          startAt:
+            type: string
+            format: date-time
+            description: Début contractuel, à l’heure du loueur.
+          endAt:
+            type: string
+            format: date-time
+            description: Fin contractuelle, à l’heure du loueur.
+          timezone:
+            type: string
+            minLength: 1
+            description: Fuseau horaire IANA du loueur.
+          billedDays:
+            type: integer
+            minimum: 0
+            description: 'Jours facturés : tranches de 24 h entamées, sans compter une dernière tranche
+              d’au plus `toleranceHours` heures (`GET /organization`) ; 1 au minimum.'
+          durationMinutes:
+            type: integer
+            minimum: 0
+            description: Durée exacte entre `startAt` et `endAt`, en minutes.
+        required:
+        - startAt
+        - endAt
+        - timezone
+        - billedDays
+        - durationMinutes
+        description: Période contractuelle, bornes à l’heure du loueur.
+      actualStartAt:
+        anyOf:
+        - type: string
+          format: date-time
+        - type: 'null'
+        description: Départ réel (`pickup`) ; null tant que le véhicule n’est pas remis.
+      actualEndAt:
+        anyOf:
+        - type: string
+          format: date-time
+        - type: 'null'
+        description: Retour réel (`return`) ; null tant que le véhicule n’est pas rendu.
+      vehicle:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Identifiant du véhicule.
+          name:
+            anyOf:
+            - type: string
+              maxLength: 100
+            - type: 'null'
+            description: Nom d’usage donné par le loueur (ex. « 208 blanche ») ; null si absent.
+          brand:
+            type: string
+            maxLength: 50
+            description: Marque (ex. Peugeot).
+          model:
+            type: string
+            maxLength: 50
+            description: Modèle (ex. 208).
+          vehicleType:
+            type: string
+            enum:
+            - CITY
+            - COMPACT
+            - CROSSOVER
+            - SEDAN
+            - BREAK
+            - SUV
+            - OFF_ROAD
+            - PICKUP
+            - MINIVAN
+            - VAN
+            - UTILITY
+            - COUPE
+            - CONVERTIBLE
+            - SPORT
+            - LUXURY
+            - MOTORCYCLE
+            - SCOOTER
+            description: 'Type de véhicule : il fixe la famille et les champs applicables.'
+          plate:
+            description: Immatriculation, en majuscules ; null si le véhicule n’en a pas. Une plaque ou
+              un numéro de série est toujours présent.
+            type:
+            - string
+            - 'null'
+          serialNumber:
+            description: Numéro de série (deux-roues non immatriculé, par exemple) ; null si absent.
+            type:
+            - string
+            - 'null'
+        required:
+        - id
+        - name
+        - brand
+        - model
+        - vehicleType
+        - plate
+        - serialNumber
+        description: Véhicule actuellement affecté à la location.
+      customer:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Identifiant du client.
+          isCompany:
+            type: boolean
+            description: 'true : société ; false : particulier. Les champs de l’autre type valent null.'
+          firstName:
+            description: Prénom (particulier) ; null pour une société ou une fiche anonymisée.
+            type:
+            - string
+            - 'null'
+          lastName:
+            description: Nom de famille (particulier), publié en majuscules ; null pour une société ou
+              une fiche anonymisée.
+            type:
+            - string
+            - 'null'
+          companyName:
+            description: Raison sociale (société) ; null pour un particulier.
+            type:
+            - string
+            - 'null'
+          email:
+            description: Email, en minuscules ; celui d’un particulier est unique pour un même `partnerCode`.
+              null si absent.
+            type:
+            - string
+            - 'null'
+          phone:
+            description: Téléphone, au format international quand le pays est connu ; null si absent.
+            type:
+            - string
+            - 'null'
+        required:
+        - id
+        - isCompany
+        - firstName
+        - lastName
+        - companyName
+        - email
+        - phone
+        description: Titulaire de la location.
+      pickupLocation:
+        anyOf:
+        - type: object
+          properties:
+            locationId:
+              anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+              description: Lieu du catalogue (`GET /locations`) ; null pour une adresse libre.
+            name:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Nom du lieu, copié à l’enregistrement ; null si aucun.
+            address:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Adresse, copiée à l’enregistrement ; null si aucune.
+          required:
+          - locationId
+          - name
+          - address
+          description: 'Lieu de départ ou de retour, copié à l’enregistrement : une modification ultérieure
+            du catalogue ne le change pas.'
+        - type: 'null'
+        description: Lieu de départ ; null si non renseigné.
+      returnLocation:
+        anyOf:
+        - type: object
+          properties:
+            locationId:
+              anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+              description: Lieu du catalogue (`GET /locations`) ; null pour une adresse libre.
+            name:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Nom du lieu, copié à l’enregistrement ; null si aucun.
+            address:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Adresse, copiée à l’enregistrement ; null si aucune.
+          required:
+          - locationId
+          - name
+          - address
+          description: 'Lieu de départ ou de retour, copié à l’enregistrement : une modification ultérieure
+            du catalogue ne le change pas.'
+        - type: 'null'
+        description: Lieu de retour ; null si non renseigné.
+      mileage:
+        type: object
+        properties:
+          mileagePackageId:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+            description: Forfait kilométrique du catalogue (`GET /mileage-packages`) ; null sans forfait.
+          name:
+            anyOf:
+            - type: string
+              maxLength: 100
+            - type: 'null'
+            description: Nom du forfait ; null sans forfait.
+          isUnlimited:
+            type: boolean
+            description: 'true : aucun plafond ; `includedKm` et `overageRatePerKmHT` valent alors null.'
+          includedKm:
+            anyOf:
+            - type: integer
+              minimum: 0
+            - type: 'null'
+            description: Kilomètres inclus pour toute la période, pas par jour ; null si illimité.
+          overageRatePerKmHT:
+            anyOf:
+            - type: number
+              minimum: 0
+              maximum: 999999.9999
+              description: Au plus 4 décimales.
+            - type: 'null'
+            description: Prix HT de chaque kilomètre au-delà de `includedKm`, facturé au retour ; null
+              si illimité ou sans tarif de dépassement.
+        required:
+        - mileagePackageId
+        - name
+        - isUnlimited
+        - includedKm
+        - overageRatePerKmHT
+        description: Kilométrage inclus et prix du dépassement.
+      deductible:
+        anyOf:
+        - type: object
+          properties:
+            deductibleId:
+              anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+              description: Franchise du catalogue (`GET /deductibles`) ; null si elle a été supprimée
+                depuis.
+            name:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Nom de la franchise ; null si elle a été supprimée depuis.
+            description:
+              anyOf:
+              - type: string
+                maxLength: 2000
+              - type: 'null'
+              description: Description de la franchise ; null si absente.
+            excessAmount:
+              type: number
+              minimum: 0
+              description: 'Reste à charge du client en cas de sinistre, tel que fixé par le loueur, sans
+                TVA appliquée. Jamais facturé ni compris dans les totaux : le prix de la franchise retenue
+                est la ligne `DEDUCTIBLE` de `lines`.'
+          required:
+          - deductibleId
+          - name
+          - description
+          - excessAmount
+          description: Franchise retenue, figée au moment du calcul.
+        - type: 'null'
+        description: Franchise retenue ; null sans franchise.
+      deposit:
+        anyOf:
+        - type: object
+          properties:
+            depositId:
+              anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+              description: Caution du catalogue (`GET /deposits`) ; null si elle a été supprimée depuis.
+            name:
+              anyOf:
+              - type: string
+                maxLength: 200
+              - type: 'null'
+              description: Nom de la caution ; null si elle a été supprimée depuis.
+            depositAmount:
+              type: number
+              minimum: 0
+              description: 'Caution demandée au client, telle que fixée par le loueur, sans TVA appliquée.
+                Hors `totalTTC` et hors `balance` : elle s’encaisse à part (paiement `DEPOSIT`).'
+          required:
+          - depositId
+          - name
+          - depositAmount
+          description: Caution retenue, figée au moment du calcul.
+        - type: 'null'
+        description: Caution retenue ; null sans caution.
+      options:
+        maxItems: 50
+        type: array
+        items:
+          type: object
+          properties:
+            optionId:
+              type: string
+              format: uuid
+              description: Option du catalogue (`GET /options`).
+            name:
+              type: string
+              maxLength: 200
+              description: Nom de l’option.
+            kind:
+              type: string
+              enum:
+              - STANDARD
+              - ADDITIONAL_DRIVER
+              - YOUNG_DRIVER
+              description: '`STANDARD` : option du catalogue ; `ADDITIONAL_DRIVER` : conducteur additionnel
+                ; `YOUNG_DRIVER` : majoration jeune conducteur.'
+            quantity:
+              type: integer
+              minimum: 1
+              description: Quantité vendue.
+          required:
+          - optionId
+          - name
+          - kind
+          - quantity
+          description: Option vendue. Son prix se lit dans `lines` (ligne `OPTION` dont `refId` = `optionId`).
+        description: Options vendues ; leurs montants se lisent dans `lines`.
+      lines:
+        maxItems: 200
+        type: array
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+              enum:
+              - BASE
+              - LEAD_TIME_ADJUSTMENT
+              - DURATION_DISCOUNT
+              - COMMERCIAL_DISCOUNT
+              - WEEKEND_SURCHARGE
+              - SHORT_DURATION_SURCHARGE
+              - MILEAGE
+              - DEDUCTIBLE
+              - OPTION
+              - CHARGE
+              - PROMO
+              - MILEAGE_OVERAGE
+              - MODIFICATION
+              description: 'Règle qui a produit la ligne : `BASE` (prix de location), `LEAD_TIME_ADJUSTMENT`
+                (délai de réservation), `DURATION_DISCOUNT` (remise de durée), `COMMERCIAL_DISCOUNT` (remise
+                commerciale), `WEEKEND_SURCHARGE` et `SHORT_DURATION_SURCHARGE` (majorations), `MILEAGE`
+                (forfait kilométrique), `DEDUCTIBLE` '
+            label:
+              type: string
+              description: Libellé affichable ; ne pas l’analyser, lire `key`.
+            refId:
+              anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+              description: 'Élément à l’origine de la ligne : `optionId` pour `OPTION`, identifiant du
+                frais pour `CHARGE` et `MILEAGE_OVERAGE` d’une location ; null sinon.'
+            quantity:
+              type: integer
+              minimum: 1
+              description: Nombre d’exemplaires (option) ; 1 pour les autres lignes.
+            unitPriceHT:
+              type: number
+              description: 'Prix HT d’un exemplaire pour toute la période (`OPTION`) ; égal à `amountHT`
+                sinon. Indicatif, arrondi à l’unité de la devise : `amountHT` fait foi, `unitPriceHT`
+                × `quantity` peut différer d’une unité.'
+            unitPriceTTC:
+              type: number
+              description: 'Prix TTC d’un exemplaire pour toute la période (`OPTION`) ; égal à `amountTTC`
+                sinon. Indicatif, arrondi à l’unité de la devise : `amountTTC` fait foi, `unitPriceTTC`
+                × `quantity` peut différer d’une unité.'
+            amountHT:
+              type: number
+              description: 'Montant HT de la ligne, signé : négatif pour une remise.'
+            amountTTC:
+              type: number
+              description: 'Montant TTC de la ligne, signé : négatif pour une remise.'
+            ratePercent:
+              anyOf:
+              - type: number
+                minimum: 0
+                maximum: 100
+                description: Au plus 2 décimales.
+              - type: 'null'
+              description: Pourcentage appliqué (20 = 20 %) pour une remise de durée, une majoration,
+                une franchise ou un forfait tarifés en pourcentage ; null pour les autres lignes et pour
+                un montant saisi ou offert.
+          required:
+          - key
+          - label
+          - refId
+          - quantity
+          - unitPriceHT
+          - unitPriceTTC
+          - amountHT
+          - amountTTC
+          - ratePercent
+          description: Ligne de prix d’une offre, d’un devis ou d’une location.
+        description: Détail du prix, une ligne par règle appliquée, frais et dépassement kilométrique
+          compris.
+      promoCode:
+        anyOf:
+        - type: string
+          maxLength: 50
+        - type: 'null'
+        description: Code promo utilisé ; null sans code.
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise de la location, figée à sa création : tous ses montants sont dans celle-ci.'
+      vatPercent:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Taux de TVA appliqué, en pourcentage (20 = 20 %) ; 0 en autoliquidation ou pour un
+          loueur exonéré. Au plus 2 décimales.
+      isVatReverseCharge:
+        type: boolean
+        description: 'true : autoliquidation de la TVA, `vatPercent` vaut 0 et `totalTTC` = `totalHT`.'
+      totalHT:
+        type: number
+        description: Total hors taxes ; fait foi. Égal à la somme des `lines[].amountHT`, sauf écart possible
+          sur une location ancienne.
+      vatAmount:
+        type: number
+        description: 'Montant de la TVA : `totalTTC − totalHT`.'
+      totalTTC:
+        type: number
+        description: 'Total toutes taxes comprises, montant de la pièce : inchangé par une annulation,
+          caution et franchise exclues. Fait foi ; égal à la somme des `lines[].amountTTC`, sauf écart
+          possible sur une location ancienne.'
+      balance:
+        type: object
+        properties:
+          totalTTC:
+            type: number
+            minimum: 0
+            description: 'Montant exigible : `totalTTC` de la location, 0 si elle est annulée.'
+          paidAmount:
+            type: number
+            description: 'Net encaissé : paiements validés moins remboursements validés, caution exclue.'
+          pendingDebitAmount:
+            type: number
+            minimum: 0
+            description: 'Prélèvements SEPA soumis, pas encore réglés : ni dans `paidAmount`, ni dans
+              `dueAmount` ; ils y passent au règlement (rejetés, ils reviennent dans `dueAmount`). 0 sans
+              prélèvement en cours.'
+          dueAmount:
+            type: number
+            minimum: 0
+            description: 'Reste à payer : `totalTTC − paidAmount − pendingDebitAmount`, 0 au minimum ;
+              plafond d’un encaissement (`422 PAYMENT_EXCEEDS_DUE`).'
+          overpaidAmount:
+            type: number
+            minimum: 0
+            description: 'Trop-perçu : `paidAmount − totalTTC`, 0 au minimum ; à rembourser ou à conserver
+              par le loueur.'
+        required:
+        - totalTTC
+        - paidAmount
+        - pendingDebitAmount
+        - dueAmount
+        - overpaidAmount
+        description: Solde de la location dans sa devise ; la caution n’y entre jamais. Tant que `paidAmount
+          + pendingDebitAmount ≤ totalTTC`, `totalTTC = paidAmount + pendingDebitAmount + dueAmount` ;
+          au-delà, `dueAmount` vaut 0.
+      notes:
+        anyOf:
+        - type: string
+          maxLength: 2000
+        - type: 'null'
+        description: Note libre de la location ; null si vide.
+      createdAt:
+        type: string
+        format: date-time
+        description: Instant de création.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Instant de la dernière modification.
+    description: Location, dans la même représentation pour la lecture, la liste et chaque écriture. Montants
+      dans `currency`, voir [Montants et TVA](https://docs.lexio.rent/montants-et-tva).
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  maintenance_records:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de l’entretien.
+      vehicleId:
+        type: string
+        format: uuid
+        description: Véhicule entretenu (`GET /vehicles/{vehicleId}`).
+      currency:
+        type: string
+        enum:
+        - EUR
+        - XPF
+        - CHF
+        - CAD
+        - GBP
+        - USD
+        - XOF
+        description: 'Devise ISO 4217 : tous les montants de la ressource sont dans cette devise.'
+      operationCodes:
+        minItems: 1
+        maxItems: 30
+        type: array
+        items:
+          type: string
+          minLength: 1
+        description: Opérations réalisées (`GET /maintenance-operations`), l’opération principale en premier.
+      interventionDate:
+        type: string
+        format: date
+        description: Jour de l’intervention, `YYYY-MM-DD`, fuseau du loueur ; jamais dans le futur.
+      odometerKm:
+        type: integer
+        minimum: 0
+        maximum: 10000000
+        description: Kilométrage au compteur lors de l’intervention.
+      costHT:
+        type: number
+        minimum: 0
+        description: Coût HT de l’intervention ; 0 si non renseigné.
+      supplier:
+        anyOf:
+        - type: string
+          maxLength: 200
+        - type: 'null'
+        description: Garage ou prestataire ; null si absent.
+      notes:
+        anyOf:
+        - type: string
+          maxLength: 1000
+        - type: 'null'
+        description: Notes libres ; null si absentes.
+      invoice:
+        anyOf:
+        - type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              description: 'Adresse signée et temporaire du fichier : ne la conservez pas, relisez la
+                ressource pour en obtenir une nouvelle.'
+            expiresAt:
+              type: string
+              format: date-time
+              description: Instant où l’adresse cesse d’être valable.
+          required:
+          - url
+          - expiresAt
+          description: Fichier téléchargeable par une adresse signée et temporaire.
+        - type: 'null'
+        description: Facture déposée dans Lexio, URL signée valable une heure, à ne pas stocker ; null
+          sans facture.
+      createdAt:
+        type: string
+        format: date-time
+        description: Création, heure du loueur avec décalage.
+      updatedAt:
+        type: string
+        format: date-time
+        description: Dernière modification.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+  events:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Identifiant de l’événement.
+      type:
+        type: string
+        enum:
+        - rental.created
+        - rental.updated
+        - rental.cancelled
+        - rental.deleted
+        description: '`rental.created` : location créée ; `rental.updated` : location modifiée (statut,
+          dates, véhicule, prix, options, paiements, lieux, notes…) ; `rental.cancelled` : location annulée
+          ; `rental.deleted` : location supprimée.'
+      occurredAt:
+        type: string
+        format: date-time
+        description: Instant du changement. L’ordre du flux est celui de la page, pas cet instant.
+      resource:
+        type: object
+        properties:
+          type:
+            type: string
+            const: RENTAL
+            description: Type de la ressource concernée.
+          id:
+            type: string
+            format: uuid
+            description: Identifiant de la location (`rentalId`).
+          partnerReference:
+            description: Numéro de commande du partenaire ; null si absent.
+            type:
+            - string
+            - 'null'
+        required:
+        - type
+        - id
+        - partnerReference
+        description: Location concernée, à relire par `GET /rentals/{rentalId}`.
+    description: Changement d’une location ; relisez-la pour obtenir son état.
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
