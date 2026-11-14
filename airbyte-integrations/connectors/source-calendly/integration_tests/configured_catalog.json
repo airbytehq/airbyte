@@ -1827,6 +1827,88 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "event_type_availability_schedules",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "event_type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "availability_rule_uri": {
+              "type": "string",
+              "format": "uri"
+            },
+            "availability_setting": {
+              "type": ["string", "null"]
+            },
+            "availability_rule": {
+              "type": ["object", "null"],
+              "properties": {
+                "uri": {
+                  "type": ["string", "null"],
+                  "format": "uri"
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "user": {
+                  "type": ["string", "null"],
+                  "format": "uri"
+                },
+                "timezone": {
+                  "type": ["string", "null"]
+                },
+                "rules": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["object", "null"],
+                    "properties": {
+                      "type": {
+                        "type": ["string", "null"]
+                      },
+                      "intervals": {
+                        "type": ["array", "null"],
+                        "items": {
+                          "type": ["object", "null"],
+                          "properties": {
+                            "from": {
+                              "type": ["string", "null"]
+                            },
+                            "to": {
+                              "type": ["string", "null"]
+                            }
+                          }
+                        }
+                      },
+                      "wday": {
+                        "type": ["string", "null"]
+                      },
+                      "date": {
+                        "type": ["string", "null"],
+                        "format": "date"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["event_type", "availability_rule_uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [
+          ["event_type"],
+          ["availability_rule_uri"]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

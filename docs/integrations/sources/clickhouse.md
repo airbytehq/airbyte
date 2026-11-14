@@ -6,7 +6,7 @@ The ClickHouse source supports both Full Refresh and Incremental syncs. You can 
 
 This ClickHouse source connector is built on top of the source-jdbc code base and uses the [ClickHouse JDBC driver](https://github.com/ClickHouse/clickhouse-jdbc). For more information, see the [ClickHouse JDBC documentation](https://clickhouse.com/docs/integrations/language-clients/java/jdbc).
 
-#### Resulting schema
+### Resulting schema
 
 The ClickHouse source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
@@ -35,6 +35,10 @@ The ClickHouse source does not alter the schema present in your warehouse. Depen
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your ClickHouse instance is via the check connection tool in the UI.
 
+The connector uses the [ClickHouse HTTP interface](https://clickhouse.com/docs/interfaces/http), not the native TCP interface. Set **Port** to your server's HTTP-interface port, commonly `8123` for HTTP or `8443` for HTTPS. The connector uses the port you configure; enabling SSL does not change it automatically.
+
+In Airbyte Open Source, **SSL Connection** defaults to enabled. The connector uses HTTPS when `ssl` is omitted or `true`, and HTTP when it is `false`. Airbyte Cloud does not expose the **SSL Connection** setting.
+
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
@@ -42,13 +46,13 @@ This step is optional but highly recommended to allow for better permission cont
 To create a dedicated database user, run the following commands against your database:
 
 ```sql
-CREATE USER 'airbyte'@'%' IDENTIFIED BY 'your_password_here';
+CREATE USER airbyte IDENTIFIED BY 'your_password_here';
 ```
 
 Then give it access to the relevant schema:
 
 ```sql
-GRANT SELECT ON <database name>.* TO 'airbyte'@'%';
+GRANT SELECT ON <database_name>.* TO airbyte;
 ```
 
 You can limit this grant down to specific tables instead of the whole database. Note that to replicate data from multiple ClickHouse databases, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
@@ -70,7 +74,7 @@ Using this feature requires additional configuration, when creating the source. 
 3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
 4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Clickhouse username.
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Clickhouse password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
+6. If you are using `Password Authentication`, then **Password** (`tunnel_user_password`) should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Clickhouse password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## IP allow list
@@ -86,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
 | 0.4.0   | 2026-07-10 | [81633](https://github.com/airbytehq/airbyte/pull/81633)   | **Breaking**: Declare temporal column typing as breaking. Connections with schema evolution errors must follow the [migration guide](/integrations/sources/clickhouse-migrations)    |
 | 0.3.1   | 2026-06-29 | [72484](https://github.com/airbytehq/airbyte/pull/72484)   | Add JSON Schema format hints for temporal types (DateTime, Date) and fix documentation URL                |
-| 0.3.0   | 2026-01-27 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
+| 0.3.0   | 2026-03-24 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
 | 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)   | Revert JDBC driver upgrade                                                                                |
 | 0.2.5   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482)   | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |
 | 0.2.4   | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912)   | Convert to new gradle build flow                                                                          |
@@ -112,6 +116,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 </details>
 
 ## Changelog: source-clickhouse-strict-encrypt
+
+The strict-encrypt variant was consolidated into `source-clickhouse` in version `0.3.0`. The following changelog is preserved for historical reference.
+
 <details>
   <summary>Expand to review</summary>
 
