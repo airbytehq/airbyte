@@ -29,7 +29,8 @@ def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
         "status": "ACTIVE",
         "currency": "USD",
         "reference": f"ref_{account_id}",
-        "changeAuditStamps": {"created": {"time": 1479402003000}, "lastModified": {"time": 1479402004534}},
+        "created": "2024-01-01T00:00:00.000Z",
+        "lastModified": "2024-06-01T00:00:00.000Z",
         "servingStatuses": ["RUNNABLE"],
         "notifiedOnCreativeApproval": False,
         "notifiedOnCreativeRejection": False,
@@ -47,8 +48,8 @@ class TestAccountsStream(TestCase):
 
     This is the parent stream for most other streams. It uses:
     - CursorPagination with pageToken
-    - DpathExtractor with AddFields audit-stamp conversion
-    - DefaultErrorHandler
+    - CustomRecordExtractor (LinkedInAdsRecordExtractor)
+    - CustomErrorHandler (LinkedInAdsErrorHandler)
     """
 
     @HttpMocker()
@@ -77,33 +78,6 @@ class TestAccountsStream(TestCase):
         assert record["name"] == "Acme Corporation"
         assert record["status"] == "ACTIVE"
         assert record["currency"] == "USD"
-        assert record["created"] == "2016-11-17T17:00:03+00:00"
-        assert record["lastModified"] == "2016-11-17T17:00:04+00:00"
-        assert "changeAuditStamps" not in record
-
-    @HttpMocker()
-    def test_missing_audit_stamps(self, http_mocker: HttpMocker):
-        config = ConfigBuilder().build()
-        records = [_create_account_record(account_id) for account_id in range(1, 5)]
-        records[0].pop("changeAuditStamps")
-        records[1]["changeAuditStamps"] = {"created": {"time": 1479402003000}}
-        records[2]["changeAuditStamps"] = None
-        records[3]["changeAuditStamps"] = {"created": {"time": None}, "lastModified": {}}
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(records),
-        )
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(get_source(config=config), config=config, catalog=catalog)
-        assert len(output.records) == 4
-        for index, message in enumerate(output.records):
-            record = message.record.data
-            assert "changeAuditStamps" not in record
-            assert "lastModified" not in record
-            if index == 1:
-                assert record["created"] == "2016-11-17T17:00:03+00:00"
-            else:
-                assert "created" not in record
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):

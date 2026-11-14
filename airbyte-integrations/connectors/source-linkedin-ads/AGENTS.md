@@ -80,12 +80,14 @@ key.
 
 ## 4. DNS Resolution Errors Treated as Transient
 
-The `accounts` stream relies on the CDK default error mapping to classify `InvalidURL` as a transient,
-retryable error. The custom `LinkedInAdsErrorHandler` still covers the other streams, handling intermittent
-DNS resolution failures that surface as `InvalidURL` exceptions in the requests library.
+The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
+(retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
+failures that surface as `InvalidURL` exceptions in the requests library.
 
-**Why this matters:** Preserve `InvalidURL` retries when changing either error handler so temporary DNS
-failures do not permanently fail checks or syncs.
+**Why this matters:** Without this handler, a temporary DNS blip during a long-running sync would
+permanently fail the entire sync instead of retrying. If you replace or modify the error handler, make
+sure `InvalidURL` exceptions are still caught and retried, or syncs on unstable networks will fail
+intermittently.
 
 ---
 
@@ -94,10 +96,7 @@ failures do not permanently fail checks or syncs.
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
 (e.g., `1629581275000`), while analytics streams use date objects with nested `year/month/day` fields.
-The `accounts` stream flattens `changeAuditStamps` with `AddFields` and `format_datetime`, emitting
-second-precision UTC RFC3339 strings and removing the nested audit stamps. Missing or null stamps are
-skipped; value expressions must guard missing keys because values are evaluated before conditions.
-Other streams retain `LinkedInAdsRecordExtractor` for timestamp conversion during extraction.
+The `LinkedInAdsRecordExtractor` converts millisecond timestamps to RFC3339 format during extraction.
 
 The manifest declares multiple `cursor_datetime_formats` per stream: `"%ms"` for millisecond
 timestamps, `"%Y-%m-%dT%H:%M:%S%z"` for ISO 8601, and `"%Y-%m-%d"` for date-only analytics cursors.
@@ -182,15 +181,6 @@ error filter would depend on an error message that has no URN signal to match. `
 both behaviors: the InMail tests use the body captured from the live API, a `UGC_VALIDATIONS_FAILED`
 body naming a share URN must fail the stream, and the null-reference test mocks no `posts/None`
 request, so it fails if that request is ever sent.
-
-## 9. Stock Components for Connection Checks
-
-The `accounts` check stream must stay on stock CDK components so connection checks do not import
-`components.py` or require permission to execute custom code. The static
-`test_check_streams_use_only_stock_components` test enforces this on every supported CDK version.
-
-**Why this matters:** Adding a custom component anywhere in the resolved check stream can prevent
-source creation and re-authentication in environments that do not trust custom code.
 
 ## Incremental Stream Considerations
 
