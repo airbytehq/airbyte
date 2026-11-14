@@ -1,72 +1,93 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 import requests
 
 
 @pytest.mark.parametrize(
-    "response_data, expected_events",
+    "response_data, expected_comments",
     [
-        # Test case with no ticket_events in response
-        ({"some_other_data": [{}]}, []),
-        # Test case with empty ticket_events
-        ({"ticket_events": []}, []),
-        # Test case with ticket_events but no child_events
-        ({"ticket_events": [{"via_reference_id": 123, "ticket_id": 456, "timestamp": "2022-01-01T00:00:00Z"}]}, []),
-        # Test case with valid child_events and Comment event_type
-        (
+        pytest.param({"some_other_data": [{}]}, [], id="no audits key"),
+        pytest.param({"audits": []}, [], id="no audits"),
+        pytest.param(
+            {"audits": [{"id": 1, "ticket_id": 456, "created_at": "2022-01-01T00:00:00Z", "via": {"channel": "web"}}]}, [], id="no events"
+        ),
+        pytest.param(
             {
-                "ticket_events": [
+                "audits": [
                     {
-                        "via_reference_id": 123,
+                        "id": 1,
                         "ticket_id": 456,
-                        "timestamp": "2022-01-01T00:00:00Z",
-                        "child_events": [{"event_type": "Comment", "via_reference_id": "unused", "via": {"some": "data"}}],
+                        "created_at": "2022-01-01T00:00:00Z",
+                        "via": {"channel": "web", "source": {"from": {}, "to": {}, "rel": None}},
+                        "events": [
+                            {"id": 10, "type": "Create", "field_name": "subject", "value": "Help"},
+                            {"id": 11, "type": "Comment", "body": "Hello", "public": True, "author_id": 7, "audit_id": 1},
+                            {"id": 12, "type": "VoiceComment", "body": "Voicemail"},
+                        ],
                     }
                 ]
             },
             [
                 {
-                    "event_type": "Comment",
-                    "via_reference_id": 123,
+                    "id": 11,
+                    "type": "Comment",
+                    "body": "Hello",
+                    "public": True,
+                    "author_id": 7,
+                    "audit_id": 1,
                     "ticket_id": 456,
-                    "timestamp": "2022-01-01T00:00:00Z",
-                    "via": {"some": "data"},
+                    "created_at": "2022-01-01T00:00:00Z",
+                    "timestamp": 1640995200,
+                    "via": {"channel": "web", "source": {"from": {}, "to": {}, "rel": None}},
+                    "via_reference_id": None,
+                    "event_type": "Comment",
                 }
             ],
+            id="only Comment events, with the audit's ticket_id, created_at, timestamp and via",
         ),
-        # Test case with an invalid 'via' property format
-        (
+        pytest.param(
             {
-                "ticket_events": [
-                    {
-                        "via_reference_id": 123,
-                        "ticket_id": 456,
-                        "timestamp": "2022-01-01T00:00:00Z",
-                        "child_events": [{"event_type": "Comment", "via_reference_id": "unused", "via": "incorrect_format"}],
-                    }
+                "audits": [
+                    {"id": 1, "ticket_id": 456, "created_at": None, "via": "incorrect_format", "events": [{"id": 11, "type": "Comment"}]}
                 ]
             },
-            [{"event_type": "Comment", "via_reference_id": 123, "ticket_id": 456, "timestamp": "2022-01-01T00:00:00Z", "via": None}],
+            [
+                {
+                    "id": 11,
+                    "type": "Comment",
+                    "ticket_id": 456,
+                    "created_at": None,
+                    "timestamp": None,
+                    "via": None,
+                    "via_reference_id": None,
+                    "event_type": "Comment",
+                }
+            ],
+            id="non-object via and missing created_at become null",
         ),
     ],
 )
-def test_extraсtor_events(response_data, expected_events, components_module):
-    # Create an instance of the extractor
-    extractor = components_module.ZendeskSupportExtractorEvents()
-
-    # Mock the response from requests
+def test_audit_comments_extractor(response_data, expected_comments, components_module):
+    extractor = components_module.ZendeskSupportAuditCommentsExtractor()
     response = MagicMock(spec=requests.Response)
     response.json.return_value = response_data
 
-    # Invoke the extract_records method
-    events = extractor.extract_records(response)
+    comments = extractor.extract_records(response)
 
-    # Assert that the returned events match the expected events
-    assert events == expected_events, f"Expected events to be {expected_events}, but got {events}"
+    assert comments == expected_comments
+
+
+def test_audit_comments_extractor_given_non_json_body_then_return_nothing(components_module):
+    extractor = components_module.ZendeskSupportAuditCommentsExtractor()
+    response = MagicMock(spec=requests.Response)
+    response.json.side_effect = requests.exceptions.JSONDecodeError("Expecting value", "<html>", 0)
+
+    assert extractor.extract_records(response) == []
 
 
 @pytest.mark.parametrize(
@@ -105,24 +126,18 @@ def test_attribute_definitions_extractor(response_data, expected_records, compon
     assert records == expected_records, f"Expected records to be {expected_records}, but got {records}"
 
 
-def test_backfill_floor_precedes_the_5_2_0_regression(components_module):
-    """The floor is a bare epoch int, so pin it to the date it is supposed to mean.
-
-    v5.2.0 -- the release that switched `tickets` to the `updated_at` cursor -- merged on 2026-03-12, so the
-    floor has to sit before that for the one-time backfill to cover the whole regression window.
-    """
-    floor = components_module.TicketsStateMigration.BACKFILL_FLOOR
-
-    assert datetime.fromtimestamp(floor, timezone.utc) == datetime(2026, 3, 1, tzinfo=timezone.utc)
-    assert floor < datetime(2026, 3, 12, tzinfo=timezone.utc).timestamp()
-
-
 @pytest.mark.parametrize(
     "stream_state, expected",
     [
-        ({"updated_at": "1780000000"}, True),
+        ({"generated_timestamp": "1780000000"}, True),
+        ({"generated_timestamp": 1780000000}, True),
+        # Parent state of a per-ticket substream after a 5.x sync.
+        ({"generated_timestamp": "1780000000", "extra": 1}, True),
         ({}, False),
-        ({"generated_timestamp": 123}, False),
+        (None, False),
+        ({"updated_at": "1780000000"}, False),
+        # Already migrated, or written by 5.2.x: never rewound again.
+        ({"updated_at": "1780000000", "generated_timestamp": "1780000000"}, False),
     ],
 )
 def test_tickets_state_migration_should_migrate(stream_state, expected, components_module):
@@ -133,14 +148,105 @@ def test_tickets_state_migration_should_migrate(stream_state, expected, componen
 @pytest.mark.parametrize(
     "stream_state, expected",
     [
-        # Above the floor -> clamped down to the floor.
-        ({"updated_at": "1780000000"}, "floor"),
-        # Below the floor -> left unchanged.
-        ({"updated_at": "1000000000"}, {"generated_timestamp": 1000000000}),
+        # Rewound by one hour onto the new cursor field, as a "%s" string like the cursor writes it.
+        ({"generated_timestamp": "1780000000"}, {"updated_at": "1779996400"}),
+        ({"generated_timestamp": 1780000000}, {"updated_at": "1779996400"}),
+        # Never rewinds below the epoch.
+        ({"generated_timestamp": "100"}, {"updated_at": "0"}),
+        # An unparsable cursor drops the state so the next sync starts from `start_date`.
+        ({"generated_timestamp": "not-a-timestamp"}, {}),
+        ({"generated_timestamp": None}, {}),
     ],
 )
 def test_tickets_state_migration_migrate(stream_state, expected, components_module):
     migration = components_module.TicketsStateMigration()
-    if expected == "floor":
-        expected = {"generated_timestamp": migration.BACKFILL_FLOOR}
+    assert migration.migrate(stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # The flat export cursor of 5.x.
+        ({"time": "1780000000"}, True),
+        ({"time": 1780000000}, True),
+        ({"time": "2026-05-28T00:00:00Z"}, True),
+        ({}, False),
+        (None, False),
+        # Already on the 6.0.0 shape, in either of the forms the CDK accepts.
+        ({"_ab_updated_at": "1780000000", "parent_state": {"tickets": {"updated_at": "1780000000"}}}, False),
+        ({"use_global_cursor": True, "state": {"_ab_updated_at": "1780000000"}, "parent_state": {}}, False),
+        ({"time": "1780000000", "parent_state": {"tickets": {"updated_at": "1780000000"}}}, False),
+    ],
+)
+def test_ticket_metric_events_state_migration_should_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketMetricEventsStateMigration()
+    assert migration.should_migrate(stream_state) is expected
+
+
+def _both_parents(updated_at: str) -> dict:
+    return {"tickets": {"updated_at": updated_at}, "closed_tickets_search": {"updated_at": updated_at}}
+
+
+@freezegun.freeze_time("2026-06-01T00:00:00Z")
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # Rewound by one hour and used for the global cursor and for both parent cursors.
+        ({"time": "1780000000"}, {"_ab_updated_at": "1779996400", "parent_state": _both_parents("1779996400")}),
+        ({"time": 1780000000}, {"_ab_updated_at": "1779996400", "parent_state": _both_parents("1779996400")}),
+        # An ISO-8601 value, as older versions wrote it, is parsed first.
+        ({"time": "2026-05-28T00:00:00Z"}, {"_ab_updated_at": "1779922800", "parent_state": _both_parents("1779922800")}),
+        # The export dated SLA `breach` events with the future breach moment: a value past the migration
+        # time (2026-06-01T00:00:00Z = 1780272000) is clamped to it before the rewind.
+        ({"time": "1790000000"}, {"_ab_updated_at": "1780268400", "parent_state": _both_parents("1780268400")}),
+        # Never rewinds below the epoch.
+        ({"time": "100"}, {"_ab_updated_at": "0", "parent_state": _both_parents("0")}),
+        # An unparsable cursor drops the state so the next sync starts from `start_date`.
+        ({"time": "not-a-timestamp"}, {}),
+        ({"time": None}, {}),
+    ],
+)
+def test_ticket_metric_events_state_migration_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketMetricEventsStateMigration()
+    assert migration.migrate(stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # The global cursor of a per-ticket substream, handed to the parent when `parent_state` predates it.
+        ({"_ab_updated_at": "1780000000"}, True),
+        ({"timestamp": "1780000000"}, True),
+        ({"created_at": "1780000000"}, True),
+        ({"generated_timestamp": "1780000000"}, True),
+        # Already keyed on the parent's cursor.
+        ({"updated_at": "1780000000"}, False),
+        ({}, False),
+        (None, False),
+    ],
+)
+def test_closed_tickets_search_state_migration_should_migrate(stream_state, expected, components_module):
+    migration = components_module.ClosedTicketsSearchStateMigration()
+    assert migration.should_migrate(stream_state) is expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # Re-keyed onto `updated_at` and rewound by one hour, whatever the child's cursor field was.
+        ({"_ab_updated_at": "1780000000"}, {"updated_at": "1779996400"}),
+        ({"timestamp": 1780000000}, {"updated_at": "1779996400"}),
+        ({"created_at": "2026-05-28T00:00:00Z"}, {"updated_at": "1779922800"}),
+        ({"generated_timestamp": "1780000000"}, {"updated_at": "1779996400"}),
+        # Never rewinds below the epoch.
+        ({"_ab_updated_at": "100"}, {"updated_at": "0"}),
+        # Anything but a single scalar cursor value drops the cursor: the parent walks from `start_date`.
+        ({"_ab_updated_at": "not-a-timestamp"}, {}),
+        ({"_ab_updated_at": None}, {}),
+        ({"_ab_updated_at": "1780000000", "lookback_window": 0}, {}),
+        ({"states": [{"partition": {"ticket_id": 1}, "cursor": {"_ab_updated_at": "1780000000"}}]}, {}),
+    ],
+)
+def test_closed_tickets_search_state_migration_migrate(stream_state, expected, components_module):
+    migration = components_module.ClosedTicketsSearchStateMigration()
     assert migration.migrate(stream_state) == expected

@@ -19,7 +19,13 @@
       }
     }
   ],
-  "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
-  "after_url": "https://d3v-airbyte.zendesk.com/api/v2/incremental/organizations?cursor=MTU3NjYxMzUzOS4wfHw0Njd8",
-  "end_of_stream": true
+  "meta": {
+    "has_more": false,
+    "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
+    "before_cursor": null
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
 }

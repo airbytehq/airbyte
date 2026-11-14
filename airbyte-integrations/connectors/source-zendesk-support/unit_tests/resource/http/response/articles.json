@@ -1,7 +1,4 @@
 {
-  "count": 6,
-  "next_page": null,
-  "end_time": 1720784511,
   "articles": [
     {
       "id": 7253351877519,
@@ -28,8 +25,17 @@
       "permission_group_id": 7253379449487,
       "content_tag_ids": [],
       "label_names": [],
-      "body": "\u003cp\u003eAll \u003cstrong\u003eStellar Skyonomy\u003c/strong\u003e merchandise purchases are backed by our 30-day satisfaction guarantee, no questions asked. We even pay to have it shipped back to us. Additionally, you can cancel your \u003cstrong\u003eStellar Skyonomy\u003c/strong\u003e subscription at any time. Before you cancel, review our refund policies in this article.\u003c/p\u003e\u003cbr\u003e\u003cp\u003e\u003cstrong\u003eRefund policy\u003c/strong\u003e\u003c/p\u003e\u003cp\u003eWe automatically issue a full refund when you \u003ca\u003einitiate a return\u003c/a\u003e within 30 days of delivery.\u003cbr\u003e\u003cbr\u003eTo \u003ca\u003ecancel an annual website subscription\u003c/a\u003e you can do so at any time and your refund will be prorated based on the cancellation date.\u003c/p\u003e\u003cbr\u003e\u003cp\u003e\u003cstrong\u003eRequest a refund\u003c/strong\u003e\u003c/p\u003e\u003cp\u003eIf you believe you’re eligible for a refund but haven’t received one, contact us by completing a \u003ca\u003erefund request form.\u003c/a\u003e We review every refund and aim to respond within two business days.\u003cbr\u003e\u003cbr\u003eIf you haven't received a refund you're expecting, note that it can take up to 10 business days to appear on your card statement.\u003c/p\u003e",
+      "body": "<p>All <strong>Stellar Skyonomy</strong> merchandise purchases are backed by our 30-day satisfaction guarantee, no questions asked. We even pay to have it shipped back to us. Additionally, you can cancel your <strong>Stellar Skyonomy</strong> subscription at any time. Before you cancel, review our refund policies in this article.</p><br><p><strong>Refund policy</strong></p><p>We automatically issue a full refund when you <a>initiate a return</a> within 30 days of delivery.<br><br>To <a>cancel an annual website subscription</a> you can do so at any time and your refund will be prorated based on the cancellation date.</p><br><p><strong>Request a refund</strong></p><p>If you believe you\u2019re eligible for a refund but haven\u2019t received one, contact us by completing a <a>refund request form.</a> We review every refund and aim to respond within two business days.<br><br>If you haven't received a refund you're expecting, note that it can take up to 10 business days to appear on your card statement.</p>",
       "user_segment_ids": []
     }
-  ]
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "eyJvIjoidXBkYXRlZF9hdCIsInYiOiJhUUVBQUFBQUFBQT0ifQ==",
+    "before_cursor": null
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
 }

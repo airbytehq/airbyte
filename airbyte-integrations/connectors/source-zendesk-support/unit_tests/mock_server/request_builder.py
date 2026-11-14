@@ -176,13 +176,13 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def users_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/users/cursor.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator)
+        """Create a request builder for the first page of the user list (`/users?sort=-updated_at&page[size]=100`)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "users").with_authenticator(authenticator).with_sort("-updated_at").with_page_size(100)
 
     @classmethod
     def user_identities_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/users/cursor.json endpoint with include=identities (for user_identities stream)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator).with_include("identities")
+        """Create a request builder for the user list with `include=identities` (the `user_identities` stream)."""
+        return cls.users_endpoint(authenticator).with_include("identities")
 
     @classmethod
     def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -201,8 +201,21 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/tickets/cursor.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/tickets/cursor.json").with_authenticator(authenticator)
+        """Create a request builder for the first page of the ticket list
+        (`/tickets?sort=-updated_at&support_type_scope=all&page[size]=100`).
+
+        The `tickets` stream reads the list newest-first and stops paginating client-side, so the request
+        carries no `start_time`; use `with_after_cursor` for the pages that follow `links.next`.
+        `support_type_scope=all` adds the tickets handled by Zendesk AI agents, which the list leaves out
+        by default.
+        """
+        return (
+            cls(cls.DEFAULT_SUBDOMAIN, "tickets")
+            .with_authenticator(authenticator)
+            .with_sort("-updated_at")
+            .with_query_param("support_type_scope", "all")
+            .with_page_size(100)
+        )
 
     @classmethod
     def tickets_search_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -216,8 +229,15 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def articles_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /help_center/incremental/articles endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/incremental/articles").with_authenticator(authenticator)
+        """Create a request builder for the first page of the Help Center article list
+        (`/help_center/articles?sort_by=updated_at&sort_order=desc&page[size]=100`)."""
+        return (
+            cls(cls.DEFAULT_SUBDOMAIN, "help_center/articles")
+            .with_authenticator(authenticator)
+            .with_sort_by("updated_at")
+            .with_sort_order("desc")
+            .with_page_size(100)
+        )
 
     @classmethod
     def posts_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -301,8 +321,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def organizations_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/organizations endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/organizations").with_authenticator(authenticator)
+        """Create a request builder for the first page of the organization list (`/organizations?sort=-updated_at&page[size]=100`)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "organizations").with_authenticator(authenticator).with_sort("-updated_at").with_page_size(100)
 
     @classmethod
     def satisfaction_ratings_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -330,19 +350,19 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/audits.json").with_authenticator(authenticator)
 
     @classmethod
-    def ticket_comments_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/ticket_events.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
+    def ticket_comments_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """`ticket_comments` reads the per-ticket audits endpoint."""
+        return cls.ticket_audits_per_ticket_endpoint(authenticator, ticket_id)
 
     @classmethod
-    def ticket_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/ticket_events.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
+    def ticket_events_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """`ticket_events` reads the per-ticket audits endpoint."""
+        return cls.ticket_audits_per_ticket_endpoint(authenticator, ticket_id)
 
     @classmethod
-    def ticket_metric_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/ticket_metric_events endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_metric_events").with_authenticator(authenticator)
+    def ticket_metric_events_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the per-ticket `/tickets/{ticket_id}/metric_events` endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/metric_events").with_authenticator(authenticator)
 
     @classmethod
     def ticket_skips_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":

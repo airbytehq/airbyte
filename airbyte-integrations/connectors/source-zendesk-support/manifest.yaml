@@ -10,19 +10,23 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10
-          interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/incremental/.*"
-
+    # `tickets` reads the ticket list (`links.next` URLs use `/api/v2/tickets.json`). Per-ticket
+    # endpoints such as `/api/v2/tickets/{id}/audits.json` deliberately match no policy.
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 100
           interval: PT1M
       matchers:
-        - url_path_pattern: "^/api/v2/search/export$"
+        - url_path_pattern: '^/api/v2/tickets(\.json)?$'
+
+    # Export Search Results: `tickets_search` and the `closed_tickets_search` parent of the per-ticket
+    # substreams. `links.next` URLs use `/api/v2/search/export.json`.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: '^/api/v2/search/export(\.json)?$'
 
     - type: MovingWindowCallRatePolicy
       rates:
@@ -166,6 +170,60 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
 
+  # Streams that read a list endpoint sorted by the cursor field, newest first
+  # (`GET /tickets?sort=-updated_at`, `GET /users?sort=-updated_at`, ...). Zendesk no longer serves
+  # the incremental export endpoints to third-party integrations, and the list endpoints take no
+  # `start_time` filter, so an incremental read walks the list from the newest record down and
+  # stops paginating once a page ends with a record older than the slice start. The slice start is
+  # the saved cursor minus `lookback_window` (never before `start_date`); the record filter drops
+  # the records on the last page that fall below it. See AGENTS.md §1.
+  sorted_list_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_datetime_formats:
+      - "%s"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%s"
+    cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+    start_datetime:
+      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+    lookback_window: PT1H
+
+  sorted_list_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('links', {}).get('next') }}"
+      # The page is sorted newest first, so once its last record is older than the slice start every
+      # later page is too. `sorted_path` names the sorted list in the response when it is not the
+      # stream name (`user_identities` sorts on `users` but extracts `identities`).
+      stop_condition: >-
+        {{ not response.get('meta', {}).get('has_more', false)
+        or not response.get(parameters.get('sorted_path') or parameters.get('name'))
+        or (timestamp(response[parameters.get('sorted_path') or parameters.get('name')][-1][parameters.get('cursor_field', 'updated_at')]) | int)
+        < (stream_slice.get('start_time', 0) | int) }}
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+
+  sorted_list_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/sorted_list_paginator"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          condition: "{{ (timestamp(record[parameters.get('cursor_field', 'updated_at')]) | int) >= (stream_interval.get('start_time', 0) | int) }}"
+    incremental_sync:
+      $ref: "#/definitions/sorted_list_incremental_sync"
+
   # Paginators
   links_next_paginator:
     type: DefaultPaginator
@@ -180,28 +238,6 @@ definitions:
       type: RequestOption
       field_name: "page[size]"
       inject_into: request_parameter
-
-  after_url_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: '{{ response.get("after_url") }}'
-      # there is a `end_of_stream` property inside the `response`,
-      # we should use it, instead of relying on `last_page_size`,
-      # which could be `[]` but, `end_of_stream == false` and `after_url != null`
-      stop_condition: '{{ response.get("end_of_stream") }}'
-      page_size: 100
-    page_token_option:
-      type: RequestPath
-
-  end_of_stream_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: '{{ response.get("next_page", {}) }}'
-      stop_condition: '{{ response.get("end_of_stream") }}'
-    page_token_option:
-      type: RequestPath
 
   # Full-refresh streams
   account_attributes_stream:
@@ -350,37 +386,29 @@ definitions:
       primary_key: "id"
 
   # Incremental cursor-based streams
+
+  # `articles` reads `GET /api/v2/help_center/articles?sort_by=updated_at&sort_order=desc` (see
+  # `sorted_list_stream`) instead of the Help Center incremental article export. The article
+  # substreams keep their per-article paths and read the parent with `incremental_dependency`.
   articles_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     name: "articles"
     primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/articles"
-    incremental_sync:
-      $ref: "#/definitions/cursor_incremental_sync"
-      start_time_option:
-        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
-        field_name: "start_time"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
+      $ref: "#/definitions/sorted_list_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
-        path: "help_center/incremental/articles"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: "{{ last_page_size == 0 }}"
-        page_token_option:
-          type: RequestPath
-      record_selector:
-        extractor:
-          type: DpathExtractor
-          field_path: ["articles"]
+        path: "help_center/articles"
+        request_parameters:
+          sort_by: "updated_at"
+          sort_order: "desc"
+    $parameters:
+      name: "articles"
+      cursor_field: "updated_at"
 
   article_attachments_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -672,22 +700,25 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `organizations` reads `GET /api/v2/organizations?sort=-updated_at` (see `sorted_list_stream`).
+  # Unlike the Incremental Organization Export it replaced, the list omits deleted organizations
+  # and does not return `deleted_at`.
   organizations_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/organizations"
     $parameters:
       name: "organizations"
-      path: "incremental/organizations"
+      path: "organizations"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   posts_stream:
@@ -964,61 +995,50 @@ definitions:
       cursor_field: "created_at"
       primary_key: "id"
 
+  # `ticket_comments` reads the Comment events of every audit of the tickets either parent returns
+  # (`per_ticket_partition_router`), replacing the Incremental Ticket Event Export. The extractor
+  # copies the audit's `ticket_id`, `created_at` and `via` onto each comment and derives `timestamp`,
+  # which keeps the record shape 5.x emitted. The cursor stays `created_at` with unix-timestamp
+  # state; a 5.x state is a single value the CDK uses to seed both parent cursors, so no migration
+  # is needed.
   ticket_comments_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        request_parameters:
-          include: "comment_events"
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-              factor: 10
-          response_filters:
-            - $ref: "#/definitions/oauth_token_refresh_response_filter"
-            - http_codes: [504]
-              action: RETRY
-              error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying with exponential backoff..."
-            - http_codes: [403, 404]
-              action: FAIL
-              failure_type: config_error
-              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.ZendeskSupportExtractorEvents
-          field_path: ["ticket_events", "*", "child_events", "*"]
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ response.get("end_of_stream") }}'
-          page_size: "{{ config.get('page_size', 100) }}"
-        page_token_option:
-          type: RequestPath
-        page_size_option:
-          type: RequestOption
-          field_name: "per_page"
-          inject_into: request_parameter
+    type: DeclarativeStream
+    name: "ticket_comments"
+    primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_comments"
+    incremental_sync:
+      $ref: "#/definitions/per_ticket_incremental_sync"
+    retriever:
+      $ref: "#/definitions/per_ticket_audits_retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ZendeskSupportAuditCommentsExtractor
+        record_filter:
+          # Bounded by the configured start date only, never by the saved cursor (see `per_ticket_incremental_sync`).
+          condition: "{{ (timestamp(record['created_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
+        schema_normalization: Default
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/links_next_paginator/pagination_strategy"
+          # `Page Size (ticket_comments)` applied to the per-ticket audit pages. The audits endpoint
+          # accepts at most 100 per page, so larger configured values are clamped.
+          page_size: "{{ [config.get('page_size', 100), 100] | min }}"
     $parameters:
       name: "ticket_comments"
-      path: "incremental/ticket_events.json"
       cursor_field: "created_at"
-      cursor_filter: "start_time"
-      primary_key: "id"
 
+  # Per-ticket substream of `tickets`. Its record filter is bounded by `start_date` only, not by the
+  # cursor: the parent walk is newest first, so a ticket updated while the walk runs moves ahead of
+  # it and is first listed by the next sync, whose cursor (a new partition is seeded from the global
+  # value) is already past the side conversations that ticket gained in between. A changed ticket
+  # therefore re-emits all of its side conversations (`id` deduplicates), as the other per-ticket
+  # streams do; see `per_ticket_incremental_sync`.
   side_conversations_stream:
     $ref: "#/definitions/semi_incremental_stream"
     incremental_sync:
@@ -1031,6 +1051,10 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          condition: "{{ (timestamp(record['updated_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
@@ -1074,17 +1098,180 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # Cursor for the per-ticket substreams that carry a record cursor of their own (`ticket_events`,
+  # `ticket_comments`, both on the audit's `created_at`): the parent walks are bounded by
+  # `parent_state`, and this cursor tracks the newest record seen. One global value is kept instead
+  # of one entry per ticket. The cursor never filters records: a changed ticket re-emits its whole
+  # audit history from `start_date` on, because the global value is not the time that ticket was last read (a ticket
+  # updated while the walk runs moves ahead of the walk and is first seen a sync later, when a
+  # filter on the global cursor would drop the audits it gained in between). Only usable with a
+  # record cursor that never lies in the future: a value past the clock leaves the next sync with
+  # an empty slice (see `ticket_metric_events_stream`).
+  per_ticket_incremental_sync:
+    $ref: "#/definitions/sorted_list_incremental_sync"
+    global_substream_cursor: true
+
+  # Second parent of the per-ticket substreams: the closed tickets updated within the slice, read
+  # from Export Search Results
+  # (`GET /search/export?filter[type]=ticket&query=updated_at>=<start> updated_at<=<end> status:closed`).
+  # The ticket list never returns an archived ticket (Zendesk archives closed tickets about 120 days
+  # after they close), so on its own the `tickets` parent neither backfills the history of archived
+  # tickets on a first sync nor sees an archived ticket that changed after it was archived; the
+  # search index does list them. `status:closed` narrows the walk to the population the list cannot
+  # serve without losing a ticket: only closed tickets are archived and a closed ticket cannot change
+  # status. The overlap with the list is every ticket that closed since the previous sync (on a first
+  # sync, every closed ticket not archived yet); such a ticket is listed by both parents and can be
+  # read twice (`id` deduplicates downstream). Archiving itself leaves `updated_at` unchanged, so the
+  # walk lists an archived ticket only when something changes it. One walk per sync: no `step`, the
+  # query bounded above by the slice end (the sync start) so that a ticket changed while the unsorted
+  # walk runs cannot leave the cursor past another ticket changed earlier in the same walk, cursor
+  # pagination on `links.next`, which repeats the query and the page size (the requester re-sends its
+  # own `query` and `filter[type]` on every page and the HTTP client drops a parameter whose value
+  # already matches the URL's; `ignore_stream_slicer_parameters_on_paginated_requests` covers only the
+  # cursor's request options, which this cursor has none of). `page[size]` is 100, not the endpoint's
+  # maximum of 1000: a search cursor expires 60 minutes after the response that issued it, and the
+  # next page is only requested once the current page's tickets have been queued for the substream,
+  # which waits on the per-ticket reads when the queue is full. The record `updated_at` feeds the
+  # cursor and `generated_timestamp` is carried as an extra field, as on the `tickets` parent; both
+  # can lag the live ticket, which the index refreshes within minutes of a change (the one-hour
+  # lookback covers that). Its error handler names the four streams, since this parent is not a
+  # user-facing stream (it exists only under `parent_state`), and does not ignore a permission
+  # error: silently skipping the walk would silently lose archived tickets.
+  # `ClosedTicketsSearchStateMigration` seeds the cursor when a saved `parent_state` predates this
+  # parent. See AGENTS.md §7.
+  closed_tickets_search_stream:
+    type: DeclarativeStream
+    name: "closed_tickets_search"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "search/export"
+        request_parameters:
+          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<={{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} status:closed"
+          "filter[type]": "ticket"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to search for updated closed tickets, which the 'ticket_comments', 'ticket_events', 'ticket_metric_events' and 'ticket_audits_per_ticket' streams need to reach archived tickets. The Export Search Results endpoint returned an error indicating a configuration issue. Please ensure that the account can search tickets (the OAuth 'read' scope or an agent's API token). Error message: {{ response.get('error') }}"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next', '') }}"
+          stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
+          page_size: 100
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+    incremental_sync:
+      $ref: "#/definitions/sorted_list_incremental_sync"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.ClosedTicketsSearchStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/tickets"
+    $parameters:
+      name: "closed_tickets_search"
+      cursor_field: "updated_at"
+
+  # Partition router of the per-ticket substreams (`ticket_audits_per_ticket`, `ticket_events`,
+  # `ticket_comments` and `ticket_metric_events`): one partition per ticket either parent lists.
+  # `incremental_dependency` stores both parent cursors under `parent_state`; a flat 5.x state (one
+  # cursor value) seeds both of them.
+  per_ticket_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: "id"
+        partition_field: "ticket_id"
+        extra_fields:
+          - ["generated_timestamp"] # `_ab_updated_at` of `ticket_audits_per_ticket` and `ticket_metric_events`
+        stream:
+          $ref: "#/definitions/tickets_stream"
+        incremental_dependency: true
+      - type: ParentStreamConfig
+        parent_key: "id"
+        partition_field: "ticket_id"
+        extra_fields:
+          - ["generated_timestamp"]
+        stream:
+          $ref: "#/definitions/closed_tickets_search_stream"
+        incremental_dependency: true
+
+  # One request per ticket either parent returns (`per_ticket_partition_router`), reading
+  # `GET /tickets/{ticket_id}/audits.json`. Shared by `ticket_audits_per_ticket`, `ticket_events`
+  # and `ticket_comments`; each stream supplies its own `record_selector`. The endpoint returns the
+  # whole audit history of the ticket, oldest first, so a changed ticket re-emits all of its audits,
+  # comments and events from `start_date` on (no stream filters on the cursor, see `per_ticket_incremental_sync`). Audits are the source of ticket events
+  # and comments since Zendesk stopped serving the Incremental Ticket Event Export to third-party
+  # integrations. The error handler is keyed on the status code only: Zendesk does not guarantee a
+  # JSON body on these responses, and a refusal is scoped to one ticket, not to the stream
+  # (AGENTS.md §5). Cursor pagination (page[size] up to 100, meta.has_more, links.next); Zendesk
+  # returns audits for archived tickets unpaginated, and with no `meta.has_more` the paginator stops
+  # after one page.
+  per_ticket_audits_retriever:
+    type: SimpleRetriever
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+    requester:
+      $ref: "#/definitions/retriever/requester"
+      path: "tickets/{{ stream_partition.ticket_id }}/audits.json"
+      error_handler:
+        type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
+        response_filters:
+          - $ref: "#/definitions/oauth_token_refresh_response_filter"
+          - http_codes: [403]
+            action: IGNORE
+            error_message: "Skipping stream `{{ parameters.get('name') }}` for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
+          - http_codes: [404]
+            action: IGNORE
+            error_message: "Skipping stream `{{ parameters.get('name') }}` for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
+    paginator:
+      $ref: "#/definitions/links_next_paginator"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["audits"]
+      schema_normalization: Default
+    partition_router:
+      $ref: "#/definitions/per_ticket_partition_router"
+
   # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
   # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
   # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
-  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` incremental export
-  # returns, and that endpoint does return audits for archived tickets. The cost is one request per
-  # created or updated ticket against the account-wide plan limit. Like the per-ticket
-  # `ticket_metrics` calls, the endpoint has no `api_budget` policy: it runs at the connector's
-  # concurrency and relies on 429 + Retry-After backoff.
-  # Each changed ticket re-emits all of its audits; `id` deduplicates them. The cursor mirrors the
-  # stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`),
-  # but uses a global substream cursor: a per-ticket state would grow one entry per ticket.
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket either parent returns. That
+  # endpoint serves archived tickets too; since 6.0.0 the ticket list never returns an archived
+  # ticket (5.7.0's Incremental Ticket Export did), so the `closed_tickets_search` parent lists
+  # them from the search index. The cost is one request per created or
+  # updated ticket against the account-wide plan limit. Like the per-ticket `ticket_metrics` calls,
+  # the endpoint has no `api_budget` policy: it runs at the connector's concurrency and relies on
+  # 429 + Retry-After backoff. Each changed ticket re-emits all of its audits; `id` deduplicates
+  # them. The cursor mirrors the stateful `ticket_metrics` path (`_ab_updated_at` = the parent
+  # ticket's `generated_timestamp`, which the ticket list still returns), but uses a global
+  # substream cursor: a per-ticket state would grow one entry per ticket.
   ticket_audits_per_ticket_stream:
     type: DeclarativeStream
     name: "ticket_audits_per_ticket"
@@ -1103,47 +1290,7 @@ definitions:
         datetime: "0" # the parent `tickets` stream applies `start_date`; this cursor only tracks state
       global_substream_cursor: true
     retriever:
-      type: SimpleRetriever
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        path: "tickets/{{ stream_partition.ticket_id }}/audits.json"
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-          # Keyed on the status code only: Zendesk does not guarantee a JSON body on these
-          # responses, and a refusal is scoped to one ticket, not to the stream. See AGENTS.md §5.
-          response_filters:
-            - $ref: "#/definitions/oauth_token_refresh_response_filter"
-            - http_codes: [403]
-              action: IGNORE
-              error_message: "Skipping audits for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
-            - http_codes: [404]
-              action: IGNORE
-              error_message: "Skipping audits for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
-      # Cursor pagination (page[size] up to 100, meta.has_more, links.next). Zendesk returns audits
-      # for archived tickets unpaginated; with no `meta.has_more` the paginator stops after one page.
-      paginator:
-        $ref: "#/definitions/links_next_paginator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["audits"]
-        schema_normalization: Default
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            partition_field: "ticket_id"
-            extra_fields:
-              - ["generated_timestamp"]
-            stream:
-              $ref: "#/definitions/tickets_stream"
-            incremental_dependency: true
+      $ref: "#/definitions/per_ticket_audits_retriever"
     transformations:
       - type: AddFields
         fields:
@@ -1151,6 +1298,8 @@ definitions:
               - "_ab_updated_at"
             value: "{{ stream_slice.extra_fields['generated_timestamp'] }}"
             value_type: "integer"
+    $parameters:
+      name: "ticket_audits_per_ticket"
 
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
@@ -1207,41 +1356,132 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `ticket_metric_events` reads `GET /tickets/{ticket_id}/metric_events` for every ticket either
+  # parent returns (`per_ticket_partition_router`), replacing the Incremental Ticket Metric
+  # Event Export. The response is an object keyed by metric name whose values are the event lists,
+  # hence the `["*", "*"]` extractor; it is not paginated. A changed ticket re-emits its whole
+  # metric event history (`id` deduplicates). The cursor is `_ab_updated_at`, the parent ticket's
+  # `generated_timestamp`, as on `ticket_audits_per_ticket`; the event `time` is not usable as a
+  # cursor because Zendesk writes SLA `breach` events ahead of time with the future breach moment,
+  # and a cursor past the clock leaves the next syncs with an empty slice while the parent state
+  # moves on (see AGENTS.md §4). `TicketMetricEventsStateMigration` turns the 5.x `{"time": ...}`
+  # state into the parent cursor. Events the export returned with `ticket_id: null` are unreachable
+  # this way.
   ticket_metric_events_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+    type: DeclarativeStream
+    name: "ticket_metric_events"
+    primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_metric_events"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      cursor_field: "_ab_updated_at"
+      start_datetime:
+        datetime: "0" # the parent `tickets` stream applies `start_date`; this cursor only tracks state
+      global_substream_cursor: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketMetricEventsStateMigration
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/metric_events"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          # Keyed on the status code only: Zendesk does not guarantee a JSON body on these
+          # responses, and a refusal is scoped to one ticket, not to the stream. See AGENTS.md §5.
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403]
+              action: IGNORE
+              error_message: "Skipping metric events for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Skipping metric events for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["*", "*"]
+        schema_normalization: Default
+      partition_router:
+        $ref: "#/definitions/per_ticket_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "_ab_updated_at"
+            value: "{{ stream_slice.extra_fields['generated_timestamp'] }}"
+            value_type: "integer"
     $parameters:
       name: "ticket_metric_events"
-      path: "incremental/ticket_metric_events"
-      cursor_field: "time"
-      cursor_filter: "start_time"
-      primary_key: "id"
+      cursor_field: "_ab_updated_at"
 
+  # `ticket_events` reads every audit of the tickets either parent returns, replacing the
+  # Incremental Ticket Event Export, and maps each audit onto the export's record shape:
+  # `child_events` from `events`, `updater_id` from `author_id`, `timestamp` from `created_at`,
+  # `via` from `via.channel` and `system` from `metadata.system`. The child events keep the Ticket
+  # Audits API shape (`type` instead of `event_type`, `field_name`/`value` for changes, and
+  # Notification events the export left out). The cursor stays `timestamp` with unix-timestamp
+  # state; a 5.x state is a single value the CDK uses to seed both parent cursors.
   ticket_events_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+    type: DeclarativeStream
+    name: "ticket_events"
+    primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_events"
+    incremental_sync:
+      $ref: "#/definitions/per_ticket_incremental_sync"
+    retriever:
+      $ref: "#/definitions/per_ticket_audits_retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["audits"]
+        record_filter:
+          # Bounded by the configured start date only, never by the saved cursor (see `per_ticket_incremental_sync`).
+          condition: "{{ (timestamp(record['created_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["child_events"]
+            value: "{{ record.get('events') }}"
+          - path: ["updater_id"]
+            value: "{{ record.get('author_id') }}"
+          - path: ["timestamp"]
+            value: "{{ timestamp(record['created_at']) | int }}"
+            value_type: "integer"
+          # The export always returned exactly these four keys (null when unknown); `metadata.system`
+          # carries more (`ip_address`, email identifiers), so the record keeps the export's projection
+          # here and the full object under `metadata`.
+          - path: ["system"]
+            value: "{% set system = (record.get('metadata') or {}).get('system') or {} %}{{ {'client': system.get('client'), 'latitude': system.get('latitude'), 'location': system.get('location'), 'longitude': system.get('longitude')} }}"
+          - path: ["via"]
+            value: "{{ (record.get('via') or {}).get('channel') }}"
+          - path: ["event_type"]
+            value: "Audit"
+      - type: RemoveFields
+        field_pointers:
+          - ["events"]
+          - ["author_id"]
     $parameters:
       name: "ticket_events"
-      path: "incremental/ticket_events.json"
       cursor_field: "timestamp"
-      cursor_filter: "start_time"
-      primary_key: "id"
 
   ticket_skips_stream:
     $ref: "#/definitions/semi_incremental_stream"
@@ -1279,43 +1519,53 @@ definitions:
       field_name: "page[size]"
       inject_into: request_parameter
 
-  # Default `tickets` stream: uses Zendesk's Incremental Ticket Export endpoint, keyed on
-  # `generated_timestamp`. Unlike `updated_at`, `generated_timestamp` is bumped for *every*
-  # ticket change including automation/macro/system updates, so this endpoint reliably
-  # re-surfaces tickets whose only recent change was system-driven. See CONTRIBUTING.md §1.
+  # Default `tickets` stream: reads `GET /api/v2/tickets?sort=-updated_at` (cursor pagination, 100
+  # per page) and cursors on `updated_at`. Zendesk no longer serves the Incremental Ticket Export to
+  # third-party integrations, so the list is walked newest first and the read stops once a page ends
+  # before the slice start (see `sorted_list_stream`). The list endpoint omits archived tickets
+  # (closed about 120 days ago or longer) and deleted tickets: `tickets_search` reads archived
+  # tickets, the per-ticket substreams reach them through `closed_tickets_search_stream`, and
+  # `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is
+  # still what the per-ticket substreams use as their `_ab_updated_at` cursor. See AGENTS.md §1.
   tickets_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
+          # The list defaults to tickets handled by agents (`support_type_scope=agent`); `all` adds
+          # the tickets handled by Zendesk AI agents, which the export returned as well.
+          support_type_scope: "all"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TicketsStateMigration
+    transformations:
+      # The list endpoint returns the custom field values under `custom_fields` only; the export
+      # returned the same list under `fields` as well. Keep `fields` so the record shape is unchanged.
+      - type: AddFields
+        fields:
+          - path: ["fields"]
+            value: "{{ record.get('custom_fields') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
     $parameters:
       name: "tickets"
-      path: "incremental/tickets/cursor.json"
-      cursor_field: "generated_timestamp"
-      cursor_filter: "start_time"
+      path: "tickets"
+      cursor_field: "updated_at"
       primary_key: "id"
 
-  # Opt-in fast `tickets_search` stream: uses the Export Search Results endpoint (100 req/min vs
-  # 10 req/min for incremental export, plus concurrent time-range partitioning) but filters/
-  # checkpoints on `updated_at`. WARNING: this endpoint is served from Zendesk's search index,
-  # which Zendesk does not recommend for data export. Because Zendesk only bumps `updated_at`
-  # (and re-indexes the ticket) when an update generates a ticket event, this stream can (a) MISS
-  # automation/macro/system-driven updates in incremental mode and (b) return STALE indexed field
-  # values (e.g. status) even on a full/historical read. Use the default `tickets` stream when
-  # completeness/accuracy matter. Since Export Search excludes deleted tickets, pair this stream
-  # with `deleted_tickets`.
+  # Opt-in `tickets_search` stream: uses the Export Search Results endpoint (concurrent time-range
+  # partitioning) and filters/checkpoints on `updated_at`. It is the only stream that returns
+  # archived tickets (the ticket list omits them). WARNING: this endpoint is served from Zendesk's
+  # search index, which Zendesk does not recommend for data export: it can return STALE indexed
+  # field values (e.g. status) even on a full/historical read. Since Export Search excludes deleted
+  # tickets, pair this stream with `deleted_tickets`.
   # `lookback_window` (config: `ticket_search_lookback_days`) re-scans a trailing window on each
-  # sync; it mitigates late/out-of-order `updated_at` changes only and does NOT recover
-  # system-driven updates (those never bump `updated_at`).
+  # sync; it mitigates late/out-of-order `updated_at` changes only.
   tickets_search_stream:
     type: DeclarativeStream
     name: "tickets_search"
@@ -1490,35 +1740,45 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `users` reads `GET /api/v2/users?sort=-updated_at` (see `sorted_list_stream`). Unlike the
+  # Incremental User Export it replaced, the list omits deleted users, so `permanently_deleted`
+  # is no longer returned.
   users_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/users"
     $parameters:
       name: "users"
-      path: "incremental/users/cursor.json"
+      path: "users"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
+  # `user_identities` reads the same user list with `include=identities`, which sideloads the
+  # identities of the users on each page under a page-level `identities` array. The stop condition
+  # therefore looks at `users` (`sorted_path`) while the records come from `identities`. There is
+  # no record filter: an identity's `updated_at` is never later than its user's, so filtering
+  # identities on their own cursor would drop the unchanged identities of recently updated users,
+  # which the export used to return. The last page can re-emit identities of users older than the
+  # slice start; `id` deduplicates them downstream.
   users_identities_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
+          sort: "-updated_at"
           include: "identities"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1526,9 +1786,9 @@ definitions:
     $parameters:
       name: "user_identities"
       data_path: "identities"
-      path: "incremental/users/cursor.json"
+      sorted_path: "users"
+      path: "users"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
 streams:
@@ -1607,7 +1867,8 @@ streams:
 # that emits the control message, because the CDK (7.23.8 and later) builds this
 # ConcurrencyLevel from the pre-migration config. Clamping here makes the floor
 # apply immediately, on the first sync after the upgrade. A single worker
-# serializes every stream behind the single-partition `tickets` walk, so nothing
+# serializes every stream behind the single-partition `tickets` walk (one page of
+# 100 tickets per request, 100 requests per minute on a full backfill), so nothing
 # emits a record or a state message while it runs and the platform can cancel the
 # attempt on the heartbeat timeout (airbytehq/oncall#13250).
 concurrency_level:
@@ -1794,8 +2055,9 @@ spec:
           - 250
           - 500
         description: >-
-          The number of records per page for the ticket_comments stream API requests.
-          Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
+          The number of audits per page when the ticket_comments stream reads a ticket's audits.
+          Lower values may help prevent timeouts on tickets with many audits. Zendesk accepts at
+          most 100 per page, so larger values are clamped to 100.
         order: 4
       ticket_search_lookback_days:
         type: integer
@@ -5151,6 +5413,13 @@ schemas:
         type:
           - "null"
           - boolean
+      _ab_updated_at:
+        description:
+          Cursor field managed by Airbyte. The `generated_timestamp` of the parent ticket when its
+          metric events were read.
+        type:
+          - "null"
+          - integer
   ticket_events:
     $schema: https://json-schema.org/draft-07/schema#
     type:
@@ -5209,6 +5478,12 @@ schemas:
             - "null"
             - object
           additionalProperties: true
+      metadata:
+        description: Audit metadata from the Ticket Audits API (system information and custom metadata of the audit)
+        type:
+          - "null"
+          - object
+        additionalProperties: true
       event_type:
         description: The type of the ticket event
         type:

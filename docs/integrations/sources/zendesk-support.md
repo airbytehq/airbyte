@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 </HideInUI>
 
+:::warning Zendesk is retiring its Incremental Export APIs for integrations (notice dated 2026-11-03)
+Zendesk stops serving its [Incremental Export APIs](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/) to third-party integrations such as Airbyte between 2026-12-02 and 2027-01-19 ([announcement](https://support.zendesk.com/hc/en-us/articles/11275429993498)). Connector versions before 6.0.0 read `tickets`, `users`, `user_identities`, `organizations`, `articles`, `ticket_comments`, `ticket_events` and `ticket_metric_events` from those APIs and stop syncing these streams once Zendesk blocks the calls for your account. Zendesk identifies integrations by their OAuth application, so a connection that authenticates with an API token may be blocked later than one that uses OAuth, or not at all; upgrade either way, because Zendesk does not guarantee that access. Version 6.0.0 reads them from Zendesk's list endpoints instead. Upgrade before 2026-12-02 and read the [migration guide](zendesk-support-migrations.md#upgrading-to-600). A Zendesk administrator can request a one-time 60-day extension for Airbyte in Zendesk Admin Center under **Apps and integrations > APIs > API Configuration**.
+:::
+
 ## Prerequisites
 
 - A Zendesk account. An Administrator role is recommended for full access to all streams. Non-admin accounts can still sync, but streams that require admin permissions are automatically skipped.
@@ -108,7 +112,7 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4 and the minimum is 2. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
-9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
+9. (Optional) For **Page Size (ticket_comments)**, enter the number of audits per page when the `ticket_comments` stream reads a ticket's audits. The default is 100, which is also the most Zendesk returns per page; larger values are clamped to 100. Lower values may help prevent timeouts on tickets with many audits.
 10. (Optional) For **Tickets Search Lookback Window (days)**, enter the number of days the `tickets_search` stream re-scans on each sync. The default is 0. This setting only affects the opt-in `tickets_search` stream. See [Tickets stream: change tracking](#tickets-stream-change-tracking).
 11. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
@@ -161,22 +165,22 @@ The Zendesk Support source connector supports the following streams:
 - [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Client-Side Incremental\) \(Requires a plan that includes side conversations\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Client-Side Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-tickets) \(Incremental\)
 - [Tickets Search](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\) \(Opt-in\)
 - [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
 - [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Client-Side Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Audits per Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) \(Incremental\) \(Opt-in\)
-- [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
+- [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Client-Side Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Client-Side Incremental\) \(Enterprise only\)
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
-- [Ticket Events](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
+- [Ticket Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Client-Side Incremental\)
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Client-Side Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Client-Side Incremental\)
-- [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [Users](https://developer.zendesk.com/api-reference/ticketing/users/users/#list-users) \(Incremental\)
 - [User Identities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
 - [User Fields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 - [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
@@ -191,41 +195,53 @@ The Zendesk Support connector fetches deleted records in the following streams:
 | **Brands**               | `is_deleted`             |
 | **Deleted Tickets**      | All records are deleted  |
 | **Groups**               | `deleted`                |
-| **Organizations**        | `deleted_at`             |
 | **Ticket Metric Events** | `deleted`                |
 
 :::note
-Between versions 5.2.0 and 5.4.x, the `tickets` stream did not include deleted tickets. As of version 5.5.0 the `tickets` stream again includes deleted tickets (see below). The `deleted_tickets` stream remains available and should be paired with the opt-in `tickets_search` stream, which does not return deleted tickets.
+As of version 6.0.0, the `tickets` stream doesn't return deleted tickets, `users` doesn't return deleted users (`active: false`, including permanently deleted ones), and `organizations` doesn't return deleted organizations, because Zendesk's list endpoints leave them out. Use the `deleted_tickets` stream for deleted tickets. A ticket's metric events, including ones marked `deleted` and ones dated before `start_date`, are read when the ticket itself is created or updated, and all of them are emitted each time. An SLA `breach` event is recorded when the policy applies, with the moment the target will be breached as its `time`; if the target is met, the event comes back with `deleted: true` the next time the ticket changes. Versions 5.5.0 to 5.7.0 included deleted tickets in `tickets`; versions 5.2.0 to 5.4.x didn't.
 :::
 
 ### Tickets stream: change tracking
 
-The `tickets` stream uses Zendesk's [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint, which tracks changes by `generated_timestamp`. Zendesk bumps `generated_timestamp` on **every** ticket change, including automation-, macro-, and system-driven updates (e.g. auto-solve batches), so the stream reliably re-syncs every update.
+The `tickets` stream reads Zendesk's [List Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-tickets) endpoint sorted by `updated_at`, newest first, 100 tickets per request, and stops once it reaches tickets older than its cursor. Its cursor field is `updated_at`. Each sync re-reads a one-hour window before the cursor, so a ticket updated while the previous sync ran is picked up. The ticket list doesn't include archived or deleted tickets.
 
-:::warning
-Versions 5.2.0–5.4.x used the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint and tracked changes by `updated_at`. Because Zendesk only updates `updated_at` (and re-indexes the ticket for search) when a change generates a ticket event, automation/macro/system-driven updates were both silently dropped from incremental syncs **and** returned with stale field values (e.g. `status`) on historical reads, since `search/export` is served from Zendesk's [search index rather than the live record](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/). This was fixed in 5.5.0 by reverting the `tickets` stream to `generated_timestamp`. On upgrade, a one-time state migration automatically backfills records missed or left stale since 2026-03-01 — no manual reset is required. See the [migration guide](zendesk-support-migrations.md#upgrading-to-550).
+Zendesk bumps `updated_at` only for changes that generate a ticket event. An automation-, macro- or system-driven update that changes only `generated_timestamp` (for example an auto-solve batch) isn't picked up by incremental syncs, and neither are changes to archived tickets. `generated_timestamp` is still part of the record. The `ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` streams do reach archived tickets; see [Archived tickets in the per-ticket streams](#archived-tickets-in-the-per-ticket-streams).
+
+:::note
+Versions 5.5.0 to 5.7.0 read the Incremental Ticket Export with the `generated_timestamp` cursor, which caught system-driven updates and included deleted tickets. Zendesk is retiring that endpoint for integrations; see the notice at the top of this page and the [migration guide](zendesk-support-migrations.md#upgrading-to-600). On upgrade, the saved `generated_timestamp` cursor is converted to an `updated_at` cursor automatically; no reset is required.
 :::
 
-The former Export Search Results behavior is preserved as the **`tickets_search`** stream. It offers higher throughput (100 req/min vs the incremental endpoint's 10 req/min, plus 30-day time-range partitions that sync concurrently) and a configurable **Tickets Search Lookback Window (days)** setting, but it shares the 5.2.0–5.4.x limitations: it can miss automation/macro/system-driven updates in incremental mode and can return stale statuses on historical reads. Use `tickets_search` only when throughput matters more than completeness, and pair it with the `deleted_tickets` stream (Export Search excludes deleted tickets).
+The opt-in **`tickets_search`** stream reads the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint instead. It includes archived tickets, syncs 30-day time-range partitions concurrently, and has a configurable **Tickets Search Lookback Window (days)** setting. It is served from Zendesk's search index rather than the live ticket record, so it can return stale field values (for example `status`) for tickets whose latest change generated no ticket event, and like `tickets` it can't see updates that change only `generated_timestamp`. Export Search excludes deleted tickets, so pair it with the `deleted_tickets` stream.
 
 `tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
-### Ticket audits for archived tickets
+### Archived tickets in the per-ticket streams
+
+The `ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` streams read one ticket at a time, and the ticket list that drives them doesn't include archived tickets. To reach them, each of these streams makes a second pass over the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint with the query `status:closed` and `updated_at` between its cursor and the start of the sync, 100 tickets per request. Only closed tickets are archived, and a closed ticket can't change status, so that pass lists every archived ticket changed since the previous sync, together with every ticket that closed since then. The first sync lists every closed ticket updated since **Start Date**, so a new connection also backfills the comments, events, metric events and audits of tickets that were archived before it was created.
+
+The search index is updated a few minutes after a ticket changes, so this pass re-reads the hour before its cursor on every sync, and only the list of tickets comes from the index: the comments, events, metric events and audits themselves are read from the live ticket. Archiving a ticket doesn't change its `updated_at`, so a ticket isn't read again when it's archived, and a ticket that changes while the sync runs is picked up by the next sync. A ticket that closed since the previous sync (on the first sync, every closed ticket that isn't archived yet) is listed by both passes and can be read twice in the same sync; deduplicate on `id`. A ticket whose closing hasn't reached the index yet is listed on the next sync, within that hour. If the account can't search tickets, these four streams fail with an error that says so rather than silently skipping archived tickets. After upgrading from an earlier version, the first sync starts this pass one to two hours before the stream's saved cursor rather than at **Start Date**. The `tickets` stream, `side_conversations` and incremental syncs of `ticket_metrics` don't make this pass and don't reach archived tickets; `tickets_search` returns the archived ticket records themselves.
+
+### Ticket audits per ticket
 
 Zendesk [automatically archives](https://support.zendesk.com/hc/en-us/articles/4408887617050-About-ticket-archiving) tickets about 120 days after they close. The `ticket_audits` stream reads the [List All Ticket Audits](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-all-ticket-audits) endpoint, which Zendesk documents as excluding archived tickets. So `ticket_audits` returns no audits for archived tickets, including audits added after a ticket was archived, for example by a bulk update.
 
-The `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) for every ticket the `tickets` stream's incremental export returns, and that endpoint includes archived tickets. Its records have the same fields as `ticket_audits`, plus an `_ab_updated_at` cursor that holds the parent ticket's `generated_timestamp`.
+The `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) for every ticket the `tickets` stream returns and for every closed ticket the search pass lists (see [Archived tickets in the per-ticket streams](#archived-tickets-in-the-per-ticket-streams)). Its records have the same fields as `ticket_audits`, plus an `_ab_updated_at` cursor that holds the parent ticket's `generated_timestamp`.
+
+:::note
+Version 5.7.0 introduced this stream to recover audits of archived tickets, which the Incremental Ticket Export listed when they changed. As of version 6.0.0 the `tickets` stream reads the ticket list, which doesn't include archived tickets, so `ticket_audits_per_ticket` finds them with the search pass described above and still returns their audits, including audits added after a ticket was archived.
+:::
 
 `ticket_audits_per_ticket` isn't selected by default. To use it, select it on your connection's **Schema** tab. Before you do, consider its cost:
 
 - Each sync makes one request for every ticket created or updated since the previous sync, plus one more for every 100 audits on a ticket. A bulk update that touches 100,000 tickets costs 100,000 requests on the next sync.
-- The first sync reads every ticket updated since **Start Date** (or in the last two years if it's blank), one request each. To recover audits for archived tickets changed since a given date, set **Start Date** to that date before you select the stream.
+- The first sync reads every ticket updated since **Start Date** (or in the last two years if it's blank), archived tickets included, one request each.
+- Each sync also makes one search request per 100 closed tickets updated since the previous sync, under the search endpoint's limit of 100 requests per minute, which `tickets_search` shares.
 - These requests count against your Zendesk plan's account-wide rate limit, which the connector's other streams and your other Zendesk integrations share. The connector doesn't throttle this stream below that limit. It sends requests as fast as **Number of concurrent threads** allows, and when Zendesk responds with 429 (Too Many Requests) it waits for the time in the `Retry-After` header before retrying. On a plan that allows 200 requests per minute, 100,000 tickets take at least 8 hours, and other integrations on the account can be rate limited while the stream syncs.
-- The stream reads its parent tickets with a separate pass over the incremental ticket export, which shares the 10 requests per minute limit with the `tickets` stream.
+- The stream reads its parent tickets with a separate pass over the ticket list. The connector's limit of 100 ticket-list requests per minute is shared by the `tickets` stream and every per-ticket stream in the sync, so each selected per-ticket stream adds a full walk to that budget.
 - Whenever a ticket changes, the stream emits all of that ticket's audits again. Use **Incremental | Append + Deduped** to keep one row per audit `id`.
 
 :::warning
-If your connection's schema change setting is **Propagate all field and stream changes**, the connection starts syncing `ticket_audits_per_ticket` automatically after you upgrade to version 5.7.0, with the costs above. If you don't need audits for archived tickets, deselect `ticket_audits_per_ticket` on the connection's **Schema** tab.
+If your connection's schema change setting is **Propagate all field and stream changes**, the connection starts syncing `ticket_audits_per_ticket` automatically after you upgrade to version 5.7.0 or later, with the costs above. If you don't need it, deselect `ticket_audits_per_ticket` on the connection's **Schema** tab.
 :::
 
 `ticket_audits` is unchanged, so you can keep using it, switch to `ticket_audits_per_ticket`, or sync both. Both streams share audit `id` values, so you can combine them downstream.
@@ -252,9 +268,13 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 
 The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The minimum is 2 and the maximum is 40. A single thread leaves no other stream emitting while the `tickets` stream reads, so a saved value of 1 is treated as 2 from the first sync after upgrading to 5.6.0, and the stored configuration is updated to match. If the source settings form flags the field before that first sync, set it to 2 or more.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits. The opt-in `ticket_audits_per_ticket` stream makes one request per ticket against your plan's account-wide limit, which your other Zendesk integrations share, and the API budget doesn't throttle it. See [Ticket audits for archived tickets](#ticket-audits-for-archived-tickets).
+The connector limits requests to the [List Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-tickets) endpoint to 100 per minute, 100 tickets per request. The `tickets` stream and each selected per-ticket stream (`ticket_comments`, `ticket_events`, `ticket_metric_events`, `ticket_metrics`, `side_conversations`, `ticket_audits_per_ticket`) walks the list separately within that shared budget. The opt-in `tickets_search` stream and the search pass of the `ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` streams use the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute that they share. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
-If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
+The `ticket_comments`, `ticket_events`, `ticket_metric_events`, `ticket_metrics`, `side_conversations` and `ticket_audits_per_ticket` streams make one request per ticket created or updated since the previous sync (archived tickets included, except for `ticket_metrics` and `side_conversations`), against your plan's account-wide limit, which your other Zendesk integrations share. The API budget doesn't throttle these requests. See [Ticket audits per ticket](#ticket-audits-per-ticket) for an estimate of what that costs on large accounts. A changed ticket re-emits all of its metric events, all of its audits in `ticket_audits_per_ticket` and `ticket_events`, all of its comments in `ticket_comments`, and all of its side conversations in `side_conversations`; `user_identities` re-emits the identities of every user its walk reads, including the users on the last page it reads. Sync these streams with a deduplicated sync mode. A ticket whose per-ticket request Zendesk refuses with a 403 is skipped with a warning and is read again only when the ticket changes next.
+
+The `tickets`, `users`, `user_identities`, `organizations` and `articles` streams, and the per-ticket streams that follow `tickets`, save no state until their read completes, because the lists are walked newest first. A sync that fails part-way through one of these streams restarts that stream from the previous state on the next attempt.
+
+If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying.
 
 The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -271,7 +291,7 @@ Side conversations are included in Zendesk Suite Professional and above, and are
 Zendesk grants access to side conversations per ticket, so this stream can read some tickets and be refused on others. As of version 5.5.2, the connector logs a message for the ticket, skips it, and keeps syncing the rest of the stream when Zendesk returns:
 
 - `403`, when Zendesk denies access to that ticket's side conversations.
-- `404`, when the ticket no longer exists. The `tickets` stream returns deleted tickets, so this is expected.
+- `404`, when the ticket no longer exists, for example because it was deleted after the `tickets` stream listed it.
 - `422`, when the ticket type doesn't support side conversations.
 
 If your account doesn't have side conversations at all, Zendesk refuses every ticket this way, so the stream ends up empty rather than failing.
@@ -280,7 +300,7 @@ Versions before 5.5.2 failed the whole sync on a `403` or `404` (the `422` case 
 
 #### Search index delay in the `tickets_search` stream
 
-The opt-in `tickets_search` stream reads from Zendesk's search index, which can take a few minutes to reflect newly created or updated tickets. Tickets indexed after a sync's cursor has moved past their `updated_at` value aren't picked up on the next sync. Set **Tickets Search Lookback Window (days)** to at least 1 to re-scan a trailing window on every sync. The lookback window doesn't recover automation-, macro-, or system-driven updates, because those never change `updated_at`. The default `tickets` stream isn't affected: it reads the live ticket record instead of the search index.
+The opt-in `tickets_search` stream reads from Zendesk's search index, which can take a few minutes to reflect newly created or updated tickets. Tickets indexed after a sync's cursor has moved past their `updated_at` value aren't picked up on the next sync. Set **Tickets Search Lookback Window (days)** to at least 1 to re-scan a trailing window on every sync. The lookback window doesn't recover automation-, macro-, or system-driven updates, because those never change `updated_at`. The default `tickets` stream isn't affected: it reads the live ticket record instead of the search index. The search pass of the per-ticket streams (see [Archived tickets in the per-ticket streams](#archived-tickets-in-the-per-ticket-streams)) re-reads the hour before its cursor on every sync, so a closed ticket indexed late is picked up as long as the index catches up within an hour.
 
 ### Troubleshooting
 
@@ -309,6 +329,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-11-03 | [90865](https://github.com/airbytehq/airbyte/pull/90865) | Stop using Zendesk's Incremental Export APIs, which Zendesk stops serving to integrations from 2026-12-02. `tickets`, `users`, `user_identities`, `organizations` and `articles` read the list endpoints; `ticket_comments`, `ticket_events` and `ticket_metric_events` are read ticket by ticket. The `tickets` cursor is now `updated_at` and the `ticket_metric_events` cursor is now `_ab_updated_at` (state migrated automatically). Deleted tickets, users and organizations are no longer replicated; `tickets`, `side_conversations` and incremental `ticket_metrics` no longer reach archived tickets, while `ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` find them through Export Search Results. `ticket_events` records take the Ticket Audits API shape. See the migration guide |
 | 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
