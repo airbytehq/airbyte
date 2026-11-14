@@ -6,19 +6,15 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from freezegun import freeze_time
+from jsonschema import Draft7Validator
 from requests_mock import ANY, Mocker
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
-
-
-try:
-    from jsonschema import Draft7Validator
-except ImportError:
-    Draft7Validator = None
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -56,6 +52,31 @@ def _records(output: EntrypointOutput) -> list:
     return [message.record.data for message in output.records]
 
 
+def _undeclared_paths(record: object, schema: dict, path: str = "") -> list[str]:
+    if isinstance(record, dict):
+        properties = schema.get("properties", {})
+        undeclared = []
+        for key, value in record.items():
+            field_path = f"{path}.{key}" if path else key
+            if key not in properties:
+                undeclared.append(field_path)
+            else:
+                undeclared.extend(_undeclared_paths(value, properties[key], field_path))
+        return undeclared
+
+    if isinstance(record, list):
+        item_schema = schema.get("items")
+        if item_schema is None:
+            return [path]
+        return [
+            undeclared_path
+            for index, item in enumerate(record)
+            for undeclared_path in _undeclared_paths(item, item_schema, f"{path}[{index}]")
+        ]
+
+    return []
+
+
 def _page(rows: list[dict], has_more: bool = False) -> dict:
     ids = [row["id"] for row in rows]
     return {"object": "list", "data": rows, "first_id": ids[0] if ids else None, "last_id": ids[-1] if ids else None, "has_more": has_more}
@@ -82,6 +103,97 @@ def _mock_empty_insights(requests_mock: Mocker) -> None:
 def _insights_query(requests_mock: Mocker) -> dict:
     [request] = [r for r in requests_mock.request_history if r.path == "/v1/ad_account/insights"]
     return parse_qs(urlsplit(request.url).query)
+
+
+@pytest.mark.parametrize(
+    ("config", "expected_workers"),
+    [
+        pytest.param({"num_workers": 1}, 2, id="one_worker_runs_two"),
+        pytest.param({}, 3, id="default"),
+    ],
+)
+def test_read_runs_with_at_least_two_workers(
+    requests_mock: Mocker, monkeypatch: pytest.MonkeyPatch, config: dict, expected_workers: int
+) -> None:
+    _mock_campaign_ad_group_ad(requests_mock)
+    worker_counts = []
+    original_create = ConcurrentSource.create
+
+    def create_spy(num_workers: int, *args, **kwargs):
+        worker_counts.append(num_workers)
+        return original_create(num_workers, *args, **kwargs)
+
+    monkeypatch.setattr(ConcurrentSource, "create", staticmethod(create_spy))
+
+    output = _read("ads", config={**_CONFIG, **config})
+
+    assert output.errors == []
+    assert _records(output) == [{"id": "ad_1", "ad_group_id": "adgrp_1"}]
+    request_paths = {urlsplit(request.url).path for request in requests_mock.request_history}
+    assert {"/v1/campaigns", "/v1/ad_groups", "/v1/ads"} <= request_paths
+    assert worker_counts and all(count == expected_workers for count in worker_counts)
+
+
+@pytest.mark.parametrize(
+    "stream",
+    [
+        pytest.param("ad_account", id="ad_account"),
+        pytest.param("ad_groups", id="ad_groups"),
+        pytest.param("ads", id="ads"),
+        pytest.param("campaigns", id="campaigns"),
+    ],
+)
+def test_read_keeps_and_discover_declares_the_added_fields(requests_mock: Mocker, stream: str) -> None:
+    added_fields = {
+        "ad_account": {
+            "creative_optimization_opt_in": True,
+            "geographic_serving_country_code": "US",
+            "geographic_serving_scope": "country",
+            "review": {"reason": "approved", "screenshot_url": "https://example.com/account-review.png"},
+            "account_integrity_review": {"review": {"reason": "verified", "screenshot_url": "https://example.com/integrity-review.png"}},
+        },
+        "ad_groups": {"hide_product_prices": False},
+        "ads": {"review": {"reason": "approved", "screenshot_url": "https://example.com/ad-review.png"}},
+        "campaigns": {"conversion_event_settings_automatically_attached": True},
+    }
+    record_ids = {"ad_account": "act_1", "ad_groups": "adgrp_1", "ads": "ad_1", "campaigns": "cmpn_1"}
+    record = {"id": record_ids[stream], **added_fields[stream]}
+
+    if stream == "ad_account":
+        requests_mock.get(f"{_URL}/ad_account", json=record)
+    elif stream == "ad_groups":
+        _mock_page(requests_mock, "/campaigns?limit=500", "cmpn_1")
+        requests_mock.get(
+            f"{_URL}/ad_groups?limit=500&campaign_id=cmpn_1",
+            complete_qs=True,
+            json=_page([record]),
+        )
+    elif stream == "ads":
+        _mock_page(requests_mock, "/campaigns?limit=500", "cmpn_1")
+        _mock_page(requests_mock, "/ad_groups?limit=500&campaign_id=cmpn_1", "adgrp_1")
+        requests_mock.get(
+            f"{_URL}/ads?limit=500&ad_group_id=adgrp_1",
+            complete_qs=True,
+            json=_page([record]),
+        )
+    else:
+        requests_mock.get(f"{_URL}/campaigns?limit=500", complete_qs=True, json=_page([record]))
+
+    output = _read(stream)
+
+    assert output.errors == []
+    [emitted_record] = _records(output)
+    expected_record = dict(record)
+    if stream == "ad_groups":
+        expected_record["campaign_id"] = "cmpn_1"
+    elif stream == "ads":
+        expected_record["ad_group_id"] = "adgrp_1"
+    assert emitted_record == expected_record
+
+    streams = {item.name: item for item in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
+    schema = streams[stream].json_schema
+    assert _undeclared_paths(emitted_record, schema) == []
+    assert list(Draft7Validator(schema).iter_errors(emitted_record)) == []
 
 
 def test_discover_publishes_keys_schemas_and_cursors() -> None:

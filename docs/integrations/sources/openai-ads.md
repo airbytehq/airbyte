@@ -33,7 +33,7 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
 7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
 8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. The default of 32 covers OpenAI's 30-day click attribution window plus 2 days, because OpenAI needs at least one day to process conversions. See [Lookback window](#lookback-window).
-9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. The default is 3.
+9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. Values below 2 run with 2 workers. The default is 3.
 10. Click **Set up source**.
 
 #### For Airbyte Open Source
@@ -98,10 +98,6 @@ The conversions streams come from the [conversions insights](https://developers.
 
 OpenAI credits a conversion to the ad click or view that led to it for as long as the report's attribution window, so the conversions of a past day keep changing after that day. The connector doesn't set attribution parameters on its requests, so OpenAI applies its [defaults](https://developers.openai.com/ads/reporting#understand-attribution): a 30-day click window and a 1-day view window. OpenAI also needs at least one day to process conversions, and spend can be finalized later than impressions and clicks (see [Data Freshness & Retention](https://developers.openai.com/ads/reporting#data-freshness--retention)). On every sync, incremental report streams re-read the data inside the lookback window and update those rows. The default of 32 days covers the 30-day click window plus 2 days of processing. Use the **Incremental | Append + Deduped** sync mode so the updated rows replace the earlier ones. Lower the window only if you sync delivery metrics without conversions and want fewer requests.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Performance considerations
 
 The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff, or after the wait in the `Retry-After` header when the API sends one.
@@ -110,6 +106,10 @@ Insights are requested in 14 day slices with up to 2,000 rows per page and curso
 
 Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as `campaign_budget_daily`) are in the account currency. Fields ending in `_micros` on the entity and spend limit streams are in micros (1,000,000 micros equal one unit of currency). An `ad_account_budget_lifetime` of 1,000,000,000 means no lifetime limit is set.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -117,15 +117,16 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, enable acceptance tests |
 | 0.1.9 | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies |
 | 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
-| 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare the documented `custom_audiences` and `ad_account` name fields, and type nested landing page, bid multiplier, product set filter, and conversion event campaign fields |
-| 0.1.5 | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled, report rate limiting, honor `Retry-After`, and correct the `spend_limit_windows` 403 message |
-| 0.1.4 | 2026-10-21 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12 so requests never end in the future, and raise the default lookback window to 32 days |
+| 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare missing documented schema fields |
+| 0.1.5 | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled |
+| 0.1.4 | 2026-10-21 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12 |
 | 0.1.3 | 2026-10-20 | [89337](https://github.com/airbytehq/airbyte/pull/89337) | Update dependencies |
 | 0.1.2 | 2026-10-13 | [88750](https://github.com/airbytehq/airbyte/pull/88750) | Update dependencies |
-| 0.1.1 | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests and fix README symlink, test config end date, and release date |
+| 0.1.1 | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests |
 | 0.1.0 | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
 
 </details>

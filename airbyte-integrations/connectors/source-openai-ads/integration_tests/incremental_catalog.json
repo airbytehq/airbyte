@@ -1,0 +1,992 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ad_account_insights",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_account_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_account_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["campaign_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_insights",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "ad_group_id": {
+              "type": ["string", "null"]
+            },
+            "ad_group_name": {
+              "type": ["string", "null"]
+            },
+            "ad_group_description": {
+              "type": ["string", "null"]
+            },
+            "ad_group_status": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_group_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_group_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "ad_insights",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "ad_group_id": {
+              "type": ["string", "null"]
+            },
+            "ad_group_name": {
+              "type": ["string", "null"]
+            },
+            "ad_group_description": {
+              "type": ["string", "null"]
+            },
+            "ad_group_status": {
+              "type": ["string", "null"]
+            },
+            "ad_id": {
+              "type": ["string", "null"]
+            },
+            "ad_name": {
+              "type": ["string", "null"]
+            },
+            "ad_title": {
+              "type": ["string", "null"]
+            },
+            "ad_copy": {
+              "type": ["string", "null"]
+            },
+            "ad_link": {
+              "type": ["string", "null"]
+            },
+            "ad_status": {
+              "type": ["string", "null"]
+            },
+            "ad_review_status": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_country",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "country_name": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["country_name"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["country_name"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_device",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "device_type": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["device_type"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["device_type"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_platform",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "platform": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["platform"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["platform"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_product",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "readable_time"],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": ["integer", "null"]
+            },
+            "end_time": {
+              "type": ["integer", "null"]
+            },
+            "readable_time": {
+              "type": "string",
+              "format": "date"
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "ad_account_id": {
+              "type": ["string", "null"]
+            },
+            "ad_account_name": {
+              "type": ["string", "null"]
+            },
+            "ad_account_url": {
+              "type": ["string", "null"]
+            },
+            "ad_account_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "ad_account_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_name": {
+              "type": ["string", "null"]
+            },
+            "campaign_description": {
+              "type": ["string", "null"]
+            },
+            "campaign_status": {
+              "type": ["string", "null"]
+            },
+            "campaign_start_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_end_time": {
+              "type": ["string", "null"]
+            },
+            "campaign_budget_daily": {
+              "type": ["number", "null"]
+            },
+            "campaign_budget_lifetime": {
+              "type": ["number", "null"]
+            },
+            "product_feed_id": {
+              "type": ["string", "null"]
+            },
+            "item_id": {
+              "type": ["string", "null"]
+            },
+            "product_title": {
+              "type": ["string", "null"]
+            },
+            "product_description": {
+              "type": ["string", "null"]
+            },
+            "product_body": {
+              "type": ["string", "null"]
+            },
+            "product_brand": {
+              "type": ["string", "null"]
+            },
+            "product_seller_name": {
+              "type": ["string", "null"]
+            },
+            "product_price": {
+              "type": ["string", "null"]
+            },
+            "product_availability": {
+              "type": ["string", "null"]
+            },
+            "product_target_url": {
+              "type": ["string", "null"]
+            },
+            "product_image_url": {
+              "type": ["string", "null"]
+            },
+            "impressions": {
+              "type": ["integer", "null"]
+            },
+            "clicks": {
+              "type": ["integer", "null"]
+            },
+            "spend": {
+              "type": ["number", "null"]
+            },
+            "ctr": {
+              "type": ["number", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "cpm": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["product_feed_id"],
+          ["item_id"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [
+        ["campaign_id"],
+        ["product_feed_id"],
+        ["item_id"],
+        ["readable_time"]
+      ],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_conversions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["entity_id", "date"],
+          "properties": {
+            "entity_id": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "conversions": {
+              "type": ["integer", "null"]
+            },
+            "click_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "view_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "order_created_attributed_sales": {
+              "type": ["string", "null"]
+            },
+            "order_created_attributed_sales_currency": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_conversions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["entity_id", "date"],
+          "properties": {
+            "entity_id": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "conversions": {
+              "type": ["integer", "null"]
+            },
+            "click_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "view_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "order_created_attributed_sales": {
+              "type": ["string", "null"]
+            },
+            "order_created_attributed_sales_currency": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "ad_conversions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["entity_id", "date"],
+          "properties": {
+            "entity_id": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "conversions": {
+              "type": ["integer", "null"]
+            },
+            "click_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "view_through_conversions": {
+              "type": ["integer", "null"]
+            },
+            "order_created_attributed_sales": {
+              "type": ["string", "null"]
+            },
+            "order_created_attributed_sales_currency": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    }
+  ]
+}
