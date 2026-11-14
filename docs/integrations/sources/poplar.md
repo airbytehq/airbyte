@@ -1,21 +1,54 @@
 # Poplar
-Website: https://app.heypoplar.com/
-Documentation: https://docs.heypoplar.com/api
 
-## Configuration
+This page contains the setup guide and reference information for the [Poplar](https://www.heypoplar.com/) source connector. Poplar is a direct mail platform. This connector syncs your campaigns, creatives, audiences, mailings, and account information from the [Poplar API](https://docs.heypoplar.com/api).
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `access_token` | `string` | Access Token. Your Poplar API Access Token. Generate it from the [API Credentials page](https://app.heypoplar.com/credentials) in your account. Use a production token for live data or a test token for testing purposes. |  |
+## Prerequisites
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| campaigns | id | No pagination | ✅ |  ❌  |
-| creatives |  | No pagination | ✅ |  ❌  |
-| audiences | id | No pagination | ✅ |  ❌  |
-| me | id | No pagination | ✅ |  ❌  |
-| mailings | id | No pagination | ✅ |  ❌  |
+- A Poplar account
+- A Poplar **production** access token
+
+### Get an access token
+
+1. Sign in to Poplar and go to the [API credentials page](https://app.heypoplar.com/credentials).
+2. Create or copy a production access token.
+
+Poplar also offers test access tokens, identified by a `test` prefix. According to the [Poplar API documentation](https://docs.heypoplar.com/api/api/master), test tokens only work with the mailings endpoint. This connector reads campaigns before it reads mailings and creatives, and it uses the campaigns endpoint to check the connection, so use a production token.
+
+Treat the access token like a password. If it's compromised, revoke it from the API credentials page.
+
+## Setup guide
+
+1. In Airbyte, create a new source and select **Poplar**.
+2. For **Access Token**, enter your Poplar production access token.
+3. For **Start date**, enter the earliest mailing creation date to sync, in the format `YYYY-MM-DDTHH:MM:SSZ`. This date only applies to the `mailings` stream.
+4. Select **Set up source**.
+
+## Supported sync modes
+
+| Stream | Full Refresh | Incremental |
+|--------|--------------|-------------|
+| `campaigns` | Yes | No |
+| `creatives` | Yes | No |
+| `audiences` | Yes | No |
+| `mailings` | Yes | Yes |
+| `me` | Yes | No |
+
+## Supported streams
+
+| Stream | Endpoint | Primary key | Notes |
+|--------|----------|-------------|-------|
+| `campaigns` | `GET /v1/campaigns` | `id` | All campaigns in your account. |
+| `creatives` | `GET /v1/campaign/{id}/creatives` | None | Creatives for each campaign. This stream has no primary key, so it doesn't support deduplication. |
+| `audiences` | `GET /v1/audiences` | `id` | All audiences in your account. |
+| `mailings` | `GET /v1/campaign/{id}/mailings` | `id` | Mailings for each campaign, filtered by `created_at` between the start date and the current time. Supports incremental sync using the `created_at` cursor. Fetched 100 records per page. |
+| `me` | `GET /v1/me` | `id` | Information about the account that owns the access token. |
+
+The `creatives` and `mailings` streams are child streams of `campaigns`. The connector reads every campaign first, then requests creatives and mailings for each campaign ID.
+
+## Limitations and troubleshooting
+
+- **Permission errors**: If Poplar returns HTTP 403 Forbidden for the `campaigns`, `audiences`, `mailings`, or `me` streams, the connector skips that request instead of failing the sync, so the stream may sync zero records. If a stream is unexpectedly empty, confirm that you're using a production token with access to that data. An HTTP 403 response on the `creatives` stream fails the sync.
+- **Rate limits**: When Poplar rate-limits a request, the connector waits until the time in the `ratelimit-reset` response header, falling back to exponential backoff, and retries up to 10 times before failing.
 
 ## IP allow list
 
@@ -28,7 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.59 | 2026-11-11 | [90404](https://github.com/airbytehq/airbyte/pull/90404) | Simplify stream error handler configuration (no behavior change) |
+| 0.0.59 | 2026-11-12 | [90404](https://github.com/airbytehq/airbyte/pull/90404) | Simplify stream error handler configuration (no behavior change) |
 | 0.0.58 | 2026-11-10 | [91674](https://github.com/airbytehq/airbyte/pull/91674) | Update dependencies |
 | 0.0.57 | 2026-11-03 | [90681](https://github.com/airbytehq/airbyte/pull/90681) | Update dependencies |
 | 0.0.56 | 2026-10-27 | [90034](https://github.com/airbytehq/airbyte/pull/90034) | Update dependencies |
