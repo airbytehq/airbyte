@@ -39,9 +39,9 @@ class MongoDbNullFieldDiscoveryTest {
         MongoClients.create(replicaSet.connectionString).use { client ->
             repeat(ATTEMPTS) { attempt ->
                 val byName: Map<String, MongoDbFieldType> =
-                    MongoDbSourceMetadataQuerier(config, client)
-                        .fields(streamId)
-                        .associate { it.id to it.type as MongoDbFieldType }
+                    MongoDbSourceMetadataQuerier(config, client).fields(streamId).associate {
+                        it.id to it.type as MongoDbFieldType
+                    }
                 Assertions.assertEquals(
                     MongoDbFieldType.STRING,
                     byName["f"],
