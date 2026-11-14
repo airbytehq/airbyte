@@ -67,8 +67,8 @@ class TestCampaigns(TestCase):
         assert output.records[0].record.data["id"] == CAMPAIGN_ID
 
     @HttpMocker()
-    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
+    def test_read_records_with_error_403_is_skipped(self, http_mocker: HttpMocker) -> None:
+        """A 403 means the user cannot read this partition: it is logged and skipped instead of failing the sync."""
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint().build(),
             oauth_response(),
@@ -81,26 +81,19 @@ class TestCampaigns(TestCase):
             RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
             adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
         )
-        # First request returns 403, then succeeds on retry
+        # The authenticated user cannot read this partition
         http_mocker.get(
             RequestBuilder.campaigns_endpoint(AD_ACCOUNT_ID).build(),
-            [
-                error_response(HTTPStatus.FORBIDDEN),
-                campaigns_response(campaign_id=CAMPAIGN_ID, ad_account_id=AD_ACCOUNT_ID),
-            ],
+            error_response(HTTPStatus.FORBIDDEN),
         )
 
         output = _read(config_builder=config())
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == CAMPAIGN_ID
 
-        # Verify custom error message from manifest is logged
-        log_messages = [log.log.message for log in output.logs]
-        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert not output.records
+        assert not output.errors
         assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
+            "403 Forbidden" in log.log.message and "request_id" in log.log.message for log in output.logs
+        ), "Expected the skipped 403 request to be logged"
 
     @HttpMocker()
     def test_read_records_when_ad_account_updated_before_start_date(self, http_mocker: HttpMocker) -> None:
@@ -170,6 +163,41 @@ class TestCampaignsSubstreamMultipleParents(TestCase):
         record_ids = [r.record.data.get("id") for r in output.records]
         assert "campaign_from_adaccount_1" in record_ids
         assert "campaign_from_adaccount_2" in record_ids
+
+    @HttpMocker()
+    def test_ad_account_returning_403_does_not_fail_the_other_ad_accounts(self, http_mocker: HttpMocker) -> None:
+        """An organization can list ad accounts the authenticated user has no role in; Snapchat answers 403 for those."""
+        readable_ad_account = "adaccount_001"
+        forbidden_ad_account = "adaccount_002"
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response_multiple([readable_ad_account, forbidden_ad_account]),
+        )
+        http_mocker.get(
+            RequestBuilder.campaigns_endpoint(readable_ad_account).build(),
+            campaigns_response(campaign_id=CAMPAIGN_ID, ad_account_id=readable_ad_account),
+        )
+        http_mocker.get(
+            RequestBuilder.campaigns_endpoint(forbidden_ad_account).build(),
+            error_response(HTTPStatus.FORBIDDEN),
+        )
+
+        output = _read(config_builder=config())
+
+        assert [record.record.data["id"] for record in output.records] == [CAMPAIGN_ID]
+        assert not output.errors
+        assert any(
+            "Skipping one campaigns request that Snapchat answered with 403 Forbidden" in log.log.message for log in output.logs
+        ), "Expected the skipped 403 request to be logged with its stream name"
 
 
 class TestCampaignsIncremental(TestCase):

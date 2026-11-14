@@ -40,20 +40,43 @@ def test_all_error_handlers_are_default_error_handlers():
     assert all(handler["type"] == "DefaultErrorHandler" for handler in error_handlers)
 
 
-@pytest.mark.parametrize("stream_name", ["organizations", "adaccounts"])
-def test_organizations_and_adaccounts_keep_error_response_filters(stream_name):
-    manifest = _load_manifest()
-    error_handler = manifest["definitions"]["streams"][stream_name]["retriever"]["requester"]["error_handler"]
+def _response_filters(manifest, stream_name):
+    return manifest["definitions"]["streams"][stream_name]["retriever"]["requester"]["error_handler"]["response_filters"]
 
-    response_filters = error_handler["response_filters"]
+
+@pytest.mark.parametrize(
+    ("stream_name", "expected_403_action"),
+    [("organizations", "FAIL"), ("adaccounts", "IGNORE")],
+)
+def test_organizations_and_adaccounts_keep_error_response_filters(stream_name, expected_403_action):
+    manifest = _load_manifest()
+
+    response_filters = _response_filters(manifest, stream_name)
 
     assert len(response_filters) == 2
     assert {
         "action": response_filters[0]["action"],
         "http_codes": response_filters[0]["http_codes"],
-    } == {"action": "RETRY", "http_codes": [403]}
+    } == {"action": expected_403_action, "http_codes": [403]}
     assert {
         "action": response_filters[1]["action"],
         "failure_type": response_filters[1]["failure_type"],
         "http_codes": response_filters[1]["http_codes"],
     } == {"action": "FAIL", "failure_type": "config_error", "http_codes": [404]}
+
+
+def test_403_is_skipped_on_every_stream_below_organizations():
+    manifest = _load_manifest()
+
+    actions_by_stream = {
+        stream_name: [
+            response_filter["action"]
+            for response_filter in _response_filters(manifest, stream_name)
+            if response_filter.get("http_codes") == [403]
+        ]
+        for stream_name in manifest["definitions"]["streams"]
+        if stream_name != "organizations"
+    }
+
+    assert actions_by_stream
+    assert {stream_name: actions for stream_name, actions in actions_by_stream.items() if actions != ["IGNORE"]} == {}
