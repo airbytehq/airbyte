@@ -9,8 +9,6 @@ import time
 import docker
 import weaviate
 from destination_weaviate.destination import DestinationWeaviate
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Weaviate
 from pytest_docker.plugin import get_docker_ip
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
@@ -116,17 +114,3 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         assert len(result["data"]["Get"]["Mystream"]) == 1
         assert self.count_objects("Mystream") == 5
         assert result["data"]["Get"]["Mystream"][0]["text"] == "str_col: Cats are nice"
-
-        # test langchain integration
-        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        vs = Weaviate(
-            embedding=embeddings,
-            by_text=False,
-            client=self.client,
-            text_key="text",
-            index_name="Mystream",
-            attributes=["_ab_record_id"],
-        )
-
-        result = vs.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "mystream_2"

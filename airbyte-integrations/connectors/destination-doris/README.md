@@ -1,0 +1,1 @@
+../_shared/README-java-destinations.md

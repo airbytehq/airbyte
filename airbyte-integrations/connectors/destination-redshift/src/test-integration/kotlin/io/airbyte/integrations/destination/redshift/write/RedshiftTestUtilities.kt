@@ -32,7 +32,7 @@ const val CONFIG_PATH = "secrets/test_cluster.json"
 /**
  * Maps expected records to match Redshift's actual storage behavior:
  * - Normalizes timestamptz and timetz values to UTC, since Redshift stores all timezone-aware
- * temporal types internally as UTC and the JDBC driver returns them in UTC.
+ *   temporal types internally as UTC and the JDBC driver returns them in UTC.
  */
 object RedshiftExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
@@ -72,14 +72,15 @@ object RedshiftDataCleaner : DestinationCleaner {
             val schemas =
                 statement.executeQuery(
                     """
-                    SELECT schema_name
-                    FROM information_schema.schemata
-                    WHERE schema_name LIKE 'test%'
-                    """.trimIndent(),
+                    SELECT nspname AS schema_name
+                    FROM pg_namespace
+                    WHERE nspname LIKE '%test%'
+                    """
+                        .trimIndent(),
                 )
             while (schemas.next()) {
                 val schemaName = schemas.getString("schema_name")
-                if (IntegrationTest.isNamespaceOld(schemaName)) {
+                if (IntegrationTest.isNamespaceOld(schemaName, retentionDays = 2)) {
                     schemasToDrop.add(schemaName)
                 }
             }

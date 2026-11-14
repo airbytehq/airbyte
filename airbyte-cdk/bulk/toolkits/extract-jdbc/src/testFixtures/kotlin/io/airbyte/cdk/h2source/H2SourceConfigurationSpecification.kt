@@ -77,7 +77,7 @@ class H2SourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
         "Optional filters to include only specific tables from specific schemas. " +
-            "Works in combination with the 'Schemas' config above."
+            "Works in combination with the 'Schemas' config above.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"group":"optional"}""")
     var tableFilters: List<TableFilter>? = emptyList()

@@ -55,11 +55,22 @@ streams:
               value:
                 app_id: "{{ config['app_id'] }}"
                 app_secret: "{{ config['app_secret'] }}"
+            error_handler:
+              type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  failure_type: config_error
+                  predicate: "{{ response.get('code', 0) != 0 }}"
+                  error_message: >-
+                    Feishu/Lark authentication failed (code {{ response.get('code') }}:
+                    {{ response.get('msg') }}). Check the App Id, App Secret and Lark
+                    Host.
           session_token_path:
             - tenant_access_token
           request_authentication:
             type: Bearer
-          expiration_duration: "7200"
+          expiration_duration: PT30M
         request_parameters:
           page_size: "{{ config['page_size'] }}"
       record_selector:

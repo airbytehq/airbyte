@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.http.Retriever
 /** An ObjectProvider that required performing HTTP requests in order know discover the objects. */
 class DynamicDestinationObjectProvider(
     private val retriever: Retriever,
-    private val namePath: List<String>
+    private val namePath: List<String>,
 ) : DestinationObjectProvider {
     override fun get(): List<DestinationObject> {
         return retriever.getAll().map { DestinationObject(it.extract(namePath).asText(), it) }

@@ -5,14 +5,38 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.StateManager
+import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
 import io.mockk.mockk
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,7 +56,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
                 selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
                 config = mockk<PostgresSourceConfiguration>(),
                 handler = mockk<CatalogValidationFailureHandler>(),
-                connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+                connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(),
             )
     }
 
@@ -262,7 +286,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             assertEquals(
                 bounds[i].second,
                 bounds[i + 1].first,
-                "Partition $i upper bound should match partition ${i + 1} lower bound"
+                "Partition $i upper bound should match partition ${i + 1} lower bound",
             )
         }
 
@@ -320,5 +344,171 @@ class PostgresSourceJdbcPartitionFactoryTest {
         // Last partition gets the remainder
         assertEquals(Ctid(18, 1), bounds[3].first)
         assertNull(bounds[3].second)
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // create() in CDC mode with an incoming stream state of `{}` (airbytehq/airbyte#80939).
+    //
+    // The CDK StateManager emits `{}` as the stream state of a stream that has not checkpointed
+    // yet (StateManager.kt: `.withStreamState(it.opaqueStateValue ?: Jsons.objectNode())`). If a
+    // CDC initial snapshot is interrupted before its first ctid checkpoint, the next attempt
+    // receives `{}` for the stream.
+    // ---------------------------------------------------------------------------------------
+
+    private val idField = EmittedField("id", IntFieldType)
+
+    private val cdcIncrementalStream =
+        Stream(
+            id =
+                StreamIdentifier.from(StreamDescriptor().withNamespace("public").withName("users")),
+            schema = setOf(idField),
+            configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+            configuredPrimaryKey = listOf(idField),
+            configuredCursor = null,
+        )
+
+    private val cdcConfig =
+        PostgresSourceConfiguration(
+            realHost = "localhost",
+            realPort = 5432,
+            sshTunnel = null,
+            sshConnectionOptions =
+                SshConnectionOptions(1.seconds, 2.seconds, kotlin.time.Duration.ZERO),
+            jdbcUrlFmt = "jdbc:postgresql://%s:%d/",
+            jdbcProperties = mapOf(),
+            database = "db",
+            namespaces = setOf("public"),
+            incrementalConfiguration =
+                CdcIncrementalConfiguration(
+                    initialLoadTimeout = Duration.ofHours(8),
+                    shutdownTimeout = Duration.ofSeconds(10),
+                    replicationSlot = "airbyte_slot",
+                    publication = "airbyte_publication",
+                    debeziumCommitsLsn = true,
+                    heartbeatActionQuery = null,
+                    airbyteHeartbeatTimeout = Duration.ofMinutes(5),
+                ),
+            maxConcurrency = 1,
+            checkpointTargetInterval = Duration.ofMinutes(5),
+            checkPrivileges = false,
+        )
+
+    private val knownFilenode: Filenode = 12345L
+
+    /**
+     * A connection factory whose connection reports [databaseMajorVersion]. On 14+ the partition
+     * factory also runs `SELECT pg_relation_filenode(...)`, which this mock answers with
+     * [knownFilenode]. On 13 and below no filenode query is issued.
+     */
+    private fun connectionFactory(databaseMajorVersion: Int): PostgresSourceJdbcConnectionFactory {
+        val rs = mockk<ResultSet>(relaxed = true)
+        every { rs.next() } returns true
+        every { rs.isLast } returns true
+        every { rs.getLong(1) } returns knownFilenode
+        every { rs.wasNull() } returns false
+        val stmt = mockk<PreparedStatement>(relaxed = true)
+        every { stmt.executeQuery() } returns rs
+        val connection = mockk<Connection>(relaxed = true)
+        every { connection.metaData.databaseMajorVersion } returns databaseMajorVersion
+        every { connection.prepareStatement(any()) } returns stmt
+        val connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+        every { connectionFactory.get() } returns connection
+        return connectionFactory
+    }
+
+    /** One factory per call: `tidRangeScanCapableDBServer` is a lazy val on the instance. */
+    private fun cdcFactory(databaseMajorVersion: Int): PostgresSourceJdbcPartitionFactory =
+        PostgresSourceJdbcPartitionFactory(
+            sharedState = mockk<DefaultJdbcSharedState>(relaxed = true),
+            selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
+            config = cdcConfig,
+            // Strict mock: any ResetStream / InvalidCursor / ... emission fails the test.
+            handler = mockk<CatalogValidationFailureHandler>(),
+            connectionFactory = connectionFactory(databaseMajorVersion),
+        )
+
+    private fun streamFeedBootstrap(
+        stream: Stream,
+        incumbentStateValue: OpaqueStateValue?,
+    ): StreamFeedBootstrap =
+        StreamFeedBootstrap(
+            outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            metaFieldDecorator = mockk<MetaFieldDecorator>(relaxed = true),
+            stateManager = StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
+            stream,
+            DataChannelFormat.JSONL,
+            DataChannelMedium.STDIO,
+            8192,
+            ClockFactory().fixed(),
+        )
+
+    @Test
+    fun `create cold starts for empty object state in CDC mode`() {
+        val bootstrap = streamFeedBootstrap(cdcIncrementalStream, Jsons.objectNode())
+        val factory = cdcFactory(databaseMajorVersion = 13)
+
+        // `{}` deserializes into an all-defaults PostgresSourceJdbcStreamStateValue: no ctid and
+        // no filenode, which is exactly what a completed snapshot looks like to the factory.
+        val streamState = factory.streamState(bootstrap)
+        assertNotNull(streamState.stateValue)
+        assertNull(streamState.maybeCtid)
+        assertNull(streamState.maybeFilenode)
+
+        // Without the empty-object guard this returned null (stream skipped as "snapshot done").
+        // With it, `{}` is treated as no state at all and the snapshot cold starts.
+        assertInstanceOf(
+            PostgresSourceJdbcUnsplittableSnapshotPartition::class.java,
+            factory.create(bootstrap),
+        )
+    }
+
+    @Test
+    fun `create cold starts for empty object state in CDC mode on Postgres 14 or newer`() {
+        val bootstrap = streamFeedBootstrap(cdcIncrementalStream, Jsons.objectNode())
+
+        // Postgres 14+: a filenode is found but `{}` carries none -> FILENODE_NEW_STREAM, which is
+        // not a reset trigger. Without the guard the ctid check then returned null; with it the
+        // snapshot cold starts from ctid (0,0) with the current filenode.
+        val snapshot =
+            assertInstanceOf(
+                PostgresSourceJdbcSplittableSnapshotPartition::class.java,
+                cdcFactory(databaseMajorVersion = 14).create(bootstrap),
+            )
+        assertNull(snapshot.lowerBound)
+        assertNull(snapshot.upperBound)
+        assertEquals(knownFilenode, snapshot.filenode)
+    }
+
+    @Test
+    fun `create cold starts for null state in CDC mode`() {
+        val bootstrap = streamFeedBootstrap(cdcIncrementalStream, null)
+
+        // No filenode (Postgres <= 13): unsplittable snapshot from the start of the table.
+        assertInstanceOf(
+            PostgresSourceJdbcUnsplittableSnapshotPartition::class.java,
+            cdcFactory(databaseMajorVersion = 13).create(bootstrap),
+        )
+
+        // With a filenode (Postgres 14+): splittable snapshot from ctid (0,0).
+        val snapshot =
+            assertInstanceOf(
+                PostgresSourceJdbcSplittableSnapshotPartition::class.java,
+                cdcFactory(databaseMajorVersion = 14).create(bootstrap),
+            )
+        assertNull(snapshot.lowerBound)
+        assertNull(snapshot.upperBound)
+        assertEquals(knownFilenode, snapshot.filenode)
+    }
+
+    @Test
+    fun `create returns null for snapshotCompleted state in CDC mode`() {
+        val bootstrap =
+            streamFeedBootstrap(
+                cdcIncrementalStream,
+                PostgresSourceJdbcStreamStateValue.snapshotCompleted,
+            )
+
+        assertNull(cdcFactory(databaseMajorVersion = 13).create(bootstrap))
+        assertNull(cdcFactory(databaseMajorVersion = 14).create(bootstrap))
     }
 }

@@ -55,7 +55,7 @@ object TableSchemaEvolutionFixtures {
             inputRecord("id" to IntegerValue(1), "test" to StringValue("foo")),
             inputRecord(
                 "id" to IntegerValue(2),
-                "test" to ObjectValue(linkedMapOf("foo" to StringValue("bar")))
+                "test" to ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
             ),
             inputRecord("id" to IntegerValue(3), "test" to BooleanValue(true)),
             inputRecord("id" to IntegerValue(4), "test" to IntegerValue(0)),
@@ -76,7 +76,7 @@ object TableSchemaEvolutionFixtures {
                 "to_retain" to "to_retain",
                 "to_change" to "to_change",
                 "to_drop" to "to_drop",
-            )
+            ),
         )
     val APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING =
         ColumnNameMapping(
@@ -86,7 +86,7 @@ object TableSchemaEvolutionFixtures {
                 "to_retain" to "to_retain",
                 "to_change" to "to_change",
                 "to_add" to "to_add",
-            )
+            ),
         )
     val APPLY_CHANGESET_EXPECTED_EXTRACTED_AT = "2025-01-22T00:00:00Z"
 }

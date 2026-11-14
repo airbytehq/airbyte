@@ -27,6 +27,6 @@ class DefaultConfigBeanFactory {
         LifecycleParallelismConfig(
             streamInitParallelism = 10,
             streamFinalizeParallelism = 10,
-            finalFlushParallelism = 10
+            finalFlushParallelism = 10,
         )
 }

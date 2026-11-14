@@ -36,7 +36,7 @@ interface CdcPartitionReaderDebeziumOperations<T : PartiallyOrdered<T>> {
     /** Maps a Debezium state to an [OpaqueStateValue]. */
     fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue
 
     /** Tries to extract the WAL position from a [DebeziumRecordValue]. */

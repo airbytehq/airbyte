@@ -24,7 +24,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -32,7 +32,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 listOf(),
-                catalog
+                catalog,
             )
         }
 
@@ -40,7 +40,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -48,7 +48,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 listOf(),
-                catalog
+                catalog,
             )
         }
 
@@ -56,7 +56,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -64,7 +64,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 listOf(),
-                catalog
+                catalog,
             )
         }
     }
@@ -79,7 +79,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -93,17 +93,17 @@ class StateManagerFactoryTest {
             AirbyteGlobalState()
                 .withSharedState(
                     Jsons.jsonNode(
-                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState())))
-                    )
+                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState()))),
+                    ),
                 )
                 .withStreamStates(
                     List.of(
                         AirbyteStreamState()
                             .withStreamDescriptor(
-                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME)
+                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME),
                             )
-                            .withStreamState(Jsons.jsonNode(DbStreamState()))
-                    )
+                            .withStreamState(Jsons.jsonNode(DbStreamState())),
+                    ),
                 )
         val airbyteStateMessage =
             AirbyteStateMessage()
@@ -114,7 +114,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -129,7 +129,7 @@ class StateManagerFactoryTest {
             DbState()
                 .withCdcState(cdcState)
                 .withStreams(
-                    List.of(DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE))
+                    List.of(DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE)),
                 )
         val airbyteStateMessage =
             AirbyteStateMessage()
@@ -140,7 +140,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -156,16 +156,16 @@ class StateManagerFactoryTest {
                 .withStream(
                     AirbyteStreamState()
                         .withStreamDescriptor(
-                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE)
+                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE),
                         )
-                        .withStreamState(Jsons.jsonNode(DbStreamState()))
+                        .withStreamState(Jsons.jsonNode(DbStreamState())),
                 )
 
         Assertions.assertThrows(ConfigErrorException::class.java) {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
         }
     }
@@ -177,17 +177,17 @@ class StateManagerFactoryTest {
             AirbyteGlobalState()
                 .withSharedState(
                     Jsons.jsonNode(
-                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState())))
-                    )
+                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState()))),
+                    ),
                 )
                 .withStreamStates(
                     List.of(
                         AirbyteStreamState()
                             .withStreamDescriptor(
-                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME)
+                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME),
                             )
-                            .withStreamState(Jsons.jsonNode(DbStreamState()))
-                    )
+                            .withStreamState(Jsons.jsonNode(DbStreamState())),
+                    ),
                 )
         val airbyteStateMessage =
             AirbyteStateMessage()
@@ -199,7 +199,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -215,16 +215,16 @@ class StateManagerFactoryTest {
                 .withStream(
                     AirbyteStreamState()
                         .withStreamDescriptor(
-                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE)
+                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE),
                         )
-                        .withStreamState(Jsons.jsonNode(DbStreamState()))
+                        .withStreamState(Jsons.jsonNode(DbStreamState())),
                 )
 
         val stateManager =
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -239,7 +239,7 @@ class StateManagerFactoryTest {
             DbState()
                 .withCdcState(cdcState)
                 .withStreams(
-                    List.of(DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE))
+                    List.of(DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE)),
                 )
         val airbyteStateMessage =
             AirbyteStateMessage()
@@ -250,7 +250,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -264,17 +264,17 @@ class StateManagerFactoryTest {
             AirbyteGlobalState()
                 .withSharedState(
                     Jsons.jsonNode(
-                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState())))
-                    )
+                        DbState().withCdcState(CdcState().withState(Jsons.jsonNode(DbState()))),
+                    ),
                 )
                 .withStreamStates(
                     List.of(
                         AirbyteStreamState()
                             .withStreamDescriptor(
-                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME)
+                                StreamDescriptor().withNamespace(NAMESPACE).withName(NAME),
                             )
-                            .withStreamState(Jsons.jsonNode(DbStreamState()))
-                    )
+                            .withStreamState(Jsons.jsonNode(DbStreamState())),
+                    ),
                 )
         val airbyteStateMessage =
             AirbyteStateMessage()
@@ -285,7 +285,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
         }
     }
@@ -299,9 +299,9 @@ class StateManagerFactoryTest {
                 .withStream(
                     AirbyteStreamState()
                         .withStreamDescriptor(
-                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE)
+                            StreamDescriptor().withName(NAME).withNamespace(NAMESPACE),
                         )
-                        .withStreamState(Jsons.jsonNode(DbStreamState()))
+                        .withStreamState(Jsons.jsonNode(DbStreamState())),
                 )
                 .withData(Jsons.jsonNode(DbState()))
 
@@ -309,7 +309,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)

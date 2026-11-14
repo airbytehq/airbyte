@@ -45,7 +45,7 @@ internal constructor(
         isClosing,
         flusher,
         Clock.systemUTC(),
-        flushOnEveryMessage
+        flushOnEveryMessage,
     )
 
     val nextStreamToFlush: Optional<StreamDescriptor>
@@ -63,12 +63,13 @@ internal constructor(
      *
      * Rules:
      * * default - By default the, the threshold is a set at a constant:
-     * QUEUE_FLUSH_THRESHOLD_BYTES.
+     *   QUEUE_FLUSH_THRESHOLD_BYTES.
      * * memory pressure - If we are getting close to maxing out available memory, we reduce it to
-     * zero. This helps in the case where there are a lot of streams, so total memory usage is high,
-     * but each individual queue isn't that large.
+     *   zero. This helps in the case where there are a lot of streams, so total memory usage is
+     *   high, but each individual queue isn't that large.
      * * closing - If the Flush Worker is closing, we reduce it to zero. We close when all records
-     * have been added to the queue, at which point, our goal is to flush out any non-empty queues.
+     *   have been added to the queue, at which point, our goal is to flush out any non-empty
+     *   queues.
      *
      * @return based on the conditions, the threshold in bytes.
      */
@@ -96,6 +97,7 @@ internal constructor(
      *
      * @param queueSizeThresholdBytes
      * - the size threshold to use for determining if a stream is ready to flush.
+     *
      * @return the next stream to flush. if no stream is ready to flush, empty.
      */
     @VisibleForTesting
@@ -205,8 +207,9 @@ internal constructor(
             runningWorkerBatchesSizes
                 .filter { obj: Optional<Long> -> obj.isPresent }
                 .sumOf { obj: Optional<Long> -> obj.get() }
-        val workersWithoutBatchesCount =
-            runningWorkerBatchesSizes.count { obj: Optional<Long> -> obj.isEmpty }
+        val workersWithoutBatchesCount = runningWorkerBatchesSizes.count { obj: Optional<Long> ->
+            obj.isEmpty
+        }
         val workersWithoutBatchesSizeEstimate =
             (min(
                     flusher.optimalBatchSizeBytes.toDouble(),
@@ -238,19 +241,17 @@ internal constructor(
     @VisibleForTesting
     fun orderStreamsByPriority(streams: Set<StreamDescriptor>): List<StreamDescriptor> {
         // eagerly pull attributes so that values are consistent throughout comparison
-        val sdToQueueSize =
-            streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getQueueSizeBytes(
-                    streamDescriptor,
-                )
-            }
+        val sdToQueueSize = streams.associateWith { streamDescriptor: StreamDescriptor ->
+            bufferDequeue.getQueueSizeBytes(
+                streamDescriptor,
+            )
+        }
 
-        val sdToTimeOfLastRecord =
-            streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getTimeOfLastRecord(
-                    streamDescriptor,
-                )
-            }
+        val sdToTimeOfLastRecord = streams.associateWith { streamDescriptor: StreamDescriptor ->
+            bufferDequeue.getTimeOfLastRecord(
+                streamDescriptor,
+            )
+        }
         return streams.sortedWith(
             Comparator.comparing(
                     { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },

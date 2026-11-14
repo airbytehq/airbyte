@@ -10,10 +10,22 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^7"
+airbyte-cdk = "7.45.1"
 pytest = "^8"
+pytest-cov = "^6"
+freezegun = "^1"
+requests-mock = "^1"
+jsonschema = { version = "^4", extras = ["format"] }
 
 [tool.pytest.ini_options]
+addopts = "--cov --cov-config=pyproject.toml --cov-report=term-missing"
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
+
+[tool.coverage.run]
+include = ["*/source-pylon/components.py"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

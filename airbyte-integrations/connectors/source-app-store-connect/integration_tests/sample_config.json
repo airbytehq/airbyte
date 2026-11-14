@@ -1,0 +1,12 @@
+{
+  "iss": "00000000-0000-0000-0000-000000000000",
+  "kid": "TESTKEY123",
+  "secret_key": "REPLACE_WITH_COMPLETE_P8_PRIVATE_KEY",
+  "vendorID": "12345678",
+  "reviews_start_date": "2026-01-01T00:00:00Z",
+  "sales_reports_start_date": "2026-01-01",
+  "finance_reports_start_date": "2026-01",
+  "subscription_event_reports_start_date": "2026-01-01",
+  "subscription_event_skip_dates": [],
+  "analytics_reports_start_date": "2026-01-01"
+}

@@ -12,9 +12,10 @@ internal class VersionTest {
     fun testJsonSerializationDeserialization() {
         val jsonString =
             """
-                              {"version": "1.2.3"}
-                              
-                              """.trimIndent()
+            {"version": "1.2.3"}
+
+            """
+                .trimIndent()
         val expectedVersion = Version("1.2.3")
 
         val deserializedVersion = Jsons.deserialize(jsonString, Version::class.java)

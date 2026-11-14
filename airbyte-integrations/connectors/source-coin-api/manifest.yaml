@@ -591,11 +591,13 @@ spec:
       environment:
         type: string
         description: |
-          The environment to use. Either sandbox or production.
+          The environment to use. Use production. The CoinAPI sandbox
+          environment (rest-sandbox.coinapi.io) has been discontinued and no
+          longer resolves; it is kept only for backwards compatibility.
         enum:
           - sandbox
           - production
-        default: sandbox
+        default: production
         order: 1
       symbol_id:
         type: string

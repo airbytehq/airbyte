@@ -68,3 +68,35 @@ def test_get_json_schema(document_stream):
     assert "_id" in schema["properties"]
     assert "_ab_cdc_updated_at" in schema["properties"]
     assert "test_collection" in schema["properties"]
+
+
+def test_read_records_paginates_by_document_id(document_stream, mock_cluster):
+    from source_couchbase.streams import PAGE_SIZE
+
+    first_page = [{"_id": f"doc{i}", "_ab_cdc_updated_at": i, "test_collection": {}} for i in range(PAGE_SIZE)]
+    second_page = [{"_id": "last", "_ab_cdc_updated_at": PAGE_SIZE, "test_collection": {}}]
+    mock_cluster.query.side_effect = [first_page, second_page]
+
+    records = list(document_stream.read_records(sync_mode=SyncMode.incremental, stream_state={}))
+
+    assert len(records) == PAGE_SIZE + 1
+    assert mock_cluster.query.call_count == 2
+    first_options, second_options = (call.args[1] for call in mock_cluster.query.call_args_list)
+    assert first_options["named_parameters"] == {"last_id": "", "page_size": PAGE_SIZE}
+    assert second_options["named_parameters"] == {"last_id": f"doc{PAGE_SIZE - 1}", "page_size": PAGE_SIZE}
+    assert document_stream.state == {"_ab_cdc_updated_at": PAGE_SIZE}
+
+
+def test_read_records_missing_primary_index_is_config_error(document_stream, mock_cluster):
+    from couchbase.exceptions import QueryIndexNotFoundException
+
+    from airbyte_cdk.models import FailureType
+    from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+    mock_cluster.query.side_effect = QueryIndexNotFoundException()
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(document_stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "CREATE PRIMARY INDEX" in exc_info.value.message

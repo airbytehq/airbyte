@@ -46,17 +46,19 @@ The connector automatically discovers all tables (entities) in your Dataverse en
 | :------ | :-------- | :---- |
 | Full Refresh | Yes | Available for all tables. |
 | Incremental Sync | Yes | Available for tables with [change tracking](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-change-tracking-synchronize-data-external-systems) enabled. Uses OData delta tokens to fetch only modified and deleted records. |
-| Replicate Incremental Deletes | Yes | Deleted records are emitted with only the primary key populated. |
+| Replicate Incremental Deletes | Yes | Deleted records are emitted with only the primary key, the cursor field, and `_ab_cdc_deleted_at` populated. The cursor field and `_ab_cdc_deleted_at` are set to the time the sync processed the deletion, not the time the record was deleted. |
 | Namespaces | No | |
 
-For incremental sync, the connector uses Dataverse's change tracking feature (`Prefer: odata.track-changes` header). The API returns a `@odata.deltaLink` on the last page of results, which the connector stores as state and uses on subsequent syncs to retrieve only changes since the last sync.
+For incremental sync, the connector uses Dataverse's change tracking feature (`Prefer: odata.track-changes` header). The API returns a `@odata.deltaLink` on the last page of results, which the connector stores as state and uses on subsequent syncs to retrieve only changes since the last sync. The first incremental sync of a table reads all of its records.
+
+If the table has a `modifiedon` column, the connector uses it as the cursor field. Each updated record also includes an `_ab_cdc_updated_at` column set to the cursor field's value.
 
 ### Data type mapping
 
 | Dataverse Type | Airbyte Type | Notes |
 | :------------- | :----------- | :---- |
 | `String` | `string` | |
-| `UniqueIdentifier` | `string` | |
+| `Uniqueidentifier` | `string` | |
 | `DateTime` (DateOnly behavior) | `date` | Fields with `DateTimeBehavior=DateOnly` |
 | `DateTime` (other behaviors) | `timestamp_with_timezone` | `UserLocal` and `TimeZoneIndependent` behaviors |
 | `Integer` | `integer` | |
@@ -68,7 +70,7 @@ For incremental sync, the connector uses Dataverse's change tracking feature (`P
 | `Picklist` | `integer` | |
 | `Status` | `integer` | |
 | `State` | `integer` | |
-| `Lookup` | `string` | Field name is prefixed with `_` and suffixed with `_value` (for example, `_ownerid_value`). |
+| `Lookup` | `string` | Field name is prefixed with `_` and suffixed with `_value` (for example, `_parentaccountid_value`). |
 | `Virtual` | — | Skipped; not synced. |
 
 All other types default to `string`.
@@ -77,6 +79,8 @@ All other types default to `string`.
 
 - **Change tracking must be enabled** on a table for incremental sync to be available. Tables without change tracking support only full refresh. You can [enable change tracking](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/data-platform-create-entity#enable-change-tracking) in the Power Apps table settings.
 - **Virtual fields** are excluded from the schema and not synced.
+- **Owner and Customer columns aren't renamed.** Only columns with the `Lookup` type get the `_<name>_value` naming in the schema. `Owner` and `Customer` columns, such as `ownerid`, appear in the schema under their logical name as strings, while the Web API returns their values in properties named like `_ownerid_value`.
+- **State is saved only at the end of an incremental sync.** The delta token is returned on the last page of results, so if an incremental sync fails partway through, the next sync starts again from the previous delta token.
 - **Service protection limits**: Dataverse enforces [API service protection limits](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits) that return HTTP 429 when exceeded. The connector handles back-off automatically. If you run into persistent throttling, reduce the **Max page size** or schedule syncs during off-peak hours.
 
 ## IP allow list

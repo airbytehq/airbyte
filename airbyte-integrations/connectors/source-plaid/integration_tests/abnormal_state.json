@@ -1,5 +1,13 @@
-{
-  "transaction": {
-    "date": "2120-01-01"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "transaction"
+      },
+      "stream_state": {
+        "date": "2120-01-01"
+      }
+    }
   }
-}
+]

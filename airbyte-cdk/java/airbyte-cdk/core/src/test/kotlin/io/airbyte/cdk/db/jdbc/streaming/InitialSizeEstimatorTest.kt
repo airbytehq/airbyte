@@ -20,7 +20,7 @@ internal class InitialSizeEstimatorTest {
                 initialSampleSize,
                 minFetchSize,
                 defaultFetchSize,
-                maxFetchSize
+                maxFetchSize,
             )
 
         // size: 3 * 4 = 12
@@ -43,7 +43,7 @@ internal class InitialSizeEstimatorTest {
         Assertions.assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.maxRowByteSize))
         Assertions.assertEquals(
             (bufferByteSize / expectedMaxByteSize) + 1,
-            fetchSize.get().toLong()
+            fetchSize.get().toLong(),
         ) // + 1 needed for int remainder rounding
     }
 }

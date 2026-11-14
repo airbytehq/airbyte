@@ -18,10 +18,12 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -29,6 +31,21 @@ logger = logging.getLogger(__name__)
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for Bing Ads file download requesters.
+
+    Returns success for 2xx responses before evaluating response filters: filters that inspect the
+    body read ``response.content``, which would drain the streamed ``response.raw`` the download
+    decoders read from.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.ok:
+            return SUCCESS_RESOLUTION
+        return super().interpret_response(response_or_exception)
 
 
 @dataclass

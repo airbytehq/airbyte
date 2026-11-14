@@ -35,14 +35,14 @@ class DestinationMessageFactory(
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
-        serializedSizeBytes: Long
+        serializedSizeBytes: Long,
     ): DestinationMessage {
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
                 val descriptor =
                     namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream
+                        name = message.record.stream,
                     )
                 val stream = catalog.getStream(descriptor)
                 // In socket mode, multiple sockets can run in parallel, which means that we
@@ -141,9 +141,9 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
+                                        message.state.additionalProperties,
                                     ),
-                                streamCheckpoints = snapshotStreamCheckpoints(message.state)
+                                streamCheckpoints = snapshotStreamCheckpoints(message.state),
                             )
                         } else {
                             GlobalCheckpoint(
@@ -161,8 +161,8 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
-                                    )
+                                        message.state.additionalProperties,
+                                    ),
                             )
                         }
                     }
@@ -214,7 +214,7 @@ class DestinationMessageFactory(
         }
 
     private fun fromAirbyteStreamState(
-        streamState: AirbyteStreamState
+        streamState: AirbyteStreamState,
     ): CheckpointMessage.Checkpoint {
         val descriptor =
             namespaceMapper.map(
@@ -255,7 +255,7 @@ class DestinationMessageFactory(
                         } else {
                             null
                         },
-                    name = message.record.streamName
+                    name = message.record.streamName,
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(

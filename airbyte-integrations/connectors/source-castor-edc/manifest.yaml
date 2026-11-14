@@ -23,19 +23,17 @@ definitions:
           path: user
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -73,19 +71,17 @@ definitions:
           path: study
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -138,19 +134,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/audit-trail
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -230,19 +224,17 @@ definitions:
           path: country
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -265,19 +257,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/survey
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -324,19 +314,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/survey-package
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -383,19 +371,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/site
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -442,19 +428,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/field
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -501,19 +485,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/field-dependency
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -560,19 +542,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/field-validation
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -619,19 +599,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/form
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -678,19 +656,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/role
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -743,19 +719,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/field-optiongroup
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -802,19 +776,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/statistics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -859,19 +831,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/user
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -941,19 +911,17 @@ definitions:
           path: study/{{ stream_partition['study_id'] }}/visit
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -990,14 +958,14 @@ definitions:
           $ref: "#/schemas/study_visit"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['url_region'] }}.castoredc.com/api/
+    url_base: https://{{ 'data' if config['url_region'] == 'nl' else config['url_region'] }}.castoredc.com/api/
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
       grant_type: client_credentials
       client_secret: "{{ config[\"client_secret\"] }}"
       refresh_request_body: {}
-      token_refresh_endpoint: https://{{ config['url_region'] }}.castoredc.com/oauth/token
+      token_refresh_endpoint: https://{{ 'data' if config['url_region'] == 'nl' else config['url_region'] }}.castoredc.com/oauth/token
 
 streams:
   - $ref: "#/definitions/streams/user"
@@ -1030,7 +998,7 @@ spec:
     properties:
       url_region:
         type: string
-        description: The url region given at time of registration
+        description: The region where your study is stored. Use nl for the Netherlands (data.castoredc.com), uk for the United Kingdom, or us for the United States.
         enum:
           - uk
           - nl
@@ -1040,13 +1008,13 @@ spec:
         default: uk
       client_id:
         type: string
-        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        description: Generate API credentials in your Castor account settings. For nl, visit https://data.castoredc.com/account/settings; otherwise visit https://YOUR_REGION.castoredc.com/account/settings.
         order: 1
         title: Client ID
         airbyte_secret: true
       client_secret:
         type: string
-        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        description: Generate API credentials in your Castor account settings. For nl, visit https://data.castoredc.com/account/settings; otherwise visit https://YOUR_REGION.castoredc.com/account/settings.
         order: 2
         title: Client secret
         airbyte_secret: true

@@ -9,6 +9,14 @@ import TabItem from "@theme/TabItem";
 
 Most programmatic interactions with Airbyte require an access token. An access token represents an individual Airbyte user, and it has the same permissions as that Airbyte user.
 
+Permissions alone don't guarantee access to every operation. When authentication is turned on, which is the default for Helm deployments, Airbyte also checks each request against the following:
+
+- **The type of caller.** Some operations are reserved for Airbyte's internal components, such as workers that report sync progress or save discovered schemas. Access tokens from users and applications can't perform these operations, even if the user is an instance admin.
+- **The token's scope.** If a token is scoped to a single workspace, it can only act on resources in that workspace.
+- **Where saved resources belong.** Airbyte checks the workspace that a saved source, destination, or connection belongs to, not only the IDs in the request. Every resource in the request must belong to a workspace that the user has the required permission in.
+
+If your access token is missing, invalid, or expired, Airbyte returns `401 Unauthorized`. Get a new access token and try again. If your access token is valid but doesn't allow the operation, Airbyte returns `403 Forbidden`. A new access token doesn't fix this. Check the user's permissions and the workspace that the resources belong to instead.
+
 :::tip
 Using a service account for this purpose is helpful. If you rely on making requests to the Airbyte API using personal credentials, your apps and scripts could break if someone leaves your organization.
 :::
@@ -56,23 +64,6 @@ In Airbyte's UI, click **User** > **User settings** > **Applications**. Click th
 ![Get Application Client and Secret](./assets/applications-client-secret.png)
 
 If you deploy Airbyte with abctl, you can also [use the command line interface](../deploying-airbyte/abctl/#view-and-change-credentials) to see your client ID and client secret.
-
-</TabItem>
-<TabItem value="sme" label="Self-Managed Enterprise">
-
-1. In Airbyte's UI, click your name > **User settings** > **Applications**.
-
-    ![Create an Application](./assets/applications-ui.png)
-
-2. Click **Create an application**.
-
-3. Give your application a descriptive name and click **Submit**.
-
-    ![Name Application](./assets/applications-create.png)
-
-4. Click the <svg fill="none" data-icon="eye" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M21.92 11.6C19.9 6.91 16.1 4 12 4s-7.9 2.91-9.92 7.6a1 1 0 0 0 0 .8C4.1 17.09 7.9 20 12 20s7.9-2.91 9.92-7.6a1 1 0 0 0 0-.8M12 18c-3.17 0-6.17-2.29-7.9-6C5.83 8.29 8.83 6 12 6s6.17 2.29 7.9 6c-1.73 3.71-4.73 6-7.9 6m0-10a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4"></path></svg> icon to expose your client secret.
-
-    ![Get Application Client ID and Client Secret](./assets/applications-client-secret.png)
 
 </TabItem>
 </Tabs>

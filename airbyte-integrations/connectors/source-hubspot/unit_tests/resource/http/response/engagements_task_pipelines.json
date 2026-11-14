@@ -1,0 +1,74 @@
+{
+  "results": [
+    {
+      "label": "Task Pipeline",
+      "displayOrder": 0,
+      "id": "3d314325-1b2a-4225-9388-375f49c57ec3",
+      "stages": [
+        {
+          "label": "Not Started",
+          "displayOrder": 0,
+          "metadata": { "isClosed": "false", "state": "OPEN" },
+          "id": "af0e6a5c-2ea3-4c72-b69f-7c6cb3fdb591",
+          "createdAt": "2025-04-19T19:39:36.648Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        },
+        {
+          "label": "In progress",
+          "displayOrder": 1,
+          "metadata": { "isClosed": "false", "state": "OPEN" },
+          "id": "5996831934",
+          "createdAt": "2026-09-04T10:20:42.648Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        },
+        {
+          "label": "Waiting",
+          "displayOrder": 2,
+          "metadata": { "isClosed": "false", "state": "OPEN" },
+          "id": "dd5826e4-c976-4654-a527-b59ada542e52",
+          "createdAt": "2025-04-19T19:39:36.648Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        },
+        {
+          "label": "Completed",
+          "displayOrder": 3,
+          "metadata": { "isClosed": "true", "state": "CLOSED" },
+          "id": "61bafb31-e7fa-46ed-aaa9-1322438d6e67",
+          "createdAt": "2025-04-19T19:39:36.648Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        },
+        {
+          "label": "Deferred",
+          "displayOrder": 4,
+          "metadata": { "isClosed": "false", "state": "OPEN" },
+          "id": "fc8148fb-3a2d-4b59-834e-69b7859347cb",
+          "createdAt": "2025-04-19T19:39:36.648Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        },
+        {
+          "label": "Cancelled",
+          "displayOrder": 5,
+          "metadata": { "isClosed": "true", "state": "CLOSED" },
+          "id": "6049725638",
+          "createdAt": "2026-09-14T23:10:42.812Z",
+          "updatedAt": "2026-09-14T23:10:42.812Z",
+          "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+          "archived": false
+        }
+      ],
+      "createdAt": "2025-04-19T19:39:36.648Z",
+      "updatedAt": "2026-09-14T23:10:42.812Z",
+      "archived": false
+    }
+  ]
+}

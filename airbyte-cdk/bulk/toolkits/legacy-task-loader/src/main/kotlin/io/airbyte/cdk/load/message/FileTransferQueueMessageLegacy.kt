@@ -16,7 +16,7 @@ data class FileTransferQueueRecord(
     override val stream: DestinationStream,
     val file: DestinationFile,
     val index: Long,
-    val checkpointId: CheckpointId
+    val checkpointId: CheckpointId,
 ) : FileTransferQueueMessage
 
 data class FileTransferQueueEndOfStream(

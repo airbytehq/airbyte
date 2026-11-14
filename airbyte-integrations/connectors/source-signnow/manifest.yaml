@@ -696,6 +696,14 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.signnow.com
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          predicate: "{{ response.get('error') == 'invalid_token' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "SignNow API key (access token) is invalid or expired."
 
 streams:
   - $ref: "#/definitions/streams/user"

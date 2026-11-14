@@ -25,19 +25,17 @@ definitions:
           path: discovery/v2/events
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -56,10 +54,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -76,19 +76,17 @@ definitions:
           path: discovery/v2/attractions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -107,10 +105,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -127,19 +127,17 @@ definitions:
           path: discovery/v2/venues
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -158,10 +156,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -178,19 +178,17 @@ definitions:
           path: discovery/v2/suggest
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -214,19 +212,17 @@ definitions:
           path: discovery/v2/events/{{ stream_partition.event_id }}/images
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:

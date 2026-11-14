@@ -30,7 +30,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
+            page_size: 100
             cursor_value: "{{response['cursor']}}"
             stop_condition: "{{ response.hasNextPage is false }}"
         requester:

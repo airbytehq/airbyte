@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
@@ -28,13 +28,13 @@ data class MySqlSourceCdcInitialSnapshotStateValue(
                 MySqlSourceCdcInitialSnapshotStateValue(
                     streamName = stream.name,
                     cursorField = listOf(),
-                    streamNamespace = stream.namespace
-                )
+                    streamNamespace = stream.namespace,
+                ),
             )
 
         /** Value representing the progress of an ongoing snapshot. */
         fun snapshotCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
@@ -46,7 +46,7 @@ data class MySqlSourceCdcInitialSnapshotStateValue(
                             pkName = primaryKeyField.id,
                             pkVal = primaryKeyCheckpoint.first().asText(),
                             stateType = "primary_key",
-                        )
+                        ),
                     )
             }
         }

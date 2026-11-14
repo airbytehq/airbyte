@@ -23,6 +23,7 @@ import org.jooq.SQLDialect
 import org.testcontainers.containers.JdbcDatabaseContainer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * TestDatabase provides a convenient pattern for interacting with databases when testing SQL
  * database sources. The basic idea is to share the same database testcontainer instance for all
@@ -33,8 +34,10 @@ private val LOGGER = KotlinLogging.logger {}
  * @param <B> the type of the object returned by [.configBuilder] </B></T></C>
  */
 abstract class TestDatabase<
-    C : JdbcDatabaseContainer<*>, T : TestDatabase<C, T, B>, B : TestDatabase.ConfigBuilder<T, B>>
-protected constructor(val container: C) : AutoCloseable {
+    C : JdbcDatabaseContainer<*>,
+    T : TestDatabase<C, T, B>,
+    B : TestDatabase.ConfigBuilder<T, B>,
+> protected constructor(val container: C) : AutoCloseable {
     private val suffix: String = Strings.addRandomSuffix("", "_", 10)
     private val cleanupSQL: ArrayList<String> = ArrayList()
     private val connectionProperties: MutableMap<String, String> = HashMap()
@@ -102,8 +105,8 @@ protected constructor(val container: C) : AutoCloseable {
                 connectionProperties.toMap(),
                 JdbcConnector.getConnectionTimeout(
                     connectionProperties.toMap(),
-                    databaseDriver!!.driverClassName
-                )
+                    databaseDriver!!.driverClassName,
+                ),
             )
         this.dslContext = DSLContextFactory.create(dataSource, sqlDialect)
         return self()
@@ -153,7 +156,7 @@ protected constructor(val container: C) : AutoCloseable {
                 databaseDriver!!.urlFormatString,
                 container.host,
                 container.firstMappedPort,
-                databaseName
+                databaseName,
             )
 
     val database: Database
@@ -181,7 +184,7 @@ protected constructor(val container: C) : AutoCloseable {
         try {
             LOGGER.info {
                 formatLogLine(
-                    String.format("executing command %s", Strings.join(cmd.asIterable(), " "))
+                    String.format("executing command %s", Strings.join(cmd.asIterable(), " ")),
                 )
             }
             val exec = container.execInContainer(*cmd.toTypedArray<String>())
@@ -191,8 +194,8 @@ protected constructor(val container: C) : AutoCloseable {
                         String.format(
                             "execution success\nstdout:\n%s\nstderr:\n%s",
                             exec.stdout,
-                            exec.stderr
-                        )
+                            exec.stderr,
+                        ),
                     )
                 }
             } else {
@@ -202,8 +205,8 @@ protected constructor(val container: C) : AutoCloseable {
                             "execution failure, code %s\nstdout:\n%s\nstderr:\n%s",
                             exec.exitCode,
                             exec.stdout,
-                            exec.stderr
-                        )
+                            exec.stderr,
+                        ),
                     )
                 }
             }
@@ -244,7 +247,7 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     open class ConfigBuilder<T : TestDatabase<*, *, *>, B : ConfigBuilder<T, B>>(
-        protected val testDatabase: T
+        protected val testDatabase: T,
     ) {
         protected val builder: ImmutableMap.Builder<Any, Any> = ImmutableMap.builder()
 
@@ -274,7 +277,7 @@ protected constructor(val container: C) : AutoCloseable {
         fun withResolvedHostAndPort(): B {
             return this.with(
                     JdbcUtils.HOST_KEY,
-                    HostPortResolver.resolveHost(testDatabase.container)
+                    HostPortResolver.resolveHost(testDatabase.container),
                 )
                 .with(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(testDatabase.container))
         }

@@ -66,14 +66,7 @@ definitions:
             field_path:
               - products
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -96,15 +89,7 @@ definitions:
             field_path:
               - funding_sources
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -127,15 +112,7 @@ definitions:
             field_path:
               - members
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -158,15 +135,7 @@ definitions:
             field_path:
               - campaigns
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -189,15 +158,7 @@ definitions:
             field_path:
               - organizations
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -254,9 +215,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 10
+            page_size: 100
             inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
@@ -280,19 +245,7 @@ definitions:
             field_path:
               - members
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: false
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -951,4 +904,52 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      amount:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      international:
+        type:
+          - boolean
+          - "null"
+      orders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      paid_at:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      rewards:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id

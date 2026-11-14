@@ -27,6 +27,14 @@ airbyte:
 
     exception-classifiers:
       regex:
+        # Run the regex rules ahead of the CDK's DefaultExceptionClassifier (order 1). The default
+        # classifier maps any ConfigErrorException, TransientErrorException or SystemErrorException
+        # to its raw message, so with the regex classifier at its default order (10) no rule could
+        # ever see a message the CDK itself throws. Going first lets a rule refine those, such as
+        # "Discovered zero tables." from the CDK's CheckOperation. Typed exceptions that no rule
+        # matches still fall through to the default mapping unchanged.
+        order: 0
+
         # The following rules are for the RegexExceptionClassifier [0] which are applied
         # sequentially on a Throwable's message [1] and its nested messages by cause [2].
         #
@@ -55,13 +63,24 @@ airbyte:
             output: The sync encountered a database read failure due to a connection timeout, will retry.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
+          # Unreachable host. The driver folds "Connection refused", "connect timed out" and
+          # UnknownHostException into this message, so one rule covers all of them. The same rule
+          # serves a failed connection test and a failed sync, so the output must not mention retries.
           - pattern: (?i).*the tcp\/ip connection to the host.*has failed.*
             input-example: >-
               com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed.
+              Error: "Connection refused. Verify the connection properties. Make sure that an instance of SQL Server is running
+              on the host and accepting TCP/IP connections at the port. Make sure that TCP connections to the port are not blocked by a firewall.".
             error: transient
             group: SQL Server Connection Error
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
-            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+            output: >-
+              Airbyte could not reach SQL Server at the configured host and port. Check the host and port,
+              that the instance accepts remote TCP connections, and that your firewall or security group
+              allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/mssql
+              - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
 
           - pattern: (?i).*error code 3947.*
             input-example: >-
@@ -93,6 +112,20 @@ airbyte:
               The sync failed because the specified database cannot be accessed with the provided credentials. 
               Please verify your database name and user permissions.
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
+
+          # Thrown by the CDK's CheckOperation when discovery returns no table at all; reachable only
+          # because this classifier runs ahead of the default one (see `order` above). Anchored so
+          # that the sibling "Unable to query any of the N discovered table(s)." is left alone.
+          - pattern: (?i)^Discovered zero tables\.?$
+            input-example: Discovered zero tables.
+            error: config
+            group: SQL Server Table Access Error
+            output: >-
+              No tables are visible to the configured login in the selected database and schemas.
+              Grant SELECT on the tables to sync (for example add the user to the db_datareader role,
+              or run GRANT SELECT ON SCHEMA::{schema name} TO {user name}), and check the Database and
+              Schemas settings (schema names are case sensitive).
+            reference-links: https://docs.airbyte.com/integrations/sources/mssql#2-create-a-dedicated-read-only-user-with-access-to-the-relevant-tables-recommended-but-optional
 
           - pattern: (?i).*invalid object name.*
             input-example: >-

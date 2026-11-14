@@ -25,19 +25,17 @@ definitions:
           path: v2/users/{{config.user_id}}/apps
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -59,6 +57,12 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -90,19 +94,17 @@ definitions:
             v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/datasets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -132,6 +134,12 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -162,19 +170,17 @@ definitions:
           path: v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/models
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -204,6 +210,12 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -235,19 +247,17 @@ definitions:
             v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/models/{{stream_partition.model_id}}/versions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -301,19 +311,17 @@ definitions:
             v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/workflows
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -359,19 +367,17 @@ definitions:
           path: v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/inputs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -418,19 +424,17 @@ definitions:
             v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/inputs/jobs/add
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -477,19 +481,17 @@ definitions:
             v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/concepts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits has been hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
           extractor:

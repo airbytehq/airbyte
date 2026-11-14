@@ -18,48 +18,48 @@ internal class DataTypeEnumTest {
         Assertions.assertEquals(5, DataType::class.java.enumConstants.size)
         Assertions.assertEquals(
             17,
-            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive::class.java.enumConstants.size
+            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive::class.java.enumConstants.size,
         )
 
         Assertions.assertEquals(
             DataType.STRING,
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING.toString()
-                    .lowercase(Locale.getDefault())
-            )
+                    .lowercase(Locale.getDefault()),
+            ),
         )
         Assertions.assertEquals(
             DataType.NUMBER,
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER.toString()
-                    .lowercase(Locale.getDefault())
-            )
+                    .lowercase(Locale.getDefault()),
+            ),
         )
         Assertions.assertEquals(
             DataType.BOOLEAN,
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN.toString()
-                    .lowercase(Locale.getDefault())
-            )
+                    .lowercase(Locale.getDefault()),
+            ),
         )
         Assertions.assertEquals(
             DataType.ARRAY,
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY.toString()
-                    .lowercase(Locale.getDefault())
-            )
+                    .lowercase(Locale.getDefault()),
+            ),
         )
         Assertions.assertEquals(
             DataType.OBJECT,
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT.toString()
-                    .lowercase(Locale.getDefault())
-            )
+                    .lowercase(Locale.getDefault()),
+            ),
         )
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             DataType.fromValue(
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NULL.toString()
-                    .lowercase(Locale.getDefault())
+                    .lowercase(Locale.getDefault()),
             )
         }
     }

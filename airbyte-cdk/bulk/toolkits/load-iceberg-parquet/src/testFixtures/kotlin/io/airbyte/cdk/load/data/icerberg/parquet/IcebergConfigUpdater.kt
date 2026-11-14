@@ -13,10 +13,10 @@ object IcebergConfigUpdater : ConfigurationUpdater {
 
     override fun setDefaultNamespace(
         config: String,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): DefaultNamespaceResult =
         DefaultNamespaceResult(
             config.replace("<DEFAULT_NAMESPACE_PLACEHOLDER>", defaultNamespace),
-            defaultNamespace
+            defaultNamespace,
         )
 }

@@ -18,7 +18,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 interface AzureBlobStorageClientSpecification {
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
-        "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."
+        "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>.",
     )
     @get:JsonProperty("azure_blob_storage_account_name")
     @get:JsonSchemaInject(json = """{"examples":["mystorageaccount"]}""")
@@ -26,7 +26,7 @@ interface AzureBlobStorageClientSpecification {
 
     @get:JsonSchemaTitle("Azure Blob Storage Container Name")
     @get:JsonPropertyDescription(
-        "The name of the Azure Blob Storage Container. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#containers\">here</a>."
+        "The name of the Azure Blob Storage Container. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#containers\">here</a>.",
     )
     @get:JsonProperty("azure_blob_storage_container_name")
     @get:JsonSchemaInject(json = """{"examples":["mycontainer"]}""")
@@ -34,53 +34,53 @@ interface AzureBlobStorageClientSpecification {
 
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
-        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the \"Azure Blob Storage Account Key\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields."
+        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the \"Azure Blob Storage Account Key\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields.",
     )
     @get:JsonProperty("shared_access_signature")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D"],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D"],"airbyte_secret": true,"always_show": true}""",
     )
     val azureBlobStorageSharedAccessSignature: String?
 
     @get:JsonSchemaTitle("Azure Blob Storage Account Key")
     @get:JsonPropertyDescription(
-        "The Azure Blob Storage account key. If you set this value, you must not set the \"Shared Access Signature\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields."
+        "The Azure Blob Storage account key. If you set this value, you must not set the \"Shared Access Signature\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields.",
     )
     @get:JsonProperty("azure_blob_storage_account_key")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],"airbyte_secret": true,"always_show": true}""",
     )
     val azureBlobStorageAccountKey: String?
 
     @get:JsonSchemaTitle("Azure Tenant ID")
     @get:JsonPropertyDescription(
-        "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication."
+        "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication.",
     )
     @get:JsonProperty("azure_tenant_id")
     @get:JsonSchemaInject(
-        json = """{"examples":["12345678-1234-1234-1234-123456789012"],"airbyte_secret": false}"""
+        json = """{"examples":["12345678-1234-1234-1234-123456789012"],"airbyte_secret": false}""",
     )
     val azureTenantId: String?
 
     @get:JsonSchemaTitle("Azure Client ID")
     @get:JsonPropertyDescription(
-        "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication."
+        "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication.",
     )
     @get:JsonProperty("azure_client_id")
     @get:JsonSchemaInject(
-        json = """{"examples":["87654321-4321-4321-4321-210987654321"],"airbyte_secret": false}"""
+        json = """{"examples":["87654321-4321-4321-4321-210987654321"],"airbyte_secret": false}""",
     )
     val azureClientId: String?
 
     @get:JsonSchemaTitle("Azure Client Secret")
     @get:JsonPropertyDescription(
-        "The Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication."
+        "The Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication.",
     )
     @get:JsonProperty("azure_client_secret")
     @get:JsonSchemaInject(
-        json = """{"examples":["your-client-secret"],"airbyte_secret": true,"always_show": true}"""
+        json = """{"examples":["your-client-secret"],"airbyte_secret": true,"always_show": true}""",
     )
     val azureClientSecret: String?
 
@@ -92,7 +92,7 @@ interface AzureBlobStorageClientSpecification {
             azureBlobStorageAccountKey,
             azureTenantId,
             azureClientId,
-            azureClientSecret
+            azureClientSecret,
         )
     }
 }

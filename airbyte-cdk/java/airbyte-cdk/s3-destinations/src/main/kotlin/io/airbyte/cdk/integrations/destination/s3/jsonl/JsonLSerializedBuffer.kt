@@ -47,7 +47,7 @@ class JsonLSerializedBuffer(
         json: ObjectNode,
         record: AirbyteRecordMessage,
         generationId: Long,
-        syncId: Long
+        syncId: Long,
     ) {
         json.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString())
         json.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.emittedAt)
@@ -90,7 +90,7 @@ class JsonLSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(

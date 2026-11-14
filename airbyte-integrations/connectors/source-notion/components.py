@@ -1,10 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
 
@@ -12,45 +11,6 @@ from airbyte_cdk.sources.streams.core import StreamData
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
 logger = logging.getLogger("airbyte")
-
-
-@dataclass
-class NotionUserTransformation(RecordTransformation):
-    """
-    Custom transformation that conditionally transforms Notion User records of type "bot",
-    only when the record contains additional nested "owner" info.
-    This transformation moves the data in the `owner.{owner_type}` field into a new `owner.info` field for clarity.
-    """
-
-    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        owner = record.get("bot", {}).get("owner")
-        if owner:
-            owner_type = owner.get("type")
-            owner_info = owner.get(owner_type)
-            if owner_type and owner_info:
-                record["bot"]["owner"]["info"] = owner_info
-                del record["bot"]["owner"][owner_type]
-        return record
-
-
-@dataclass
-class NotionPropertiesTransformation(RecordTransformation):
-    """
-    Transforms the nested 'properties' object within a Notion Page/Database record into a more
-    normalized form. In Notion's API response, 'properties' is a dictionary where each key
-    represents the name of a property and its value contains various metadata and the property's
-    actual value.
-
-    The transformed 'properties' will consist of an array where each element is a dictionary
-    with two keys: 'name', holding the original property name, and 'value', containing the
-    property's content.
-    """
-
-    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        properties = record.get("properties", {})
-        transformed_properties = [{"name": name, "value": value} for name, value in properties.items()]
-        record["properties"] = transformed_properties
-        return record
 
 
 @dataclass

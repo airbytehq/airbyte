@@ -38,7 +38,7 @@ abstract class BaseDirectLoadInitialStatusGatherer(
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
-        streams: TableCatalog
+        streams: TableCatalog,
     ): Map<DestinationStream, DirectLoadInitialStatus> {
         val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(streams.size)
         coroutineScope {

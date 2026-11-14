@@ -21,7 +21,7 @@ class NamespaceMappingBeanFactory {
     @Named("dataChannelMedium")
     fun dataChannelMedium(
         @Value("\${airbyte.destination.core.data-channel.medium}")
-        dataChannelMedium: DataChannelMedium
+        dataChannelMedium: DataChannelMedium,
     ): DataChannelMedium {
         log.info { "Using data channel medium $dataChannelMedium" }
         return dataChannelMedium
@@ -31,7 +31,7 @@ class NamespaceMappingBeanFactory {
     fun namespaceMapper(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
         @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
-        namespaceMappingConfigPath: String
+        namespaceMappingConfigPath: String,
     ): NamespaceMapper {
         when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -49,7 +49,7 @@ class NamespaceMappingBeanFactory {
                 return NamespaceMapper(
                     namespaceDefinitionType = config.namespaceDefinitionType,
                     namespaceFormat = config.namespaceFormat,
-                    streamPrefix = config.streamPrefix
+                    streamPrefix = config.streamPrefix,
                 )
             }
         }
