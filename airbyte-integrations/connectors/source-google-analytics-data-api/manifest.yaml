@@ -1198,11 +1198,20 @@ dynamic_streams:
               lookback_window: "P{{ config.get('lookback_window', 2) }}D"
               step: "P{{ config.get('window_in_days', 365) }}D"
               cursor_granularity: P1D
+              # One format per cursor dimension. A shared list let `yearWeek` and `yearMonth`
+              # values match the wrong format: week `202605` parsed as 2026-05-01 with `%Y%m`,
+              # which moved the state months ahead of the data. `%Y%W` reads a `yearWeek` value
+              # as January 1 of its year, because `strptime` ignores `%W` without a weekday.
               cursor_datetime_formats:
+                {% if ns.cursor == "date" %}
                 - "%Y%m%d"
+                {% elif ns.cursor == "yearMonth" %}
                 - "%Y%m"
+                {% elif ns.cursor == "yearWeek" %}
                 - "%Y%W"
+                {% else %}
                 - "%Y"
+                {% endif %}
               datetime_format: "%Y-%m-%d"
               start_datetime:
                 type: MinMaxDatetime
