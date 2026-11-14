@@ -100,11 +100,19 @@ class BigqueryDirectLoadNativeTableOperations(
                         "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
                     ),
                 )
-            val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-            if (value.isNull) {
+            val row = result.iterateAll().firstOrNull()
+            if (row == null) {
+                logger.warn {
+                    "No generation ID found for table ${tableName.toPrettyString()}, returning 0"
+                }
                 0L
             } else {
-                value.longValue
+                val value = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+                if (value.isNull) {
+                    0L
+                } else {
+                    value.longValue
+                }
             }
         } catch (e: BigQueryException) {
             logger.error(e) {
