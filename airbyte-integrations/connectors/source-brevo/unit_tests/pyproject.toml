@@ -12,6 +12,8 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "7.39.1"
 pytest = "^8"
+requests-mock = "^1"
+freezegun = "^1"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore:This class is experimental*"]
