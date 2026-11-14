@@ -68,28 +68,26 @@ definitions:
             language: "{{ ','.join(config.get('languages', [])) }}"
             category: "{{ ','.join(config.get('categories', [])) }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                    max_waiting_time_in_seconds: 3600
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Only Available for Premium Users. You don't have
-                      permission to access this resource.
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      NewsData.io rate limit reached for your plan. Waiting
-                      for the limit to reset before retrying.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+                max_waiting_time_in_seconds: 3600
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 403
+                error_message: >-
+                  Only Available for Premium Users. You don't have
+                  permission to access this resource.
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  NewsData.io rate limit reached for your plan. Waiting
+                  for the limit to reset before retrying.
         record_selector:
           type: RecordSelector
           extractor:

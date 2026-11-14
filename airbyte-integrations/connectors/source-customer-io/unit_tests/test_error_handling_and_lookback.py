@@ -18,13 +18,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 _API = "https://api.customer.io/v1"
 _UNAUTHORIZED_MESSAGE = (
-    "Customer.io rejected the App API key. Enter a valid App API key (not a Track API key), "
+    "Customer.io rejected the API key. Enter a private API key (sk_...) or an existing "
+    "App API key (not a public or Track API key), "
     "select the Region your Customer.io account is hosted in (US or EU), and if your account "
     "restricts API access by IP address, add the Airbyte IP addresses to the allowlist."
 )
 _FORBIDDEN_MESSAGE = (
-    "Customer.io denied this App API key access to the requested data. Use an App API key "
-    "whose scope includes this data, and if your account restricts API access by IP address, "
+    "Customer.io denied this API key access to the requested data. Use a private API key "
+    "(sk_...) or an existing App API key (not a public or Track API key) whose scope includes "
+    "this data, and if your account restricts API access by IP address, "
     "add the Airbyte IP addresses to the allowlist."
 )
 _PRIOR_CURSOR = 1701390800  # 2023-12-01T00:33:20Z
@@ -184,7 +186,7 @@ def test_404_on_deleted_automation_actions_is_skipped():
 
 
 def test_401_on_campaigns_actions_child_request_names_the_fix():
-    """The `campaigns_actions` composite handler still ends a 401 on the shared message."""
+    """The `campaigns_actions` handler fails a 401 with the shared configuration message."""
     with requests_mock.Mocker() as mocker:
         _serve_two_campaigns(mocker, [{"status_code": 401, "json": _errors(401, "unauthorized")}])
         output = _read("campaigns_actions", _BASE_CONFIG, expecting_exception=True)
@@ -197,8 +199,22 @@ def test_401_on_campaigns_actions_child_request_names_the_fix():
     assert output.get_stream_statuses("campaigns_actions")[-1] == AirbyteStreamStatus.INCOMPLETE
 
 
+def test_403_on_campaigns_actions_child_request_names_the_fix():
+    """A child request denied access fails with the shared 403 configuration message."""
+    with requests_mock.Mocker() as mocker:
+        _serve_two_campaigns(mocker, [{"status_code": 403, "json": _errors(403, "forbidden")}])
+        output = _read("campaigns_actions", _BASE_CONFIG, expecting_exception=True)
+
+    errors = [error_message.trace.error for error_message in output.errors]
+    assert {error.failure_type for error in errors} == {FailureType.config_error}
+    assert _FORBIDDEN_MESSAGE in [
+        error.message for error in errors if error.stream_descriptor and error.stream_descriptor.name == "campaigns_actions"
+    ]
+    assert output.get_stream_statuses("campaigns_actions")[-1] == AirbyteStreamStatus.INCOMPLETE
+
+
 def test_429_on_campaigns_actions_child_request_waits_for_retry_after():
-    """Child requests keep the shared `Retry-After` backoff through the composite handler."""
+    """Child requests keep the shared `Retry-After` backoff."""
     with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as patched_time:
         _serve_two_campaigns(
             mocker,
@@ -216,7 +232,7 @@ def test_429_on_campaigns_actions_child_request_waits_for_retry_after():
 
 
 def test_campaigns_actions_child_request_keeps_30_retries():
-    """The composite takes max_retries from its first handler, so six 503s in a row still end in records (the default allows 5)."""
+    """The child handler allows 30 retries, so six 503s still end in records (the default allows 5)."""
     responses = [{"status_code": 503, "json": _errors(503, "unavailable")}] * 6
     responses.append({"status_code": 200, "json": {"actions": [_action(101, 1, _PRIOR_CURSOR)], "next": None}})
     with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.http.rate_limiting.time"):

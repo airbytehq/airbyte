@@ -2,6 +2,14 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## Authentication Decision (A-1)
+
+The connector uses Bearer API-token authentication, as documented in [Pylon authentication](https://docs.usepylon.com/pylon-docs/developer/api/authentication). The public REST OpenAPI defines only the `bearerAuth` security scheme. API tokens do not expire; roles control their access, with no separate scopes.
+
+Pylon documents OAuth 2.0 for its [MCP server](https://docs.usepylon.com/pylon-docs/integrations/pylon-mcp), where clients authenticate as an individual user through a browser-based flow. The public documentation does not describe third-party OAuth app registration for REST integrations. The REST error `oauth_not_permitted` explicitly means an endpoint cannot be called with an OAuth token and requires an API token.
+
+Token-only authentication was accepted in internal review (airbytehq/airbyte-internal-issues#18420).
+
 ## Incremental Stream Considerations
 
 The Pylon API supports cursor-based pagination on list endpoints. The `issues` stream already uses `DatetimeBasedCursor` with `updated_at` filtering. The remaining FR parent streams are config-style lookups (accounts, contacts, tags, teams, users, custom_fields, etc.) that do not expose date-based filtering parameters.

@@ -746,6 +746,11 @@ definitions:
           "total_view_content",
           "total_purchase",
           "total_sales_lead_value",
+          "on_web_order",
+          "total_on_web_order_value",
+          "cost_per_on_web_order",
+          "value_per_on_web_order",
+          "on_web_order_rate",
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -900,6 +905,11 @@ definitions:
           "total_onsite_shopping_value",
           "total_app_event_add_to_cart",
           "total_purchase_value",
+          "on_web_order",
+          "total_on_web_order_value",
+          "cost_per_on_web_order",
+          "value_per_on_web_order",
+          "on_web_order_rate",
         ]
       dimensions: ["adgroup_id", "stat_time_day"]
     primary_key:
@@ -1032,6 +1042,11 @@ definitions:
           "conversion_rate",
           "cost_per_conversion",
           "real_time_conversion",
+          "on_web_order",
+          "total_on_web_order_value",
+          "cost_per_on_web_order",
+          "value_per_on_web_order",
+          "on_web_order_rate",
         ]
       dimensions: ["campaign_id", "stat_time_day"]
     primary_key:
@@ -4487,6 +4502,31 @@ definitions:
                 - string
             total_complete_payment_rate:
               description: Rate of total completed payments.
+              type:
+                - "null"
+                - string
+            on_web_order:
+              description: 'The number of Place an Order events reported by the website pixel ("Orders placed (website)" in Ads Manager).'
+              type:
+                - "null"
+                - string
+            total_on_web_order_value:
+              description: 'The total value of Place an Order events reported by the website pixel ("Orders placed value (website)" in Ads Manager).'
+              type:
+                - "null"
+                - string
+            cost_per_on_web_order:
+              description: 'The average cost of each Place an Order event reported by the website pixel ("Cost per order placed (website)" in Ads Manager).'
+              type:
+                - "null"
+                - string
+            value_per_on_web_order:
+              description: 'The average value of each Place an Order event reported by the website pixel ("Value per order placed (website)" in Ads Manager).'
+              type:
+                - "null"
+                - string
+            on_web_order_rate:
+              description: 'The unique Place an Order rate on the website ("Unique order placed rate (website)" in Ads Manager).'
               type:
                 - "null"
                 - string

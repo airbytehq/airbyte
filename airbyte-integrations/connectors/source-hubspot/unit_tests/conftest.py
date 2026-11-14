@@ -46,6 +46,7 @@ OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "goal_targets",
     "leads",
     "line_item",
+    "listings",
     "meetings",
     "notes",
     "tasks",

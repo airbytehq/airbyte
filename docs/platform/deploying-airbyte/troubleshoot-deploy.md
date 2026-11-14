@@ -26,7 +26,7 @@ Install abctl using an alternative method instead. See the [abctl installation o
 The installer needs write access to the install directory (default `/usr/local/bin`). If you don't have `sudo` access or want to install to a different location, set the `DIR_INSTALL` environment variable.
 
 ```shell
-DIR_INSTALL=$HOME/bin curl -LsfS https://get.airbyte.com | bash -
+curl -LsfS https://get.airbyte.com | DIR_INSTALL=$HOME/bin bash -
 ```
 
 Make sure the target directory exists and is in your `PATH`.
@@ -35,7 +35,7 @@ Make sure the target directory exists and is in your `PATH`.
 
 ### Airbyte Bootloader failed to start
 
-- Error: `pod airbyte-abctl-airbyte-bootloader failed`
+- Error: `bootloader failed`
 - Github Discussion [#45458](https://github.com/airbytehq/airbyte/discussions/45458)
 - Status: Investigating
 
@@ -120,16 +120,14 @@ spec.rules[2].host: Invalid value: "0.0.0.0": must be a DNS name, not an IP addr
 
 ### Unable to Read Values from YAML file
 
-- Error: `unable to read values from yaml file`
+- Error: `no such file or directory` when specifying `--values`
 
 :::tip
 Verify that you are in the correct directory or informing the path to the file correctly.
 :::
 
 ```shell
-unable to merge values with values file './values.yaml': unable to read values
-from yaml file './values.yaml': failed to read file ./values.yaml: open ./values.yaml:
- no such file or directory
+--values: stat /path/to/values.yaml: no such file or directory
 ```
 
 ---
