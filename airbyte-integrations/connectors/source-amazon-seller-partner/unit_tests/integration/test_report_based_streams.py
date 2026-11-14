@@ -443,6 +443,51 @@ class TestFullRefresh:
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
         assert output.records[0].record.data.get(date_field) == expected_date_value
 
+    @HttpMocker()
+    def test_seller_feedback_uk_four_digit_year(self, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = "GET_SELLER_FEEDBACK_DATA"
+        marketplace_id = "A1F83G8C2ARO7P"
+        config_builder = config()
+        config_builder.build()["region"] = "UK"
+
+        def uk_request(request: RequestBuilder):
+            request.with_base_url("https://sellingpartnerapi-eu.amazon.com")
+            request._headers["host"] = "sellingpartnerapi-eu.amazon.com"
+            return request.build()
+
+        request_body = {
+            "reportType": stream_name,
+            "marketplaceIds": [marketplace_id],
+            "dataStartTime": CONFIG_START_DATE,
+            "dataEndTime": CONFIG_END_DATE,
+        }
+        http_mocker.get(uk_request(_get_reports_request()), _get_reports_response())
+        http_mocker.post(
+            uk_request(_create_report_request(stream_name).with_body(json.dumps(request_body))), _create_report_response(_REPORT_ID)
+        )
+        http_mocker.get(
+            uk_request(_check_report_status_request(_REPORT_ID)),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            uk_request(_get_document_download_url_request(_REPORT_DOCUMENT_ID)),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            HttpResponse(
+                body="Date\tRating\tComments\tYour Response\tOrder ID\tRater Email\n16/09/2026\t5\tGreat\t\torder-1\t\n",
+                status_code=HTTPStatus.OK,
+            ),
+        )
+
+        output = self._read(stream_name, config_builder)
+        assert len(output.records) == 1
+        assert output.records[0].record.data["date"] == "2026-09-16"
+        assert output.records[0].record.data["order_id"] == "order-1"
+
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
     def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
