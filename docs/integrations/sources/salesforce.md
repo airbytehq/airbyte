@@ -164,6 +164,25 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 
 <!-- /env:oss -->
 
+## Refresh-token expiration
+
+The **Client** (Airbyte Connected App) authentication method uses an OAuth refresh token. Salesforce expires refresh tokens after 30 days without a successful token refresh. This limit applies to both Airbyte-managed and customer-owned OAuth apps, and Salesforce administrators can't extend this platform-level limit. More restrictive app policies can expire tokens sooner. **ClientCredentials** doesn't use a refresh token, so the idle refresh-token limit doesn't apply to that method.
+
+Salesforce's rolling enforcement began on November 4, 2026, for production, scratch, and Developer Edition organizations, and on October 21, 2026, for sandboxes. Enforcement dates vary by organization. When enforcement reaches an organization, tokens already unused for 30 days or longer expire immediately. Enforcement doesn't start a new 30-day grace period. See [Salesforce's enforcement notice](https://help.salesforce.com/s/articleView?id=005461275&language=en_US&type=1).
+
+Each successful refresh-token exchange resets the inactivity window. Normal syncs use the refresh token, but paused connections and connections used less than once every 30 days may require reauthorization when you resume them. Don't create artificial refresh activity solely to prevent expiration. For infrequent unattended integrations, plan for reauthorization or consider [client credentials](#use-your-own-external-client-app-client-credentials).
+
+If authentication expires:
+
+<!-- env:cloud -->
+- **Airbyte Cloud**: open the Salesforce source settings and, under **Client** (Airbyte Connected App), click **Re-authenticate**. Sign in to the same Salesforce organization, click **Save & Test**, wait for the connection test to pass, and retry the sync.
+<!-- /env:cloud -->
+<!-- env:oss -->
+- **Airbyte Open Source**: repeat the OAuth authorization flow for your app to obtain a new refresh token. Replace **Refresh Token** in the Salesforce source settings, save the settings, test the connection, and retry the sync.
+<!-- /env:oss -->
+
+Retrying with the expired refresh token won't restore access. Salesforce can also return `invalid_grant` for revoked tokens or other authentication problems; the error alone doesn't confirm idle expiration.
+
 <HideInUI>
 
 ## Supported sync modes
@@ -233,6 +252,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 ### Connection test login failures
 
 - **Expired or revoked authentication / `invalid_grant`**: Re-authenticate the source.
+  For refresh-token authentication, see [Refresh-token expiration](#refresh-token-expiration) for the 30-day idle limit and recovery steps.
   Check **Sandbox** (`is_sandbox`): sandbox organizations authenticate through
   `test.salesforce.com`, while production organizations use `login.salesforce.com`.
 - **Invalid Connected App credentials / `invalid_client_id` or `invalid_client`**:

@@ -21,8 +21,8 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: "sequence_states"
-            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "mail_aliases"
+            bypass_reason: "Test account has no mail_aliases; covered by mock-server tests"
   incremental:
     tests:
       - config_path: "secrets/config.json"
