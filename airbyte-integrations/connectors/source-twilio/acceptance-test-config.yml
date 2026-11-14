@@ -48,6 +48,8 @@ acceptance_tests:
             bypass_reason: "No data for this stream currently"
           - name: executions
             bypass_reason: "No data for this stream currently"
+          - name: subaccounts
+            bypass_reason: "stream not filled yet"
   incremental:
     tests:
       - config_path: "secrets/config.json"
