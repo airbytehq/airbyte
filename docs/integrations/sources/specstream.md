@@ -6,7 +6,7 @@ This source syncs the lists your API key can open and their records, including l
 
 ## Prerequisites
 
-- A SpecStream account. New accounts get $10 of work free, no card.
+- A SpecStream account. New accounts get $10 of credit, no card.
 - A SpecStream API key. In SpecStream, open **Agents & API** and create a key. The source only reads, so the key can have a spending limit of $0.
 
 ## Configuration
