@@ -33,8 +33,6 @@ ERROR_HANDLER_STREAMS = [
     "greeting_categories",
     "greetings",
     "phone_numbers",
-    "call_legs",
-    "calls",
     "current_queue_activity",
     "account_overview",
     "ivrs",

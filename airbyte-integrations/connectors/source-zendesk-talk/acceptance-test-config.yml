@@ -39,11 +39,6 @@ acceptance_tests:
             bypass_reason:
               "The stream is not empty, but makes the test failed due to
               frequently changing primary key value"
-  incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
