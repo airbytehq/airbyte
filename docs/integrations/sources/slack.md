@@ -20,7 +20,7 @@ Before you begin, have the following ready:
 The following instructions guide you through creating a Slack app. Airbyte can only replicate messages from channels that the app has been added to.
 
 :::info
-If you are using a Slack Bot Token, you can skip this section.
+If you already have a Slack Bot Token, you can skip to [Step 2](#step-2-set-up-the-slack-connector-in-airbyte).
 :::
 
 :::warning
@@ -42,6 +42,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  channels:join
  channels:read
  files:read
+ groups:history
  groups:read
  links:read
  reactions:read
@@ -51,6 +52,10 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  users:read
  users.profile:read
 ```
+
+:::tip
+The `groups:history` and `groups:read` scopes are required to sync data from private channels. If you only need public channels, you can omit them.
+:::
 
 6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
 7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
@@ -178,7 +183,21 @@ Because this throttle can slow down a sync that includes other streams, consider
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Slack source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+#### Slack API error handling
+
+The Slack Web API often reports errors in an HTTP 200 response whose `ok` field is `false`. For data-reading requests, the connector classifies these HTTP 200 responses by their `error` code:
+
+- **Authentication or permission errors**, such as `missing_scope`, `not_authed`, `invalid_auth`, `token_revoked`, `token_expired`, and `no_permission`, fail the sync with a configuration error. Re-authenticate or check your token's scopes.
+- **Rate limiting** (`ratelimited`) is retried automatically.
+- **Inaccessible channels or threads**, such as `not_in_channel`, `channel_not_found`, `is_archived`, and `thread_not_found`, are skipped, and the sync continues with other channels.
+- **Transient errors**, such as `request_timeout`, `service_unavailable`, `fatal_error`, and `internal_error`, are retried automatically.
+- **Any other error code** fails the sync with a system error that includes the code Slack returned.
+
+For non-200 responses whose error code doesn't match an earlier filter, HTTP-status filters can take precedence over the error-code catch-all. For example, the Users stream treats HTTP 400/403 as configuration errors, while Users and Channel Members retry HTTP 500/503. Users and Channel Members also explicitly handle HTTP 429 before the catch-all. Channels, Channel Messages, and Threads can fail with a system error if an HTTP 429 response contains `ok=false` and an unrecognized error code.
+
+Automatic channel joining is separate: for HTTP 200 `ok=false` responses, a `missing_scope` error fails with a configuration error, but other join errors are logged rather than classified by the data-reading rules above.
 
 #### Threads stream performance
 
@@ -202,6 +221,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.28 | 2026-11-10 | [88808](https://github.com/airbytehq/airbyte/pull/88808) | Update dependencies |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
 | 3.2.25 | 2026-09-28 | [86496](https://github.com/airbytehq/airbyte/pull/86496) | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |

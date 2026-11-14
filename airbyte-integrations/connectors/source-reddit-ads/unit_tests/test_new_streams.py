@@ -15,6 +15,35 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 _PLACEHOLDER_ID = "a2_abc123"
 _AD_ACCOUNT_URL = f"https://ads-api.reddit.com/api/v3/ad_accounts/{_PLACEHOLDER_ID}"
 _AD_GROUP_URL = f"{_AD_ACCOUNT_URL}/ad_groups"
+# Report metrics that Reddit's v3 OpenAPI spec types as int64.
+_INTEGER_REPORT_METRICS = {
+    "clicks",
+    "conversion_lead_clicks",
+    "conversion_lead_total_value",
+    "conversion_lead_views",
+    "conversion_page_visit_clicks",
+    "conversion_page_visit_views",
+    "conversion_purchase_clicks",
+    "conversion_purchase_total_items",
+    "conversion_purchase_total_value",
+    "conversion_purchase_views",
+    "conversion_search_clicks",
+    "conversion_search_views",
+    "conversion_sign_up_clicks",
+    "conversion_sign_up_views",
+    "conversion_signup_total_value",
+    "conversion_view_content_clicks",
+    "conversion_view_content_views",
+    "engaged_click",
+    "impressions",
+    "key_conversion_clicks",
+    "key_conversion_total_count",
+    "key_conversion_views",
+    "reach",
+    "reddit_leads",
+    "spend",
+    "video_viewable_impressions",
+}
 
 
 def _catalog(stream_name: str, sync_mode: SyncMode = SyncMode.incremental):
@@ -111,8 +140,13 @@ def test_discover_pins_new_stream_keys_formats_and_report_columns() -> None:
     for name in new_reports:
         assert {"impressions", "spend"} <= properties[name].keys()
         assert properties[name]["date"] == {"type": "string", "format": "date"}
-    assert properties["campaign_report"]["date"] == {"type": "string"}
-    date_time_fields = {"ad_account": {"created_at", "modified_at"}, "ad_group": {"created_at", "modified_at", "start_time", "end_time"}}
+    assert properties["campaign_report"]["date"] == {"type": "string", "format": "date"}
+    date_time_fields = {
+        "ad": {"created_at", "modified_at", "preview_expiry"},
+        "ad_account": {"created_at", "modified_at"},
+        "ad_group": {"created_at", "modified_at", "start_time", "end_time"},
+        "campaign": {"created_at", "modified_at", "start_time", "end_time"},
+    }
     for name, fields in date_time_fields.items():
         assert {field for field, schema in properties[name].items() if schema.get("format") == "date-time"} == fields
     assert [name for name in ["campaign_report", *new_reports] if "campaign_id" in properties[name]] == [
@@ -120,3 +154,16 @@ def test_discover_pins_new_stream_keys_formats_and_report_columns() -> None:
         "ad_group_report",
         "ad_report",
     ]
+
+
+def test_discover_types_report_counts_and_spend_cap_as_integers() -> None:
+    config = base_config()
+    streams = {stream.name: stream for stream in discover(get_source(config), config).catalog.catalog.streams}
+    properties = {name: stream.json_schema["properties"] for name, stream in streams.items()}
+
+    for name in ["campaign_report", "ad_account_report", "ad_group_report", "ad_report"]:
+        metric_types = {field: schema.get("type") for field, schema in properties[name].items()}
+        assert {field for field, field_type in metric_types.items() if field_type == ["integer", "null"]} == _INTEGER_REPORT_METRICS
+        for field in ["cpc", "ctr", "ecpm", "frequency", "conversion_roas", "conversion_purchase_total_value_all"]:
+            assert metric_types[field] == ["number", "null"]
+    assert properties["campaign"]["spend_cap"] == {"type": ["integer", "null"]}

@@ -382,7 +382,7 @@ def test_campaign_report_normalizes_offset_start_time_to_utc() -> None:
 
 
 @freeze_time("2026-09-28T00:00:00Z")
-def test_campaign_report_keeps_window_end_day_when_date_has_time_suffix() -> None:
+def test_campaign_report_keeps_window_end_day_and_normalizes_date_with_time_suffix() -> None:
     config = base_config(start_time="2026-09-25T00:00:00Z")
     catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
     rows = [{"campaign_id": "campaign-1", "date": f"2026-09-{day}T00:00:00Z"} for day in (25, 26, 27)]
@@ -396,7 +396,8 @@ def test_campaign_report_keeps_window_end_day_when_date_has_time_suffix() -> Non
         output = read(get_source(config, catalog), config, catalog)
 
     assert output.errors == []
-    assert [message.record.data["date"] for message in output.records] == [row["date"] for row in rows]
+    assert [message.record.data["date"] for message in output.records] == ["2026-09-25", "2026-09-26", "2026-09-27"]
+    assert output.state_messages[-1].state.stream.stream_state.date == "2026-09-27"
 
 
 def _sync(now: str, config: dict, inclusive_end: bool, state=None, stream_name: str = "campaign_report"):

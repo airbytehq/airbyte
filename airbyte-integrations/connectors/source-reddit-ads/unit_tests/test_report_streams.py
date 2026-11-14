@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _PLACEHOLDER_ID = "a2_abc123"
@@ -181,3 +182,52 @@ def test_report_paginates_and_decodes_percent_encoded_token(
     assert len(report_requests) == 2
     http_mocker.assert_number_of_calls(first_request, 1)
     http_mocker.assert_number_of_calls(next_page_request, 1)
+
+
+@pytest.mark.parametrize("stream_name,breakdowns,_expected_ids", _REPORT_STREAMS)
+def test_report_legacy_timestamp_state_round_trips_to_plain_date(
+    stream_name: str,
+    breakdowns: list[str],
+    _expected_ids: dict,
+) -> None:
+    config = base_config(start_time="2026-10-02T00:00:00Z", report_lookback_window_days=0)
+    state = StateBuilder().with_stream_state(stream_name, {"date": "2026-10-13T00:00:00Z"}).build()
+    rows = [_report_record(breakdowns, f"2026-10-{day}T00:00:00Z", _PLACEHOLDER_ID) for day in (13, 14)]
+
+    with freeze_time("2026-10-15T00:30:00Z"), HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(_REPORT_URL, body=_report_body(breakdowns, "2026-10-13T00:00:00Z", "2026-10-15T00:00:00Z")),
+            HttpResponse(body=json.dumps({"data": {"metrics": rows}}), status_code=200),
+        )
+        _mock_token(http_mocker)
+        output = read(get_source(config, _catalog(stream_name), state), config, _catalog(stream_name), state=state)
+
+    assert output.errors == []
+    assert [message.record.data["date"] for message in output.records] == ["2026-10-13", "2026-10-14"]
+    assert output.state_messages[-1].state.stream.stream_state.date == "2026-10-14"
+
+
+@pytest.mark.parametrize("stream_name,breakdowns,_expected_ids", _REPORT_STREAMS)
+def test_report_drops_null_date_rows_and_normalizes_the_rest(
+    stream_name: str,
+    breakdowns: list[str],
+    _expected_ids: dict,
+) -> None:
+    config = base_config(start_time="2026-10-13T00:00:00Z", report_lookback_window_days=0)
+    rows = [
+        _report_record(breakdowns, None, _PLACEHOLDER_ID),
+        _report_record(breakdowns, "2026-10-13T00:00:00Z", _PLACEHOLDER_ID),
+        _report_record(breakdowns, "2026-10-14", _PLACEHOLDER_ID),
+    ]
+
+    with freeze_time("2026-10-15T00:30:00Z"), HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(_REPORT_URL, body=_report_body(breakdowns, "2026-10-13T00:00:00Z", "2026-10-15T00:00:00Z")),
+            HttpResponse(body=json.dumps({"data": {"metrics": rows}}), status_code=200),
+        )
+        _mock_token(http_mocker)
+        output = read(get_source(config, _catalog(stream_name)), config, _catalog(stream_name))
+
+    assert output.errors == []
+    assert [message.record.data["date"] for message in output.records] == ["2026-10-13", "2026-10-14"]
+    assert output.state_messages[-1].state.stream.stream_state.date == "2026-10-14"

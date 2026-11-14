@@ -1944,6 +1944,7 @@ class Transaction(ShopifyBulkQuery):
                         id
                         currency: currencyCode
                         order_created_at: createdAt
+                        order_updated_at: updatedAt
                         transactions {
                             id
                             errorCode
@@ -2087,6 +2088,7 @@ class Transaction(ShopifyBulkQuery):
         "id",
         Field(name="currencyCode", alias="currency"),
         Field(name="createdAt", alias="order_created_at"),
+        Field(name="updatedAt", alias="order_updated_at"),
         Field(name="transactions", fields=transaction_fields),
     ]
 
@@ -2175,6 +2177,7 @@ class Transaction(ShopifyBulkQuery):
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
                     transaction["order_created_at"] = self.tools.from_iso8601_to_rfc3339(record, "order_created_at")
+                    transaction["order_updated_at"] = self.tools.from_iso8601_to_rfc3339(record, "order_updated_at")
                     yield self.process_transaction(transaction)
 
 
@@ -2295,6 +2298,17 @@ class Product(ShopifyBulkQuery):
                         }
                         summary
                     }
+                    category {
+                        id
+                        name
+                        level
+                        full_name: fullName
+                        is_leaf: isLeaf
+                        is_root: isRoot
+                        is_archived: isArchived
+                        parent_id: parentId
+                        ancestor_ids: ancestorIds
+                    }
                 }
             }
         }
@@ -2345,6 +2359,17 @@ class Product(ShopifyBulkQuery):
         "summary",
         Field(name="details", fields=feedback_details_fields),
     ]
+    category_fields: List[Field] = [
+        "id",
+        "name",
+        "level",
+        Field(name="fullName", alias="full_name"),
+        Field(name="isLeaf", alias="is_leaf"),
+        Field(name="isRoot", alias="is_root"),
+        Field(name="isArchived", alias="is_archived"),
+        Field(name="parentId", alias="parent_id"),
+        Field(name="ancestorIds", alias="ancestor_ids"),
+    ]
 
     # main query
     query_nodes: List[Field] = [
@@ -2377,6 +2402,7 @@ class Product(ShopifyBulkQuery):
         Field(name="seo", fields=["description", "title"]),
         Field(name="featuredMedia", fields=featured_media_fields),
         Field(name="feedback", fields=feedback_fields),
+        Field(name="category", fields=category_fields),
         Field(name="variantsCount", alias="total_variants", fields=[Field(name="count", alias="total_variants")]),
         Field(name="mediaCount", alias="media_count", fields=[Field(name="count", alias="media_count")]),
         Field(name="options", fields=["id", "name", "values", "position"]),

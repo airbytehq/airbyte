@@ -31,7 +31,7 @@ WEB_ANALYTICS_STREAMS = [
 ]
 
 STREAM_EXPECTED_PARENT_AND_OBJECT = {
-    "contacts_web_analytics": ("contacts_stream", "contact"),
+    "contacts_web_analytics": ("contacts_search_stream", "contact"),
     "companies_web_analytics": ("companies_stream", "company"),
     "deals_web_analytics": ("deals_stream", "deal"),
     "tickets_web_analytics": ("tickets_stream", "ticket"),

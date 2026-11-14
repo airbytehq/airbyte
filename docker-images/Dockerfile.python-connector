@@ -36,7 +36,8 @@ RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
 # Until PEP 751 is adopted, we have to install with Poetry in order
 # to respect the `poetry.lock` file.
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --without=dev
+    poetry install --no-interaction --no-ansi --without=dev && \
+    pip install --no-cache-dir 'certifi>=2026.10.23'
 
 # Now build the final stage
 FROM ${BASE_IMAGE}

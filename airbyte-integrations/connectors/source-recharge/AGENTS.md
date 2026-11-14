@@ -11,8 +11,10 @@ documented as "limited to events that occurred in the last 7 days", and it rejec
 `updated_at_min` accepts an arbitrarily old date.
 
 `base_incremental_events_stream` therefore puts a `min_datetime` floor of `day_delta(-7)` on its
-`MinMaxDatetime` start date, so the value actually sent as `created_at_min` is never older than seven
-days. The floor is evaluated per slice and applies to **both** inputs to the cursor: a `start_date`
+`MinMaxDatetime` start date and re-applies it in the requester's `created_at_min` expression, so the
+value sent is never older than seven days at request time. SDM evaluates `start_datetime` once, when
+it builds the streams at sync start, and `events` can be requested hours later. The floor applies to
+**both** inputs to the cursor: a `start_date`
 from config *and* a saved state cursor restored on an incremental run. A connection configured with a
 `start_date` of 2020 and a connection resuming `events` after a two-week pause therefore issue the
 same request — `created_at_min = now - 7d`.
@@ -21,7 +23,7 @@ Two consequences follow from this being an API ceiling rather than a connector p
 endpoint cannot serve older events to any client, so the clamp does not drop records that were
 otherwise retrievable. And because the stream then advances its cursor past the skipped interval and
 reports success, a truncated resume is not distinguishable from a clean one in the sync log. `events`
-is also the only incremental stream carrying no `lookback_window`: a lookback cannot widen the window
+has no `lookback_window`: a lookback cannot widen the window
 past the floor, so `lookback_window_days` has no effect on this stream.
 
 **Why this matters:** Removing the `min_datetime` floor, moving it past `-7`, or lifting it onto the
@@ -31,3 +33,45 @@ looks scoped to one stream takes down all of them. The `-7` value is itself deli
 found the real enforced cutoff nearer 8 days, giving `-7` close to a day of margin against clock and
 request-timing skew — but that margin is not part of Recharge's documented promise and must not be
 spent by pushing the floor toward `-8`.
+
+## 2. Cursor Pages Omit Sorting and Date Filters
+
+Recharge's [2021-01 cursor pagination docs](https://developer.rechargepayments.com/2021-01/cursor_pagination)
+state that "the only compatible filter allowed to be used with cursors is limit"; the 2021-11 reference
+pairs `cursor` only with `limit` in its examples. Incremental streams using `updated_at` send
+`sort_by=updated_at-asc` on their first page so records arrive in cursor order. The requester expression
+`{{ 'updated_at-asc' if not next_page_token else '' }}` renders an empty value on cursor pages, which
+the CDK drops from request parameters. Combined with
+`ignore_stream_slicer_parameters_on_paginated_requests: true`, this removes both sorting and date
+filters after the first page. Each new slice starts with its own filters and sorting again.
+The shared `updated_at` cursor re-reads `lookback_window_days` plus one hour before the saved cursor
+to capture updates committed while the previous sync was running; orders and events do not use this margin.
+
+**Why this matters:** Making `sort_by` unconditional or retaining date filters on cursor pages sends
+parameters Recharge documents as incompatible with a cursor (whether it rejects or ignores them is not
+documented). Do not apply this omission to page-number pagination: the deprecated
+orders API needs filters and sorting on every page.
+
+## 3. Orders Switches API Versions and Keeps a Naive Cursor
+
+Two `ConditionalStreams` entries select exactly one `orders` stream: `use_orders_deprecated_api: true`
+uses `2021-01`, while false or a missing key uses `2021-11`. The setup form's spec default is true;
+that does not change the missing-key runtime behavior. Each conditional child explicitly declares
+`type: DeclarativeStream` so manifest schema validation succeeds.
+
+Both variants use 30-day slices with one-second granularity and resume with `updated_at_min` equal
+to the saved cursor. Recharge documents only "updated after the given date", so treating that bound
+as inclusive is the connector's assumption, not a documented contract. The
+[2021-01 orders API](https://developer.rechargepayments.com/2021-01/orders) returns naive
+`updated_at` values and documents no timezone; comparing the same orders across API versions, in
+fixtures and in production state, shows they are US-Eastern wall-clock time. Requests and state
+therefore retain `%Y-%m-%d %H:%M:%S` rather than converting them to UTC. Cursor parsing also accepts
+legacy ISO timestamps with `+00:00` offsets. Neither variant uses
+`lookback_window_days`. The deprecated variant uses page numbers, restarting at page 1 (no `page`
+parameter) in each slice and retaining date filters and sorting on every page; the modern variant
+uses cursors and omits those parameters after the first page.
+
+**Why this matters:** Collapsing the variants can change the API selected by existing configurations
+or break pagination. Adding a second to the saved cursor skips boundary records; carrying page
+numbers across slices skips orders. Treating naive US-Eastern timestamps as UTC shifts the requested
+window rather than preserving the API's time convention.

@@ -83,3 +83,26 @@ class TestAllProjectsDetailStream(TestCase):
         discovered = discover(get_source(config=self._config()), config=self._config())
         schema = next(stream.json_schema for stream in discovered.catalog.catalog.streams if stream.name == _STREAM_NAME)
         assert list(Draft7Validator(schema).iter_errors(record)) == []
+
+    @HttpMocker()
+    def test_start_date_keeps_projects_created_earlier(self, http_mocker: HttpMocker):
+        """
+        The start date only applies to events, so a project created before it still
+        gets its detail row.
+        """
+        # The only project in projects.json was created on 2023-01-01, before the start date
+        config = ConfigBuilder().with_start_date("2025-01-01T00:00:00Z").build()
+        http_mocker.get(
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
+            create_response("projects", has_next=False),
+        )
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert [record.record.data["slug"] for record in output.records] == ["test-project"]

@@ -245,7 +245,7 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
 
         assert not output.records
         assert output.errors[0].trace.error.failure_type == FailureType.system_error
-        assert output.errors[0].trace.error.message == "Invalid parameter"
+        assert output.errors[0].trace.error.message == "TikTok Marketing API returned an error (code 40006): Invalid parameter"
 
     @HttpMocker()
     def test_given_40133_throttling_when_read_then_retry(self, http_mocker: HttpMocker):

@@ -182,6 +182,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.2 | 2026-10-22 | [89641](https://github.com/airbytehq/airbyte/pull/89641) | Upgrade to Bulk CDK 1.2.3: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; pin httpcore5 5.4.4. |
 | 1.0.1 | 2026-10-02 | [87654](https://github.com/airbytehq/airbyte/pull/87654) | Fail the connection test with an actionable error when **Use the BigQuery Storage Read API** is on but the service account lacks the Read Session User role or the API is not enabled; fall back to the query API during a sync even when the catalog holds only views |
 | 1.0.0 | 2026-10-02 | [86950](https://github.com/airbytehq/airbyte/pull/86950) | Rebuild on the Bulk CDK: Storage Read API reads with resumable read streams (Airbyte Cloud only), typed date, time and JSON columns, nested schemas, primary keys, cursor incremental reads and speed mode. See the migration guide |
 | 0.4.5 | 2026-01-21 | [72203](https://github.com/airbytehq/airbyte/pull/72203) | Increase integration test timeouts from 1 to 10 minutes |

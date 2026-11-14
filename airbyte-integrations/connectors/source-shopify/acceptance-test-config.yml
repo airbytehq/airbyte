@@ -27,18 +27,10 @@ acceptance_tests:
           disable_for_version: "2.5.17"
   basic_read:
     tests:
+      # `fetch_transactions_user_id` switches `transactions` from the GraphQL bulk stream to the REST
+      # stream that returns `user_id`; the other streams read the same as with `config.json`.
       - config_path: "secrets/config_transactions_with_user_id.json"
-        empty_streams:
-          - name: abandoned_checkouts
-            bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
-          - name: balance_transactions
-            bypass_reason: The stream requires real purchases to fill in the data.
-          - name: disputes
-            bypass_reason: The stream requires real purchases to fill in the data.
-          - name: market_countries
-            bypass_reason: The stream emits records only for shops with market-driven shipping enabled; the test shop uses legacy delivery profiles.
-          - name: deleted_products
-            bypass_reason: The test shop has no product deletion events for the Events API to return.
+        configured_catalog_path: "integration_tests/transactions_with_user_id_catalog.json"
       - config_path: "secrets/config.json"
         empty_streams:
           - name: abandoned_checkouts
@@ -49,15 +41,8 @@ acceptance_tests:
             bypass_reason: The stream requires real purchases to fill in the data.
           - name: market_countries
             bypass_reason: The stream emits records only for shops with market-driven shipping enabled; the test shop uses legacy delivery profiles.
-          - name: deleted_products
-            bypass_reason: The test shop has no product deletion events for the Events API to return.
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -197,6 +197,20 @@ class AdsInsights(FBMarketingIncrementalStream):
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
         return record
 
+    @cached_property
+    def _should_rename_results(self) -> bool:
+        """Stream-level part of the 'results' -> 'objective_results' rename decision, computed once instead of per record."""
+        if not self._custom_fields:
+            return False
+
+        properties = self.get_json_schema().get("properties", {})
+
+        has_objective_results_in_schema = "objective_results" in properties
+        has_objective_results_in_fields = "objective_results" in self._custom_fields
+        has_results_in_fields = "results" in self._custom_fields
+
+        return has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+
     def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Transform 'results' field to 'objective_results' in API responses.
@@ -210,19 +224,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         See: https://github.com/airbytehq/oncall/issues/10126
         """
-        if not self._custom_fields:
-            return record
-
-        schema = self.get_json_schema()
-        properties = schema.get("properties", {})
-
-        has_objective_results_in_schema = "objective_results" in properties
-        has_objective_results_in_fields = "objective_results" in self._custom_fields
-        has_results_in_fields = "results" in self._custom_fields
-
-        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
-
-        if should_rename and "results" in record and "objective_results" not in record:
+        if self._should_rename_results and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
 
         return record
@@ -645,6 +647,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
+        return self._json_schema
+
+    @cached_property
+    def _json_schema(self) -> Mapping[str, Any]:
+        # get_json_schema() is called for every record, so load and resolve the schema files only once.
+        # The result depends only on settings fixed in __init__ (custom fields, breakdowns, level).
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
         schema = loader.get_schema("ads_insights")
         if self._custom_fields:

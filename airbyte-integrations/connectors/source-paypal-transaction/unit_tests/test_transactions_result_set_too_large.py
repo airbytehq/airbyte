@@ -184,6 +184,8 @@ class ResultSetTooLargeTest(TestCase):
 
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        # A window split would surface as an error on an unmocked half-window request instead.
+        assert "Data for the given start date is not available" in output.errors[0].trace.error.internal_message
         http_mocker.assert_number_of_calls(request, 1)
 
 
