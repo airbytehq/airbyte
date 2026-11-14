@@ -7,9 +7,10 @@ import pytest
 import requests_mock as rm
 import yaml
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import _YAML_FILE_PATH
 
@@ -149,54 +150,44 @@ def test_error_40067_not_on_global_requester():
 
 
 RETRY_ERROR_MESSAGES = {
-    "60001": "TikTok Marketing API is under service maintenance (error 60001).",
-    "50000": "TikTok Marketing API returned a server-side error (code 50000).",
-    "51041": "TikTok Marketing API returned a server-side error (code 51041).",
-    "51004": "TikTok Marketing API returned a server-side error (code 51004).",
-    "51002": "TikTok Marketing API returned a server-side error (code 51002).",
-    "51001": "TikTok Marketing API returned a server-side error (code 51001, internal service timeout).",
-    "51043": "TikTok Marketing API returned a server-side error (code 51043, internal service timeout).",
+    60001: "TikTok Marketing API is under service maintenance (error 60001).",
+    50000: "TikTok Marketing API returned a server-side error (code 50000).",
+    51041: "TikTok Marketing API returned a server-side error (code 51041).",
+    51004: "TikTok Marketing API returned a server-side error (code 51004).",
+    51002: "TikTok Marketing API returned a server-side error (code 51002).",
+    51001: "TikTok Marketing API returned a server-side error (code 51001, internal service timeout).",
+    51043: "TikTok Marketing API returned a server-side error (code 51043, internal service timeout).",
 }
-RETRY_ERROR_HANDLER_LOCATIONS = {
-    "global": lambda manifest: manifest["definitions"]["requester"]["error_handler"]["response_filters"],
-    "daily_report": lambda manifest: manifest["definitions"]["report_daily_error_handler"]["response_filters"],
-    "pixel_instant_page_events": lambda manifest: manifest["definitions"]["pixel_instant_page_events"]["retriever"]["requester"][
-        "error_handler"
-    ]["response_filters"],
-    "pixel_events_statistics": lambda manifest: manifest["definitions"]["pixel_events_statistics"]["retriever"]["requester"][
-        "error_handler"
-    ]["response_filters"],
-}
-BANNED_RETRY_MESSAGE_PHRASES = (
-    "{{",
-    "the connector will retry automatically",
-    "you may need to re-sync",
-)
 
 
 @pytest.mark.parametrize("code,expected_message", RETRY_ERROR_MESSAGES.items())
-@pytest.mark.parametrize("location", RETRY_ERROR_HANDLER_LOCATIONS)
-def test_transient_retry_error_filters_have_stable_messages(location, code, expected_message):
-    manifest = _load_manifest()
-    filters = RETRY_ERROR_HANDLER_LOCATIONS[location](manifest)
-    matching_filters = [f for f in filters if f"code') == {code}" in f.get("predicate", "")]
-    assert len(matching_filters) == 1, f"Expected one handler for code {code} in {location}"
-    handler = matching_filters[0]
-    assert handler["action"] == "RETRY"
-    assert handler["failure_type"] == "transient_error"
-    assert handler["error_message"] == expected_message
-    assert not any(phrase in handler["error_message"].lower() for phrase in BANNED_RETRY_MESSAGE_PHRASES)
+def test_daily_report_read_exhausts_transient_error_retries(requests_mock: rm.Mocker, code: int, expected_message: str) -> None:
+    config = {
+        "access_token": "TOKEN",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-01",
+        "environment": {"advertiser_id": "12345"},
+    }
+    catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.incremental).build()
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=[])
+    report_mock = requests_mock.get(
+        "https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+        status_code=200,
+        json={"code": code, "message": "Vendor error detail that must not appear in the emitted message.", "data": {}},
+    )
 
+    output = read(source, config, catalog, expecting_exception=True)
 
-@pytest.mark.parametrize("code,expected_message", RETRY_ERROR_MESSAGES.items())
-def test_transient_retry_error_messages_match_across_handlers(code, expected_message):
-    manifest = _load_manifest()
-    messages = []
-    for location, get_filters in RETRY_ERROR_HANDLER_LOCATIONS.items():
-        matching_filters = [f for f in get_filters(manifest) if f"code') == {code}" in f.get("predicate", "")]
-        assert len(matching_filters) == 1, f"Expected one handler for code {code} in {location}"
-        messages.append(matching_filters[0]["error_message"])
-    assert messages == [expected_message] * len(RETRY_ERROR_HANDLER_LOCATIONS)
+    assert report_mock.call_count == 10
+    assert not output.records
+    stream_errors = [message.trace.error for message in output.errors if message.trace.error.stream_descriptor]
+    assert len(stream_errors) == 1
+    # TODO: Drop the CDK prefix and expect transient_error once the base image includes
+    # https://github.com/airbytehq/airbyte-python-cdk/pull/1115.
+    cdk_prefix = "Exhausted available request attempts. Please see logs for more details. Exception: "
+    assert stream_errors[0].message == f"{cdk_prefix}{expected_message}"
+    assert stream_errors[0].message.removeprefix(cdk_prefix) == expected_message
+    assert stream_errors[0].failure_type == FailureType.system_error
 
 
 @pytest.mark.parametrize(
