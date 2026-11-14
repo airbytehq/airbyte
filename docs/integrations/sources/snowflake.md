@@ -14,7 +14,7 @@ If you are currently using username and password authentication, see the [Snowfl
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose whether this connector will copy only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This connector connects to Snowflake with the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc) (version 4.3.4), as described in the Snowflake [JDBC documentation](https://docs.snowflake.com/en/user-guide/jdbc.html). It discovers both tables and views in the configured database, skipping the `INFORMATION_SCHEMA`, `SNOWFLAKE_SAMPLE_DATA`, and `UTIL_DB` schemas.
+This connector connects to Snowflake with the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc) (version 4.3.4), as described in the Snowflake [JDBC documentation](https://docs.snowflake.com/en/user-guide/jdbc.html). It discovers both tables and views in the configured database, skipping the `INFORMATION_SCHEMA` schema.
 
 #### Resulting schema
 
@@ -34,13 +34,15 @@ The Snowflake source connector supports incremental sync, which allows you to re
 
 ### How Incremental Sync Works
 
-At the start of each sync, the connector queries the current maximum value of the cursor column (`SELECT MAX(cursor_field)`) and uses it as the upper bound for that sync. It then reads rows where the cursor value is greater than or equal to the last checkpointed value and less than or equal to that upper bound, ordered by the cursor column. When the sync finishes, the upper bound becomes the starting point for the next sync. Because the lower bound is inclusive, rows whose cursor value equals the previous sync's upper bound are read again on the next sync; this makes sure that rows added with that same cursor value after the previous sync aren't missed.
+At the start of each sync, the connector queries the current maximum value of the cursor column (`SELECT MAX(cursor_field)`) and uses it as the upper bound for that sync. It then reads rows where the cursor value is greater than or equal to the last checkpointed value and less than or equal to that upper bound. When the sync finishes, the upper bound becomes the starting point for the next sync. Because the lower bound is inclusive, rows whose cursor value equals the previous sync's upper bound are read again on the next sync; this makes sure that rows added with that same cursor value after the previous sync aren't missed.
 
-The first sync of a stream reads the whole table. If the table has a primary key, the connector checkpoints its progress by primary key during this initial read so that an interrupted sync can resume where it left off.
+The connector reads this range with a single query and doesn't return the rows in cursor order. It saves the stream's progress only when the query finishes, so an interrupted incremental sync reads the same range again.
+
+The first sync of a stream reads the whole table. If the table has a primary key and is large enough for the connector to split it into primary key ranges, the connector checkpoints each range as it completes, so that an interrupted sync can resume where it left off. A table without a primary key is read with a single query, so an interrupted first sync starts over.
 
 ### Supported Cursor Field Data Types
 
-You can use a column of any of the following Snowflake data types as a cursor field:
+Use a column of one of the following Snowflake data types as a cursor field:
 
 **Date and Time Types:**
 
@@ -60,7 +62,7 @@ You can use a column of any of the following Snowflake data types as a cursor fi
 
 - `VARCHAR` (also `CHAR`, `CHARACTER`, `STRING`, and `TEXT`)
 
-`BOOLEAN` columns can't be used as a cursor.
+These are the recommended types. The connector doesn't reject a cursor column of another type, such as `BINARY` or `VARIANT`, but those values rarely sort in the order in which rows change. `BOOLEAN` columns aren't supported as a cursor.
 
 ### Choosing a Cursor Field
 
@@ -69,7 +71,7 @@ For effective incremental sync, choose cursor fields that:
 - **Are monotonically increasing**: Values should always increase over time (e.g., auto-incrementing IDs, creation timestamps)
 - **Are never updated**: Avoid fields that might be modified after record creation
 - **Have unique values**: While duplicate values are handled, they can cause records to be skipped or re-synced
-- **Are indexed**: For better query performance on large tables
+- **Follow the table's clustering**: Snowflake standard tables have no indexes. A range filter on the cursor column is fast on large tables when the table is clustered on that column or loaded in its order, because Snowflake can then skip micro-partitions
 
 **Good cursor field examples:**
 
@@ -87,7 +89,7 @@ For effective incremental sync, choose cursor fields that:
 
 **Timezone Handling**: The connector reads `TIMESTAMP_LTZ` and `TIMESTAMP_TZ` columns as timestamps with time zone, expressed in UTC. `TIMESTAMP_NTZ` columns are read as timestamps without time zone.
 
-**Timestamp Precision**: Snowflake timestamps can have up to 9 fractional digits (nanoseconds), but Airbyte supports 6 (microseconds). The connector rounds timestamps up to the nearest microsecond. Rounding up rather than down means that a row whose timestamp falls between the truncated cursor value and the true value is not skipped by the next sync.
+**Timestamp Precision**: Snowflake timestamps can have up to 9 fractional digits (nanoseconds), but Airbyte supports 6 (microseconds). The connector rounds `TIME` and timestamp values up to the next microsecond. Rounding up rather than down means that a row whose timestamp falls between the truncated cursor value and the true value is not skipped by the next sync.
 
 **Data Type Precision**: Snowflake's numeric types maintain their precision during sync. Ensure your destination can handle the precision of your cursor fields.
 
@@ -109,25 +111,9 @@ The Airbyte UI will automatically validate that your chosen cursor field is comp
 
 **Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. Records whose cursor value equals the last checkpointed value are re-synced on the next run, so expect some duplicate records in an Incremental | Append destination.
 
-**NULL cursor values**: Records with NULL cursor field values are excluded from incremental sync. Ensure your cursor field has a NOT NULL constraint or default value.
+**NULL cursor values**: The first sync of a stream reads records with a NULL cursor value, but later incremental syncs never pick them up. Ensure your cursor field has a NOT NULL constraint or default value.
 
 **State reset**: If you need to re-sync all data, you can reset the connection's state in the Airbyte UI, which will cause the next sync to behave like a full refresh.
-
-## Data type mapping
-
-| Snowflake type                                                          | Airbyte type                | Notes                                                                                          |
-| :---------------------------------------------------------------------- | :-------------------------- | :--------------------------------------------------------------------------------------------- |
-| `VARCHAR`, `CHAR`, `CHARACTER`, `STRING`, `TEXT`                        | string                      |                                                                                                |
-| `BOOLEAN`                                                               | boolean                     |                                                                                                |
-| `NUMBER`, `DECIMAL`, `NUMERIC`                                          | number                      | Precision is preserved.                                                                        |
-| `INT`, `INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `BYTEINT`            | integer                     |                                                                                                |
-| `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`       | number                      |                                                                                                |
-| `DATE`                                                                  | date                        |                                                                                                |
-| `TIME`                                                                  | time without time zone      | Rounded up to microsecond precision. Versions before 2.0.4 emitted every `TIME` value as NULL. |
-| `TIMESTAMP_NTZ`, `TIMESTAMPNTZ`, `TIMESTAMP`, `DATETIME`                | timestamp without time zone | Rounded up to microsecond precision.                                                           |
-| `TIMESTAMP_LTZ`, `TIMESTAMPLTZ`, `TIMESTAMP_TZ`, `TIMESTAMPTZ`          | timestamp with time zone    | Expressed in UTC. Rounded up to microsecond precision.                                         |
-| `BINARY`, `VARBINARY`                                                   | binary                      | Emitted as a Base64-encoded string.                                                            |
-| `VARIANT`, `OBJECT`, `ARRAY`, `GEOGRAPHY`, `GEOMETRY`, `VECTOR`, `FILE` | string                      | Semi-structured and geospatial values are emitted as strings.                                  |
 
 ## Getting started
 
@@ -156,7 +142,7 @@ Additional information about Snowflake connection parameters can be found in the
 
 This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
-To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands in Snowflake using a role that can create users and roles and grant privileges on the source objects (for example, `ACCOUNTADMIN`, or `SECURITYADMIN` combined with the owner of the source database). Replace the variable values with your own names, and replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
+To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands in Snowflake using a role that can create users and roles and holds the `MANAGE GRANTS` privilege (for example, `ACCOUNTADMIN` or `SECURITYADMIN`). Replace the variable values with your own names, and replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
 
 ```sql
 -- set variables (use the names as Snowflake stores them, which is uppercase unless you created the objects with quoted identifiers)
@@ -165,8 +151,6 @@ SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
 SET AIRBYTE_WAREHOUSE = 'AIRBYTE_WAREHOUSE';
 SET AIRBYTE_DATABASE = 'AIRBYTE_DATABASE';
 SET AIRBYTE_SCHEMA = 'AIRBYTE_DATABASE.AIRBYTE_SCHEMA';
-
-BEGIN;
 
 -- create Airbyte role
 CREATE ROLE IF NOT EXISTS IDENTIFIER($AIRBYTE_ROLE);
@@ -195,8 +179,6 @@ GRANT SELECT ON ALL VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFI
 -- also cover tables and views created later
 GRANT SELECT ON FUTURE TABLES IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
 GRANT SELECT ON FUTURE VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
-
-COMMIT;
 ```
 
 Repeat the schema grants for every schema you want to replicate. A single source connects to one database; to replicate data from multiple Snowflake databases, set up one source per database. If you leave the **Schema** field empty when configuring the source, the connector discovers tables from every schema in the database that the role can access.
@@ -286,15 +268,26 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 
 To read more, please check the official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#).
 
-## IP allow list
+## Data type mapping
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+| Snowflake type                                                                               | Airbyte type                | Notes                                                                                                                               |
+| :------------------------------------------------------------------------------------------- | :-------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| `VARCHAR`, `CHAR`, `CHARACTER`, `STRING`, `TEXT`                                             | string                      |                                                                                                                                     |
+| `BOOLEAN`                                                                                    | boolean                     |                                                                                                                                     |
+| `NUMBER`, `DECIMAL`, `NUMERIC`, `INT`, `INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `BYTEINT` | number                      | Precision is preserved. Snowflake stores the integer types as `NUMBER(38,0)`.                                                       |
+| `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`                            | number                      |                                                                                                                                     |
+| `DATE`                                                                                       | date                        |                                                                                                                                     |
+| `TIME`                                                                                       | time without time zone      | Rounded up to microsecond precision. Versions 1.0.0 through 2.0.3 emitted every `TIME` value as NULL.                               |
+| `TIMESTAMP_NTZ`, `TIMESTAMPNTZ`, `TIMESTAMP`, `DATETIME`                                     | timestamp without time zone | Rounded up to microsecond precision. `TIMESTAMP` follows the `TIMESTAMP_TYPE_MAPPING` parameter, which defaults to `TIMESTAMP_NTZ`. |
+| `TIMESTAMP_LTZ`, `TIMESTAMPLTZ`, `TIMESTAMP_TZ`, `TIMESTAMPTZ`                               | timestamp with time zone    | Expressed in UTC. Rounded up to microsecond precision.                                                                              |
+| `BINARY`, `VARBINARY`                                                                        | binary                      | Emitted as a Base64-encoded string.                                                                                                 |
+| `VARIANT`, `OBJECT`, `ARRAY`, `GEOGRAPHY`, `GEOMETRY`, `VECTOR`, `FILE`                      | string                      | Semi-structured and geospatial values are emitted as strings.                                                                       |
 
 ## Troubleshooting
 
-### JWT token is invalid
+### Key pair authentication failed (JWT token is invalid)
 
-If a check or sync fails with `JWT token is invalid` while you use key pair authentication, Snowflake rejected the key pair login. Retrying with the same settings doesn't fix it, so the connector reports it as a configuration error. Versions before 2.0.3 reported it as an expired session token instead. Check the following:
+If a check or sync fails with `Key pair authentication failed` while you use key pair authentication, Snowflake rejected the key pair login with the error `JWT token is invalid`, which appears in the error details. Retrying with the same settings doesn't fix it, so the connector reports it as a configuration error. Versions before 2.0.3 reported it as an expired session token instead. Check the following:
 
 - The **Username** matches the Snowflake user that holds the public key.
 - The **Server URL** points to the correct Snowflake account.
@@ -303,7 +296,7 @@ If a check or sync fails with `JWT token is invalid` while you use key pair auth
 
 To compare keys, run `DESC USER <username>;` and check the `RSA_PUBLIC_KEY_FP` property against the fingerprint of your public key. Snowflake's [key pair authentication guide](https://docs.snowflake.com/en/user-guide/key-pair-auth#verify-the-users-public-key-fingerprint) shows how to compute the fingerprint locally. To register a new public key, run `ALTER USER <username> SET RSA_PUBLIC_KEY='<public_key_value>';`.
 
-The error message includes a login request ID in brackets, for example `JWT token is invalid. [<id>]`. A Snowflake administrator can run `SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>');` to get the exact failure reason. See Snowflake's [key pair authentication troubleshooting guide](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting) for the full list of error codes.
+The error details include Snowflake's original message with a login request ID in brackets, for example `JWT token is invalid. [<id>]`. A Snowflake administrator can run `SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>');` to get the exact failure reason. See Snowflake's [key pair authentication troubleshooting guide](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting) for the full list of error codes.
 
 ### Check fails with "Enter only the host domain in Host"
 
@@ -318,7 +311,7 @@ Enter only the account's host domain, for example `accountname.us-east-2.aws.sno
 
 ### Check fails because of the warehouse, database, or schema
 
-Starting with version 2.0.4, the connection check fails at login if the configured **Warehouse**, **Database**, or **Schema** doesn't exist or the **Role** isn't authorized to use it. Earlier versions passed the check and failed on the first sync query instead. Confirm that the names are spelled as Snowflake stores them, and that the role has `USAGE` on the warehouse, database, and schema, as shown in [Create a dedicated read-only user](#create-a-dedicated-read-only-user-recommended-but-optional).
+Starting with version 2.0.4, the connection check fails at login if the configured **Warehouse**, **Database**, or **Schema** doesn't exist or the **Role** isn't authorized to use it. Earlier versions passed the check with a warehouse that doesn't exist or that the role can't use, and failed on the first sync query instead. The connector validates the **Schema** only when the field is set. Confirm that the names are spelled as Snowflake stores them, and that the role has `USAGE` on the warehouse, database, and schema, as shown in [Create a dedicated read-only user](#create-a-dedicated-read-only-user-recommended-but-optional).
 
 ### Tables or views missing from the schema
 
@@ -333,17 +326,21 @@ If only some columns of a table or view are readable, the connector keeps the ta
 
 If a table or view you expect is missing, confirm that you can run `SELECT * FROM <database>.<schema>.<object> LIMIT 0` as the Airbyte role, then fix the object's definition or grants in Snowflake and refresh the source schema.
 
-When **Check Table and Column Access Privileges** is disabled, the connector doesn't probe each object, so invalid views still appear in the schema. If you select one of those views, the sync fails with a configuration error. Deselect the view or fix its definition in Snowflake, then refresh the source schema. Starting with version 2.0.6, a view that references a dropped or renamed column fails with `A selected table or view references a column that no longer exists.` Recreate the view with `CREATE OR REPLACE VIEW` so that it only references existing columns.
+When **Check Table and Column Access Privileges** is disabled, the connector doesn't probe each object, so invalid views still appear in the schema. If you select one of those views, the sync fails. Deselect the view or fix its definition in Snowflake, then refresh the source schema. The connector reports a view that fails to expand, and an object that doesn't exist or that the role can't read, as a configuration error. Starting with version 2.0.6, it also reports a view that references a dropped or renamed column as a configuration error, with the message `A selected table or view references a column that no longer exists.` Recreate the view with `CREATE OR REPLACE VIEW` so that it only references existing columns.
 
 ### Discovery is slow or includes tables from other schemas (before 2.0.4)
 
-Before version 2.0.4, the Snowflake JDBC driver treated `_` and `%` in the **Schema** field as `LIKE` wildcards. A schema name such as `SCHEMA_A` also matched `SCHEMAXA`, and the driver scanned every schema in the database, which could take minutes on large accounts and returned tables, columns, and primary keys from other schemas. Upgrade to 2.0.4 or later, or add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params** on older versions.
+Before version 2.0.4, the Snowflake JDBC driver treated `_` and `%` in the **Schema** field as `LIKE` wildcards. A schema name such as `SCHEMA_A` also matched `SCHEMAXA`, and the driver scanned every schema in the database, which could take minutes on large accounts and returned tables, columns, and primary keys from other schemas. Upgrade to 2.0.4 or later. On versions 1.0.10 through 2.0.3, you can add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params** instead. Versions before 1.0.10 use a JDBC driver that doesn't have this parameter.
 
-If you relied on `_` or `%` to select several schemas at once, add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=true` to **JDBC URL Params** to keep that behavior in 2.0.4 and later.
+If you relied on `_` or `%` to select several schemas at once, the simplest replacement in 2.0.4 and later is to leave **Schema** empty and select the streams you need. To keep the pattern matching, add both `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=true` and `validateDefaultParameters=false` to **JDBC URL Params**. Without the second parameter, the connection check fails because the pattern isn't the name of an existing schema. Setting it also turns off the warehouse, database, and schema validation described in [Check fails because of the warehouse, database, or schema](#check-fails-because-of-the-warehouse-database-or-schema).
 
 ### Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows (before 2.0.4)
 
 Snowflake sessions default to the `America/Los_Angeles` time zone. Before version 2.0.4, the connector bound `TIMESTAMP_NTZ` cursor values in the session time zone, which shifted the incremental window and could skip rows. Upgrade to 2.0.4 or later, or add `TIMEZONE=UTC` to **JDBC URL Params** on older versions.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -366,7 +363,7 @@ Snowflake sessions default to the `America/Los_Angeles` time zone. Before versio
 | 1.0.10  | 2026-03-18 | [74834](https://github.com/airbytehq/airbyte/pull/74834)                                                            | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations                                                                           |
 | 1.0.9   | 2026-03-02 | [74081](https://github.com/airbytehq/airbyte/pull/74081)                                                            | Security update                                                                                                                                                               |
 | 1.0.8   | 2025-09-16 | [66311](https://github.com/airbytehq/airbyte/pull/66311)                                                            | Change CDK version to 0.1.31                                                                                                                                                  |
-| 1.0.7   | 2025-09-15 | [66200](https://github.com/airbytehq/airbyte/pull/66200)                                                            | Fix sampling bug for DefaultJdbcCursorIncrementalPartition                                                                                                                    |
+| 1.0.7   | 2025-09-16 | [66200](https://github.com/airbytehq/airbyte/pull/66200)                                                            | Fix sampling bug for DefaultJdbcCursorIncrementalPartition                                                                                                                    |
 | 1.0.6   | 2025-09-12 | [66226](https://github.com/airbytehq/airbyte/pull/66226)                                                            | Fix schema filtering functionality in versions 1.0.0+ - resolves "discovered zero tables" error and enables proper schema-level filtering                                     |
 | 1.0.5   | 2025-07-28 | [63780](https://github.com/airbytehq/airbyte/pull/63780)                                                            | Fix ts data type for snowflake                                                                                                                                                |
 | 1.0.3   | 2025-07-22 | [63713](https://github.com/airbytehq/airbyte/pull/63713)                                                            | Revert base image from 2.0.3 to 2.0.2 to fix SSL certificate errors                                                                                                           |
