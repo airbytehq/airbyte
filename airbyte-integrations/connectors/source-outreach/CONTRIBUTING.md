@@ -7,8 +7,9 @@ For general guidance on contributing to Airbyte connectors, see the
 
 ### Pagination and page sizes
 
-Every stream except `events` and `duties` sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
-([Pagination](https://developers.outreach.io/api/common-patterns/)).
+Every stream follows the full URL in `links.next` until it is absent
+([Pagination](https://developers.outreach.io/api/common-patterns/)). Every stream sends `sort=updatedAt` except
+`events`, `duties`, `audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
   ("must be a number between 1 and 1000, inclusive").
@@ -22,8 +23,17 @@ Every stream except `events` and `duties` sends `sort=updatedAt` and follows the
 
 ### Incremental sync
 
-- Every stream except `events` and `duties` is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
-  cursor value, so the last record of the previous sync is read again.
+- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except `events`, `duties` and the three below. The
+  filter includes the cursor value, so the last record of the previous sync is read again.
+- `audit_logs` is incremental on `timestamp`, with `sort=timestamp` and `filter[timestamp][gte]`. `/auditLogs`
+  rejects `sort=updatedAt` with `400 sort_parameter.unsupported_attribute`, and its records have no `updatedAt`.
+  Its `id` is a UUID string, not an integer. Outreach keeps audit-log events for about 90 days, so the first sync
+  returns at most that much regardless of `start_date`.
+- `recipients` and `compliance_requests` are full refresh and send no sort or filter. Both endpoints return
+  `400 filterParameter.unfilterableAttribute` for `filter[updatedAt]` and `400 sortParameter.unsortableAttribute` for
+  `sort=updatedAt`, although the records carry `updatedAt`.
+- `compliance_requests.pii` is kept on purpose as a nullable free-form object and is documented in the user docs.
+  Removing it after release is a breaking schema change. `Recipient` requests return `pii: null`.
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
   second format the value fails to parse and the state stays at `start_date`.
@@ -51,6 +61,13 @@ Re-authenticate with the required scopes or deselect the affected streams.
   `/events` has no `updatedAt`; filtering on it returns 400 `filterParameter.unknownFilter`.
 - `duties` is full refresh because it has no timestamps. It sends neither a cursor filter nor
   a sort: `sort=updatedAt` returns 400 `sortParameter.unknownAttribute`.
+
+### OAuth scopes
+
+`email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` need the
+`emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes.
+A token issued before these streams existed lacks them, and selecting one of the streams fails with the 403 below
+until the user re-authenticates. `/auditLogs` also needs an Outreach admin user.
 
 ### Error handling
 
