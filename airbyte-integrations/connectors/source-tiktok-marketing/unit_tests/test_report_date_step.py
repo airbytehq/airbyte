@@ -165,7 +165,7 @@ def test_daily_report_read_exhausts_transient_error_retries(requests_mock: rm.Mo
     config = {
         "access_token": "TOKEN",
         "start_date": "2024-01-01",
-        "end_date": "2024-01-01",
+        "end_date": "2024-01-02",
         "environment": {"advertiser_id": "12345"},
     }
     catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.incremental).build()
