@@ -146,7 +146,8 @@ def test_all_streams_flatten_jsonapi_records_exactly(stream_name: str) -> None:
         ),
     ]
     with HttpMocker() as http_mocker:
-        output = _read(http_mocker, stream_name, _response(resources))
+        sync_mode = SyncMode.incremental if "incremental_sync" in _STREAMS[stream_name] else SyncMode.full_refresh
+        output = _read(http_mocker, stream_name, _response(resources), sync_mode=sync_mode)
 
     assert not output.errors
     _assert_matches_legacy(output, resources)
