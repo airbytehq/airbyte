@@ -419,7 +419,7 @@ spec:
             - IE
             - IT
             - NL
-            - NO
+            - "NO"
             - PL
             - SE
             - US

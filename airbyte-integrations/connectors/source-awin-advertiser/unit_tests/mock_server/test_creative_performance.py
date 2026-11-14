@@ -76,6 +76,17 @@ class TestCreativePerformanceStream(TestCase):
         assert sorted((r.record.data["region"], r.record.data["creativeId"]) for r in output.records) == [("GB", 1), ("US", 1)]
 
     @HttpMocker()
+    def test_norway_region_is_accepted_and_requested(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(_request("NO", "2024-01-02"), _response([_row("NO", 1)]))
+        config = ConfigBuilder().with_start_date("2024-01-02").with_regions(["NO"]).build()
+        catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
+
+        output = read(get_source(config=config, catalog=catalog), config, catalog)
+
+        assert not output.errors
+        assert [(r.record.data["region"], r.record.data["creativeId"]) for r in output.records] == [("NO", 1)]
+
+    @HttpMocker()
     def test_second_read_resumes_every_region_from_the_emitted_state_minus_lookback(self, http_mocker: HttpMocker) -> None:
         for creative_id, (region, day) in enumerate(
             [(region, day) for region in ("GB", "US") for day in ("2024-01-01", "2024-01-02", "2024-01-03")], start=1
