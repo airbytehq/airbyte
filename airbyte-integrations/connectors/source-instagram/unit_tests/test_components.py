@@ -18,6 +18,8 @@ from .records import (
     expected_children_transformed,
     insights_record,
     insights_record_transformed,
+    story_navigation_record,
+    story_navigation_record_transformed,
 )
 
 
@@ -81,6 +83,50 @@ def test_break_down_results_transformation_coerces_non_string_dimension_values(c
 def test_instagram_insights_transformation(components_module, config):
     record_transformation = components_module.InstagramInsightsTransformation().transform(insights_record)
     assert record_transformation == insights_record_transformed
+
+
+def test_instagram_story_navigation_transformation(components_module):
+    record_transformation = components_module.InstagramStoryNavigationTransformation().transform(copy.deepcopy(story_navigation_record))
+    assert record_transformation == story_navigation_record_transformed
+
+
+def test_instagram_story_navigation_transformation_lowercases_action_types(components_module):
+    record = {
+        "data": [
+            {
+                "name": "navigation",
+                "values": [{"value": 3}],
+                "total_value": {
+                    "value": 3,
+                    "breakdowns": [
+                        {
+                            "dimension_keys": ["story_navigation_action_type"],
+                            "results": [
+                                {"dimension_values": ["TAP_FORWARD"], "value": 2},
+                                {"dimension_values": ["SWIPE_FORWARD"], "value": 1},
+                            ],
+                        }
+                    ],
+                },
+            }
+        ]
+    }
+
+    record_transformation = components_module.InstagramStoryNavigationTransformation().transform(record)
+
+    assert record_transformation == {"navigation": 3, "tap_forward": 2, "swipe_forward": 1}
+
+
+@pytest.mark.parametrize(
+    "record, expected",
+    [
+        pytest.param({"data": []}, {}, id="empty_data"),
+        pytest.param({}, {}, id="no_data"),
+        pytest.param({"data": [{"name": "navigation", "values": [{"value": 7}]}]}, {"navigation": 7}, id="no_breakdown"),
+    ],
+)
+def test_instagram_story_navigation_transformation_without_breakdown(components_module, record, expected):
+    assert components_module.InstagramStoryNavigationTransformation().transform(record) == expected
 
 
 def test_instagram_media_children_transformation_skips_failed_child(components_module, config, mocker):
