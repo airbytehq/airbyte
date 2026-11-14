@@ -7,15 +7,11 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+      - bypass_reason: "The GSM test config fails `check`: its account_username is a full hostname, so requests go to an invalid host (SSL hostname mismatch), and with the account name alone the ActiveCampaign API returns 402 Payment Required"
   discovery:
     tests:
       - config_path: "secrets/config.json"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+    bypass_reason: "The GSM test config fails `read`: its account_username is a full hostname, so requests go to an invalid host (SSL hostname mismatch), and with the account name alone the ActiveCampaign API returns 402 Payment Required"
