@@ -80,6 +80,8 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 
 Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns read and emit the full campaign list on every sync, including draft, queued and scheduled campaigns, because Brevo does not document that sending a campaign or updating its statistics changes `modifiedAt`. `start_date` does not limit these two streams, and their `modifiedAt` state is kept for compatibility. When Brevo's hourly quota runs out, these streams wait for the `x-sib-ratelimit-reset` interval before retrying.
 
+Brevo filters `transactional_email_events` by whole days, so every sync re-sends the events from the last synced day, and Incremental | Append will contain those repeats.
+
 ## Performance considerations
 
 Brevo enforces per-endpoint rate limits that vary by account tier. On the general tier available to all accounts, endpoints under `/v3/contacts/…` allow 10 requests per second, while most other endpoints this connector uses (CRM, campaigns, senders, domains, webhooks, account, organization) share a limit of 100 requests per hour. See Brevo's [rate limits documentation](https://developers.brevo.com/docs/api-limits) for the full per-tier breakdown.
