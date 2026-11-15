@@ -81,6 +81,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-11-15 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New Source: HypeAuditor |
+| 0.1.0 | 2026-11-15 | [93008](https://github.com/airbytehq/airbyte/pull/93008) | New Source: HypeAuditor |
 
 </details>
