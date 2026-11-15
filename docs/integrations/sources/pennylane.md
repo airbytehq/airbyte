@@ -15,7 +15,7 @@ You need a Pennylane company API token with access to API v1. The connector send
 Grant the following [v1 scopes](https://pennylane.readme.io/v1.0/docs/v1-scopes) for the streams you want to sync:
 
 | Scope | Streams |
-|-------|---------|
+| --- | --- |
 | `supplier_invoices` | `supplier_invoices`, `suppliers` |
 | `customer_invoices` | `customer_invoices`, `customer_estimates`, `customers`, `products`, `plan_items` |
 | `accounting` | `categories`, `category_groups` |
@@ -37,14 +37,14 @@ See Pennylane's [token management guide](https://pennylane.readme.io/docs/genera
 Both settings are required and have no default value.
 
 | Input | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `start_time` | `string` | Initial lower bound for `updated_at` on streams that support incremental sync. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`. Records created before this time can still be synced if they were updated on or after it. |
 | `api_key` | `string` | Pennylane company API token with the required v1 scopes. |
 
 ## Streams
 
 | Stream | Primary key | Full refresh | Incremental |
-|--------|-------------|--------------|-------------|
+| --- | --- | --- | --- |
 | `supplier_invoices` | `id` | Yes | Yes |
 | `suppliers` | `source_id` | Yes | Yes |
 | `plan_items` | `v2_id` | Yes | No |
@@ -78,7 +78,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
+| --- | --- | --- | --- |
 | 0.4.0 | 2026-11-15 | [91541](https://github.com/airbytehq/airbyte/pull/91541) | Paginate on `current_page`/`total_pages` instead of stopping on a short page. Add missing `customer_invoices` and `customers` fields, suggested streams, and a 1-hour heartbeat timeout (`maxSecondsBetweenMessages: 3600`) |
 | 0.3.53 | 2026-11-10 | [91670](https://github.com/airbytehq/airbyte/pull/91670) | Update dependencies |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
