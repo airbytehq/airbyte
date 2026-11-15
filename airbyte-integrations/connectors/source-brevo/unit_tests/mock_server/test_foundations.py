@@ -174,6 +174,124 @@ def test_parent_ids_are_injected(name: str, parent_path: str, parent_field: str,
         assert_calls(mocker, requests)
 
 
+EXISTING_FULL_REFRESH = [
+    ("contacts_folders", "contacts/folders", "folders", 50, "id"),
+    ("contacts_lists", "contacts/lists", "lists", 50, "id"),
+    ("contacts_segments", "contacts/segments", "segments", 50, "id"),
+    ("companies_attributes", "companies/attributes", None, None, "internalName"),
+    ("crm_pipeline_stages", "crm/pipeline/details", "stages", None, "id"),
+    ("crm_pipeline_details_all", "crm/pipeline/details/all", None, None, "pipeline"),
+    ("crm_tasktypes", "crm/tasktypes", None, None, "id"),
+    ("organization_invited_users", "organization/invited/users", "users", None, "email"),
+]
+
+
+@pytest.mark.parametrize("name,path,field,size,id_field", EXISTING_FULL_REFRESH, ids=[r[0] for r in EXISTING_FULL_REFRESH])
+@freeze_time(NOW)
+def test_existing_full_refresh_streams_read(name: str, path: str, field: str | None, size: int | None, id_field: str) -> None:
+    with HttpMocker() as mocker:
+        if size:
+            ids = list(range(size * 2))
+            requests = mock_pages(mocker, path, field, size, [{id_field: i} for i in ids])
+        else:
+            ids = ["first", "second"]
+            requests = [mock_page(mocker, path, field, [{id_field: i} for i in ids])]
+        output = run_read(name)
+        assert [r.record.data[id_field] for r in output.records] == ids
+        assert_calls(mocker, requests)
+
+
+def cursor_record(name: str, record_id: int, value: str) -> dict:
+    if name == "crm_deals":
+        return {"id": record_id, "attributes": {"last_updated_date": value}}
+    if name == "companies":
+        return {"id": record_id, "attributes": {"last_updated_at": value}}
+    return {"id": record_id, "modifiedAt": value}
+
+
+EXISTING_INCREMENTAL = [
+    (
+        "contacts", "contacts", "contacts", 1000, {"offset": 0}, {"offset": 1000},
+        "2023-11-14T00:00:00.000000Z", (UPDATED, "2023-11-14T23:30:00.000Z"), (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
+    ),
+    (
+        "crm_deals", "crm/deals", "items", 500, {"offset": 0}, {"offset": 500},
+        "2023-11-14T00:00:00.000000Z", ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"), (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
+    ),
+    (
+        "companies", "companies", "items", 500, {"page": 1}, {"page": 2},
+        "2023-11-14T00:00:00Z", (UPDATED, "2023-11-14T23:30:00.000Z"), ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "name,path,field,size,first_page,second_page,cold_since,cursors,states", EXISTING_INCREMENTAL, ids=[r[0] for r in EXISTING_INCREMENTAL]
+)
+@freeze_time(NOW)
+def test_existing_incremental_streams_paginate_and_resume(
+    name: str, path: str, field: str, size: int, first_page: dict, second_page: dict, cold_since: str, cursors: tuple[str, str], states: tuple[str, str]
+) -> None:
+    cursor_field = "modifiedAt" if name == "contacts" else "last_updated_at"
+    with HttpMocker() as mocker:
+        requests = [
+            mock_page(
+                mocker, path, field, [cursor_record(name, i, cursors[0]) for i in range(size)],
+                limit=size, sort="asc", modifiedSince=cold_since, **first_page,
+            ),
+            mock_page(
+                mocker, path, field, [cursor_record(name, size, cursors[0])],
+                limit=size, sort="asc", modifiedSince=cold_since, **second_page,
+            ),
+        ]
+        first = run_read(name, SyncMode.incremental)
+        assert [r.record.data["id"] for r in first.records] == list(range(size + 1))
+        assert first.most_recent_state.stream_state.__dict__ == {cursor_field: states[0]}
+        assert_calls(mocker, requests)
+    state = [first.state_messages[-1].state]
+    with HttpMocker() as mocker:
+        request = mock_page(
+            mocker, path, field, [cursor_record(name, size + 1, cursors[1])], limit=size, sort="asc", modifiedSince=states[0], **first_page
+        )
+        resumed = run_read(name, SyncMode.incremental, state)
+        assert [r.record.data["id"] for r in resumed.records] == [size + 1]
+        assert resumed.most_recent_state.stream_state.__dict__ == {cursor_field: states[1]}
+        assert_calls(mocker, [request])
+
+
+@freeze_time(NOW)
+def test_contacts_lists_contacts_resumes_each_list_from_its_own_cursor() -> None:
+    reads = [
+        (
+            {71: "2023-11-14T00:00:00Z", 83: "2023-11-14T00:00:00Z"},
+            {71: UPDATED, 83: "2023-11-14T22:00:00.000Z"},
+            {71: "2023-11-14T23:00:00Z", 83: "2023-11-14T22:00:00Z"},
+        ),
+        (
+            {71: "2023-11-14T23:00:00Z", 83: "2023-11-14T22:00:00Z"},
+            {71: "2023-11-14T23:30:00.000Z", 83: "2023-11-14T22:30:00.000Z"},
+            {71: "2023-11-14T23:30:00Z", 83: "2023-11-14T22:30:00Z"},
+        ),
+    ]
+    state = None
+    for since, modified, expected in reads:
+        with HttpMocker() as mocker:
+            requests = [mock_page(mocker, "contacts/lists", "lists", [{"id": 71}, {"id": 83}], limit=50, offset=0, sort="asc")]
+            for list_id in [71, 83]:
+                requests.append(
+                    mock_page(
+                        mocker, f"contacts/lists/{list_id}/contacts", "contacts", [{"id": list_id, "modifiedAt": modified[list_id]}],
+                        limit=500, offset=0, sort="asc", modifiedSince=since[list_id],
+                    )
+                )
+            output = run_read("contacts_lists_contacts", SyncMode.incremental, state)
+            assert sorted(r.record.data["listId"] for r in output.records) == [71, 83]
+            emitted = output.most_recent_state.stream_state.__dict__["states"]
+            assert {s["partition"]["listId"]: s["cursor"]["modifiedAt"] for s in emitted} == expected
+            assert_calls(mocker, requests)
+            state = [output.state_messages[-1].state]
+
+
 SCHEMA_RECORDS = [
     (
         "webhooks",
