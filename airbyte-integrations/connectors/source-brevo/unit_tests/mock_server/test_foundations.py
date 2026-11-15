@@ -308,39 +308,46 @@ NEW_STREAMS = [
 ]
 
 
+EVENT_WINDOWS = [
+    (
+        "inbound_email_events", "inbound/events", 500, "uuid", "2023-10-01T00:00:00Z",
+        [("2023-10-01T00:00:00.000000Z", "2023-10-30T23:59:59.999000Z"), ("2023-10-31T00:00:00.000000Z", "2023-11-14T23:59:59.000000Z")],
+        "2023-11-14T23:59:59.000000Z",
+    ),
+    (
+        "transactional_email_events", "smtp/statistics/events", 5000, "messageId", "2023-09-01T00:00:00Z",
+        [("2023-09-01", "2023-09-30"), ("2023-10-01", "2023-10-30"), ("2023-10-31", "2023-11-14")],
+        "2023-11-14",
+    ),
+]
+
+
+@pytest.mark.parametrize("name,path,size,id_field,start_date,windows,expected_state", EVENT_WINDOWS, ids=[w[0] for w in EVENT_WINDOWS])
 @freeze_time(NOW)
-def test_inbound_event_windows_preserve_last_millisecond() -> None:
-    name = "inbound_email_events"
-    config = ConfigBuilder().with_start_date("2023-10-01T00:00:00Z").build()
+def test_event_streams_split_history_into_windows(
+    name: str, path: str, size: int, id_field: str, start_date: str, windows: list[tuple[str, str]], expected_state: str
+) -> None:
+    config = ConfigBuilder().with_start_date(start_date).build()
     catalog = CatalogBuilder().with_stream(name, SyncMode.incremental).build()
     with HttpMocker() as mocker:
         requests = [
             mock_page(
                 mocker,
-                "inbound/events",
+                path,
                 "events",
-                [{"uuid": "boundary-event", "date": "2023-10-30T23:59:59.999Z"}],
-                limit=500,
+                [{id_field: str(i), "date": end if name == "inbound_email_events" else f"{end}T10:00:00.000Z"}],
+                limit=size,
                 offset=0,
                 sort="asc",
-                startDate="2023-10-01T00:00:00.000000Z",
-                endDate="2023-10-30T23:59:59.999000Z",
-            ),
-            mock_page(
-                mocker,
-                "inbound/events",
-                "events",
-                [],
-                limit=500,
-                offset=0,
-                sort="asc",
-                startDate="2023-10-31T00:00:00.000000Z",
-                endDate="2023-11-14T23:59:59.000000Z",
-            ),
+                startDate=start,
+                endDate=end,
+            )
+            for i, (start, end) in enumerate(windows)
         ]
         output = read(get_source(config), config=config, catalog=catalog, state=[])
         assert output.errors == []
-        assert [r.record.data["uuid"] for r in output.records] == ["boundary-event"]
+        assert sorted(r.record.data[id_field] for r in output.records) == [str(i) for i in range(len(windows))]
+        assert output.most_recent_state.stream_state.__dict__ == {"date": expected_state}
         assert_calls(mocker, requests)
 
 
@@ -368,7 +375,7 @@ def test_new_stream_reads_two_pages_and_resumes(name: str, path: str, field: str
         if cursor:
             expected = "2023-11-14" if name == "transactional_email_events" else STATE_VALUE
             assert output.most_recent_state.stream_state.__dict__ == {cursor: expected}
-    if cursor:
+    if cursor and name != "transactional_email_events":
         state = [output.state_messages[-1].state]
         with HttpMocker() as mocker:
             request = mock_page(
@@ -383,9 +390,29 @@ def test_new_stream_reads_two_pages_and_resumes(name: str, path: str, field: str
             )
             resumed = run_read(name, mode, state)
             assert [r.record.data[id_field] for r in resumed.records] == ["boundary", "new"]
-            expected = "2023-11-14" if name == "transactional_email_events" else "2023-11-14T23:30:00.000000Z"
-            assert resumed.most_recent_state.stream_state.__dict__ == {cursor: expected}
+            assert resumed.most_recent_state.stream_state.__dict__ == {cursor: "2023-11-14T23:30:00.000000Z"}
             assert_calls(mocker, [request])
+
+
+@freeze_time("2023-11-16T10:00:00Z")
+def test_transactional_events_resume_rereads_saved_day_then_advances() -> None:
+    state = StateBuilder().with_stream_state("transactional_email_events", {"date": "2023-11-15"}).build()
+    with HttpMocker() as mocker:
+        request = mock_page(
+            mocker,
+            "smtp/statistics/events",
+            "events",
+            [{"messageId": "m-saved-day", "date": "2023-11-15T09:00:00Z"}, {"messageId": "m-next-day", "date": "2023-11-16T08:00:00Z"}],
+            limit=5000,
+            offset=0,
+            sort="asc",
+            startDate="2023-11-15",
+            endDate="2023-11-16",
+        )
+        output = run_read("transactional_email_events", SyncMode.incremental, state)
+        assert [r.record.data["messageId"] for r in output.records] == ["m-saved-day", "m-next-day"]
+        assert output.most_recent_state.stream_state.__dict__ == {"date": "2023-11-16"}
+        assert_calls(mocker, [request])
 
 
 @pytest.mark.parametrize("name,path,field,size,id_field,cursor", NEW_STREAMS, ids=[r[0] for r in NEW_STREAMS])
