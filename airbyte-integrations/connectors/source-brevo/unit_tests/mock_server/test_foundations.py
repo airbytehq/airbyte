@@ -448,21 +448,6 @@ def test_added_fields_are_emitted_and_conform_to_discovery(name: str, path: str,
         assert_calls(mocker, [request])
 
 
-@freeze_time(NOW)
-def test_transactional_events_declare_emitted_deduplication_key() -> None:
-    name = "transactional_email_events"
-    record = {"messageId": "message-1", "event": "delivered", "email": "test@example.com", "date": UPDATED}
-    with HttpMocker() as mocker:
-        request = mock_page(mocker, "smtp/statistics/events", "events", [record], limit=5000, offset=0, sort="asc", **event_query(name))
-        output = run_read(name, SyncMode.incremental)
-        config = ConfigBuilder().build()
-        catalog = get_source(config).discover(logging.getLogger("brevo-test"), config)
-        stream = next(stream for stream in catalog.streams if stream.name == name)
-        assert stream.source_defined_primary_key == [["messageId"], ["event"], ["email"], ["date"]]
-        assert output.records[0].record.data == record
-        assert_calls(mocker, [request])
-
-
 NEW_STREAMS = [
     ("inbound_email_events", "inbound/events", "events", 500, "uuid", "date"),
     ("transactional_email_events", "smtp/statistics/events", "events", 5000, "messageId", "date"),

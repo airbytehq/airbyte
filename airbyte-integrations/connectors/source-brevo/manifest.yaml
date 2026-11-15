@@ -1219,11 +1219,6 @@ definitions:
     transactional_email_events:
       type: DeclarativeStream
       name: transactional_email_events
-      primary_key:
-        - messageId
-        - event
-        - email
-        - date
       retriever:
         type: SimpleRetriever
         requester:

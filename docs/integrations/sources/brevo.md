@@ -75,7 +75,7 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | `products` | `id` | Yes | Yes |
 | `senders` | `id` | Yes | No |
 | `smsCampaigns` | `id` | Yes | Yes |
-| `transactional_email_events` | `messageId`, `event`, `email`, `date` | Yes | Yes |
+| `transactional_email_events` | | Yes | Yes |
 | `webhooks` | `id` | Yes | No |
 
 Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns read and emit the full campaign list on every sync, including draft, queued and scheduled campaigns, because Brevo does not document that sending a campaign or updating its statistics changes `modifiedAt`. `start_date` does not limit these two streams, and their `modifiedAt` state is kept for compatibility. When Brevo's hourly quota runs out, these streams wait for the `x-sib-ratelimit-reset` interval before retrying.
