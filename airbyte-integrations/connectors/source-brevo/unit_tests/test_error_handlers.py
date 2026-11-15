@@ -35,9 +35,9 @@ def requester(requester_definition: dict[str, Any]) -> HttpRequester:
     [
         MANIFEST["definitions"]["streams"][name]["retriever"]["requester"]
         for name in STREAM_NAMES
-        if name not in {"transactional_email_events", "products", "categories", "emailCampaigns", "smsCampaigns"}
+        if name not in {"transactional_email_events", "email_templates", "products", "categories", "emailCampaigns", "smsCampaigns"}
     ],
-    ids=[name for name in STREAM_NAMES if name not in {"transactional_email_events", "products", "categories", "emailCampaigns", "smsCampaigns"}],
+    ids=[name for name in STREAM_NAMES if name not in {"transactional_email_events", "email_templates", "products", "categories", "emailCampaigns", "smsCampaigns"}],
 )
 def test_single_default_error_handler(requester_definition: dict[str, Any], requester: HttpRequester) -> None:
     assert requester_definition["error_handler"] == {
