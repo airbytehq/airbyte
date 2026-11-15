@@ -82,6 +82,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-11-15 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | New Source: Zernio |
+| 0.1.0 | 2026-11-15 | [93007](https://github.com/airbytehq/airbyte/pull/93007) | New Source: Zernio |
 
 </details>
