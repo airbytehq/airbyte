@@ -1,19 +1,23 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Behaviour tests for manifest.yaml against mocked Ayrshare responses.
 
 Response shapes and error codes are the ones the Ayrshare API returned to a
 Business-plan account. The profile streams need real Profile Keys to read
 live, so these tests are what pins their behaviour.
 """
+
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
-
 import yaml
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+
 
 MANIFEST = yaml.safe_load((Path(__file__).parents[1] / "manifest.yaml").read_text())
 API = "https://api.ayrshare.com/api"
@@ -21,11 +25,7 @@ KEYED = {"api_key": "primary-key", "profile_keys": "pk-a, pk-b", "platforms": ["
 
 
 def _read(stream, config, expecting_exception=False):
-    catalog = (
-        CatalogBuilder()
-        .with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream).with_sync_mode(SyncMode.full_refresh))
-        .build()
-    )
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream).with_sync_mode(SyncMode.full_refresh)).build()
     source = ConcurrentDeclarativeSource(source_config=MANIFEST, config=config, catalog=catalog, state=None)
     return read(source, config, catalog, expecting_exception=expecting_exception)
 
@@ -92,9 +92,7 @@ def test_post_history_per_profile_key_and_no_history_skipped(requests_mock):
     requests_mock.get(f"{API}/history", json=history)
     output = _read("post_history", KEYED)
 
-    assert _records(output) == [
-        {"id": "post1", "status": "success", "postIds": [{"id": "fb1", "platform": "facebook"}], "ref_id": "ref-a"}
-    ]
+    assert _records(output) == [{"id": "post1", "status": "success", "postIds": [{"id": "fb1", "platform": "facebook"}], "ref_id": "ref-a"}]
     assert not output.errors
     calls = _sent(requests_mock, "/history")
     assert sorted(c.headers["Profile-Key"] for c in calls) == ["pk-a", "pk-b"]
@@ -248,42 +246,73 @@ def test_platform_comments_recent_commented_posts_only(requests_mock):
     requests_mock.get(
         f"{API}/history/facebook",
         [
-            {"json": {"posts": [
-                {"id": "fb-new", "created": _iso(1), "commentsCount": 2},
-                {"id": "fb-none", "created": _iso(2), "commentsCount": 0},
-                {"id": "fb-old", "created": _iso(200), "commentsCount": 9},
-            ], "meta": {"pagination": {"hasMore": True, "next": "p2"}}}},
-            {"json": {"posts": [{"id": "fb-older", "created": _iso(300), "commentsCount": 5}],
-                      "meta": {"pagination": {"hasMore": False}}}},
+            {
+                "json": {
+                    "posts": [
+                        {"id": "fb-new", "created": _iso(1), "commentsCount": 2},
+                        {"id": "fb-none", "created": _iso(2), "commentsCount": 0},
+                        {"id": "fb-old", "created": _iso(200), "commentsCount": 9},
+                    ],
+                    "meta": {"pagination": {"hasMore": True, "next": "p2"}},
+                }
+            },
+            {"json": {"posts": [{"id": "fb-older", "created": _iso(300), "commentsCount": 5}], "meta": {"pagination": {"hasMore": False}}}},
         ],
     )
     requests_mock.get(
         f"{API}/history/youtube",
         [
             # Not sorted: an old video first, a recent one on the next page.
-            {"json": {"posts": [{"id": "yt-old", "created": _iso(400), "position": 0}],
-                      "meta": {"pagination": {"hasMore": True, "next": "y2"}}}},
-            {"json": {"posts": [{"id": "yt-off", "created": _iso(3), "position": 1},
-                                {"id": "yt-new", "created": _iso(4), "position": 2}],
-                      "meta": {"pagination": {"hasMore": False}}}},
+            {
+                "json": {
+                    "posts": [{"id": "yt-old", "created": _iso(400), "position": 0}],
+                    "meta": {"pagination": {"hasMore": True, "next": "y2"}},
+                }
+            },
+            {
+                "json": {
+                    "posts": [{"id": "yt-off", "created": _iso(3), "position": 1}, {"id": "yt-new", "created": _iso(4), "position": 2}],
+                    "meta": {"pagination": {"hasMore": False}},
+                }
+            },
         ],
     )
-    requests_mock.get(f"{API}/comments/fb-new", json={
-        "facebook": [{"commentId": "c1", "comment": "Nice", "created": _iso(1), "from": {"name": "Ann", "id": "1"},
-                      "platform": "facebook", "replies": [{"commentId": "c1r", "comment": "Thanks", "from": {"name": "GP"}}]}],
-        "status": "success", "commentsCount": 1, "lastUpdated": _iso(0)})
-    requests_mock.get(f"{API}/comments/yt-off", status_code=403,
-                      json={"code": 306, "action": "analytics", "status": "error", "message": "Comments are disabled"})
-    requests_mock.get(f"{API}/comments/yt-new", json={
-        "youtube": [{"commentId": "y1", "comment": "Great", "userName": "@viewer", "platform": "youtube"}],
-        "status": "success"})
+    requests_mock.get(
+        f"{API}/comments/fb-new",
+        json={
+            "facebook": [
+                {
+                    "commentId": "c1",
+                    "comment": "Nice",
+                    "created": _iso(1),
+                    "from": {"name": "Ann", "id": "1"},
+                    "platform": "facebook",
+                    "replies": [{"commentId": "c1r", "comment": "Thanks", "from": {"name": "GP"}}],
+                }
+            ],
+            "status": "success",
+            "commentsCount": 1,
+            "lastUpdated": _iso(0),
+        },
+    )
+    requests_mock.get(
+        f"{API}/comments/yt-off",
+        status_code=403,
+        json={"code": 306, "action": "analytics", "status": "error", "message": "Comments are disabled"},
+    )
+    requests_mock.get(
+        f"{API}/comments/yt-new",
+        json={"youtube": [{"commentId": "y1", "comment": "Great", "userName": "@viewer", "platform": "youtube"}], "status": "success"},
+    )
 
     output = _read("platform_comments", config)
 
     assert not output.errors
     recs = sorted(_records(output), key=lambda r: r["commentId"])
     assert [(r["commentId"], r["platform"], r["post_id"], r["ref_id"]) for r in recs] == [
-        ("c1", "facebook", "fb-new", "ref-a"), ("y1", "youtube", "yt-new", "ref-a")]
+        ("c1", "facebook", "fb-new", "ref-a"),
+        ("y1", "youtube", "yt-new", "ref-a"),
+    ]
     assert recs[0]["from"] == {"name": "Ann", "id": "1"} and recs[0]["replies"][0]["comment"] == "Thanks"
     assert recs[0]["raw"]["comment"] == "Nice" and "post_id" not in recs[0]["raw"]
     assert recs[1]["commenter_name"] == "@viewer" and "userName" in recs[1]["raw"]
@@ -296,22 +325,27 @@ def test_platform_comments_recent_commented_posts_only(requests_mock):
     assert {r.qs["platform"][0] for r in calls} == {"facebook", "youtube"}
 
 
-@pytest.mark.parametrize("platform, comment, name, cid", [
-    ("facebook", {"from": {"name": "Ann", "id": "1"}}, "Ann", "1"),
-    ("instagram", {"from": {"username": "ann.ig", "id": "2"}}, "ann.ig", "2"),
-    ("tiktok", {"username": "ann_tt", "displayName": "Ann T", "userId": "3"}, "ann_tt", "3"),
-    ("youtube", {"userName": "@ann", "channelUrl": "http://www.youtube.com/channel/UC4"}, "@ann",
-     "http://www.youtube.com/channel/UC4"),
-    ("tiktok", {}, None, None),
-])
+@pytest.mark.parametrize(
+    "platform, comment, name, cid",
+    [
+        ("facebook", {"from": {"name": "Ann", "id": "1"}}, "Ann", "1"),
+        ("instagram", {"from": {"username": "ann.ig", "id": "2"}}, "ann.ig", "2"),
+        ("tiktok", {"username": "ann_tt", "displayName": "Ann T", "userId": "3"}, "ann_tt", "3"),
+        ("youtube", {"userName": "@ann", "channelUrl": "http://www.youtube.com/channel/UC4"}, "@ann", "http://www.youtube.com/channel/UC4"),
+        ("tiktok", {}, None, None),
+    ],
+)
 def test_platform_comments_commenter_per_network(requests_mock, platform, comment, name, cid):
     """Each network names the commenter differently; commenter_name/_id normalise it."""
     _mock_users(requests_mock)
     config = dict(KEYED, profile_keys="pk-a", platforms=[platform])
-    requests_mock.get(f"{API}/history/{platform}", json={
-        "posts": [{"id": "p1", "created": _iso(1), "commentsCount": 1}], "meta": {"pagination": {"hasMore": False}}})
-    requests_mock.get(f"{API}/comments/p1", json={
-        platform: [dict(comment, commentId="c1", comment="hi", platform=platform)], "status": "success"})
+    requests_mock.get(
+        f"{API}/history/{platform}",
+        json={"posts": [{"id": "p1", "created": _iso(1), "commentsCount": 1}], "meta": {"pagination": {"hasMore": False}}},
+    )
+    requests_mock.get(
+        f"{API}/comments/p1", json={platform: [dict(comment, commentId="c1", comment="hi", platform=platform)], "status": "success"}
+    )
 
     recs = _records(_read("platform_comments", config))
 
@@ -334,8 +368,12 @@ def test_batch_file_waits_until_written(requests_mock, monkeypatch):
 def test_action_log_and_daily_counts_share_one_response(requests_mock):
     requests_mock.get(
         f"{API}/profiles",
-        json={"profiles": {"actionLog": [{"action": "create", "refId": "r1", "created": "2026-11-04T22:28:31.710Z"}],
-                           "userProfileReport": [{"reported": "2026-11-05T09:17:20.035Z", "userProfilesCount": 9}]}},
+        json={
+            "profiles": {
+                "actionLog": [{"action": "create", "refId": "r1", "created": "2026-11-04T22:28:31.710Z"}],
+                "userProfileReport": [{"reported": "2026-11-05T09:17:20.035Z", "userProfilesCount": 9}],
+            }
+        },
     )
     assert _records(_read("profile_action_log", {"api_key": "k"}))[0]["refId"] == "r1"
     assert _records(_read("profile_counts_daily", {"api_key": "k"}))[0]["userProfilesCount"] == 9
