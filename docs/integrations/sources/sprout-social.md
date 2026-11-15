@@ -71,6 +71,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-11-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | New Source: Sprout Social |
+| 0.1.0 | 2026-11-15 | [93006](https://github.com/airbytehq/airbyte/pull/93006) | New Source: Sprout Social |
 
 </details>
