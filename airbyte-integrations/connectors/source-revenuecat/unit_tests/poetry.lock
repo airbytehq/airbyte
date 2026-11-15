@@ -7,7 +7,6 @@ description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\""
 files = [
     {file = "airbyte_cdk-7.45.1-py3-none-any.whl", hash = "sha256:912ef3a7973ed6f2552689580d1c13f427bed30c4436a10208db1af78ed54a26"},
     {file = "airbyte_cdk-7.45.1.tar.gz", hash = "sha256:500b457927f7c1fd5a2c58272e7ec6477e5ebdf5e019d3e5064d132749a26f2b"},
@@ -63,71 +62,6 @@ file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (>=0.8.0,<0.15.0)"]
-
-[[package]]
-name = "airbyte-cdk"
-version = "7.47.0"
-description = "A framework for writing Airbyte Connectors."
-optional = false
-python-versions = "<3.15,>=3.11"
-groups = ["main"]
-markers = "python_version >= \"3.11\""
-files = [
-    {file = "airbyte_cdk-7.47.0-py3-none-any.whl", hash = "sha256:92e2f51dcb62855945cdf46f1d57f39acbcda7a8edd14c8aeaccacd577515a71"},
-    {file = "airbyte_cdk-7.47.0.tar.gz", hash = "sha256:30a18a79d107b7053903a54b2140c6a0b5077f3210d4da83881c3867b062de2e"},
-]
-
-[package.dependencies]
-airbyte-protocol-models-dataclasses = ">=0.17.1,<0.18.0"
-anyascii = ">=0.3.2,<0.4.0"
-backoff = "*"
-boltons = ">=25.0.0,<26.0.0"
-cachetools = "*"
-certifi = ">=2026.10.23"
-click = ">=8.1.8,<9.0.0"
-cryptography = ">=44.0.0,!=45.0.0,!=45.0.1"
-dateparser = ">=1.2.2,<2.0.0"
-dpath = ">=2.1.6,<3.0.0"
-dunamai = ">=1.22.0,<2.0.0"
-genson = "1.3.0"
-google-cloud-secret-manager = ">=2.17.0,<3.0.0"
-ijson = ">=3.3.0,<4.0.0"
-isodate = ">=0.6.1,<0.7.0"
-Jinja2 = ">=3.1.2,<3.2.0"
-jsonref = ">=1,<2"
-jsonschema = ">=4.17.3,<5.0"
-nltk = "3.9.4"
-orjson = ">=3.10.7,<4.0.0"
-packaging = "*"
-pandas = ">=2.2.3,<3.0"
-pydantic = ">=2.13,<3.0"
-pyjwt = ">=2.8.0,<3.0.0"
-pyrate-limiter = ">=3.1.0,<3.2.0"
-python-dateutil = ">=2.9.0,<3.0.0"
-python-ulid = ">=3.0.0,<4.0.0"
-pytz = ">=2024.2"
-PyYAML = ">=6.0.1,<7.0.0"
-rapidfuzz = ">=3.10.1,<4.0.0"
-referencing = ">=0.36.2"
-requests = "*"
-requests_cache = "*"
-rich = "*"
-rich-click = ">=1.8.8,<2.0.0"
-serpyco-rs = ">=1.10.2,<2.0.0"
-setuptools = ">=80.9.0"
-typing-extensions = "*"
-unidecode = ">=1.3.8,<2.0.0"
-urllib3 = "*"
-wcmatch = "10.0"
-whenever = ">=0.7.3,<0.9.0"
-xmltodict = ">=0.13,<0.15"
-
-[package.extras]
-dev = ["pytest (>=7,<8)"]
-file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pillow (>=13.0.0)", "pyarrow (>=19.0.0,<24.0.0)", "pytesseract (==0.3.10)", "python-calamine (>=0.2.3,<0.9.0)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
-manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
-sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
-vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "pillow (>=13.0.0)", "tiktoken (>=0.8.0,<0.15.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -2254,21 +2188,21 @@ docs = ["furo (>=2022.3.4,<2023.0.0)", "myst-parser (>=0.17)", "sphinx (>=4.3.0,
 
 [[package]]
 name = "pytest"
-version = "8.4.2"
+version = "9.0.3"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79"},
-    {file = "pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01"},
+    {file = "pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9"},
+    {file = "pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c"},
 ]
 
 [package.dependencies]
 colorama = {version = ">=0.4", markers = "sys_platform == \"win32\""}
 exceptiongroup = {version = ">=1", markers = "python_version < \"3.11\""}
-iniconfig = ">=1"
-packaging = ">=20"
+iniconfig = ">=1.0.1"
+packaging = ">=22"
 pluggy = ">=1.5,<2"
 pygments = ">=2.7.2"
 tomli = {version = ">=1", markers = "python_version < \"3.11\""}
@@ -3735,4 +3669,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "5635e337dcb3a10e486d40ecae20d757cdbff34b7044ec959f89dc0e0ff7ce76"
+content-hash = "302080a1a32928a672aba8b20d29780b685ee2642e33f20431a9ac2ec3e86dd4"
