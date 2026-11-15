@@ -7,7 +7,7 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.46.0@sha256:d9af59576b5cdfaf13f03217887258db6b1f3e52bc6eff14c4353b351a8058fc
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 3.1.0
+  dockerImageTag: 3.1.2
   dockerRepository: airbyte/source-recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg

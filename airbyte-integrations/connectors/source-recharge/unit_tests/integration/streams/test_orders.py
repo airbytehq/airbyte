@@ -1,11 +1,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 from typing import Optional
+from unittest.mock import patch
 
 import freezegun
 import pytest
 from conftest import get_source
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -111,3 +113,40 @@ def test_retryable_error_is_retried_and_records_are_read(status_code: int) -> No
         assert [record.record.data["id"] for record in output.records] == [101]
         assert not output.errors
         http_mocker.assert_number_of_calls(request, 2)
+
+
+@pytest.mark.parametrize(
+    "body,message",
+    [
+        (
+            '{"errors":{"page":"Value may not exceed 100. Please use cursor pagination. '
+            'https://developer.getrecharge.com/2021-01/cursor_pagination"}}',
+            "The Recharge orders stream exceeds the Recharge 2021-01 API limit of 100 pages per query.",
+        ),
+        (
+            '{"errors":{"_schema":["Invalid request containing private-response-data"]}}',
+            "The Recharge 2021-01 API rejects the orders stream request as invalid.",
+        ),
+        (
+            '{"errors":null}',
+            "The Recharge 2021-01 API rejects the orders stream request as invalid.",
+        ),
+        (
+            "Not a JSON response: private-response-data",
+            "The Recharge 2021-01 API rejects the orders stream request as invalid.",
+        ),
+    ],
+    ids=["page_limit", "other_validation_error", "null_errors", "non_json"],
+)
+@freezegun.freeze_time("2024-01-30T23:59:59Z")
+def test_deprecated_validation_error_fails_without_retry(body: str, message: str) -> None:
+    request = orders_request("2021-01").with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").build()
+    with HttpMocker() as http_mocker, patch("time.sleep"):
+        http_mocker.get(request, HttpResponse(body=body, status_code=422))
+        output = read_full_refresh(orders_config(True), "orders", expected_exception=True)
+        http_mocker.assert_number_of_calls(request, 1)
+        assert not output.records
+        stream_errors = [error.trace.error for error in output.errors if error.trace.error.stream_descriptor]
+        assert len(stream_errors) == 1
+        assert stream_errors[0].failure_type == FailureType.system_error
+        assert stream_errors[0].message == message
