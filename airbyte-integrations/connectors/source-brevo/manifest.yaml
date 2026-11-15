@@ -1027,6 +1027,9 @@ definitions:
             type: DefaultErrorHandler
             max_retries: 3
             backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: x-sib-ratelimit-reset
+                max_waiting_time_in_seconds: 7200
               - type: ExponentialBackoffStrategy
                 factor: 2
             response_filters:
@@ -1090,6 +1093,9 @@ definitions:
             type: DefaultErrorHandler
             max_retries: 3
             backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: x-sib-ratelimit-reset
+                max_waiting_time_in_seconds: 7200
               - type: ExponentialBackoffStrategy
                 factor: 2
             response_filters:

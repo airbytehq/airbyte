@@ -415,6 +415,22 @@ def test_transactional_events_retry_rate_limits(headers: dict[str, str], retries
         mocker.assert_number_of_calls(request, retries + 1)
 
 
+@pytest.mark.parametrize("name,size", [("emailCampaigns", 100), ("smsCampaigns", 1000)])
+@freeze_time(NOW)
+def test_campaigns_wait_for_rate_limit_reset(name: str, size: int) -> None:
+    request = BrevoRequestBuilder(name).with_query_params(limit=size, offset=0, sort="asc").build()
+    with HttpMocker() as mocker, patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as clock:
+        mocker.get(
+            request,
+            [HttpResponse(body='{"message":"Rate limits hit"}', status_code=429, headers={"x-sib-ratelimit-reset": "1800"})]
+            + [BrevoResponseBuilder("campaigns").with_records([{"id": 1, "modifiedAt": UPDATED}]).build()],
+        )
+        output = run_read(name, SyncMode.incremental)
+        assert [r.record.data["id"] for r in output.records] == [1]
+        assert clock.sleep.call_args_list == [call(1801)]
+        mocker.assert_number_of_calls(request, 2)
+
+
 @pytest.mark.parametrize("name,size", [("products", 1000), ("categories", 100)])
 @pytest.mark.parametrize(
     "body,ignored",
