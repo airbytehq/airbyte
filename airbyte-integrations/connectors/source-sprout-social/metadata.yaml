@@ -1,0 +1,39 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.sproutsocial.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-sprout-social
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8da865bf-a620-4002-b56d-b1e8ed96908c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-sprout-social
+  githubIssueLabel: source-sprout-social
+  icon: icon.svg
+  license: ELv2
+  name: Sprout Social
+  releaseDate: 2026-11-15
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sprout-social
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Sprout Social API documentation
+      url: https://api.sproutsocial.com/docs/
+      type: api_reference

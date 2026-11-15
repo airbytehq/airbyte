@@ -1,0 +1,2247 @@
+# Sprout Social source: Airbyte low-code (declarative) manifest.
+#
+# Reads the Sprout Social Public API v1 (https://api.sproutsocial.com/docs/)
+# with an API token:
+#   * Metadata streams (clients, customer_profiles, tags, groups, users,
+#     topics, teams, queues) are read once per customer in `customer_ids`.
+#   * profile_analytics and post_analytics are incremental and partitioned per
+#     profile. Sprout wants an explicit metric list per network type, kept in
+#     definitions.metric_lists. Profiles on networks without a list (Bluesky)
+#     appear in customer_profiles but are skipped for analytics.
+#   * Nested `metrics` (and `dimensions` for profiles) are flattened, and the
+#     dots and parentheses in Sprout's metric names are replaced
+#     (lifetime.impressions -> lifetime_impressions,
+#     reporting_period.by(day) -> reporting_period_by_day).
+#
+# Limits: Sprout allows 60 requests/minute per token. api_budget keeps the
+# connector at 55/minute and honours X-RateLimit-Remaining.
+#
+# Error semantics:
+#   * 429      -> wait for Retry-After, else exponential backoff
+#   * 5xx      -> retry 5 times with exponential backoff, then FAIL the sync
+#   * other 4xx -> FAIL (a 401/403 is a bad or under-scoped token)
+#
+# API notes:
+#   * reporting_period may span at most one year. A slice ending on today
+#     keeps its inclusive end, so profile slices step P364D, not P365D.
+#   * Sprout returns 400 for a page past total_pages, so paging stops on
+#     paging.current_page >= paging.total_pages.
+#   * Compare ids with (x ~ ''): the CDK's Jinja `string` filter wraps values
+#     in quotes.
+
+version: 7.48.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - clients
+definitions:
+  requester:
+    type: HttpRequester
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_token''] }}'
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+      response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+        - 429
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+        - 500
+        - 502
+        - 503
+        - 504
+  metadata_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - data
+  customer_partitions:
+    type: ListPartitionRouter
+    cursor_field: customer_id
+    values: '{{ config[''customer_ids''] }}'
+  customer_stream:
+    $ref: '#/definitions/metadata_stream'
+    retriever:
+      $ref: '#/definitions/metadata_stream/retriever'
+      partition_router:
+        $ref: '#/definitions/customer_partitions'
+    transformations:
+    - type: AddFields
+      fields:
+      - type: AddedFieldDefinition
+        path:
+        - customer_id
+        value: '{{ stream_partition.customer_id }}'
+        value_type: integer
+  analytics_profiles:
+    $ref: '#/definitions/streams/customer_profiles'
+    name: analytics_profiles
+    retriever:
+      $ref: '#/definitions/streams/customer_profiles/retriever'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - data
+        record_filter:
+          type: RecordFilter
+          condition: '{{ record.network_type in parameters[''post_metrics''] and record.network_type in parameters[''profile_metrics'']
+            and (not config.get(''profile_ids'') or (record.customer_profile_id ~ '''') in config[''profile_ids'']) }}'
+    $parameters:
+      $ref: '#/definitions/metric_lists'
+  profile_partitions:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+    - type: ParentStreamConfig
+      stream: '#/definitions/analytics_profiles'
+      parent_key: customer_profile_id
+      partition_field: customer_profile_id
+      extra_fields:
+      - - network_type
+      - - customer_id
+      incremental_dependency: false
+  page_in_body:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 50
+      cursor_value: '{{ response.paging.current_page + 1 }}'
+      stop_condition: '{{ not response.paging or response.paging.current_page >= response.paging.total_pages }}'
+  clean_metric_keys:
+  - type: KeysReplace
+    old: .
+    new: _
+  - type: KeysReplace
+    old: (
+    new: _
+  - type: KeysReplace
+    old: )
+    new: ''
+  streams:
+    clients:
+      $ref: '#/definitions/metadata_stream'
+      name: clients
+      primary_key:
+      - customer_id
+      retriever:
+        $ref: '#/definitions/metadata_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/metadata/client
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            name:
+              type:
+              - 'null'
+              - string
+    customer_profiles:
+      $ref: '#/definitions/customer_stream'
+      name: customer_profiles
+      primary_key:
+      - customer_id
+      - customer_profile_id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - data
+          record_filter:
+            type: RecordFilter
+            condition: '{{ not config.get(''profile_ids'') or (record.customer_profile_id ~ '''') in config[''profile_ids'']
+              }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            customer_profile_id:
+              type:
+              - 'null'
+              - integer
+            groups:
+              type:
+              - 'null'
+              - array
+              items:
+                type: integer
+            link:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            native_id:
+              type:
+              - 'null'
+              - string
+            native_name:
+              type:
+              - 'null'
+              - string
+            network_type:
+              type:
+              - 'null'
+              - string
+    profile_analytics:
+      type: DeclarativeStream
+      name: profile_analytics
+      primary_key:
+      - customer_profile_id
+      - reporting_period_by_day
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: POST
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.extra_fields['customer_id'] }}/analytics/profiles
+          request_body:
+            type: RequestBodyJsonObject
+            value:
+              filters:
+              - customer_profile_id.eq({{ stream_partition.customer_profile_id }})
+              - reporting_period.in({{ stream_interval.start_time }}..{{ stream_interval.end_time }})
+              metrics: '{{ parameters[''profile_metrics''][stream_partition.extra_fields[''network_type'']] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - data
+        paginator:
+          $ref: '#/definitions/page_in_body'
+          pagination_strategy:
+            $ref: '#/definitions/page_in_body/pagination_strategy'
+            page_size: 1000
+        partition_router:
+          $ref: '#/definitions/profile_partitions'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reporting_period_by_day
+        datetime_format: '%Y-%m-%d'
+        cursor_datetime_formats:
+        - '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%d'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+          datetime_format: '%Y-%m-%d'
+        step: P364D
+        cursor_granularity: P1D
+        lookback_window: P{{ config.get('profile_lookback_days', 30) }}D
+      transformations:
+      - type: DpathFlattenFields
+        field_path:
+        - dimensions
+        delete_origin_value: true
+      - type: DpathFlattenFields
+        field_path:
+        - metrics
+        delete_origin_value: true
+      - $ref: '#/definitions/clean_metric_keys/0'
+      - $ref: '#/definitions/clean_metric_keys/1'
+      - $ref: '#/definitions/clean_metric_keys/2'
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - customer_id
+          value: '{{ stream_partition.extra_fields[''customer_id''] }}'
+          value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            comments_count:
+              type:
+              - 'null'
+              - number
+            comments_count_total:
+              type:
+              - 'null'
+              - number
+            cta_clicks_login:
+              type:
+              - 'null'
+              - number
+            customer_profile_id:
+              type:
+              - 'null'
+              - integer
+            email_contacts:
+              type:
+              - 'null'
+              - number
+            engagements_other:
+              type:
+              - 'null'
+              - number
+            engagements_total:
+              type:
+              - 'null'
+              - number
+            event_rsvps:
+              type:
+              - 'null'
+              - number
+            followers_by_age_gender:
+              type:
+              - 'null'
+              - object
+            followers_by_city:
+              type:
+              - 'null'
+              - object
+            followers_by_country:
+              type:
+              - 'null'
+              - object
+            followers_by_gender:
+              type:
+              - 'null'
+              - object
+            followers_by_job_function:
+              type:
+              - 'null'
+              - object
+            followers_by_seniority:
+              type:
+              - 'null'
+              - object
+            followers_gained:
+              type:
+              - 'null'
+              - number
+            followers_gained_organic:
+              type:
+              - 'null'
+              - number
+            followers_gained_paid:
+              type:
+              - 'null'
+              - number
+            followers_lost:
+              type:
+              - 'null'
+              - number
+            get_directions_clicks:
+              type:
+              - 'null'
+              - number
+            impressions:
+              type:
+              - 'null'
+              - number
+            impressions_nonviral:
+              type:
+              - 'null'
+              - number
+            impressions_nonviral_unique:
+              type:
+              - 'null'
+              - number
+            impressions_organic:
+              type:
+              - 'null'
+              - number
+            impressions_organic_unique:
+              type:
+              - 'null'
+              - number
+            impressions_paid:
+              type:
+              - 'null'
+              - number
+            impressions_paid_unique:
+              type:
+              - 'null'
+              - number
+            impressions_total:
+              type:
+              - 'null'
+              - number
+            impressions_unique:
+              type:
+              - 'null'
+              - number
+            impressions_viral:
+              type:
+              - 'null'
+              - number
+            impressions_viral_unique:
+              type:
+              - 'null'
+              - number
+            inbox_counts_sent:
+              type:
+              - 'null'
+              - number
+            inbox_received_sent:
+              type:
+              - 'null'
+              - number
+            lifetime_snapshot_fans_count:
+              type:
+              - 'null'
+              - number
+            lifetime_snapshot_followers_by_age_gender:
+              type:
+              - 'null'
+              - object
+            lifetime_snapshot_followers_by_city:
+              type:
+              - 'null'
+              - object
+            lifetime_snapshot_followers_by_country:
+              type:
+              - 'null'
+              - object
+            lifetime_snapshot_followers_by_gender:
+              type:
+              - 'null'
+              - object
+            lifetime_snapshot_followers_count:
+              type:
+              - 'null'
+              - number
+            lifetime_snapshot_followers_online:
+              type:
+              - 'null'
+              - object
+            lifetime_snapshot_following_count:
+              type:
+              - 'null'
+              - number
+            likes:
+              type:
+              - 'null'
+              - number
+            likes_total:
+              type:
+              - 'null'
+              - number
+            net_follower_growth:
+              type:
+              - 'null'
+              - number
+            net_following_growth:
+              type:
+              - 'null'
+              - number
+            offer_claims:
+              type:
+              - 'null'
+              - number
+            phone_call_clicks:
+              type:
+              - 'null'
+              - number
+            pin_count:
+              type:
+              - 'null'
+              - number
+            place_checkins:
+              type:
+              - 'null'
+              - number
+            place_checkins_mobile:
+              type:
+              - 'null'
+              - number
+            positive_feedback_other:
+              type:
+              - 'null'
+              - number
+            post_app_engagements:
+              type:
+              - 'null'
+              - number
+            post_app_installs:
+              type:
+              - 'null'
+              - number
+            post_app_opens:
+              type:
+              - 'null'
+              - number
+            post_content_clicks:
+              type:
+              - 'null'
+              - number
+            post_content_clicks_other:
+              type:
+              - 'null'
+              - number
+            post_detail_expand_clicks:
+              type:
+              - 'null'
+              - number
+            post_engagements:
+              type:
+              - 'null'
+              - number
+            post_hashtag_clicks:
+              type:
+              - 'null'
+              - number
+            post_impressions:
+              type:
+              - 'null'
+              - number
+            post_impressions_nonviral:
+              type:
+              - 'null'
+              - number
+            post_impressions_organic:
+              type:
+              - 'null'
+              - number
+            post_impressions_paid:
+              type:
+              - 'null'
+              - number
+            post_impressions_viral:
+              type:
+              - 'null'
+              - number
+            post_link_clicks:
+              type:
+              - 'null'
+              - number
+            post_media_clicks:
+              type:
+              - 'null'
+              - number
+            post_media_views:
+              type:
+              - 'null'
+              - number
+            post_photo_view_clicks:
+              type:
+              - 'null'
+              - number
+            post_profile_clicks:
+              type:
+              - 'null'
+              - number
+            post_video_play_clicks:
+              type:
+              - 'null'
+              - number
+            posts_sent_by_content_type:
+              type:
+              - 'null'
+              - object
+            posts_sent_by_post_type:
+              type:
+              - 'null'
+              - object
+            posts_sent_count:
+              type:
+              - 'null'
+              - number
+            profile_actions:
+              type:
+              - 'null'
+              - number
+            profile_content_activity:
+              type:
+              - 'null'
+              - number
+            profile_views:
+              type:
+              - 'null'
+              - number
+            profile_views_login:
+              type:
+              - 'null'
+              - number
+            profile_views_login_unique:
+              type:
+              - 'null'
+              - number
+            profile_views_logout:
+              type:
+              - 'null'
+              - number
+            profile_views_total:
+              type:
+              - 'null'
+              - number
+            profile_views_unique:
+              type:
+              - 'null'
+              - number
+            quotes_count:
+              type:
+              - 'null'
+              - number
+            reactions:
+              type:
+              - 'null'
+              - number
+            reactions_angry:
+              type:
+              - 'null'
+              - number
+            reactions_haha:
+              type:
+              - 'null'
+              - number
+            reactions_love:
+              type:
+              - 'null'
+              - number
+            reactions_sad:
+              type:
+              - 'null'
+              - number
+            reactions_wow:
+              type:
+              - 'null'
+              - number
+            reporting_period_by_day:
+              type:
+              - 'null'
+              - string
+              format: date
+            reposts_count:
+              type:
+              - 'null'
+              - number
+            saves:
+              type:
+              - 'null'
+              - number
+            shares_count:
+              type:
+              - 'null'
+              - number
+            shares_count_total:
+              type:
+              - 'null'
+              - number
+            story_replies:
+              type:
+              - 'null'
+              - number
+            tab_views:
+              type:
+              - 'null'
+              - number
+            tab_views_login:
+              type:
+              - 'null'
+              - number
+            tab_views_logout:
+              type:
+              - 'null'
+              - number
+            text_message_clicks:
+              type:
+              - 'null'
+              - number
+            video_view_time:
+              type:
+              - 'null'
+              - number
+            video_views:
+              type:
+              - 'null'
+              - number
+            video_views_10s:
+              type:
+              - 'null'
+              - number
+            video_views_10s_autoplay:
+              type:
+              - 'null'
+              - number
+            video_views_10s_click_to_play:
+              type:
+              - 'null'
+              - number
+            video_views_10s_organic:
+              type:
+              - 'null'
+              - number
+            video_views_10s_paid:
+              type:
+              - 'null'
+              - number
+            video_views_10s_repeat:
+              type:
+              - 'null'
+              - number
+            video_views_10s_unique:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_autoplay:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_click_to_play:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_organic:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_paid:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_repeat:
+              type:
+              - 'null'
+              - number
+            video_views_30s_complete_unique:
+              type:
+              - 'null'
+              - number
+            video_views_autoplay:
+              type:
+              - 'null'
+              - number
+            video_views_click_to_play:
+              type:
+              - 'null'
+              - number
+            video_views_organic:
+              type:
+              - 'null'
+              - number
+            video_views_paid:
+              type:
+              - 'null'
+              - number
+            video_views_partial:
+              type:
+              - 'null'
+              - number
+            video_views_partial_autoplay:
+              type:
+              - 'null'
+              - number
+            video_views_partial_click_to_play:
+              type:
+              - 'null'
+              - number
+            video_views_partial_organic:
+              type:
+              - 'null'
+              - number
+            video_views_partial_paid:
+              type:
+              - 'null'
+              - number
+            video_views_partial_repeat:
+              type:
+              - 'null'
+              - number
+            video_views_repeat:
+              type:
+              - 'null'
+              - number
+            video_views_total:
+              type:
+              - 'null'
+              - number
+            video_views_unique:
+              type:
+              - 'null'
+              - number
+            website_clicks:
+              type:
+              - 'null'
+              - number
+      $parameters:
+        $ref: '#/definitions/metric_lists'
+    post_analytics:
+      type: DeclarativeStream
+      name: post_analytics
+      primary_key:
+      - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: POST
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.extra_fields['customer_id'] }}/analytics/posts
+          request_body:
+            type: RequestBodyJsonObject
+            value:
+              filters:
+              - customer_profile_id.eq({{ stream_partition.customer_profile_id }})
+              - created_time.in({{ stream_interval.start_time }}..{{ stream_interval.end_time }})
+              fields: '{{ parameters[''post_fields''] }}'
+              metrics: '{{ parameters[''post_metrics''][stream_partition.extra_fields[''network_type'']] }}'
+              sort:
+              - created_time:asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - data
+        paginator:
+          $ref: '#/definitions/page_in_body'
+        partition_router:
+          $ref: '#/definitions/profile_partitions'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_time
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}T00:00:00'
+          datetime_format: '%Y-%m-%dT%H:%M:%S'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%S'
+        step: P365D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('post_lookback_days', 365) }}D
+      transformations:
+      - type: DpathFlattenFields
+        field_path:
+        - metrics
+        delete_origin_value: true
+      - $ref: '#/definitions/clean_metric_keys/0'
+      - $ref: '#/definitions/clean_metric_keys/1'
+      - $ref: '#/definitions/clean_metric_keys/2'
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - customer_profile_id
+          value: '{{ record[''customer_profile_id''] | int if record.get(''customer_profile_id'') is not none else none }}'
+          value_type: integer
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - customer_id
+          value: '{{ stream_partition.extra_fields[''customer_id''] }}'
+          value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            clickthrough_link:
+              type:
+              - 'null'
+              - object
+            content_category:
+              type:
+              - 'null'
+              - string
+            created_time:
+              type: &id001
+              - 'null'
+              - string
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+            customer_profile_id:
+              type:
+              - 'null'
+              - integer
+            from:
+              type:
+              - 'null'
+              - object
+            guid:
+              type:
+              - 'null'
+              - string
+            hashtags:
+              type:
+              - 'null'
+              - array
+            internal:
+              type:
+              - 'null'
+              - object
+            is_boosted:
+              type:
+              - 'null'
+              - boolean
+            lifetime_annotation_click_through_rate:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_clickable_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_closable_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_close_rate:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_closes:
+              type:
+              - 'null'
+              - number
+            lifetime_annotation_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_card_click_rate:
+              type:
+              - 'null'
+              - number
+            lifetime_card_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_card_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_card_teaser_click_rate:
+              type:
+              - 'null'
+              - number
+            lifetime_card_teaser_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_card_teaser_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_comments_count:
+              type:
+              - 'null'
+              - number
+            lifetime_comments_count_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_dislikes:
+              type:
+              - 'null'
+              - number
+            lifetime_engagements:
+              type:
+              - 'null'
+              - number
+            lifetime_engagements_follower_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_engagements_other:
+              type:
+              - 'null'
+              - number
+            lifetime_engagements_per_video_view:
+              type:
+              - 'null'
+              - number
+            lifetime_engagements_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_estimated_minutes_watched:
+              type:
+              - 'null'
+              - number
+            lifetime_estimated_red_minutes_watched:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_follow:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_for_you:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_hashtag:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_personal_profile:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_sound:
+              type:
+              - 'null'
+              - number
+            lifetime_impression_source_unspecified:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_follower:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_follower_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_nonfollower:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_nonviral:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_nonviral_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_organic_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_paid_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_viral:
+              type:
+              - 'null'
+              - number
+            lifetime_impressions_viral_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_likes:
+              type:
+              - 'null'
+              - number
+            lifetime_negative_feedback:
+              type:
+              - 'null'
+              - number
+            lifetime_negative_feedback_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_net_sentiment_score:
+              type:
+              - 'null'
+              - number
+            lifetime_post_app_engagements:
+              type:
+              - 'null'
+              - number
+            lifetime_post_app_installs:
+              type:
+              - 'null'
+              - number
+            lifetime_post_app_opens:
+              type:
+              - 'null'
+              - number
+            lifetime_post_content_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_content_clicks_other:
+              type:
+              - 'null'
+              - number
+            lifetime_post_content_clicks_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_post_detail_expand_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_followers_gained:
+              type:
+              - 'null'
+              - number
+            lifetime_post_followers_lost:
+              type:
+              - 'null'
+              - number
+            lifetime_post_hashtag_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_link_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_link_clicks_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_post_media_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_media_views:
+              type:
+              - 'null'
+              - number
+            lifetime_post_other_clicks_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_post_photo_view_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_photo_view_clicks_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_post_profile_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_video_play_clicks:
+              type:
+              - 'null'
+              - number
+            lifetime_post_video_play_clicks_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_question_answers:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions_angry:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions_haha:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions_love:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions_sad:
+              type:
+              - 'null'
+              - number
+            lifetime_reactions_wow:
+              type:
+              - 'null'
+              - number
+            lifetime_red_video_views:
+              type:
+              - 'null'
+              - number
+            lifetime_saves:
+              type:
+              - 'null'
+              - number
+            lifetime_sentiment_comments_negative_count:
+              type:
+              - 'null'
+              - number
+            lifetime_sentiment_comments_neutral_count:
+              type:
+              - 'null'
+              - number
+            lifetime_sentiment_comments_positive_count:
+              type:
+              - 'null'
+              - number
+            lifetime_sentiment_comments_unclassified_count:
+              type:
+              - 'null'
+              - number
+            lifetime_shares_count:
+              type:
+              - 'null'
+              - number
+            lifetime_shares_count_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_story_exits:
+              type:
+              - 'null'
+              - number
+            lifetime_story_replies:
+              type:
+              - 'null'
+              - number
+            lifetime_story_taps_back:
+              type:
+              - 'null'
+              - number
+            lifetime_story_taps_forward:
+              type:
+              - 'null'
+              - number
+            lifetime_subscribers_gained:
+              type:
+              - 'null'
+              - number
+            lifetime_subscribers_lost:
+              type:
+              - 'null'
+              - number
+            lifetime_video_ad_break_cost_per_impression:
+              type:
+              - 'null'
+              - number
+            lifetime_video_ad_break_earnings:
+              type:
+              - 'null'
+              - number
+            lifetime_video_ad_break_impressions:
+              type:
+              - 'null'
+              - number
+            lifetime_video_view_percentage:
+              type:
+              - 'null'
+              - number
+            lifetime_video_view_time:
+              type:
+              - 'null'
+              - number
+            lifetime_video_view_time_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_view_time_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_view_time_per_view:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_autoplay:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_click_to_play:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_sound_off:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_sound_on:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_10s_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete_autoplay:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete_click_to_play:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_30s_complete_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_autoplay:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_click_to_play:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_organic_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p100_per_view:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p95:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p95_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p95_organic_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p95_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_p95_paid_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_paid_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_partial:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_partial_autoplay:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_partial_click_to_play:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_partial_organic:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_partial_paid:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_sound_off:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_sound_on:
+              type:
+              - 'null'
+              - number
+            lifetime_video_views_unique:
+              type:
+              - 'null'
+              - number
+            lifetime_videos_added_to_playlist:
+              type:
+              - 'null'
+              - number
+            lifetime_videos_removed_from_playlist:
+              type:
+              - 'null'
+              - number
+            network:
+              type:
+              - 'null'
+              - string
+            perma_link:
+              type:
+              - 'null'
+              - string
+            pinterest_board_name:
+              type:
+              - 'null'
+              - string
+            post_category:
+              type:
+              - 'null'
+              - string
+            post_type:
+              type:
+              - 'null'
+              - string
+            profile_guid:
+              type:
+              - 'null'
+              - string
+            sent:
+              type:
+              - 'null'
+              - boolean
+            text:
+              type:
+              - 'null'
+              - string
+            title:
+              type:
+              - 'null'
+              - string
+            video_length:
+              type:
+              - 'null'
+              - number
+            visual_media:
+              type:
+              - 'null'
+              - array
+      $parameters:
+        $ref: '#/definitions/metric_lists'
+        post_fields:
+          $ref: '#/definitions/post_fields'
+    tags:
+      $ref: '#/definitions/customer_stream'
+      name: tags
+      primary_key:
+      - customer_id
+      - tag_id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            active:
+              type:
+              - 'null'
+              - boolean
+            any_group:
+              type:
+              - 'null'
+              - boolean
+            groups:
+              type:
+              - 'null'
+              - array
+              items:
+                type: integer
+            tag_id:
+              type:
+              - 'null'
+              - integer
+            text:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+    groups:
+      $ref: '#/definitions/customer_stream'
+      name: groups
+      primary_key:
+      - customer_id
+      - group_id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/groups
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            group_id:
+              type:
+              - 'null'
+              - integer
+            name:
+              type:
+              - 'null'
+              - string
+    users:
+      $ref: '#/definitions/customer_stream'
+      name: users
+      primary_key:
+      - customer_id
+      - id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            email:
+              type:
+              - 'null'
+              - string
+            id:
+              type:
+              - 'null'
+              - integer
+            name:
+              type:
+              - 'null'
+              - string
+    topics:
+      $ref: '#/definitions/customer_stream'
+      name: topics
+      primary_key:
+      - customer_id
+      - id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/topics
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            availability_time:
+              type: *id001
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+            description:
+              type:
+              - 'null'
+              - string
+            group_id:
+              type:
+              - 'null'
+              - integer
+            id:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            theme_groups:
+              type:
+              - 'null'
+              - array
+            topic_type:
+              type:
+              - 'null'
+              - string
+    teams:
+      $ref: '#/definitions/customer_stream'
+      name: teams
+      primary_key:
+      - customer_id
+      - id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/teams
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            description:
+              type:
+              - 'null'
+              - string
+            id:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+    queues:
+      $ref: '#/definitions/customer_stream'
+      name: queues
+      primary_key:
+      - customer_id
+      - id
+      retriever:
+        $ref: '#/definitions/customer_stream/retriever'
+        requester:
+          $ref: '#/definitions/requester'
+          http_method: GET
+          url: https://api.sproutsocial.com/v1/{{ stream_partition.customer_id }}/metadata/customer/queues
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            customer_id:
+              type:
+              - 'null'
+              - integer
+            associated_teams:
+              type:
+              - 'null'
+              - array
+              items:
+                type: string
+            description:
+              type:
+              - 'null'
+              - string
+            id:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+  metric_lists:
+    profile_metrics:
+      twitter:
+      - lifetime_snapshot.followers_count
+      - net_follower_growth
+      - impressions
+      - post_media_views
+      - video_views
+      - reactions
+      - likes
+      - comments_count
+      - shares_count
+      - post_content_clicks
+      - post_link_clicks
+      - post_content_clicks_other
+      - post_media_clicks
+      - post_hashtag_clicks
+      - post_detail_expand_clicks
+      - post_profile_clicks
+      - engagements_other
+      - post_app_engagements
+      - post_app_installs
+      - post_app_opens
+      - posts_sent_count
+      - posts_sent_by_post_type
+      - posts_sent_by_content_type
+      facebook:
+      - lifetime_snapshot.followers_count
+      - net_follower_growth
+      - followers_gained
+      - followers_gained_organic
+      - followers_gained_paid
+      - followers_lost
+      - impressions
+      - impressions_organic
+      - impressions_viral
+      - impressions_nonviral
+      - impressions_paid
+      - tab_views
+      - tab_views_login
+      - tab_views_logout
+      - post_impressions
+      - post_impressions_organic
+      - post_impressions_viral
+      - post_impressions_nonviral
+      - post_impressions_paid
+      - impressions_unique
+      - impressions_organic_unique
+      - impressions_viral_unique
+      - impressions_nonviral_unique
+      - impressions_paid_unique
+      - profile_views
+      - profile_views_login
+      - profile_views_logout
+      - profile_views_login_unique
+      - reactions
+      - comments_count
+      - shares_count
+      - post_link_clicks
+      - post_content_clicks_other
+      - likes
+      - reactions_love
+      - reactions_haha
+      - reactions_wow
+      - reactions_sad
+      - reactions_angry
+      - post_photo_view_clicks
+      - post_video_play_clicks
+      - profile_actions
+      - post_engagements
+      - cta_clicks_login
+      - question_answers
+      - offer_claims
+      - positive_feedback_other
+      - event_rsvps
+      - place_checkins
+      - place_checkins_mobile
+      - profile_content_activity
+      - negative_feedback
+      - video_views
+      - video_views_organic
+      - video_views_paid
+      - video_views_autoplay
+      - video_views_click_to_play
+      - video_views_repeat
+      - video_view_time
+      - video_views_unique
+      - video_views_30s_complete
+      - video_views_30s_complete_organic
+      - video_views_30s_complete_paid
+      - video_views_30s_complete_autoplay
+      - video_views_30s_complete_click_to_play
+      - video_views_30s_complete_repeat
+      - video_views_30s_complete_unique
+      - video_views_partial
+      - video_views_partial_organic
+      - video_views_partial_paid
+      - video_views_partial_autoplay
+      - video_views_partial_click_to_play
+      - video_views_partial_repeat
+      - video_views_10s
+      - video_views_10s_organic
+      - video_views_10s_paid
+      - video_views_10s_autoplay
+      - video_views_10s_click_to_play
+      - video_views_10s_repeat
+      - video_views_10s_unique
+      - video_views_10s_sound_on
+      - video_views_10s_sound_off
+      - posts_sent_count
+      - posts_sent_by_post_type
+      - posts_sent_by_content_type
+      fb_instagram_account:
+      - lifetime_snapshot.followers_count
+      - net_follower_growth
+      - followers_gained
+      - followers_lost
+      - lifetime_snapshot.following_count
+      - net_following_growth
+      - impressions
+      - impressions_unique
+      - profile_views_unique
+      - video_views
+      - reactions
+      - likes
+      - comments_count
+      - saves
+      - shares_count
+      - story_replies
+      - email_contacts
+      - get_directions_clicks
+      - phone_call_clicks
+      - text_message_clicks
+      - website_clicks
+      - posts_sent_count
+      - posts_sent_by_post_type
+      - posts_sent_by_content_type
+      linkedin_company:
+      - lifetime_snapshot.followers_count
+      - net_follower_growth
+      - followers_gained
+      - followers_gained_organic
+      - followers_gained_paid
+      - followers_lost
+      - impressions
+      - impressions_unique
+      - reactions
+      - comments_count
+      - shares_count
+      - post_content_clicks
+      - posts_sent_count
+      - posts_sent_by_post_type
+      - posts_sent_by_content_type
+      youtube:
+      - lifetime_snapshot.followers_count
+      - net_follower_growth
+      - followers_gained
+      - followers_lost
+      pinterest:
+      - lifetime_snapshot.followers_count
+      - lifetime_snapshot.following_count
+      - followers_gained
+      - followers_lost
+      - net_follower_growth
+      - net_following_growth
+      - pin_count
+      - inbox_counts_sent
+      - inbox_received_sent
+      tiktok:
+      - comments_count_total
+      - engagements_total
+      - lifetime_snapshot.followers_by_country
+      - lifetime_snapshot.followers_by_gender
+      - lifetime_snapshot.followers_count
+      - lifetime_snapshot.followers_online
+      - likes_total
+      - net_follower_growth
+      - posts_sent_by_post_type
+      - posts_sent_count
+      - profile_views_total
+      - shares_count_total
+      - video_views_total
+      threads:
+      - lifetime_snapshot.followers_by_age_gender
+      - lifetime_snapshot.followers_by_city
+      - lifetime_snapshot.followers_by_country
+      - likes
+      - profile_views
+      - quotes_count
+      - comments_count
+      - reposts_count
+      - shares_count
+    post_metrics:
+      twitter:
+      - lifetime.impressions
+      - lifetime.post_media_views
+      - lifetime.video_views
+      - lifetime.reactions
+      - lifetime.likes
+      - lifetime.comments_count
+      - lifetime.shares_count
+      - lifetime.post_content_clicks
+      - lifetime.post_link_clicks
+      - lifetime.post_content_clicks_other
+      - lifetime.post_media_clicks
+      - lifetime.post_hashtag_clicks
+      - lifetime.post_detail_expand_clicks
+      - lifetime.post_profile_clicks
+      - lifetime.engagements_other
+      - lifetime.post_followers_gained
+      - lifetime.post_followers_lost
+      - lifetime.post_app_engagements
+      - lifetime.post_app_installs
+      - lifetime.post_app_opens
+      facebook:
+      - lifetime.impressions
+      - lifetime.impressions_organic
+      - lifetime.impressions_viral
+      - lifetime.impressions_nonviral
+      - lifetime.impressions_paid
+      - lifetime.impressions_follower
+      - lifetime.impressions_nonfollower
+      - lifetime.impressions_unique
+      - lifetime.impressions_organic_unique
+      - lifetime.impressions_viral_unique
+      - lifetime.impressions_nonviral_unique
+      - lifetime.impressions_paid_unique
+      - lifetime.impressions_follower_unique
+      - lifetime.reactions
+      - lifetime.likes
+      - lifetime.reactions_love
+      - lifetime.reactions_haha
+      - lifetime.reactions_wow
+      - lifetime.reactions_sad
+      - lifetime.reactions_angry
+      - lifetime.comments_count
+      - lifetime.shares_count
+      - lifetime.question_answers
+      - lifetime.post_content_clicks
+      - lifetime.post_link_clicks
+      - lifetime.post_photo_view_clicks
+      - lifetime.post_video_play_clicks
+      - lifetime.post_content_clicks_other
+      - lifetime.negative_feedback
+      - lifetime.engagements_unique
+      - lifetime.engagements_follower_unique
+      - lifetime.comments_count_unique
+      - lifetime.shares_count_unique
+      - lifetime.post_content_clicks_unique
+      - lifetime.post_link_clicks_unique
+      - lifetime.post_photo_view_clicks_unique
+      - lifetime.post_video_play_clicks_unique
+      - lifetime.post_other_clicks_unique
+      - lifetime.negative_feedback_unique
+      - video_length
+      - lifetime.video_views
+      - lifetime.video_views_organic
+      - lifetime.video_views_paid
+      - lifetime.video_views_autoplay
+      - lifetime.video_views_click_to_play
+      - lifetime.video_views_sound_on
+      - lifetime.video_views_sound_off
+      - lifetime.video_views_10s
+      - lifetime.video_views_10s_organic
+      - lifetime.video_views_10s_paid
+      - lifetime.video_views_10s_autoplay
+      - lifetime.video_views_10s_click_to_play
+      - lifetime.video_views_10s_sound_on
+      - lifetime.video_views_10s_sound_off
+      - lifetime.video_views_partial
+      - lifetime.video_views_partial_organic
+      - lifetime.video_views_partial_paid
+      - lifetime.video_views_partial_autoplay
+      - lifetime.video_views_partial_click_to_play
+      - lifetime.video_views_30s_complete
+      - lifetime.video_views_30s_complete_organic
+      - lifetime.video_views_30s_complete_paid
+      - lifetime.video_views_30s_complete_autoplay
+      - lifetime.video_views_30s_complete_click_to_play
+      - lifetime.video_views_p95
+      - lifetime.video_views_p95_organic
+      - lifetime.video_views_p95_paid
+      - lifetime.video_views_unique
+      - lifetime.video_views_organic_unique
+      - lifetime.video_views_paid_unique
+      - lifetime.video_views_10s_unique
+      - lifetime.video_views_30s_complete_unique
+      - lifetime.video_views_p95_organic_unique
+      - lifetime.video_views_p95_paid_unique
+      - lifetime.video_view_time_per_view
+      - lifetime.video_view_time
+      - lifetime.video_view_time_organic
+      - lifetime.video_view_time_paid
+      - lifetime.video_ad_break_impressions
+      - lifetime.video_ad_break_earnings
+      - lifetime.video_ad_break_cost_per_impression
+      fb_instagram_account:
+      - lifetime.impressions
+      - lifetime.impressions_unique
+      - lifetime.video_views
+      - lifetime.reactions
+      - lifetime.likes
+      - lifetime.comments_count
+      - lifetime.saves
+      - lifetime.shares_count
+      - lifetime.story_replies
+      - lifetime.story_taps_back
+      - lifetime.story_taps_forward
+      - lifetime.story_exits
+      linkedin_company:
+      - lifetime.impressions
+      - lifetime.reactions
+      - lifetime.comments_count
+      - lifetime.shares_count
+      - lifetime.post_content_clicks
+      - lifetime.video_views
+      youtube:
+      - lifetime.annotation_clicks
+      - lifetime.annotation_click_through_rate
+      - lifetime.annotation_clickable_impressions
+      - lifetime.annotation_closable_impressions
+      - lifetime.annotation_closes
+      - lifetime.annotation_close_rate
+      - lifetime.annotation_impressions
+      - lifetime.card_clicks
+      - lifetime.card_impressions
+      - lifetime.card_click_rate
+      - lifetime.card_teaser_clicks
+      - lifetime.card_teaser_impressions
+      - lifetime.card_teaser_click_rate
+      - lifetime.estimated_minutes_watched
+      - lifetime.estimated_red_minutes_watched
+      - lifetime.post_content_clicks_other
+      - lifetime.shares_count
+      - lifetime.subscribers_gained
+      - lifetime.subscribers_lost
+      - lifetime.red_video_views
+      - lifetime.video_views
+      - lifetime.likes
+      - lifetime.dislikes
+      - lifetime.reactions
+      - lifetime.comments_count
+      - lifetime.engagements
+      - lifetime.engagements_per_video_view
+      - lifetime.video_view_percentage
+      - lifetime.video_view_time_per_view
+      - lifetime.videos_added_to_playlist
+      - lifetime.videos_removed_from_playlist
+      pinterest:
+      - lifetime.comments_count
+      - lifetime.saves
+      tiktok:
+      - lifetime.video_view_time_per_view
+      - lifetime.comments_count
+      - lifetime.engagements
+      - lifetime.video_views_p100_per_view
+      - lifetime.impression_source_follow
+      - lifetime.impression_source_for_you
+      - lifetime.impression_source_hashtag
+      - lifetime.impression_source_personal_profile
+      - lifetime.impression_source_sound
+      - lifetime.impression_source_unspecified
+      - lifetime.likes
+      - lifetime.impressions_unique
+      - lifetime.reactions
+      - lifetime.shares_count
+      - video_length
+      - lifetime.video_view_time
+      - lifetime.video_views
+      threads:
+      - lifetime.comments_count
+      - lifetime.impressions
+      - lifetime.likes
+      - lifetime.reactions
+      - lifetime.shares_count
+      - lifetime.sentiment_comments_positive_count
+      - lifetime.sentiment_comments_negative_count
+      - lifetime.sentiment_comments_neutral_count
+      - lifetime.sentiment_comments_unclassified_count
+      - lifetime.net_sentiment_score
+  post_fields:
+  - guid
+  - customer_profile_id
+  - network
+  - profile_guid
+  - created_time
+  - from
+  - content_category
+  - perma_link
+  - title
+  - text
+  - internal
+  - post_type
+  - post_category
+  - visual_media
+  - hashtags
+  - clickthrough_link
+  - is_boosted
+  - pinterest.board_name
+streams:
+- $ref: '#/definitions/streams/clients'
+- $ref: '#/definitions/streams/customer_profiles'
+- $ref: '#/definitions/streams/tags'
+- $ref: '#/definitions/streams/groups'
+- $ref: '#/definitions/streams/users'
+- $ref: '#/definitions/streams/topics'
+- $ref: '#/definitions/streams/teams'
+- $ref: '#/definitions/streams/queues'
+- $ref: '#/definitions/streams/profile_analytics'
+- $ref: '#/definitions/streams/post_analytics'
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit:
+  - 429
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 55
+      interval: PT1M
+    matchers: []
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+    - api_token
+    - customer_ids
+    - start_date
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        title: API token
+        airbyte_secret: true
+        order: 0
+        description: Sprout Social API token (Settings > Global Features > API).
+      customer_ids:
+        type: array
+        title: Customer IDs
+        order: 1
+        minItems: 1
+        items:
+          type: string
+          pattern: ^[0-9]+$
+        examples:
+        - - '1234567'
+        description: Sprout customers to sync. GET /v1/metadata/client (the clients stream) lists the ones the token can access.
+      start_date:
+        type: string
+        title: Start date
+        order: 2
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        format: date
+        examples:
+        - '2024-01-01'
+        description: Earliest day for profile and post analytics (YYYY-MM-DD).
+      profile_lookback_days:
+        type: integer
+        title: Profile lookback (days)
+        order: 3
+        default: 30
+        minimum: 1
+        maximum: 364
+        description: Days of profile analytics re-read every sync.
+      post_lookback_days:
+        type: integer
+        title: Post lookback (days)
+        order: 4
+        default: 365
+        minimum: 1
+        description: Days of posts re-read every sync to refresh lifetime metrics.
+      profile_ids:
+        type: array
+        title: Profile allow-list
+        order: 5
+        items:
+          type: string
+        description: Optional customer_profile_ids to sync. Empty = every profile.
