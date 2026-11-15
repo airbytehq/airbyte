@@ -34,6 +34,13 @@ One or more valid Spotify Ad Account IDs
 | `start_date` | `string` | Start Date. The date to start syncing data from, in YYYY-MM-DD format. |  |
 | `fields` | `array` | Report Fields. List of fields to include in the campaign performance report. Choose from available metrics. | [IMPRESSIONS, CLICKS, SPEND, CTR, REACH, FREQUENCY, COMPLETION_RATE] |
 
+### Syncing several ad accounts
+
+List the accounts in `ad_account_ids`. If you also set `ad_account_id`, it's added to the list, and an account listed twice is synced once. Records in `campaigns` and `campaign_performance` have an `ad_account_id` field that says which account they came from.
+
+- The connection check reads only the first account. If the credentials can't access another listed account, the sync fails with a `403` error that names that account.
+- If you add an account to an existing connection, its `campaign_performance` history starts from the most recent day the connection has already synced, not from the start date. To load the new account's earlier data, [refresh](https://docs.airbyte.com/platform/operator-guides/refreshes) the `campaign_performance` stream.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
@@ -52,7 +59,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-11-10 | [90128](https://github.com/airbytehq/airbyte/pull/90128) | Support syncing multiple ad accounts in one connection |
+| 0.1.0 | 2026-11-15 | [90128](https://github.com/airbytehq/airbyte/pull/90128) | Support syncing multiple ad accounts in one connection |
 | 0.0.49 | 2026-11-10 | [91740](https://github.com/airbytehq/airbyte/pull/91740) | Update dependencies |
 | 0.0.48 | 2026-11-03 | [90767](https://github.com/airbytehq/airbyte/pull/90767) | Update dependencies |
 | 0.0.47 | 2026-10-20 | [89436](https://github.com/airbytehq/airbyte/pull/89436) | Update dependencies |
