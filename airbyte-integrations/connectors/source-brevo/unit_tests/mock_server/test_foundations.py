@@ -73,7 +73,7 @@ def test_page_sizes_and_empty_page_termination(name: str, size: int, field: str)
 
 @pytest.mark.parametrize("name,size", [("emailCampaigns", 100), ("smsCampaigns", 1000)])
 @freeze_time(NOW)
-def test_campaigns_filter_modified_at_without_sent_date_parameters(name: str, size: int) -> None:
+def test_campaigns_reemit_full_list_without_sent_date_parameters(name: str, size: int) -> None:
     with HttpMocker() as mocker:
         request = mock_page(mocker, name, "campaigns", [{"id": 1, "modifiedAt": UPDATED}], limit=size, offset=0, sort="asc")
         first = run_read(name, SyncMode.incremental)
@@ -86,7 +86,7 @@ def test_campaigns_filter_modified_at_without_sent_date_parameters(name: str, si
             name,
             "campaigns",
             [
-                {"id": 1, "modifiedAt": "2023-11-14T22:00:00.000Z"},
+                {"id": 1, "status": "sent", "modifiedAt": "2023-11-14T22:00:00.000Z", "sentDate": "2023-11-14T23:45:00.000Z"},
                 {"id": 2, "modifiedAt": UPDATED},
                 {"id": 3, "modifiedAt": "2023-11-14T23:30:00.000Z"},
             ],
@@ -95,7 +95,7 @@ def test_campaigns_filter_modified_at_without_sent_date_parameters(name: str, si
             sort="asc",
         )
         output = run_read(name, SyncMode.incremental, state)
-        assert [r.record.data["id"] for r in output.records] == [2, 3]
+        assert [r.record.data["id"] for r in output.records] == [1, 2, 3]
         assert output.most_recent_state.stream_state.__dict__ == {"modifiedAt": "2023-11-14T23:30:00.000000Z"}
         assert_calls(mocker, [request])
 

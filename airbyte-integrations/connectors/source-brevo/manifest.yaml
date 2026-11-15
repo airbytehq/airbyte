@@ -1057,7 +1057,6 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        is_client_side_incremental: true
         cursor_field: modifiedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -1121,7 +1120,6 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        is_client_side_incremental: true
         cursor_field: modifiedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"

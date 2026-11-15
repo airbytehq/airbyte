@@ -78,7 +78,7 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | `transactional_email_events` | | Yes | Yes |
 | `webhooks` | `id` | Yes | No |
 
-Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns filter on `modifiedAt` client-side rather than using Brevo's sent-date filters.
+Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns read and emit the full campaign list on every sync, including draft, queued and scheduled campaigns, because Brevo does not document that sending a campaign or updating its statistics changes `modifiedAt`. `start_date` does not limit these two streams, and their `modifiedAt` state is kept for compatibility. When Brevo's hourly quota runs out, these streams wait for the `x-sib-ratelimit-reset` interval before retrying.
 
 ## Performance considerations
 
@@ -99,7 +99,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.3.0 | 2026-11-10 | [91551](https://github.com/airbytehq/airbyte/pull/91551) | Add foundational fixes, six parity streams, and mock-server coverage. |
+| 0.3.0 | 2026-11-10 | [91551](https://github.com/airbytehq/airbyte/pull/91551) | Add foundational fixes, six parity streams, and mock-server coverage. `emailCampaigns` and `smsCampaigns` now emit the full campaign list on every sync, including unsent campaigns. |
 | 0.2.54 | 2026-11-10 | [91355](https://github.com/airbytehq/airbyte/pull/91355) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90940](https://github.com/airbytehq/airbyte/pull/90940) | Simplify error handling while preserving retry and rate-limit behavior. |
 | 0.2.52 | 2026-11-03 | [90462](https://github.com/airbytehq/airbyte/pull/90462) | Update dependencies |
