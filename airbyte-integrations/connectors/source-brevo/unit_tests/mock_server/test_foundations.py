@@ -211,16 +211,37 @@ def cursor_record(name: str, record_id: int, value: str) -> dict:
 
 EXISTING_INCREMENTAL = [
     (
-        "contacts", "contacts", "contacts", 1000, {"offset": 0}, {"offset": 1000},
-        "2023-11-14T00:00:00.000000Z", (UPDATED, "2023-11-14T23:30:00.000Z"), (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
+        "contacts",
+        "contacts",
+        "contacts",
+        1000,
+        {"offset": 0},
+        {"offset": 1000},
+        "2023-11-14T00:00:00.000000Z",
+        (UPDATED, "2023-11-14T23:30:00.000Z"),
+        (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
     ),
     (
-        "crm_deals", "crm/deals", "items", 500, {"offset": 0}, {"offset": 500},
-        "2023-11-14T00:00:00.000000Z", ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"), (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
+        "crm_deals",
+        "crm/deals",
+        "items",
+        500,
+        {"offset": 0},
+        {"offset": 500},
+        "2023-11-14T00:00:00.000000Z",
+        ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"),
+        (STATE_VALUE, "2023-11-14T23:30:00.000000Z"),
     ),
     (
-        "companies", "companies", "items", 500, {"page": 1}, {"page": 2},
-        "2023-11-14T00:00:00Z", (UPDATED, "2023-11-14T23:30:00.000Z"), ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"),
+        "companies",
+        "companies",
+        "items",
+        500,
+        {"page": 1},
+        {"page": 2},
+        "2023-11-14T00:00:00Z",
+        (UPDATED, "2023-11-14T23:30:00.000Z"),
+        ("2023-11-14T23:00:00Z", "2023-11-14T23:30:00Z"),
     ),
 ]
 
@@ -230,18 +251,38 @@ EXISTING_INCREMENTAL = [
 )
 @freeze_time(NOW)
 def test_existing_incremental_streams_paginate_and_resume(
-    name: str, path: str, field: str, size: int, first_page: dict, second_page: dict, cold_since: str, cursors: tuple[str, str], states: tuple[str, str]
+    name: str,
+    path: str,
+    field: str,
+    size: int,
+    first_page: dict,
+    second_page: dict,
+    cold_since: str,
+    cursors: tuple[str, str],
+    states: tuple[str, str],
 ) -> None:
     cursor_field = "modifiedAt" if name == "contacts" else "last_updated_at"
     with HttpMocker() as mocker:
         requests = [
             mock_page(
-                mocker, path, field, [cursor_record(name, i, cursors[0]) for i in range(size)],
-                limit=size, sort="asc", modifiedSince=cold_since, **first_page,
+                mocker,
+                path,
+                field,
+                [cursor_record(name, i, cursors[0]) for i in range(size)],
+                limit=size,
+                sort="asc",
+                modifiedSince=cold_since,
+                **first_page,
             ),
             mock_page(
-                mocker, path, field, [cursor_record(name, size, cursors[0])],
-                limit=size, sort="asc", modifiedSince=cold_since, **second_page,
+                mocker,
+                path,
+                field,
+                [cursor_record(name, size, cursors[0])],
+                limit=size,
+                sort="asc",
+                modifiedSince=cold_since,
+                **second_page,
             ),
         ]
         first = run_read(name, SyncMode.incremental)
@@ -280,8 +321,14 @@ def test_contacts_lists_contacts_resumes_each_list_from_its_own_cursor() -> None
             for list_id in [71, 83]:
                 requests.append(
                     mock_page(
-                        mocker, f"contacts/lists/{list_id}/contacts", "contacts", [{"id": list_id, "modifiedAt": modified[list_id]}],
-                        limit=500, offset=0, sort="asc", modifiedSince=since[list_id],
+                        mocker,
+                        f"contacts/lists/{list_id}/contacts",
+                        "contacts",
+                        [{"id": list_id, "modifiedAt": modified[list_id]}],
+                        limit=500,
+                        offset=0,
+                        sort="asc",
+                        modifiedSince=since[list_id],
                     )
                 )
             output = run_read("contacts_lists_contacts", SyncMode.incremental, state)
@@ -428,12 +475,20 @@ NEW_STREAMS = [
 
 EVENT_WINDOWS = [
     (
-        "inbound_email_events", "inbound/events", 500, "uuid", "2023-10-01T00:00:00Z",
+        "inbound_email_events",
+        "inbound/events",
+        500,
+        "uuid",
+        "2023-10-01T00:00:00Z",
         [("2023-10-01T00:00:00.000000Z", "2023-10-30T23:59:59.999000Z"), ("2023-10-31T00:00:00.000000Z", "2023-11-14T23:59:59.000000Z")],
         "2023-11-14T23:59:59.000000Z",
     ),
     (
-        "transactional_email_events", "smtp/statistics/events", 5000, "messageId", "2023-09-01T00:00:00Z",
+        "transactional_email_events",
+        "smtp/statistics/events",
+        5000,
+        "messageId",
+        "2023-09-01T00:00:00Z",
         [("2023-09-01", "2023-09-30"), ("2023-10-01", "2023-10-30"), ("2023-10-31", "2023-11-14")],
         "2023-11-14",
     ),
