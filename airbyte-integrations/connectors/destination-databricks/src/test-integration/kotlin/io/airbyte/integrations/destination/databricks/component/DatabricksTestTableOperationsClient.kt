@@ -194,7 +194,15 @@ class DatabricksTestTableOperationsClient(
                     ?.toInstant()
                     ?.atOffset(ZoneOffset.UTC)
                     ?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            "TIMESTAMP_NTZ" -> rs.getTimestamp(index)?.toLocalDateTime()?.toString()
+            // Go through the instant: Timestamp.toLocalDateTime() uses the Julian calendar before
+            // 1582 (0001-01-01 becomes 0001-01-03), and LocalDateTime.toString() drops zero
+            // seconds.
+            "TIMESTAMP_NTZ" ->
+                rs.getTimestamp(index)
+                    ?.toInstant()
+                    ?.atOffset(ZoneOffset.UTC)
+                    ?.toLocalDateTime()
+                    ?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             "DATE" -> rs.getDate(index)?.toString()
             "LONG",
             "BIGINT",

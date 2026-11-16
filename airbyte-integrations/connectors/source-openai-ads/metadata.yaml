@@ -1,5 +1,15 @@
 metadataSpecVersion: "1.0"
 data:
+  maxSecondsBetweenMessages: 3600
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-OPENAI-ADS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   allowedHosts:
     hosts:
       - "api.ads.openai.com"
@@ -13,11 +23,11 @@ data:
       enabled: false
       packageName: airbyte-source-openai-ads
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
   connectorType: source
   definitionId: a152c0b0-6c5d-43d6-a74c-72df24dae70e
-  dockerImageTag: 1.0.0
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/source-openai-ads
   githubIssueLabel: source-openai-ads
   icon: icon.svg
@@ -25,16 +35,6 @@ data:
   name: OpenAI Ads
   releaseDate: 2026-10-08
   releaseStage: alpha
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: "The `start_date` and `end_date` fields of the `spend_limit_windows` stream are now typed as dates instead of strings. Users syncing `spend_limit_windows` must refresh the source schema and reset the stream after upgrading. Saved conversions state and configurations are migrated automatically. For more information, see the [OpenAI Ads migration guide](https://docs.airbyte.com/integrations/sources/openai-ads-migrations)."
-        upgradeDeadline: "2026-11-12"
-        deadlineAction: "auto_upgrade"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - "spend_limit_windows"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/openai-ads
   suggestedStreams:
@@ -60,3 +60,20 @@ data:
     - title: OpenAI Ads API authentication
       url: https://developers.openai.com/ads/api-reference/authentication
       type: authentication_guide
+    - title: OpenAI Ads OpenAPI spec
+      url: https://developers.openai.com/ads/openapi.json
+      type: openapi_spec
+    - title: OpenAI Ads API rate limits
+      url: https://developers.openai.com/ads/api-overview#rate-limits
+      type: rate_limits
+    - title: OpenAI Ads API changelog
+      url: https://developers.openai.com/ads/api-overview#changelog
+      type: api_release_history
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

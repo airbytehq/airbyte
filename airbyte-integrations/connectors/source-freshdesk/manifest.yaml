@@ -8,6 +8,20 @@ check:
     - agents
 
 definitions:
+  unauthorized_response_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    http_codes:
+      - 401
+    error_message: >-
+      The endpoint to access stream {{ parameters.stream_name }} returned 401: Unauthorized. This is most likely due to wrong credentials.
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+    response_filters:
+      - $ref: "#/definitions/unauthorized_response_filter"
   streams:
     agents:
       type: DeclarativeStream
@@ -21,20 +35,9 @@ definitions:
           path: agents
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream agents returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: agents
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,20 +72,9 @@ definitions:
           path: business_hours
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream business_hours returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: business_hours
         record_selector:
           type: RecordSelector
           extractor:
@@ -126,20 +118,9 @@ definitions:
           path: canned_response_folders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream canned_response_folders returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: canned_response_folders
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,20 +155,9 @@ definitions:
           path: canned_response_folders/{{ stream_slice.id }}/responses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream canned_responses returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: canned_responses
         record_selector:
           type: RecordSelector
           extractor:
@@ -230,20 +200,9 @@ definitions:
           path: companies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream companies returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: companies
         record_selector:
           type: RecordSelector
           extractor:
@@ -278,20 +237,9 @@ definitions:
           path: tickets/{{ stream_slice.id }}/conversations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream conversations returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: conversations
         record_selector:
           type: RecordSelector
           extractor:
@@ -334,20 +282,9 @@ definitions:
           path: contacts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream contacts returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: contacts
         record_selector:
           type: RecordSelector
           extractor:
@@ -398,20 +335,9 @@ definitions:
           path: discussions/categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream discussion_categories returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: discussion_categories
         record_selector:
           type: RecordSelector
           extractor:
@@ -446,20 +372,9 @@ definitions:
           path: discussions/topics/{{ stream_slice.id }}/comments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream discussion_comments returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: discussion_comments
         record_selector:
           type: RecordSelector
           extractor:
@@ -502,20 +417,9 @@ definitions:
           path: discussions/categories/{{ stream_slice.id }}/forums
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream discussion_forums returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: discussion_forums
         record_selector:
           type: RecordSelector
           extractor:
@@ -558,20 +462,9 @@ definitions:
           path: discussions/forums/{{ stream_slice.id }}/topics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream discussion_topics returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: discussion_topics
         record_selector:
           type: RecordSelector
           extractor:
@@ -614,20 +507,9 @@ definitions:
           path: email_configs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream email_configs returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: email_configs
         record_selector:
           type: RecordSelector
           extractor:
@@ -662,20 +544,9 @@ definitions:
           path: email/mailboxes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream email_mailboxes returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: email_mailboxes
         record_selector:
           type: RecordSelector
           extractor:
@@ -710,20 +581,9 @@ definitions:
           path: groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream groups returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: groups
         record_selector:
           type: RecordSelector
           extractor:
@@ -758,20 +618,9 @@ definitions:
           path: products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream products returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: products
         record_selector:
           type: RecordSelector
           extractor:
@@ -806,20 +655,9 @@ definitions:
           path: roles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream roles returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: roles
         record_selector:
           type: RecordSelector
           extractor:
@@ -931,20 +769,9 @@ definitions:
           path: scenario_automations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream scenario_automations returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: scenario_automations
         record_selector:
           type: RecordSelector
           extractor:
@@ -979,20 +806,9 @@ definitions:
           path: settings/helpdesk
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream settings returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: settings
         record_selector:
           type: RecordSelector
           extractor:
@@ -1027,20 +843,9 @@ definitions:
           path: skills
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream skills returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: skills
         record_selector:
           type: RecordSelector
           extractor:
@@ -1075,20 +880,9 @@ definitions:
           path: sla_policies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream sla_policies returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: sla_policies
         record_selector:
           type: RecordSelector
           extractor:
@@ -1130,20 +924,9 @@ definitions:
           path: solutions/folders/{{ stream_slice.id }}/articles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream solution_articles returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: solution_articles
         record_selector:
           type: RecordSelector
           extractor:
@@ -1186,20 +969,9 @@ definitions:
           path: solutions/categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream solution_categories returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: solution_categories
         record_selector:
           type: RecordSelector
           extractor:
@@ -1234,20 +1006,9 @@ definitions:
           path: solutions/categories/{{ stream_slice.id }}/folders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream solution_folders returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: solution_folders
         record_selector:
           type: RecordSelector
           extractor:
@@ -1356,20 +1117,9 @@ definitions:
           path: ticket_fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream ticket_fields returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: ticket_fields
         record_selector:
           type: RecordSelector
           extractor:
@@ -1409,25 +1159,16 @@ definitions:
             order_by: updated_at
             order_type: asc
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RESET_PAGINATION
-                    http_codes:
-                      - 400
-                    error_message_contains: You cannot access tickets beyond the 300th page
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream tickets returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: tickets
+            response_filters:
+              - type: HttpResponseFilter
+                action: RESET_PAGINATION
+                http_codes:
+                  - 400
+                error_message_contains: You cannot access tickets beyond the 300th page
+              - $ref: "#/definitions/unauthorized_response_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1509,20 +1250,9 @@ definitions:
           path: time_entries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream time_entries returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            $parameters:
+              stream_name: time_entries
         record_selector:
           type: RecordSelector
           extractor:

@@ -39,19 +39,17 @@ definitions:
           path: tags
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -89,19 +87,17 @@ definitions:
           path: deals
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -139,19 +135,17 @@ definitions:
           path: pages
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -189,19 +183,17 @@ definitions:
           path: tasks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -239,19 +231,17 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -289,19 +279,17 @@ definitions:
           path: folders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -339,19 +327,17 @@ definitions:
           path: events
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -389,19 +375,17 @@ definitions:
           path: prices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -439,19 +423,17 @@ definitions:
           path: timers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -489,19 +471,17 @@ definitions:
           path: filters
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -539,19 +519,17 @@ definitions:
           path: widgets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -589,19 +567,17 @@ definitions:
           path: bookings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -639,19 +615,17 @@ definitions:
           path: comments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -689,19 +663,17 @@ definitions:
           path: expenses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -739,19 +711,17 @@ definitions:
           path: holidays
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -789,19 +759,17 @@ definitions:
           path: invoices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -839,19 +807,17 @@ definitions:
           path: payments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -889,19 +855,17 @@ definitions:
           path: projects
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -939,19 +903,17 @@ definitions:
           path: salaries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -989,19 +951,17 @@ definitions:
           path: sections
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1039,19 +999,17 @@ definitions:
           path: services
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1089,19 +1047,17 @@ definitions:
           path: sessions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1139,19 +1095,17 @@ definitions:
           path: companies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1189,19 +1143,17 @@ definitions:
           path: pipelines
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1239,19 +1191,17 @@ definitions:
           path: tax_rates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1289,19 +1239,17 @@ definitions:
           path: workflows
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1339,19 +1287,17 @@ definitions:
           path: activities
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1389,19 +1335,17 @@ definitions:
           path: dashboards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1439,19 +1383,17 @@ definitions:
           path: line_items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1489,19 +1431,17 @@ definitions:
           path: rate_cards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1539,19 +1479,17 @@ definitions:
           path: task_lists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1589,19 +1527,17 @@ definitions:
           path: attachments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1639,19 +1575,17 @@ definitions:
           path: memberships
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1689,19 +1623,17 @@ definitions:
           path: entitlements
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1739,19 +1671,17 @@ definitions:
           path: lost_reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1789,19 +1719,17 @@ definitions:
           path: subsidiaries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1839,19 +1767,17 @@ definitions:
           path: time_entries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1889,19 +1815,17 @@ definitions:
           path: custom_fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1939,19 +1863,17 @@ definitions:
           path: deal_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1989,19 +1911,17 @@ definitions:
           path: organizations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2039,19 +1959,17 @@ definitions:
           path: page_versions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2089,19 +2007,17 @@ definitions:
           path: service_types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2139,19 +2055,17 @@ definitions:
           path: document_types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2189,19 +2103,17 @@ definitions:
           path: exchange_rates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2239,19 +2151,17 @@ definitions:
           path: contact_entries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2289,19 +2199,17 @@ definitions:
           path: approval_policies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2336,19 +2244,17 @@ definitions:
           path: holiday_calendars
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2386,19 +2292,17 @@ definitions:
           path: payment_reminders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2436,19 +2340,17 @@ definitions:
           path: workflow_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2486,19 +2388,17 @@ definitions:
           path: time_entry_versions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2536,19 +2436,17 @@ definitions:
           path: custom_field_options
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2586,19 +2484,17 @@ definitions:
           path: invoice_attributions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2636,19 +2532,17 @@ definitions:
           path: reports/booking_reports
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2686,19 +2580,17 @@ definitions:
           path: organization_memberships
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2736,19 +2628,17 @@ definitions:
           path: reports/timesheet_reports
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2786,19 +2676,17 @@ definitions:
           path: payment_reminder_sequences
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:

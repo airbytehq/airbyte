@@ -35,13 +35,8 @@ _MANIFEST_PATH = _MANIFEST_DIR / "manifest.yaml"
 
 _TOKEN_URL = "https://zoom.us/oauth/token"
 _USERS_URL = "https://api.zoom.us/v2/users"
-_ZOOM_ERROR_HANDLER_REF = "#/definitions/zoom_error_handler"
-_HANDLER_PATHS_WITH_STREAM_FILTERS = {
-    "/report/users/{{ stream_partition.parent_id }}/meetings",
-    "/report/daily",
-    "/chat/users/{{ stream_partition.parent_id }}/channels",
-    "/zoom_events/events",
-}
+_BACKOFF_STRATEGY_REF = "#/definitions/zoom_backoff_strategy"
+_TOKEN_REFRESH_FILTER_REF = "#/definitions/zoom_token_refresh_filter"
 _CONFIG = {
     "credentials": {
         "auth_type": "server_to_server",
@@ -143,39 +138,41 @@ def test_check_fails_on_invalid_credentials():
     assert "invalid_client" in status.message
 
 
-def _requesters(node):
+def _requesters(node, manifest):
     if isinstance(node, dict):
         if isinstance(node.get("requester"), dict):
-            yield node["requester"]
+            requester = node["requester"]
+            if "$ref" in requester:
+                requester = manifest
+                for path_segment in node["requester"]["$ref"].removeprefix("#/").split("/"):
+                    requester = requester[path_segment]
+            yield requester
         for value in node.values():
-            yield from _requesters(value)
+            yield from _requesters(value, manifest)
     elif isinstance(node, list):
         for value in node:
-            yield from _requesters(value)
+            yield from _requesters(value, manifest)
 
 
-def test_every_requester_uses_the_shared_authenticator_and_token_refresh_handler():
-    """The manifest inlines every requester, so a copy that misses the shared blocks would ship silently."""
-    requesters = list(_requesters(yaml.safe_load(_MANIFEST_PATH.read_text())))
+def _resolve_ref(value, manifest):
+    if isinstance(value, str) and value.startswith("#/"):
+        node = manifest
+        for path_segment in value.removeprefix("#/").split("/"):
+            node = node[path_segment]
+        return node
+    return value
+
+
+def test_every_requester_uses_the_shared_authenticator_and_a_single_token_refresh_handler():
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    requesters = list(_requesters(manifest, manifest))
     assert requesters
     for requester in requesters:
         assert requester.get("authenticator") == "#/definitions/authenticator"
-        error_handler = requester.get("error_handler")
-        if isinstance(error_handler, dict):
-            assert error_handler["type"] == "CompositeErrorHandler"
-            if requester.get("path") in _HANDLER_PATHS_WITH_STREAM_FILTERS:
-                assert error_handler["error_handlers"][0] == _ZOOM_ERROR_HANDLER_REF
-                final_handler = error_handler["error_handlers"][-1]
-                assert final_handler["type"] == "DefaultErrorHandler"
-                assert any(
-                    response_filter.get("predicate") == "{{ response.code == 124 }}"
-                    and response_filter.get("action") == "REFRESH_TOKEN_THEN_RETRY"
-                    for response_filter in final_handler["response_filters"]
-                )
-            else:
-                assert error_handler["error_handlers"][-1] == _ZOOM_ERROR_HANDLER_REF
-        else:
-            assert error_handler == _ZOOM_ERROR_HANDLER_REF
+        error_handler = _resolve_ref(requester.get("error_handler"), manifest)
+        assert error_handler["type"] == "DefaultErrorHandler"
+        assert error_handler["backoff_strategies"] == [_BACKOFF_STRATEGY_REF]
+        assert _TOKEN_REFRESH_FILTER_REF in error_handler["response_filters"]
 
 
 def _token_responses():
@@ -203,7 +200,7 @@ def test_token_expired_mid_sync_is_refreshed_and_request_retried(_sleep):
 
 
 @patch("time.sleep")
-def test_token_expired_mid_sync_is_refreshed_behind_a_composite_error_handler(_sleep):
+def test_token_expired_mid_sync_is_refreshed_behind_a_shared_stream_error_handler(_sleep):
     with requests_mock.Mocker() as mocker:
         mocker.post(_TOKEN_URL, _token_responses())
         mocker.get(_USERS_URL, json={"users": [{"id": "u1"}], "next_page_token": ""})

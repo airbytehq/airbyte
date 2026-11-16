@@ -3,7 +3,7 @@
 """Mock-server tests for the `webinar_registrants` stream (`acceptance-test-config.yml` `empty_streams`).
 
 `GET /webinars/{webinarId}/registrants` for every webinar returned by `GET /users/{userId}/webinars`.
-Keyed on the webinar `id`, paginated with `page_size=30` and `next_page_token`, records under `registrants`,
+Keyed on the webinar `id`, paginated with `page_size=300` and `next_page_token`, records under `registrants`,
 injects `webinar_id`.
 """
 

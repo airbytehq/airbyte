@@ -6,6 +6,9 @@ import pathlib
 from typing import Any, List, Mapping
 from unittest.mock import Mock
 
+# The CDK imports pandas lazily when it first reads a Bulk result (since 7.39.0), and that import never
+# finishes while freezegun has the clock frozen. Importing it here keeps @freeze_time tests from hanging.
+import pandas  # noqa: F401
 import pytest
 from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce

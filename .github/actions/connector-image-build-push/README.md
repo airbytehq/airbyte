@@ -117,7 +117,7 @@ This GitHub Action builds and pushes Docker images for Airbyte connectors (Pytho
 - Must be a Python or manifest-only connector type
 
 ### Dependencies
-- The action installs `uv`, `poethepoet`, and `yq` automatically
+- The action installs `uv` and `poethepoet`, and uses the `yq` preinstalled on the GitHub-hosted runner image
 - Requires appropriate Dockerfile templates in `docker-images/`
 - Needs access to `poe` tasks for connector metadata extraction
 

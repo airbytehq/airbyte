@@ -27,7 +27,7 @@ First, you need to select existing or create a new project in the Google Cloud C
 1. Sign in to the Google Account.
 2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page.
 3. Click `Create service account`.
-4. Create a JSON key file for the service user. The contents of this file will be provided as the `service_account` in the UI.
+4. Create a JSON key file for the service account. The contents of this file will be provided as the `service_account` in the UI.
 
 ### Grant permission to GCS
 
@@ -44,15 +44,14 @@ Use the service account ID from above, grant read access to your target bucket. 
 5. Select authorization type:
    1. **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow. 
    2. **Service Account Information** and paste the service account JSON key to the `Service Account Information` field .
-6. Paste the service account JSON key to the `Service Account Information` field .
-7. Enter your GCS bucket name to the `Bucket` field. 
-8. Add a stream:
+6. Enter your GCS bucket name to the `Bucket` field.
+7. Add a stream:
    1. Give a **Name** to the stream 
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below. 
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+   3. Optionally, enter the **Globs** which dictates which files to be synced. These are glob-style patterns, not regular expressions. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-9. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
-10. Click **Set up source** and wait for the tests to complete.
+8. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
+9. Click **Set up source** and wait for the tests to complete.
 
 #### For Airbyte Open Source:
 
@@ -63,15 +62,14 @@ Use the service account ID from above, grant read access to your target bucket. 
 5. Select authorization type:
    1. **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow. 
    2. **Service Account Information** and paste the service account JSON key to the `Service Account Information` field .
-6. Paste the service account JSON key to the `Service Account Information` field .
-7. Enter your GCS bucket name to the `Bucket` field. 
-8. Add a stream:
+6. Enter your GCS bucket name to the `Bucket` field.
+7. Add a stream:
    1. Give a **Name** to the stream 
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below. 
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+   3. Optionally, enter the **Globs** which dictates which files to be synced. These are glob-style patterns, not regular expressions. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-9. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
-10. Click **Set up source** and wait for the tests to complete.
+8. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
+9. Click **Set up source** and wait for the tests to complete.
 
 #### File urls
 
@@ -244,6 +242,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.10.42 | 2026-11-10 | [91503](https://github.com/airbytehq/airbyte/pull/91503) | Update dependencies |
+| 0.10.41 | 2026-11-03 | [90891](https://github.com/airbytehq/airbyte/pull/90891) | Require Python 3.11 or newer for local connector development. |
+| 0.10.40 | 2026-11-03 | [90561](https://github.com/airbytehq/airbyte/pull/90561) | Update dependencies |
 | 0.10.39 | 2026-10-27 | [89875](https://github.com/airbytehq/airbyte/pull/89875) | Update dependencies |
 | 0.10.38 | 2026-10-20 | [89230](https://github.com/airbytehq/airbyte/pull/89230) | Update dependencies |
 | 0.10.37 | 2026-10-13 | [88608](https://github.com/airbytehq/airbyte/pull/88608) | Update dependencies |
@@ -275,7 +276,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.10.11 | 2026-03-31 | [75690](https://github.com/airbytehq/airbyte/pull/75690) | Update dependencies |
 | 0.10.10 | 2026-03-24 | [75390](https://github.com/airbytehq/airbyte/pull/75390) | Update dependencies |
 | 0.10.9 | 2026-03-19 | [74779](https://github.com/airbytehq/airbyte/pull/74779) | Fix ZIP file detection for files with compound extensions (e.g. `.csv.zip`) |
-| 0.10.8 | 2026-03-18 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
+| 0.10.8 | 2026-03-19 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
 | 0.10.7 | 2026-03-03 | [70287](https://github.com/airbytehq/airbyte/pull/70287) | Update dependencies |
 | 0.10.6 | 2026-02-13 | [73332](https://github.com/airbytehq/airbyte/pull/73332) | Fix zip file extraction failing with `DeliverRawFiles has no attribute delivery_type` error |
 | 0.10.5 | 2025-11-25 | [69913](https://github.com/airbytehq/airbyte/pull/69913) | Update dependencies |

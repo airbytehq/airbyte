@@ -1,17 +1,47 @@
 pluginManagement {
+    // Repository URLs are indirected through 'airbyte.dependencies.maven.*' properties so that
+    // restricted environments can point the build at internal mirrors. Defaults live in
+    // gradle.properties and match the public URLs, so an unconfigured build is unchanged.
+    // Setting a property to the empty string omits that repository entirely, which turns an
+    // unreachable repo into a resolution error instead of a network hang.
+    // See docs/platform/connector-development/local-connector-development.md for the full list.
+    def repoUrl = { String key ->
+        settings.hasProperty(key) ? settings.getProperty(key).toString().trim() ?: null : null
+    }
+    def airbytePublicJarsUrl = repoUrl('airbyte.dependencies.maven.airbytePublicJars')
+    // Absent by default: falls through to the gradlePluginPortal()/mavenCentral() shorthands below.
+    def pluginPortalUrl = repoUrl('airbyte.dependencies.maven.gradlePluginPortal')
+    def mavenCentralUrl = repoUrl('airbyte.dependencies.maven.central')
+
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
         // ## Prefer repos controlled by Airbyte.
-        maven {
-            url = 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        if (airbytePublicJarsUrl) {
+            maven {
+                url = airbytePublicJarsUrl
+            }
         }
 
         // ## Look into other, public repos.
         // Gradle plugin portal.
-        gradlePluginPortal()
+        if (pluginPortalUrl) {
+            maven {
+                name 'gradle-plugin-portal'
+                url = pluginPortalUrl
+            }
+        } else {
+            gradlePluginPortal()
+        }
         // Maven Central has most of everything.
-        mavenCentral()
+        if (mavenCentralUrl) {
+            maven {
+                name 'maven-central'
+                url = mavenCentralUrl
+            }
+        } else {
+            mavenCentral()
+        }
     }
 }
 
@@ -28,21 +58,36 @@ dependencyResolutionManagement {
     // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
 
+    // See the note in pluginManagement above: URLs are overridable via
+    // 'airbyte.dependencies.maven.*' properties, and an empty value omits the repository.
+    def repoUrl = { String key ->
+        settings.hasProperty(key) ? settings.getProperty(key).toString().trim() ?: null : null
+    }
+    def airbytePublicJarsUrl = repoUrl('airbyte.dependencies.maven.airbytePublicJars')
+    // Absent by default: falls through to the mavenCentral() shorthand below.
+    def mavenCentralUrl = repoUrl('airbyte.dependencies.maven.central')
+    def jitpackUrl = repoUrl('airbyte.dependencies.maven.jitpack')
+    def elasticSearchSnapshotsUrl = repoUrl('airbyte.dependencies.maven.elasticSearchSnapshots')
+    def redshiftUrl = repoUrl('airbyte.dependencies.maven.redshift')
+    def confluentUrl = repoUrl('airbyte.dependencies.maven.confluent')
+
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
         // ## Prefer repos controlled by Airbyte.
 
-        maven {
-            // This repo hosts our public artifacts and can be referenced by anyone.
-            name 'airbyte-public-jars'
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-            content {
-                // Whitelist artifacts served by this repo because it's slow.
-                includeGroup 'io.airbyte'
-                includeGroupByRegex 'io\\.airbyte\\..*'
-                includeGroup 'com.hadoop.gplcompression'
-                includeGroup 'com.therealvan'
+        if (airbytePublicJarsUrl) {
+            maven {
+                // This repo hosts our public artifacts and can be referenced by anyone.
+                name 'airbyte-public-jars'
+                url airbytePublicJarsUrl
+                content {
+                    // Whitelist artifacts served by this repo because it's slow.
+                    includeGroup 'io.airbyte'
+                    includeGroupByRegex 'io\\.airbyte\\..*'
+                    includeGroup 'com.hadoop.gplcompression'
+                    includeGroup 'com.therealvan'
+                }
             }
         }
         // TODO: add airbyte-controlled proxy repos here
@@ -50,30 +95,43 @@ dependencyResolutionManagement {
         // ## Look into other, public repos.
 
         // Maven Central has most of everything.
-        mavenCentral()
+        if (mavenCentralUrl) {
+            maven {
+                name 'maven-central'
+                url mavenCentralUrl
+            }
+        } else {
+            mavenCentral()
+        }
         // Jitpack is used to pull dependencies directly from github.
-        maven {
-            name 'jitpack'
-            url 'https://jitpack.io'
-            content {
-                includeGroupByRegex 'com\\.github\\..*'
-                includeGroup 'net.jimblackler.jsonschemafriend'
+        if (jitpackUrl) {
+            maven {
+                name 'jitpack'
+                url jitpackUrl
+                content {
+                    includeGroupByRegex 'com\\.github\\..*'
+                    includeGroup 'net.jimblackler.jsonschemafriend'
+                }
             }
         }
         // Elastic Search repo.
-        maven {
-            name 'elastic-search-snapshots'
-            url 'https://snapshots.elastic.co/maven/'
-            content {
-                includeGroup 'co.elastic.clients'
+        if (elasticSearchSnapshotsUrl) {
+            maven {
+                name 'elastic-search-snapshots'
+                url elasticSearchSnapshotsUrl
+                content {
+                    includeGroup 'co.elastic.clients'
+                }
             }
         }
         // Redshift repo.
-        maven {
-            name 'redshift'
-            url 'https://s3.amazonaws.com/redshift-maven-repository/release'
-            content {
-                includeGroup 'com.amazon.redshift'
+        if (redshiftUrl) {
+            maven {
+                name 'redshift'
+                url redshiftUrl
+                content {
+                    includeGroup 'com.amazon.redshift'
+                }
             }
         }
         // Rockset repo.
@@ -93,12 +151,14 @@ dependencyResolutionManagement {
             }
         }
         // Confluent repo.
-        maven {
-            name 'confluent'
-            url "https://packages.confluent.io/maven"
-            content {
-                includeGroup 'io.confluent'
-                includeGroup 'org.apache.kafka'
+        if (confluentUrl) {
+            maven {
+                name 'confluent'
+                url confluentUrl
+                content {
+                    includeGroup 'io.confluent'
+                    includeGroup 'org.apache.kafka'
+                }
             }
         }
     }

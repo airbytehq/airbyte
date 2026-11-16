@@ -63,7 +63,8 @@
                 "title": "Authentication Source",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6
+                "order": 6,
+                "airbyte_hidden": true
               },
               "schema_enforced": {
                 "type": "boolean",
@@ -79,8 +80,7 @@
               "connection_string",
               "databases",
               "username",
-              "password",
-              "auth_source"
+              "password"
             ]
           },
           {
@@ -132,7 +132,8 @@
                 "title": "Authentication Source",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6
+                "order": 6,
+                "airbyte_hidden": true
               },
               "schema_enforced": {
                 "type": "boolean",

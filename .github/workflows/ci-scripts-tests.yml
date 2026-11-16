@@ -27,6 +27,8 @@ jobs:
               - ".github/workflows/ci-scripts-tests.yml"
               - "poe-tasks/detect-python-cdk.py"
               - "poe-tasks/get-modified-connectors.sh"
+              - "poe-tasks/build-and-publish-java-connectors-with-tag.sh"
+              - "poe-tasks/lib/**"
     outputs:
       changed: ${{ steps.ci-script-changes.outputs.ci-scripts }}
 

@@ -48,30 +48,12 @@
   padding: 0 2rem;
 }
 
-.sectionHeader {
-  margin-bottom: 2.5rem;
-}
-
-.sectionSubtitle {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  margin: 0;
-  opacity: 0.85;
-}
-
 /* ===========================
-   Section 2: Data Replication
+   Section 2: Connectors
    =========================== */
 .drSection {
   padding: 4rem 0;
   background: var(--color-ae-bg);
-}
-
-.drSectionTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--ifm-font-color-base);
 }
 
 /* Connectors row */
@@ -188,87 +170,6 @@
 }
 
 /* ===========================
-   Section 3: Agents
-   =========================== */
-.aeSection {
-  padding: 4rem 0;
-  background: var(--color-white);
-}
-
-.aeSectionTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--ifm-font-color-base);
-}
-
-.aeSectionSubtitle {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  margin: 0;
-  opacity: 0.85;
-  color: var(--ifm-font-color-base);
-}
-
-.aeNavGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.aeNavCard {
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--color-ae-card-border);
-  background: var(--color-white);
-  transition: all 0.2s ease-out;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-}
-
-.aeNavCard:hover {
-  border-color: var(--ifm-color-primary);
-  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.2);
-  transform: translateY(-2px);
-  text-decoration: none;
-  color: inherit;
-}
-
-.aeNavIcon {
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: var(--color-ae-icon-bg);
-  border-radius: 12px;
-}
-
-.mcpIconSvg {
-  stroke: var(--ifm-color-primary);
-  width: 28px;
-  height: 28px;
-}
-
-.aeNavTitle {
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--ifm-font-color-base);
-}
-
-.aeNavDescription {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 0;
-  color: var(--ifm-font-color-base);
-  opacity: 0.8;
-}
-
-/* ===========================
    GitHub Badges
    =========================== */
 .badgesSection {
@@ -318,13 +219,7 @@
     gap: 1.25rem;
   }
 
-  .aeNavGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-  }
-
-  .drSection,
-  .aeSection {
+  .drSection {
     padding: 3rem 0;
   }
 
@@ -360,18 +255,11 @@
     gap: 1rem;
   }
 
-  .aeNavGrid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .drNavCard,
-  .aeNavCard {
+  .drNavCard {
     padding: 1.25rem;
   }
 
-  .drSection,
-  .aeSection {
+  .drSection {
     padding: 2rem 0;
   }
 

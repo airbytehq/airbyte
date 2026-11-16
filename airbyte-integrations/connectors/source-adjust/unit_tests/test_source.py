@@ -3,7 +3,10 @@
 #
 import logging
 
+import pytest
 from source_adjust.source import SourceAdjust
+
+from airbyte_cdk.models import Status
 
 
 def mock_response():
@@ -12,13 +15,15 @@ def mock_response():
 
 def test_check_connection(requests_mock, config_pass, report_url, auth_token):
     requests_mock.get(url=report_url, status_code=200, json=mock_response())
-    source = SourceAdjust()
-    status, message = source.check_connection(logging.getLogger(), config_pass)
-    assert (status, message) == (True, None)
+    source = SourceAdjust(config=config_pass, catalog=None, state=None)
+    status = source.check(logging.getLogger(), config_pass)
+    assert status.status == Status.SUCCEEDED
 
 
-def test_streams(config_pass):
-    source = SourceAdjust()
-    streams = source.streams(config_pass)
+@pytest.mark.parametrize("until_today", [True, False])
+def test_streams(config_pass, until_today):
+    config = {**config_pass, "until_today": until_today}
+    source = SourceAdjust(config=config, catalog=None, state=None)
+    streams = source.streams(config)
     expected_streams_number = 1
     assert len(streams) == expected_streams_number

@@ -13,6 +13,7 @@ This page contains the setup guide and reference information for the [Salesforce
 You may also need the following. This article explains how to get them.
 
 - Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
+- For **ClientCredentials** (Use your own External Client App), a local External Client App configured for the client credentials flow and a My Domain URL
 <!-- env:oss -->
 - For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
@@ -37,7 +38,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
       1. Leave `role` unspecified
       2. Select `Salesforce` for the User License
-      3. Select `Standard User` for Profile.
+      3. Select **Minimum Access - Salesforce** for **Profile**.
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
@@ -83,13 +84,39 @@ If you are using Airbyte Open Source, obtain the following OAuth credentials to 
 - Client Secret
 - Refresh Token
 
-To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
-
-1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
-2. When running a curl command, run it with the `-L` option to follow any redirects.
-3. If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
+Use credentials from an existing OAuth app with **Client** (Airbyte Connected App). Salesforce no longer allows creating Connected Apps as of Spring '26. For a new app, follow [Use your own External Client App (client credentials)](#use-your-own-external-client-app-client-credentials) below and set **Authentication Method** to **ClientCredentials** (Use your own External Client App) instead; this method does not require a refresh token.
 
 <!-- /env:oss -->
+
+### Use your own External Client App (client credentials) {#use-your-own-external-client-app-client-credentials}
+
+Create a local External Client App (ECA) in your Salesforce org to connect without an Airbyte-managed OAuth app or refresh token:
+
+1. Create or choose a dedicated integration user for the **Run As** user. Grant it read access to the objects and fields you want to sync; see [Create a dedicated Salesforce user](#dedicated-salesforce-user).
+2. In Salesforce Setup, search for **External Client App Manager**, then click **New External Client App**. Under
+   **Basic Information**, enter an app name and contact email, keep the suggested API name, and set **Distribution State**
+   to **Local**. See Salesforce's [External Client App creation guide](https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html).
+3. Enable OAuth for the app. The form requires a **Callback URL**; enter a placeholder because the client credentials
+   flow does not use it. Under **Available OAuth Scopes**, add **Manage user data via APIs (`api`)**. The `web` and
+   `refresh_token, offline_access` scopes aren't needed. See Salesforce's [OAuth settings guide](https://help.salesforce.com/s/articleView?id=sf.configure_external_client_app_oauth_settings.htm&language=en_US)
+   and [client credentials flow guide](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5).
+4. In the app's **Settings**, enable **Client Credentials Flow** and save the change.
+5. In **External Client App Manager**, open the app's actions list and select **Edit Policies**. In the client credentials
+   policy, enable **Client Credentials Flow** if needed, set **Run As** to the integration user's username, and save the
+   policies. See Salesforce's [External Client App client credentials policy guide](https://help.salesforce.com/s/articleView?id=xcloud.policies_configure_client_credentials_flow_for_external_client_apps.htm&language=en_US&type=5).
+   Salesforce notes that client-credentials policy changes for Connected Apps can take a few minutes to propagate; allow time before testing ([Salesforce guidance](https://help.salesforce.com/s/articleView?id=000886201&language=en_US&type=1)).
+6. In **External Client App Manager**, open the app's actions list and select **Edit Settings**. Expand **OAuth Settings**,
+   then select **Consumer Key and Secret** to copy the consumer key and secret. Salesforce might prompt you to verify
+   your identity before showing them; see the [client credentials flow guide](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5).
+7. In Setup, search for **My Domain** and open it to copy your org's URL. A production URL looks like
+   `https://acme.my.salesforce.com`; a sandbox URL looks like `https://acme--uat.sandbox.my.salesforce.com`.
+   Salesforce explains where to find the URL in its [client credentials flow guide](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5).
+8. In Airbyte, set **Authentication Method** to **ClientCredentials** (Use your own External Client App; selected by
+   default), then enter the My Domain URL, consumer key (Client ID), and consumer secret (Client Secret).
+
+Salesforce classifies this flow as high-risk because the key and secret alone grant access. Use a least-privilege integration user. Stream discovery reflects only the objects and fields the Run As user can read. `is_sandbox` does not select the org for ClientCredentials; the My Domain URL does. A sandbox refresh does not copy locally created External Client Apps, so recreate the app in the refreshed sandbox.
+
+This method does not use a refresh token, so Salesforce's 30-day idle refresh-token expiry does not apply.
 
 ### Set up the Salesforce connector in Airbyte
 
@@ -101,15 +128,17 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Salesforce from the Source type dropdown.
 4. Enter a name for the Salesforce connector.
-5. To authenticate:
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
-6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+5. Set **Authentication Method** to:
+   - **ClientCredentials** (Use your own External Client App; selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
+   - **Client** (Airbyte Connected App): Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to; make sure it is the right account.
+6. The **Sandbox** toggle applies only to **Client** (Airbyte Connected App). For **ClientCredentials**, your My Domain URL selects the org.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
 11. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
-12. Click **Set up source** and wait for the tests to complete.
+12. (Optional) For **Stream Slice Step for Incremental sync**, enter an ISO 8601 duration to set the time window used to slice incremental sync requests. The default is `P30D` (30 days).
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -121,17 +150,38 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. To authenticate:
-   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
-6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+5. Set **Authentication Method** to:
+   - **ClientCredentials** (Use your own External Client App; selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
+   - **Client** (Airbyte Connected App): Enter your Client ID, Client Secret, and Refresh Token.
+6. The **Sandbox** toggle applies only to **Client** (Airbyte Connected App). For **ClientCredentials**, your My Domain URL selects the org.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
 11. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
-12. Click **Set up source** and wait for the tests to complete.
+12. (Optional) For **Stream Slice Step for Incremental sync**, enter an ISO 8601 duration to set the time window used to slice incremental sync requests. The default is `P30D` (30 days).
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
+
+## Refresh-token expiration
+
+The **Client** (Airbyte Connected App) authentication method uses an OAuth refresh token. Salesforce expires refresh tokens after 30 days without a successful token refresh. This limit applies to both Airbyte-managed and customer-owned OAuth apps, and Salesforce administrators can't extend this platform-level limit. More restrictive app policies can expire tokens sooner. **ClientCredentials** doesn't use a refresh token, so the idle refresh-token limit doesn't apply to that method.
+
+Salesforce's rolling enforcement began on November 4, 2026, for production, scratch, and Developer Edition organizations, and on October 21, 2026, for sandboxes. Enforcement dates vary by organization. When enforcement reaches an organization, tokens already unused for 30 days or longer expire immediately. Enforcement doesn't start a new 30-day grace period. See [Salesforce's enforcement notice](https://help.salesforce.com/s/articleView?id=005461275&language=en_US&type=1).
+
+Each successful refresh-token exchange resets the inactivity window. Normal syncs use the refresh token, but paused connections and connections used less than once every 30 days may require reauthorization when you resume them. Don't create artificial refresh activity solely to prevent expiration. For infrequent unattended integrations, plan for reauthorization or consider [client credentials](#use-your-own-external-client-app-client-credentials).
+
+If authentication expires:
+
+<!-- env:cloud -->
+- **Airbyte Cloud**: open the Salesforce source settings and, under **Client** (Airbyte Connected App), click **Re-authenticate**. Sign in to the same Salesforce organization, click **Save & Test**, wait for the connection test to pass, and retry the sync.
+<!-- /env:cloud -->
+<!-- env:oss -->
+- **Airbyte Open Source**: repeat the OAuth authorization flow for your app to obtain a new refresh token. Replace **Refresh Token** in the Salesforce source settings, save the settings, test the connection, and retry the sync.
+<!-- /env:oss -->
+
+Retrying with the expired refresh token won't restore access. Salesforce can also return `invalid_grant` for revoked tokens or other authentication problems; the error alone doesn't confirm idle expiration.
 
 <HideInUI>
 
@@ -199,6 +249,21 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Limitations & Troubleshooting
 
+### Connection test login failures
+
+- **Expired or revoked authentication / `invalid_grant`**: Re-authenticate the source.
+  For refresh-token authentication, see [Refresh-token expiration](#refresh-token-expiration) for the 30-day idle limit and recovery steps.
+  Check **Sandbox** (`is_sandbox`): sandbox organizations authenticate through
+  `test.salesforce.com`, while production organizations use `login.salesforce.com`.
+- **Invalid Connected App credentials / `invalid_client_id` or `invalid_client`**:
+  Check the OAuth client ID and client secret in the source settings against the Connected App.
+- **API access disabled / `API_DISABLED_FOR_ORG`**: Use a Salesforce edition that
+  supports API access and grant the authenticated user the **API Enabled** permission.
+- **IP restrictions / `LOGIN_MUST_USE_SECURITY_TOKEN`**: Allowlist the Airbyte
+  deployment's outbound IP addresses or update the Connected App **IP Relaxation**
+  policy according to your organization's security requirements. For Airbyte Cloud,
+  use the addresses linked in [IP allow list](#ip-allow-list).
+
 <details>
 <summary>
 Expand to see details about Salesforce connector limitations and troubleshooting.
@@ -218,17 +283,22 @@ The Salesforce connector syncs formula field outputs from Salesforce. If the for
 
 The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
+### Salesforce API version
+
+The connector uses Salesforce API v62.0.
+
 ### Usage of the BULK API vs REST API
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
 - The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
+- The Salesforce object is in the connector's unsupported Bulk API objects list. In this case the connector uses the REST API, which will occasionally cost more of your API quota. Examples include:
   - AcceptedEventRelation
   - Attachment
   - CaseStatus
   - ContractStatus
   - DeclinedEventRelation
+  - EventWhoRelation
   - FieldSecurityClassification
   - KnowledgeArticle
   - KnowledgeArticleVersion
@@ -243,7 +313,12 @@ Salesforce allows extracting data using either the [BULK API](https://developer.
   - SolutionStatus
   - TaskPriority
   - TaskStatus
+  - TaskWhoRelation
   - UndecidedEventRelation
+  - WorkOrderLineItemStatus
+  - WorkOrderStatus
+
+  This is not an exhaustive list. The connector selects the REST API for objects in its unsupported Bulk API objects list.
 
 More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
@@ -267,6 +342,8 @@ Starting in version 2.10.3, REST streams read the access token that is current a
 
 Salesforce's [Refresh Token Rotation](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_enable_refresh_token_rotation.htm&language=en_US&type=5) makes refresh tokens **single-use**: each `refresh_token` exchange returns a new refresh token and **immediately invalidates the previous one** — there is no grace period or overlap window. Starting in version 2.8.0, the connector captures the rotated token on every token exchange (initial login and the mid-sync refreshes described above) and persists it back to the connection configuration, so syncs continue to work with RTR enabled.
 
+Starting November 4, 2026, Salesforce expires refresh tokens after 30 days of inactivity. This affects the Client method, not ClientCredentials, which does not use refresh tokens. For External Client Apps created since July 2026, Salesforce locks refresh token rotation on.
+
 **Enable the connector support before enabling RTR on the app.** Because invalidation is immediate, turning on **Enable Refresh Token Rotation** on a connected app whose connection is still running a pre-2.8.0 connector will break that connection on its next token exchange (it will authenticate with an already-invalidated token) and require re-authentication. The safe order is:
 
 1. Upgrade the Salesforce source to 2.8.0 or later (and, on Airbyte Cloud, wait for the rollout to reach your workspace).
@@ -281,6 +358,19 @@ Responsibility for the connected-app setting depends on how you authenticate:
 
 - The pre-save **Test connection** button rotates the token but cannot persist the new one (the connection does not exist yet), so the just-entered token is invalidated. Complete the connection setup promptly after testing, and re-authenticate if a subsequent sync reports an authentication error.
 - Running a manual **check** concurrently with a sync on the same source can race two rotations and invalidate one. Avoid triggering a connection test while a sync is in progress.
+
+### ClientCredentials authentication errors
+
+| Error message | Resolution |
+|:--------------|:-----------|
+| Salesforce accepts client credentials only at your org's My Domain URL. Enter the URL shown in Salesforce Setup under My Domain. | Use the My Domain URL from Salesforce Setup, not `login.salesforce.com` or `test.salesforce.com`. |
+| Salesforce doesn't recognize the Client ID. Enter the consumer key of your External Client App. | Check the External Client App's consumer key. |
+| Salesforce rejected the Client Secret. Enter the consumer secret of your External Client App. | Check the External Client App's consumer secret. |
+| The External Client App has no Run As user for the client credentials flow. Set Run As to your integration user in the app's policies. | Set **Run As** in the app's Policies. |
+| My Domain URL is required for the ClientCredentials method. Enter the URL shown in Salesforce Setup under My Domain. | Enter your Salesforce My Domain URL. |
+| Client ID and Client Secret are not set for the ClientCredentials method. Enter the consumer key and consumer secret of your External Client App. | Enter both External Client App credentials. |
+| Refresh Token is missing for the Client method. Authenticate your Salesforce account, or select ClientCredentials. | Re-authenticate with **Client** (Airbyte Connected App) or set **Authentication Method** to **ClientCredentials** (Use your own External Client App). |
+| Salesforce rejected the client credentials. Check Client ID, Client Secret and My Domain URL against your External Client App. | Verify the app credentials and My Domain URL. |
 
 ### OAuth authorization when PKCE is required
 
@@ -326,8 +416,12 @@ When extracting data through the Bulk API, the connector downloads results as CS
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 2.11.1 | 2026-11-09 | [91215](https://github.com/airbytehq/airbyte/pull/91215) | Add request timeouts and TCP keepalive so a stalled connection no longer hangs the sync |
+| 2.11.0 | 2026-10-23 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add the ClientCredentials authentication method (Use your own External Client App) as the default, alongside Client (Airbyte Connected App) |
+| 2.10.5 | 2026-11-03 | [90894](https://github.com/airbytehq/airbyte/pull/90894) | Require Python 3.11 or newer, retaining support for Python 3.11–3.13. |
+| 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
 | 2.10.1 | 2026-10-20 | [89399](https://github.com/airbytehq/airbyte/pull/89399) | Update dependencies |
@@ -351,7 +445,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full refresh syncs |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
+| 2.7.16-rc.1 | 2025-10-28 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
 | 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
@@ -372,7 +466,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0 |
 | 2.6.4 | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
-| 2.6.2       | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
+| 2.6.2       | 2024-10-16 | [46719](https://github.com/airbytehq/airbyte/pull/46719) | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1       | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0       | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
 | 2.5.34      | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies                                                                                                                                                    |

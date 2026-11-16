@@ -77,10 +77,6 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 5. Log in and authorize access to your Snapchat account.
 6. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
 
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
-
 7. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced. If left blank, the connector syncs up through today.
 8. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
 9. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
@@ -100,10 +96,6 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Enter the **Client ID**, **Client Secret**, and **Refresh Token** from Step 1.
 5. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
-
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
 
 6. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced.
 7. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
@@ -140,6 +132,8 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 | Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`   |
 | Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                 |
 
+Start Date and End Date filter the records of the Organizations and Ad Accounts streams, but not which organizations and ad accounts the other streams read from. For example, an ad account last updated before the Start Date is left out of the Ad Accounts stream, but its campaigns and ad account stats are still synced. If a connection was missing data for some organizations or ad accounts before version 1.6.11, refresh the affected streams to backfill their history.
+
 ### Metrics in the stats streams
 
 The stats streams flatten Snapchat's nested `stats` object, so each metric is a top-level field in the record.
@@ -167,6 +161,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.12 | 2026-11-10 | [91723](https://github.com/airbytehq/airbyte/pull/91723) | Update dependencies |
+| 1.6.11 | 2026-11-05 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Read every organization and ad account as a parent, so Start Date and End Date no longer empty the streams under them |
+| 1.6.10 | 2026-11-04 | [90345](https://github.com/airbytehq/airbyte/pull/90345) | Simplify error handler configuration with no change in behavior |
+| 1.6.9 | 2026-11-03 | [90759](https://github.com/airbytehq/airbyte/pull/90759) | Update dependencies |
 | 1.6.8 | 2026-10-27 | [90055](https://github.com/airbytehq/airbyte/pull/90055) | Update dependencies |
 | 1.6.7 | 2026-10-21 | [89614](https://github.com/airbytehq/airbyte/pull/89614) | Report not-found organization and ad account IDs as configuration errors with actionable messages |
 | 1.6.6 | 2026-10-20 | [89417](https://github.com/airbytehq/airbyte/pull/89417) | Update dependencies |

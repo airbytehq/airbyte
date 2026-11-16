@@ -29,6 +29,10 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 3. Update your `values.yaml` file if necessary. In most cases, you only need to do this if you want to implement a new feature from the new version.
 
+   :::note
+   Pass your custom values file with `--values <your values file>` when you upgrade. Don't use `--reuse-values`: it reuses the old release's values instead of the new chart's defaults. This can omit new settings, such as `temporal.adminTools`, or retain outdated default images. Keep only your custom overrides in your values file, rather than copying all defaults from an older chart.
+   :::
+
 4. Run the following command to upgrade.
 
    ```bash
@@ -118,17 +122,17 @@ abctl version
 
 2. Download the latest release from the [abctl releases page](https://github.com/airbytehq/abctl/releases/latest).
 
-3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+3. Extract the archive. This creates a directory named `abctl-<version>-linux-<arch>`, which contains the executable and other needed files. Replace `<version>` with the downloaded version, including the `v` prefix, and `<arch>` with `amd64` or `arm64`.
 
     ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    tar -xvzf abctl-<version>-linux-<arch>.tar.gz
     ```
 
 4. Replace the existing executable with the new version.
 
     ```bash
-    chmod +x abctl/abctl
-    sudo mv abctl /usr/local/bin
+    chmod +x abctl-<version>-linux-<arch>/abctl
+    sudo mv abctl-<version>-linux-<arch>/abctl /usr/local/bin
     ```
 
 5. Verify the upgrade.

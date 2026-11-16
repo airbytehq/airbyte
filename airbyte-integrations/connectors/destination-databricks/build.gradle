@@ -25,9 +25,9 @@ application {
 }
 
 dependencies {
-    implementation 'com.databricks:databricks-jdbc:3.3.3'
+    implementation 'com.databricks:databricks-jdbc:3.4.3'
     implementation 'com.databricks:databricks-sdk-java:0.110.0'
-    implementation 'org.apache.avro:avro:1.11.0'
+    implementation 'org.apache.avro:avro:1.11.5'
     implementation 'org.xerial.snappy:snappy-java:1.1.10.4'
 
     testImplementation("io.mockk:mockk:1.14.11")
