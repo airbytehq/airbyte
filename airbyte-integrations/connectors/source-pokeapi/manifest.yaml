@@ -32,6 +32,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
+    request_headers:
+      Accept: application/json
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
