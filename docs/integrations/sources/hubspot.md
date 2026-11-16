@@ -143,13 +143,13 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
      :::
    - (Not Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account. A [Service Key](#service-keys) goes in the same field.
 
+<!-- markdownlint-disable MD029 -->
+
 <FieldAnchor field="start_date">
 
 6. (Optional) For **Start date**, use the provided datepicker or enter a UTC timestamp, such as `2026-01-01T00:00:00Z`. For incremental streams, this sets the earliest cursor timestamp to sync. For `contacts` and `deals`, the cursor tracks last-modified time, so records created before this date can still be synced if they were modified afterward. If this is not set, `2006-06-01T00:00:00Z` is used as the start date.
 
 </FieldAnchor>
-
-<!-- markdownlint-disable MD029 -->
 
 7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams. For `contacts`, `deals`, and custom objects, set it to at least the duration of the first incremental sync. See [Missing records](#limitations--troubleshooting) in Troubleshooting.
 8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
@@ -371,6 +371,7 @@ The HubSpot source connector supports the following streams:
 - [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Notes on the `contacts` and `deals` streams
