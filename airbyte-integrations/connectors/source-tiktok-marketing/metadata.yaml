@@ -27,6 +27,9 @@ data:
     - title: API version timelines
       url: https://business-api.tiktok.com/portal/docs/timelines/v1.3
       type: api_deprecations
+    - title: Authentication
+      url: https://business-api.tiktok.com/portal/docs?id=1781892384100354
+      type: authentication_guide
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: ELv2
