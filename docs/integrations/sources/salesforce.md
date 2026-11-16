@@ -281,7 +281,7 @@ The Salesforce connector syncs formula field outputs from Salesforce. If the for
 
 ### Deleted, renamed, or restricted fields
 
-The connector builds each stream's query from the fields in the object's describe response, excluding binary (`base64`) and compound object fields. If Salesforce can't resolve one of those fields when the query runs, because the field was deleted or renamed, or the authenticated user lost field-level read access to it, Salesforce rejects the query with an `INVALID_FIELD` error and the sync fails with a message like:
+The connector builds each stream's query from the fields in the object's describe response. Bulk API queries exclude binary (`base64`) and compound object fields, but REST queries can include them. If Salesforce can't resolve one of the queried fields when the query runs, because the field was deleted or renamed, or the authenticated user lost field-level read access to it, Salesforce rejects the query with an `INVALID_FIELD` error and the sync fails with a message like:
 
 ```text
 Field 'Foo__c' requested by stream 'Account' does not exist in Salesforce or is not visible to the authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.
