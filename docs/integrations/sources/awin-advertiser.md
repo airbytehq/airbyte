@@ -1,22 +1,33 @@
 # AWIN Advertiser
+
 Website: https://www.awin.com/
-Documentation: https://developer.awin.com/apidocs/for-advertisers
+Documentation: https://help.awin.com/apidocs/for-advertisers
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `advertiserId` | `string` | advertiserId. Your Awin Advertiser ID. You can find this in your Awin dashboard or account settings. |  |
-| `api_key` | `string` | API Key. Your Awin API key. Generate this from your Awin account under API Credentials. |  |
-| `step_increment` | `string` | Step Increment. The time window size for each API request in ISO8601 duration format. For the campaign performance stream, Awin API explicitly limits the period between startDate and endDate to 400 days maximum.  | P400D |
-| `lookback_days` | `integer` | Lookback Days. Number of days to look back on each sync to catch any updates to existing records. |  |
-| `start_date` | `string` | Start Date. Start date for data replication in YYYY-MM-DD format |  |
+| --- | --- | --- | --- |
+| `advertiserId` | `string` | advertiserId. Your Awin Advertiser ID. You can find this in your Awin dashboard or account settings. | |
+| `api_key` | `string` | API Key. Your Awin API key. Generate this from your Awin account under API Credentials. | |
+| `step_increment` | `string` | Step Increment. The time window size for each API request in ISO8601 duration format. For the campaign performance stream, Awin API explicitly limits the period between startDate and endDate to 400 days maximum. | P400D |
+| `lookback_days` | `integer` | Lookback Days. Number of days to look back on each sync to catch any updates to existing records. | |
+| `start_date` | `string` | Start Date. Start date for data replication in YYYY-MM-DD format | |
+| `regions` | `array<string>` | Creative performance regions. Awin regions to request for the `creative_performance` stream. The Awin creative report requires a region, so the stream reads one report per selected region and returns no records when none are selected. A region added after this stream has synced data is read only from the last synced date minus `lookback_days`, so refresh the `creative_performance` stream after adding a region to backfill its earlier history. | |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| campaign_performance | date.publisherId.campaign | No pagination | ✅ |  ✅  |
-| transactions | id | No pagination | ✅ |  ✅  |
+| --- | --- | --- | --- | --- |
+| campaign_performance | date.publisherId.campaign | No pagination | ✅ | ✅ |
+| transactions | id | No pagination | ✅ | ✅ |
+| publisher_performance | date.publisherId.region.currency | No pagination | ✅ | ✅ |
+| creative_performance | date.region.creativeId.publisherId | No pagination | ✅ | ✅ |
+| publishers | id | No pagination | ✅ | ❌ |
+| accounts | accountId | No pagination | ✅ | ❌ |
+
+The `transactions` stream requests basket products, so records include `basketProducts` when Awin returns product-level tracking data. Each transaction also has an `is_deleted` field, which is `true` when `commissionStatus` was `deleted` the last time the transaction was read. Each sync re-reads only transactions whose `transactionDate` falls within `lookback_days`, so a transaction deleted after it leaves that window keeps `is_deleted: false`; set `lookback_days` to cover your programmes' validation period. The stream sends no `status` filter, so `is_deleted` can only be `true` for deleted transactions that Awin includes in its default response.
+
+The `publisher_performance` and `creative_performance` streams request one day at a time and add the report day as the `date` field. A first sync sends one request per day since `start_date` (per selected region for `creative_performance`), and Awin allows 20 API calls per minute per user across all streams, so each year of history adds at least 18 minutes per report and region.
 
 ## IP allow list
 
@@ -27,8 +38,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.1.0 | 2026-11-10 | [91539](https://github.com/airbytehq/airbyte/pull/91539) | Add `publisher_performance`, `creative_performance`, `publishers` and `accounts` streams, add basket products and an `is_deleted` field to `transactions` |
 | 0.0.43 | 2026-11-10 | [91364](https://github.com/airbytehq/airbyte/pull/91364) | Update dependencies |
 | 0.0.42 | 2026-11-03 | [90448](https://github.com/airbytehq/airbyte/pull/90448) | Update dependencies |
 | 0.0.41 | 2026-10-27 | [89797](https://github.com/airbytehq/airbyte/pull/89797) | Update dependencies |

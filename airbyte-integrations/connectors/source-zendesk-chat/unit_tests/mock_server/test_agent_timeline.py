@@ -6,7 +6,7 @@ from unittest import TestCase
 from config_builder import ConfigBuilder
 from conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -221,3 +221,29 @@ class TestAgentTimelineStream(TestCase):
         assert len(output.records) == 2
         agent_ids = {r.record.data["agent_id"] for r in output.records}
         assert agent_ids == {1001, 1002}
+
+    @HttpMocker()
+    def test_403_fails_with_config_error(self, http_mocker: HttpMocker):
+        """Zendesk answers incremental export requests from blocked third-party integrations with 403."""
+        http_mocker.get(
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/agent_timeline",
+                query_params={
+                    "fields": "agent_timeline(*)",
+                    "limit": "1000",
+                    "start_time": _START_TIME_MICROSECONDS,
+                },
+            ),
+            HttpResponse(body=json.dumps({"error": "Forbidden"}), status_code=403),
+        )
+
+        config = _config()
+        source = get_source(config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=True)
+
+        assert len(output.records) == 0
+        assert output.errors
+        messages = [error.trace.error.message for error in output.errors]
+        assert any("stream agent_timeline with HTTP 403" in message and "60-day partner extension" in message for message in messages)
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)

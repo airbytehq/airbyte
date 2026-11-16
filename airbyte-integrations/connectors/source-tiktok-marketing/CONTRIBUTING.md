@@ -17,7 +17,7 @@ TikTok represents missing report metrics with a dash. The connector converts the
 
 ## 3. Rate Limit Detection via Response Body Code
 
-TikTok reports rate limits and some transient errors inside successful HTTP responses. The connector checks the API error code to decide whether to retry or fail.
+TikTok reports rate limits and some transient errors inside successful HTTP responses. The connector checks the API error code to decide whether to retry or fail. Maintenance and server-side errors (`60001`, `50000`, `51041`, `51004`, `51002`, `51001`, and `51043`) are retried and explicitly classified as `transient_error`.
 
 ## 4. Daily Report Window Splitting (40067)
 

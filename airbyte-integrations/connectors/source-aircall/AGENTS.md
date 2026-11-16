@@ -25,6 +25,8 @@ Aircall retains six months of calls. A first sync or full refresh starts 365 day
 
 Aircall allows 120 requests per minute per company, shared with the company's other integrations, so the budget allows 100. The reference calls `X-AircallApi-Reset` a timestamp without a unit, so `WaitUntilTimeFromHeader` reads its first 10 digits, which are epoch seconds for both seconds and milliseconds. Waits are capped at 300 seconds; a later reset is treated as a bad header and fails the attempt. The shared API budget covers v1 and v2 requests and treats a 429 as a full bucket, so a 429 costs about one minute. The configurable `num_workers` setting controls concurrency, but workers share this same company-wide limit. See [Aircall's rate-limit documentation](https://developers.aircall.io/api-references/#rate-limiting).
 
+Aircall sends `X-AircallApi-Reset` only on 429 (checked live 2026-11-13), so every backoff list follows the header wait with an `ExponentialBackoffStrategy` for 5xx responses. `num_workers` has a minimum of 1, but the concurrency template never runs below 2, the CDK's lowest safe level.
+
 **Why this matters:** Increasing concurrency does not increase the company's quota and can cause all streams to be throttled together.
 
 ## 5. HTTP errors have distinct recovery behavior
@@ -37,8 +39,9 @@ Aircall allows 120 requests per minute per company, shared with the company's ot
 | Engagements: 400 that mentions 10,000, or 404 "No Conversation exists"     | Ignored with the URL; the newest 10,000 engagements of a conversation stay.                                    |
 | Other 400                                                                  | CDK default: system error.                                                                                     |
 | 429                                                                        | CDK default (rate limited); waits until `X-AircallApi-Reset`.                                                  |
-| 500, 502, 503, or 504                                                      | CDK default: retried with exponential backoff, or until `X-AircallApi-Reset` when the response has it.         |
+| 500, 502, 503, or 504                                                      | Retried: until `X-AircallApi-Reset` when the response has it, else with `ExponentialBackoffStrategy`.          |
 | Conversation intelligence: 404 `NotFound`, or 403 without the gateway body | 404 ignored with the URL; 403 is a configuration error that names the option; see section 10.                  |
+| Dialer campaigns: 404 with `{"message": "NOT_FOUND"}`                      | Ignored with the URL (the user has no active Power Dialer campaign); see section 12.                           |
 | Any other status                                                           | CDK default mapping: for example 404 and 405 fail as system errors, 408 and unmapped codes are retried.        |
 
 See [Aircall's error documentation](https://developers.aircall.io/api-references/#errors).
@@ -99,3 +102,9 @@ The six AI streams (`call_transcriptions`, `call_sentiments`, `call_topics`, `ca
 Each AI stream is a `SubstreamPartitionRouter` child of `calls` with `incremental_dependency`, so it reads the calls of the calls stream's own window (365 days on a first sync or full refresh, three days before the saved cursor on an incremental sync) and makes one request per call. The parent's `started_at` comes through `extra_fields` and is added as `call_started_at`, the child cursor every result has (sentiments have no timestamp, and the other results do not share one). It has no `value_type`: with one, a call without `started_at` would get the string `"None"`; without it the field is left out. Like `conversation_engagements`, the child cursor is a `global_substream_cursor` that sends no request filter and drops no record, with a far `end_datetime` so a call dated in the future cannot empty later slices. Results edited after the call (action items carry `updated_at`) reach an incremental sync only while the call is inside the parent's three-day lookback. The CDK caches parent responses, so the calls pages are reused across the selected streams within a sync when their windows match. The cost is one request per call per stream on every sync, and all streams share one 100 requests per minute budget: a company with 1,000 calls a day and daily syncs spends about 4,000 requests per stream per sync (40 minutes), 4 hours for all six, and about 180 hours for all six on the first sync.
 
 **Why this matters:** The fan-out shares the company's 120 requests per minute with every other integration, which is why the streams are opt-in and the docs spell out the cost.
+
+## 12. Power Dialer campaigns are per user, unpaginated and without history
+
+`dialer_campaigns` and `dialer_campaign_phone_numbers` are children of `users` (`/v2`) that call `/v1/users/:id/dialer_campaign` and `.../phone_numbers`; v2 user ids work on the v1 routes. A user has at most one active campaign, and deleting it deletes its numbers, so there is nothing incremental to track. The phone numbers route ignores `page` and `per_page` and returns the whole list, so neither stream has a paginator. A user without an active campaign answers 404 with `{"error": "Not Found", "message": "NOT_FOUND", ...}` on both routes, not the "User has no active campaign" text the reference shows; the filter matches that body, so a 404 from a retired route still fails. The reference types `number_id` as a string, but live responses send an integer, and `number` holds digits without the leading `+` (all checked live 2026-11-13).
+
+**Why this matters:** Skipping every 404 would hide a retired route as an empty stream, and paginating would request the same list twice.

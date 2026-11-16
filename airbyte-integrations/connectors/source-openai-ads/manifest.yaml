@@ -285,7 +285,7 @@ definitions:
           - 403
         error_message: >-
           Skipping spend_limit_windows: the API answered 403
-          ({{ (response.error.message or "no error message") if response is mapping and response.error is mapping else (response.error if response is mapping and response.error is string and response.error else "no error message") }}).
+          ({{ (("" ~ (response.error.message or "no error message"))[:300]) if response is mapping and response.error is mapping else (("" ~ response.error)[:300] if response is mapping and response.error is string and response.error else "no error message") }}).
           OpenAI documents this endpoint only for ad accounts on postpaid invoice billing
           and for API keys with permission to manage billing.
 
@@ -818,7 +818,7 @@ spec:
       num_workers:
         type: integer
         title: Number of concurrent workers
-        description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases.
+        description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases. Values below 2 run with 2 workers.
         minimum: 1
         maximum: 20
         default: 3
@@ -856,6 +856,18 @@ schemas:
     properties:
       id:
         type: string
+      creative_optimization_opt_in:
+        type:
+          - boolean
+          - 'null'
+      geographic_serving_country_code:
+        type:
+          - string
+          - 'null'
+      geographic_serving_scope:
+        type:
+          - string
+          - 'null'
       name:
         type:
           - string
@@ -902,6 +914,14 @@ schemas:
             type:
               - string
               - 'null'
+          reason:
+            type:
+              - string
+              - 'null'
+          screenshot_url:
+            type:
+              - string
+              - 'null'
       account_integrity_review:
         type:
           - object
@@ -929,6 +949,14 @@ schemas:
             additionalProperties: true
             properties:
               status:
+                type:
+                  - string
+                  - 'null'
+              reason:
+                type:
+                  - string
+                  - 'null'
+              screenshot_url:
                 type:
                   - string
                   - 'null'
@@ -997,6 +1025,10 @@ schemas:
           - 'null'
         items:
           type: string
+      conversion_event_settings_automatically_attached:
+        type:
+          - boolean
+          - 'null'
       targeting:
         type:
           - object
@@ -1146,6 +1178,10 @@ schemas:
           - 'null'
         items:
           type: string
+      hide_product_prices:
+        type:
+          - boolean
+          - 'null'
       bidding_config:
         type:
           - object
@@ -1322,6 +1358,14 @@ schemas:
         additionalProperties: true
         properties:
           status:
+            type:
+              - string
+              - 'null'
+          reason:
+            type:
+              - string
+              - 'null'
+          screenshot_url:
             type:
               - string
               - 'null'
@@ -2550,5 +2594,5 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: '{{ config.get("num_workers", 3) }}'
+  default_concurrency: "{{ [config.get('num_workers') or 3, 2] | max }}"
   max_concurrency: 20

@@ -5,18 +5,23 @@
 
 import pytest
 
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Record
 
 
-class MockStream(Stream):
+class MockPartition:
     def __init__(self, records):
         self.records = records
 
-    def primary_key(self):
-        return
+    def read(self):
+        return iter(Record(data=record, stream_name="parent") for record in self.records)
 
-    def read_records(self, sync_mode):
-        return self.records
+
+class MockStream:
+    def __init__(self, records):
+        self.records = records
+
+    def generate_partitions(self):
+        yield MockPartition(self.records)
 
 
 # test cases as a list of tuples (boards_records, organizations_records, expected_board_ids)

@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -221,6 +222,14 @@ def test_suggested_streams_remain_the_existing_five() -> None:
         "organization_memberships",
         "api_user",
     ]
+
+
+def test_allowed_hosts_cover_api_and_oauth_refresh() -> None:
+    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
+    metadata = yaml.safe_load((Path(__file__).parents[1] / "metadata.yaml").read_text())
+    definitions = manifest["definitions"]
+    endpoints = [definitions["base_requester"]["url_base"], definitions["oauth_authenticator"]["token_refresh_endpoint"]]
+    assert {urlparse(endpoint).hostname for endpoint in endpoints} <= set(metadata["data"]["allowedHosts"]["hosts"])
 
 
 @pytest.mark.parametrize("stream", NEW_STREAM_TYPE_FORMAT_DIGESTS)
