@@ -2114,8 +2114,24 @@ streams:
   - $ref: "#/definitions/streams/dynamic_contents"
   - $ref: "#/definitions/streams/dynamic_content_variations"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 5
+
 spec:
   type: Spec
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Remove spec fields that no longer exist
+        transformations:
+          - type: ConfigRemoveFields
+            field_pointers:
+              - ["v5_page_size"]
+              - ["page_size"]
+              - ["split_up_interval"]
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2128,31 +2144,31 @@ spec:
       pardot_business_unit_id:
         type: string
         description: >-
-          Pardot Business ID, can be found at Setup > Pardot > Pardot Account
-          Setup
+          The 18-character ID that begins with 0Uv. In Salesforce Setup, search for Business Unit Setup.
         order: 0
         title: Pardot Business Unit ID
       client_id:
         type: string
-        description: The Consumer Key that can be found when viewing your app in Salesforce
+        description: >-
+          The Consumer Key of the Salesforce External Client App or Connected App used for this
+          connection. Find it in Salesforce Setup, in the app's OAuth settings.
         order: 1
         title: Client ID
         airbyte_secret: true
       client_secret:
         type: string
         description: >-
-          The Consumer Secret that can be found when viewing your app in
-          Salesforce
+          The Consumer Secret of the Salesforce External Client App or Connected App used for this
+          connection. Find it in Salesforce Setup, in the app's OAuth settings.
         order: 2
         title: Client Secret
         airbyte_secret: true
       refresh_token:
         type: string
         description: >-
-          Salesforce Refresh Token used for Airbyte to access your Salesforce
-          account. If you don't know what this is, follow this <a
-          href="https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b">guide</a>
-          to retrieve it.
+          Salesforce refresh token that Airbyte uses to access your Account Engagement data. See the <a
+          href="https://docs.airbyte.com/integrations/sources/pardot#setup-guide">setup guide</a> for how
+          to get one.
         order: 3
         title: Refresh Token
         airbyte_secret: true
@@ -2169,20 +2185,13 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2021-07-25T00:00:00Z"
-      v5_page_size:
-        type: integer
-        description: The maximum number of records to return per request
-        order: 5
-        title: Page Size Limit
-        default: 1000
-        airbyte_hidden: true
       is_sandbox:
         type: boolean
         description: >-
-          Whether or not the the app is in a Salesforce sandbox. If you do not
-          know what this, assume it is false.
+          Turn on for a Salesforce sandbox. The connector then signs in at test.salesforce.com and reads
+          from pi.demo.pardot.com.
         order: 6
-        title: Is Sandbox App?
+        title: Sandbox
         default: false
       pardot_api_host:
         type: string
@@ -2194,6 +2203,16 @@ spec:
           - pi.pardot.com
           - pi.demo.pardot.com
         order: 7
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          How many streams are read at the same time. Account Engagement allows five concurrent requests
+          per account. Lower it if other integrations use the same account.
+        default: 3
+        minimum: 2
+        maximum: 5
+        order: 8
     additionalProperties: true
 
 metadata:

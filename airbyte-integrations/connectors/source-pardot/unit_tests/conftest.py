@@ -5,7 +5,10 @@ import time
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Iterator, Mapping
+from urllib.parse import urlsplit
 
+import requests_mock
+import yaml
 from freezegun import freeze_time
 from pytest import MonkeyPatch, fixture
 
@@ -29,6 +32,8 @@ _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))
 _NOW = "2026-06-01T00:00:00Z"
+METADATA_PATH = Path(__file__).parent.parent / "metadata.yaml"
+ALLOWED_HOSTS = set(yaml.safe_load(METADATA_PATH.read_text())["data"]["allowedHosts"]["hosts"])
 
 
 def get_source(config: Mapping[str, Any], catalog=None, state=None) -> YamlDeclarativeSource:
@@ -58,3 +63,18 @@ def waits(monkeypatch: MonkeyPatch) -> Iterator[list[float]]:
 
         monkeypatch.setattr(time, "sleep", wait)
         yield recorded
+
+
+@fixture(autouse=True)
+def only_allowed_hosts(monkeypatch: MonkeyPatch) -> Iterator[None]:
+    """Fail a test whose reads send a request to a host that `allowedHosts` in metadata.yaml does not list."""
+    hosts: set[str] = set()
+    send = requests_mock.adapter.Adapter.send
+
+    def record_host(adapter: requests_mock.adapter.Adapter, request: Any, **kwargs: Any) -> Any:
+        hosts.add(urlsplit(request.url).hostname)
+        return send(adapter, request, **kwargs)
+
+    monkeypatch.setattr(requests_mock.adapter.Adapter, "send", record_host)
+    yield
+    assert hosts <= ALLOWED_HOSTS, f"requests sent to hosts that allowedHosts does not list: {sorted(hosts - ALLOWED_HOSTS)}"

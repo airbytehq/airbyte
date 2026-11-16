@@ -36,7 +36,11 @@ Starting November 4, 2026, Salesforce expires production refresh tokens that hav
 
 - **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
 
-- **Is Sandbox App?** (`is_sandbox`): Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
+- **Sandbox** (`is_sandbox`): Turn on for a Salesforce sandbox. The connector then signs in at `test.salesforce.com` and reads from `pi.demo.pardot.com`.
+
+- **API host** (`pardot_api_host`): Leave empty for a production account or a sandbox. Select `pi.demo.pardot.com` for a Developer Edition org, which signs in at `login.salesforce.com` but is served by the demo host. When set, it overrides the host that **Sandbox** selects.
+
+- **Number of concurrent workers** (`num_workers`): How many streams are read at the same time, from 2 to 5. Defaults to 3. Account Engagement allows five concurrent requests per account, so lower it if other integrations use the same account.
 
 ## Supported Sync Modes
 
@@ -51,7 +55,18 @@ Most incremental streams use the `updatedAt` field as the cursor. The exceptions
 
 Account Engagement limits the number of API requests your account can make each day, based on your edition.
 
-When Account Engagement returns a rate limit error (HTTP 429, or an error containing `Daily API rate limit met`), a server error (5xx), or a request timeout (408), the connector waits two hours and retries the request once. If the retry also fails, the sync fails. When the daily limit is the cause, the sync fails with the message `Reached the Pardot daily API request limit. The limit resets at the start of the next day in the Pardot account's time zone.`
+When Account Engagement returns a rate limit error (HTTP 429, or error code 66 for too many concurrent requests), a server error (5xx), or a request timeout (408), the connector retries the request with waits that grow from seconds to minutes, and stops retrying within ten minutes of the first attempt. If the last retry also fails, the sync fails.
+
+When the daily limit is used up (error code 122, `Daily API rate limit met`), the sync fails at once with a message that says the limit resets at the start of the next day in the account's time zone. The next sync continues from the last saved position.
+
+### Errors that need a change in your setup
+
+These errors fail the sync at once, with a message that says what to fix:
+
+- Error code 184: Account Engagement rejected the access token. Check that the Salesforce app has the **Manage Pardot services (`pardot_api`)** scope and that the user behind the refresh token is synced to this business unit.
+- Error code 201: no active business unit has this Business Unit ID on this host. Check the ID, and turn on **Sandbox** or set **API host** for a sandbox or a Developer Edition org.
+- Error code 49: the user can't read this object. The message names the Account Engagement ability the stream needs. Ask an admin for it, or deselect the stream.
+- An expired or revoked refresh token: create a new refresh token and update the source.
 
 ## Supported Streams
 
@@ -101,6 +116,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.1.0 | 2026-11-16 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Retry within minutes and say what to fix on known errors; log in one stream at a time; read sandbox and Developer Edition orgs from the demo host; include the boundary second in cursor filters; mark deleted list memberships and declare six fields; read with up to five workers; remove unused spec fields from saved configs |
 | 1.0.64 | 2026-11-16 | [90951](https://github.com/airbytehq/airbyte/pull/90951) | Show a specific message when the Pardot daily API request limit is reached |
 | 1.0.63 | 2026-11-10 | [91648](https://github.com/airbytehq/airbyte/pull/91648) | Update dependencies |
 | 1.0.62 | 2026-11-03 | [90699](https://github.com/airbytehq/airbyte/pull/90699) | Update dependencies |

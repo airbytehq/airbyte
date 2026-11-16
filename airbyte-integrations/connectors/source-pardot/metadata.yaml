@@ -1,8 +1,25 @@
 data:
+  allowedHosts:
+    hosts:
+      - pi.pardot.com
+      - pi.demo.pardot.com
+      - login.salesforce.com
+      - test.salesforce.com
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - prospects
+      - prospect_accounts
+      - campaigns
+      - lists
+      - list_membership
+      - list_emails
+      - opportunities
+      - users
   connectorSubtype: api
   connectorType: source
   definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
-  dockerImageTag: 1.0.64
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-pardot
   githubIssueLabel: source-pardot
   icon: salesforcepardot.svg
@@ -19,6 +36,9 @@ data:
       enabled: true
   releaseStage: alpha
   releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
         message: Most streams have been migrated to use Pardot API V5 in this release. The authentication flow, which was previously broken, should now work for new connections using this version.
@@ -34,7 +54,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
   externalDocumentationUrls:
     - title: Pardot API reference
       url: https://developer.salesforce.com/docs/marketing/pardot/overview
@@ -42,4 +62,10 @@ data:
     - title: Pardot authentication
       url: https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html
       type: authentication_guide
+    - title: Account Engagement API rate limits
+      url: https://developer.salesforce.com/docs/marketing/pardot/guide/overview.html
+      type: rate_limits
+    - title: Salesforce Feature Retirements
+      url: https://help.salesforce.com/s/articleView?id=Salesforce-Feature-Retirements&language=en_US&type=1
+      type: api_deprecations
 metadataSpecVersion: "1.0"
