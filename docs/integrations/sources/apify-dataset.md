@@ -96,7 +96,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 2.2.68 | 2026-11-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Link to the Apify Console create-API-token form in the token field description |
+| 2.2.68 | 2026-11-16 | [93035](https://github.com/airbytehq/airbyte/pull/93035) | Link to the Apify Console create-API-token form in the token field description |
 | 2.2.67 | 2026-11-10 | [91349](https://github.com/airbytehq/airbyte/pull/91349) | Update dependencies |
 | 2.2.66 | 2026-11-03 | [90475](https://github.com/airbytehq/airbyte/pull/90475) | Update dependencies |
 | 2.2.65 | 2026-10-27 | [89790](https://github.com/airbytehq/airbyte/pull/89790) | Update dependencies |
