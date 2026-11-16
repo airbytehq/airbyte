@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2276f19-1c19-4d4e-ae6c-7df3c9c4ad49
-  dockerImageTag: 0.2.54
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-brevo
   githubIssueLabel: source-brevo
   icon: icon.svg
@@ -26,6 +26,17 @@ data:
   releaseDate: 2025-03-24
   releaseStage: alpha
   supportLevel: community
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - emailCampaigns
+      - contacts
+      - contacts_lists
+      - contacts_attributes
+      - contacts_lists_contacts
+      - contacts_segments
+      - senders
+      - smsCampaigns
   connectorTestSuitesOptions:
     - suite: acceptanceTests
   documentationUrl: https://docs.airbyte.com/integrations/sources/brevo
@@ -36,6 +47,12 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
+    - title: Brevo OpenAPI specification
+      url: https://api.brevo.com/v3/swagger_definition_v3.yml
+      type: openapi_spec
+    - title: Brevo API changelog
+      url: https://developers.brevo.com/changelog
+      type: api_release_history
     - title: Brevo API reference
       url: https://developers.brevo.com/reference
       type: api_reference

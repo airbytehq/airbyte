@@ -5,7 +5,7 @@ This document guides you through setting up the Recharge source connector in Air
 **Key Features:**
 *   **Sync Modes:** Supports `Full Refresh` and `Incremental` syncs for core streams.
 *   **API Version:** Uses the `2021-11` API version for most streams. The `Orders` stream uses the deprecated `2021-01` API when **Use `Orders` Deprecated API** is on (the default in the setup form), and `2021-11` when it's off. The `Shop` stream always uses `2021-01`.
-*   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The `events` stream is the exception, because the Recharge API only returns events from the last 7 days.
+*   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The setting doesn't apply to the `orders` or `events` streams (the Recharge API only returns events from the last 7 days). See [Lookback Window](#lookback-window).
 
 ## Prerequisites
 
@@ -15,16 +15,18 @@ Before setting up the Recharge source, ensure you have the following:
     *   Permissions within your Recharge account to generate API tokens and access the data for the streams you intend to sync.
 2.  **Recharge API Access Token:**
     *   You'll need an API Access Token with the appropriate permissions (scopes) for the data streams you wish to sync.
-    *   Instructions for generating a token can be found here: [Recharge API Key Guide](https://developer.rechargepayments.com/docs/api-key-guide).
+    *   Instructions for generating a token can be found here: [Recharge API token guide](https://docs.getrecharge.com/docs/recharge-api-key). Only store owners can access API tokens by default; a store owner can grant staff access.
 3.  **Recharge Plan:**
-    *   Some streams are only available on specific Recharge plans (e.g., Pro, Custom). Ensure your plan supports the streams you need. See the [Permissions & Plan Requirements](#api-token-permissions-scopes--plan-requirements) section for details.
+    *   Ensure your plan includes the features required by the streams you need. See the [Permissions & Plan Requirements](#api-token-permissions-scopes--plan-requirements) section for details.
 
 ## Setup guide
 
 ### Step 1: Generate your Recharge API Access Token
 
-1.  Follow the official Recharge documentation to [generate an API Access Token](https://developer.rechargepayments.com/docs/api-key-guide).
+1.  Follow the official Recharge documentation to [generate an API Access Token](https://docs.getrecharge.com/docs/recharge-api-key).
 2.  When configuring the token, ensure you grant it the necessary **read permissions (scopes)** for all the data streams you plan to sync with Airbyte. Refer to the [API Token Permissions (Scopes) & Plan Requirements](#api-token-permissions-scopes--plan-requirements) section below for a detailed list of required scopes per stream.
+
+The connector checks access to `/shop` when you set up the source. Your token must be able to read shop information even if you don't select the `Shop` stream for syncing.
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -35,7 +37,7 @@ Before setting up the Recharge source, ensure you have the following:
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Incremental streams don't replicate records updated before this date; full refresh streams return all available data regardless. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Streams that support incremental sync apply this date filter in both full refresh and incremental syncs. Full-refresh-only streams ignore it. The `events` stream filters by event creation time and can't fetch events older than 7 days. See [Events stream](#events-stream).
 5. Enter your **Access Token** from Step 1.
 6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
 7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
@@ -49,7 +51,7 @@ Before setting up the Recharge source, ensure you have the following:
 1. Navigate to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Incremental streams don't replicate records updated before this date; full refresh streams return all available data regardless. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Streams that support incremental sync apply this date filter in both full refresh and incremental syncs. Full-refresh-only streams ignore it. The `events` stream filters by event creation time and can't fetch events older than 7 days. See [Events stream](#events-stream).
 5. Enter your **Access Token** from Step 1.
 6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
 7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
@@ -61,35 +63,41 @@ The Recharge source connector supports the following sync modes:
 
 | Feature           | Supported? | Description                                                                                                |
 | :---------------- | :--------- | :--------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync | ✅ Yes     | Replicates all available data from the source for selected streams.                                        |
+| Full Refresh Sync | ✅ Yes     | Replicates the configured date range for streams that support incremental sync, and all available data for full-refresh-only streams. |
 | Incremental Sync  | ✅ Yes     | Replicates new or modified data since the last sync, based on a cursor field (datetime).                   |
 | SSL Connection    | ✅ Yes     | All requests to the Recharge API are made over HTTPS, ensuring data is encrypted in transit.               |
 
 ## Streams
 
-| Stream Name        | API Docs                                                                                                                                         | Primary Key | Supports Full Refresh | Supports Incremental | Plan Requirement             |
-| :----------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :---------- | :-------------------- | :------------------- | :--------------------------- |
-| Addresses          | [2021-11](https://developer.rechargepayments.com/2021-11/addresses)                                                                              | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Bundle Selections  | [2021-11](https://developer.rechargepayments.com/2021-11/bundle_selections)                                                                      | id          | ✅                    | ✅                   | 🎯 Pro and Custom plans only |
-| Charges            | [2021-11](https://developer.rechargepayments.com/2021-11/charges)                                                                                | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Collections        | [2021-11](https://developer.rechargepayments.com/2021-11/collections)                                                                            | id          | ✅                    | ❌                   | ✅ Standard Plan             |
-| Credit Adjustments | [2021-11](https://developer.rechargepayments.com/2021-11/credits)                                                                                | id          | ✅                    | ✅                   | 🎯 Pro and Custom plans only |
-| Customers          | [2021-11](https://developer.rechargepayments.com/2021-11/customers)                                                                              | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Discounts          | [2021-11](https://developer.rechargepayments.com/2021-11/discounts)                                                                              | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Events             | [2021-11](https://developer.rechargepayments.com/2021-11/events)                                                                                 | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Metafields         | [2021-11](https://developer.rechargepayments.com/2021-11/metafields)                                                                             | id          | ✅                    | ❌                   | ✅ Standard Plan             |
-| Onetimes           | [2021-11](https://developer.rechargepayments.com/2021-11/onetimes)                                                                               | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Orders             | [2021-11](https://developer.rechargepayments.com/2021-11/orders) / [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01/orders) | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Payment Methods    | [2021-11](https://developer.rechargepayments.com/2021-11/payment_methods)                                                                        | id          | ✅                    | ❌                   | 🎯 Pro and Custom plans only |
-| Plans             | [2021-11](https://developer.rechargepayments.com/2021-11/plans/plans_list)                                                                                  | id          | ✅                    | ❌                   | ✅ Standard Plan             |
-| Shop               | [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01#shop)                                                                      | id          | ✅                    | ❌                   | ✅ Standard Plan             |
-| Subscriptions      | [2021-11](https://developer.rechargepayments.com/2021-11/subscriptions)                                                                          | id          | ✅                    | ✅                   | ✅ Standard Plan             |
+| Stream Name        | API Docs                                                                                                                                         | Primary Key | Supports Full Refresh | Supports Incremental |
+| :----------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :---------- | :-------------------- | :------------------- |
+| Addresses          | [2021-11](https://developer.rechargepayments.com/2021-11/addresses)                                                                              | id          | ✅                    | ✅                   |
+| Bundle Selections  | [2021-11](https://developer.rechargepayments.com/2021-11/bundle_selections)                                                                      | id          | ✅                    | ✅                   |
+| Charges            | [2021-11](https://developer.rechargepayments.com/2021-11/charges)                                                                                | id          | ✅                    | ✅                   |
+| Collections        | [2021-11](https://developer.rechargepayments.com/2021-11/collections)                                                                            | id          | ✅                    | ❌                   |
+| Credit Adjustments | [2021-11](https://developer.rechargepayments.com/2021-11/credits)                                                                                | id          | ✅                    | ✅                   |
+| Customers          | [2021-11](https://developer.rechargepayments.com/2021-11/customers)                                                                              | id          | ✅                    | ✅                   |
+| Discounts          | [2021-11](https://developer.rechargepayments.com/2021-11/discounts)                                                                              | id          | ✅                    | ✅                   |
+| Events             | [2021-11](https://developer.rechargepayments.com/2021-11/events)                                                                                 | id          | ✅                    | ✅                   |
+| Metafields         | [2021-11](https://developer.rechargepayments.com/2021-11/metafields)                                                                             | id          | ✅                    | ❌                   |
+| Onetimes           | [2021-11](https://developer.rechargepayments.com/2021-11/onetimes)                                                                               | id          | ✅                    | ✅                   |
+| Orders             | [2021-11](https://developer.rechargepayments.com/2021-11/orders) / [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01/orders) | id          | ✅                    | ✅                   |
+| Payment Methods    | [2021-11](https://developer.rechargepayments.com/2021-11/payment_methods)                                                                        | id          | ✅                    | ❌                   |
+| Plans             | [2021-11](https://developer.rechargepayments.com/2021-11/plans/plans_list)                                                                                  | id          | ✅                    | ❌                   |
+| Shop               | [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01#shop)                                                                      | id          | ✅                    | ❌                   |
+| Subscriptions      | [2021-11](https://developer.rechargepayments.com/2021-11/subscriptions)                                                                          | id          | ✅                    | ✅                   |
 
 **Notes on Streams:**
 *   **Orders Stream:** The **Use `Orders` Deprecated API** option is on by default in the setup form, so the connector uses the deprecated `2021-01` API for the `Orders` stream. Turn it off to use the `2021-11` API instead. If you create the source programmatically and omit this field, the connector uses `2021-11`.
 *   **Shop Stream:** The `Shop` stream uses the deprecated `2021-01` API version. An updated stream (`Store`) using a newer API version has not yet been implemented in this connector.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
+
+### Orders stream
+
+Starting with version 3.1.1, the connector uses [cursor pagination](https://developer.rechargepayments.com/2021-01/cursor_pagination) for the deprecated `2021-01` Orders API. This avoids Recharge's 100-page limit for page-number pagination, which could cause syncs to fail with an HTTP `422` error when a 30-day date slice contained more than 25,000 orders. Both Orders API options now use cursor pagination.
+
+If your sync failed at page 101, upgrade to version 3.1.1 or later and retry the sync. You can keep **Use `Orders` Deprecated API** enabled.
 
 ### Events stream
 
@@ -103,13 +111,13 @@ To avoid gaps in `events` data, schedule syncs to run at least once every 7 days
 
 ### Lookback Window
 
-The connector supports a configurable **Lookback Window (in days)**. On each incremental sync, the connector re-fetches records updated within that many days before the saved sync position. This can be useful for capturing late-arriving or updated records. The setting applies to all incremental streams except `events`.
+The connector supports a configurable **Lookback Window (in days)** (`lookback_window_days`). On each incremental sync, the connector re-fetches records updated within that many days, plus one hour, before the saved sync position. The extra hour re-reads records that changed while the previous sync was running. This can be useful for capturing late-arriving or updated records. The setting does not apply to `orders` or `events`.
 
 ## API Token Permissions (Scopes) & Plan Requirements
 
 To successfully sync data from specific streams, your Recharge API Access Token must have the corresponding read permissions (scopes). Additionally, some streams are only available if your Recharge account is on a specific plan.
 
-### **Error Handling for Permissions & Plans:**
+### Error handling for permissions and plans
 > 403 - The request was authenticated but not authorized for the requested resource (permission scope error)
 
 
@@ -118,25 +126,34 @@ This error from Recharge can occur due to:
 *   **Missing Scope:** This is the primary cause for the 403 error. If your API token lacks the necessary scope for a selected stream, the sync will fail.
 *   **Missing Plan:** If your Recharge account is not on the required plan for a selected stream, the sync for that stream will also fail. 
 
-The following table lists the required read scopes and plan requirements for each stream:
+The following table lists the required read scopes for each stream. See Recharge's [authentication reference](https://developer.rechargepayments.com/2021-01/authentication) for the API token scope list.
 
-| Stream Name        | Required Read Scope(s)                                                                                                                                | Plan Requirement         |
-| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
-| Addresses          | `read_customers`                                                                                                                                      | Standard Plan            |
-| Bundle Selections  | `read_subscriptions`                                                                                                                                  | Pro or Custom plans only |
-| Charges            | `read_orders`                                                                                                                                         | Standard Plan            |
-| Collections        | `read_products`                                                                                                                                       | Standard Plan            |
-| Credit Adjustments | `read_credit_adjustments`                                                                                                                             | Pro and Custom only      |
-| Customers          | `read_customers`                                                                                                                                      | Standard Plan            |
-| Discounts          | `read_discounts`                                                                                                                                      | Standard Plan            |
-| Events             | `read_events`                                                                                                                                         | Standard Plan            |
-| Metafields         | `read_address`, `read_customer`, `read_subscription`, `read_order`, `read_charge` (Enable scopes for the resources whose metafields you want to sync) | Standard Plan            |
-| Onetimes           | `read_subscriptions`                                                                                                                                  | Standard Plan            |
-| Orders             | `read_orders`                                                                                                                                         | Standard Plan            |
-| Payment Methods    | `read_payment_methods`                                                                                                                                | Pro or Custom plans only |
-| Plans           | `read_products`                                                                                                                                          | Standard Plan            |
-| Shop               | `read_shop`                                                                                                                                           | Standard Plan            |
-| Subscriptions      | `read_subscriptions`                                                                                                                                  | Standard Plan            |
+| Stream Name        | Required Read Scope(s)                                              |
+| :----------------- | :------------------------------------------------------------------ |
+| Addresses          | `read_customers`                                                    |
+| Bundle Selections  | `read_subscriptions`                                                |
+| Charges            | `read_orders`                                                       |
+| Collections        | `read_products`                                                     |
+| Credit Adjustments | `read_credit_adjustments`                                           |
+| Customers          | `read_customers`                                                    |
+| Discounts          | `read_discounts`                                                    |
+| Events             | `read_events`                                                       |
+| Metafields         | `read_customers`, `read_subscriptions`, `read_orders`, `store_info` |
+| Onetimes           | `read_subscriptions`                                                |
+| Orders             | `read_orders`                                                       |
+| Payment Methods    | `read_payment_methods`                                              |
+| Plans              | `read_plans`                                                        |
+| Shop               | `read_store`                                                        |
+| Subscriptions      | `read_subscriptions`                                                |
+
+The `Metafields` stream requests all six [owner resources](https://developer.rechargepayments.com/2021-11/metafields): `address`, `customer`, `subscription`, `order`, `charge`, and `store`. Grant all four scopes in the table; the connector doesn't provide an option to select a subset of owner resources.
+
+Additional access requirements apply to these streams:
+
+- [Bundle Selections](https://developer.rechargepayments.com/2021-11/bundle_selections) requires a Recharge Plus plan.
+- [Credit Adjustments](https://developer.rechargepayments.com/2021-11/credits) requires a Recharge Plus plan with Retain.
+
+For other streams, check the linked API reference for any account or feature restrictions.
 
 ## Performance Considerations
 
@@ -146,10 +163,8 @@ The Recharge connector is designed to handle Recharge API limitations under norm
 
 Recharge implements rate limits to ensure API stability and fair usage. The API uses a "leaky bucket" algorithm: each API token has a bucket of 40 requests that empties at 2 requests per second, so short bursts are allowed but the sustained rate is 2 requests per second. Higher Recharge plans may have higher limits.
 *   If the request rate exceeds the limit, the API will return a `429 - The request has been rate limited` error.
-*   When a `429` error is received, this Airbyte connector will automatically:
-    *   Pause for 2 seconds.
-    *   Retry the request.
-    *   This retry process can happen up to 10 times.
+*   The connector paces each sync to at most 2 requests per second, even if Recharge has raised your token's limit. Other syncs or apps that use the same API token are paced separately and share the token's limit, so together they can still receive `429` errors.
+*   When a `429` error is received, the connector retries with exponential backoff (1, 2, 4 … seconds), up to 10 retries or about 10 minutes, whichever comes first.
 
 For more details, see [Recharge API Rate Limits](https://docs.getrecharge.com/docs/api-rate-limits).
 
@@ -169,6 +184,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.1 | 2026-11-16 | [93009](https://github.com/airbytehq/airbyte/pull/93009) | Use cursor pagination for the deprecated 2021-01 `orders` API so syncs no longer fail on the 100-page limit |
+| 3.1.0 | 2026-11-11 | [91334](https://github.com/airbytehq/airbyte/pull/91334) | Migrated to manifest-only. Fixed `orders` skipping pages across date slices (2021-01 API) and skipping records at the saved cursor (both API versions); refresh `orders` to recover previously skipped orders. Added a one-hour lookback margin to other incremental streams except `events`. Requests are now paced at 2 per second on 2 threads, and records omit top-level fields whose value is `null`. |
 | 3.0.12 | 2026-09-17 | [86358](https://github.com/airbytehq/airbyte/pull/86358) | Fix `events` stream's `created_at_min` not clamped to the API's 7-day window, crashing the entire sync |
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
@@ -224,7 +241,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.4.3 | 2024-08-12 | [43837](https://github.com/airbytehq/airbyte/pull/43837) | Update dependencies |
 | 2.4.2 | 2024-08-10 | [43703](https://github.com/airbytehq/airbyte/pull/43703) | Update dependencies |
 | 2.4.1 | 2024-08-03 | [43171](https://github.com/airbytehq/airbyte/pull/43171) | Update dependencies |
-| 2.4.0 | 2024-08-02 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.3.0 |
+| 2.4.0 | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0 |
 | 2.3.2 | 2024-07-27 | [42723](https://github.com/airbytehq/airbyte/pull/42723) | Update dependencies |
 | 2.3.1 | 2024-07-20 | [42336](https://github.com/airbytehq/airbyte/pull/42336) | Update dependencies |
 | 2.3.0 | 2024-07-17 | [42076](https://github.com/airbytehq/airbyte/pull/42076) | Migrate to CDK v3.7.0 |

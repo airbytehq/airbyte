@@ -1,12 +1,18 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import logging
+import sys
+from pathlib import Path
 from typing import Any
 
 import pytest
 import requests
+import yaml
 
 from airbyte_cdk.models import FailureType, Status
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import get_source
@@ -81,11 +87,35 @@ def test_check_accessible_accounts(requests_mock: Any) -> None:
     assert get_source(_CONFIG).check(_LOGGER, _CONFIG).status == Status.SUCCEEDED
 
 
-def test_accounts_extractor_allows_empty_final_page(components_module: Any, requests_mock: Any) -> None:
-    requests_mock.get(_URL, [{"json": {"elements": [{"id": 1}]}}, {"json": {"elements": []}}])
-    extractor = components_module.LinkedInAdsRecordExtractor()
-    assert list(extractor.extract_records(requests.get(_URL))) == [{"id": 1}]
-    assert list(extractor.extract_records(requests.get(_URL))) == []
+def test_check_without_custom_components(requests_mock: Any, monkeypatch: Any) -> None:
+    monkeypatch.delenv("AIRBYTE_ENABLE_UNSAFE_CODE", raising=False)
+    monkeypatch.setitem(sys.modules, "source_declarative_manifest.components", None)
+    monkeypatch.setitem(sys.modules, "components", None)
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+    resolved = ManifestReferenceResolver().preprocess_manifest(manifest)
+    if not hasattr(ConcurrentDeclarativeSource, "_streams_by_name"):
+        # Older CDKs build all streams during check, unlike the runtime image.
+        resolved["streams"] = [stream for stream in resolved["streams"] if stream["name"] in resolved["check"]["stream_names"]]
+        resolved.pop("dynamic_streams", None)
+    requests_mock.get(_URL, json={"elements": [{"id": 1}]})
+    source = ConcurrentDeclarativeSource(source_config=resolved, config=_CONFIG, custom_components_trusted=False)
+    assert source.check(_LOGGER, _CONFIG).status == Status.SUCCEEDED
+    assert requests_mock.call_count == 1
+
+
+def test_check_retries_invalid_url(requests_mock: Any, mocker: Any) -> None:
+    mocker.patch("time.sleep", return_value=None)
+    requests_mock.get(_URL, [{"exc": requests.exceptions.InvalidURL("DNS failure")}, {"json": {"elements": [{"id": 1}]}}])
+    assert get_source(_CONFIG).check(_LOGGER, _CONFIG).status == Status.SUCCEEDED
+    assert requests_mock.call_count == 2
+
+
+def test_accounts_invalid_url_is_transient() -> None:
+    accounts = next(stream for stream in get_source(_CONFIG).streams(_CONFIG) if stream.name == "accounts")
+    requester = accounts._stream_partition_generator._partition_factory._retriever.requester
+    resolution = requester.error_handler.interpret_response(requests.exceptions.InvalidURL("DNS failure"))
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
 
 
 @pytest.mark.parametrize("has_accounts", [True, False])

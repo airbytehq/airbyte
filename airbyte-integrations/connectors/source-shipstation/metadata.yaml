@@ -17,15 +17,24 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c5a0d24d-5587-4425-ab28-b8b3fe741c78
-  dockerImageTag: 0.2.54
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-shipstation
   githubIssueLabel: source-shipstation
+  maxSecondsBetweenMessages: 3600
   icon: icon.svg
   license: ELv2
   name: Shipstation
   releaseDate: 2025-03-13
   releaseStage: alpha
   supportLevel: community
+  suggestedStreams:
+    streams:
+      - shipments
+      - orders
+      - fulfillments
+      - warehouses
+      - carriers
+      - stores
   documentationUrl: https://docs.airbyte.com/integrations/sources/shipstation
   tags:
     - language:manifest-only

@@ -349,7 +349,6 @@ secretsManager:
   type: AWS_SECRET_MANAGER
   awsSecretManager:
     region: us-west-2 
-    authenticationType: credentials
     accessKeyIdSecretKey: AWS_SECRET_MANAGER_ACCESS_KEY_ID 
     secretAccessKeySecretKey: AWS_SECRET_MANAGER_SECRET_ACCESS_KEY
 ```
@@ -488,6 +487,10 @@ For additional request examples, see [the API reference](https://reference.airby
 </details>
   </TabItem>
 </Tabs>
+
+## Upgrade your data plane {#upgrade}
+
+Airbyte releases new versions of the `airbyte-data-plane` chart regularly, and you're responsible for upgrading your self-managed data planes. To learn which versions Airbyte supports, how often to upgrade, and how to upgrade, see the [support and upgrade policy](support-and-upgrade-policy).
 
 ## Check which region your workspaces use
 
