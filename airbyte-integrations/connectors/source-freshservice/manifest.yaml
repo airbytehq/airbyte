@@ -5,6 +5,36 @@ check:
   stream_names:
     - tickets
 definitions:
+  response_filters:
+    ignore_forbidden:
+      type: HttpResponseFilter
+      action: IGNORE
+      http_codes:
+        - 403
+  error_handlers:
+    ignore_forbidden:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies: []
+      response_filters:
+        - $ref: "#/definitions/response_filters/ignore_forbidden"
+    requested_items:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - $ref: "#/definitions/response_filters/ignore_forbidden"
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 404
+          error_message: No data collected
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
   streams:
     tickets:
       type: DeclarativeStream
@@ -23,14 +53,7 @@ definitions:
           path: /tickets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -273,14 +296,7 @@ definitions:
           path: /tickets/{{ stream_partition.parent_id }}/csat_response
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -320,14 +336,7 @@ definitions:
                       path: /tickets
                       http_method: GET
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: IGNORE
-                                http_codes:
-                                  - 403
+                        $ref: "#/definitions/error_handlers/ignore_forbidden"
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -649,30 +658,7 @@ definitions:
           path: /tickets/{{ stream_partition.parent_id }}/requested_items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No data collected
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
+            $ref: "#/definitions/error_handlers/requested_items"
         record_selector:
           type: RecordSelector
           extractor:
@@ -712,14 +698,7 @@ definitions:
                       path: /tickets
                       http_method: GET
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: IGNORE
-                                http_codes:
-                                  - 403
+                        $ref: "#/definitions/error_handlers/ignore_forbidden"
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -1039,14 +1018,7 @@ definitions:
           path: /problems
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1237,14 +1209,7 @@ definitions:
           path: /changes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1448,14 +1413,7 @@ definitions:
           path: /releases
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1618,14 +1576,7 @@ definitions:
           path: /requesters
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1815,14 +1766,7 @@ definitions:
           path: /agents
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2111,14 +2055,7 @@ definitions:
           path: /locations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2237,14 +2174,7 @@ definitions:
           path: /products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2342,14 +2272,7 @@ definitions:
           path: /vendors
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2473,14 +2396,7 @@ definitions:
           path: /assets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2615,14 +2531,7 @@ definitions:
           path: /applications
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2744,14 +2653,7 @@ definitions:
           path: /purchase_orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
+            $ref: "#/definitions/error_handlers/ignore_forbidden"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2914,14 +2816,7 @@ streams:
         path: /tickets
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -3163,14 +3058,7 @@ streams:
         path: /tickets/{{ stream_partition.parent_id }}/csat_response
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -3210,14 +3098,7 @@ streams:
                     path: /tickets
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 403
+                      $ref: "#/definitions/error_handlers/ignore_forbidden"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -3534,30 +3415,7 @@ streams:
         path: /tickets/{{ stream_partition.parent_id }}/requested_items
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
-                  error_message: No data collected
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
+          $ref: "#/definitions/error_handlers/requested_items"
       record_selector:
         type: RecordSelector
         extractor:
@@ -3597,14 +3455,7 @@ streams:
                     path: /tickets
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 403
+                      $ref: "#/definitions/error_handlers/ignore_forbidden"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -3919,14 +3770,7 @@ streams:
         path: /problems
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4113,14 +3957,7 @@ streams:
         path: /changes
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4323,14 +4160,7 @@ streams:
         path: /releases
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4490,14 +4320,7 @@ streams:
         path: /requesters
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4686,14 +4509,7 @@ streams:
         path: /agents
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4979,14 +4795,7 @@ streams:
         path: /locations
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5104,14 +4913,7 @@ streams:
         path: /products
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5208,14 +5010,7 @@ streams:
         path: /vendors
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5338,14 +5133,7 @@ streams:
         path: /assets
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5479,14 +5267,7 @@ streams:
         path: /applications
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5607,14 +5388,7 @@ streams:
         path: /purchase_orders
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 403
+          $ref: "#/definitions/error_handlers/ignore_forbidden"
       record_selector:
         type: RecordSelector
         extractor:
