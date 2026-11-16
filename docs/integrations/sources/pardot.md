@@ -116,7 +116,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.1.0 | 2026-11-16 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Retry within minutes and say what to fix on known errors; log in one stream at a time; read sandbox and Developer Edition orgs from the demo host; include the boundary second in cursor filters; mark deleted list memberships and declare six fields; read with up to five workers; remove unused spec fields from saved configs |
+| 1.1.0 | 2026-11-16 | [93055](https://github.com/airbytehq/airbyte/pull/93055) | Faster retries with clear errors, one login at a time, demo host for sandboxes, inclusive cursor filters, up to five workers |
 | 1.0.64 | 2026-11-16 | [90951](https://github.com/airbytehq/airbyte/pull/90951) | Show a specific message when the Pardot daily API request limit is reached |
 | 1.0.63 | 2026-11-10 | [91648](https://github.com/airbytehq/airbyte/pull/91648) | Update dependencies |
 | 1.0.62 | 2026-11-03 | [90699](https://github.com/airbytehq/airbyte/pull/90699) | Update dependencies |
