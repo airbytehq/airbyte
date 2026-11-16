@@ -303,7 +303,7 @@ jobs:
           # Pin a specific hydrakit release. Update HYDRA_VERSION and
           # HYDRA_SHA256 together whenever bumping — the sha256 lives in the
           # release's SHA256SUMS.
-          HYDRA_VERSION: "v0.5.1"
+          HYDRA_VERSION: "v0.5.3"
           HYDRA_SHA256: ""
         run: |
           set -euo pipefail
