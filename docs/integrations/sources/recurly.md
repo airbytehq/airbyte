@@ -118,7 +118,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 2.0.2 | 2026-11-16 | | Skip Credit Payments when the Recurly site does not have Credit Invoices enabled. |
+| 2.0.2 | 2026-11-16 | [93049](https://github.com/airbytehq/airbyte/pull/93049) | Skip Credit Payments when the Recurly site does not have Credit Invoices enabled. |
 | 2.0.1 | 2026-11-16 | [93042](https://github.com/airbytehq/airbyte/pull/93042) | Updated the Recurly connector icon. |
 | 2.0.0 | 2026-11-12 | [91302](https://github.com/airbytehq/airbyte/pull/91302) | Corrected `subscriptions.coupon_redemptions` to an array and added date-time format to coupon and external-account timestamps. See the [migration guide](/integrations/sources/recurly-migrations#upgrading-to-200) |
 | 1.4.0 | 2026-11-12 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
