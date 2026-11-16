@@ -131,11 +131,33 @@ def test_spend_limit_windows_403_message_names_billing_permission_and_prints_the
     assert output.is_in_logs("permission to manage billing")
 
 
+_LONG_REASON = "A" * 300 + "B" * 700
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param({"message": _LONG_REASON}, id="error_message"),
+        pytest.param(_LONG_REASON, id="error_is_a_string"),
+    ],
+)
+def test_spend_limit_windows_403_message_caps_the_api_reason_at_300_characters(requests_mock: Mocker, error: Any) -> None:
+    requests_mock.get(f"{_URL}/ad_account/spend_limit_windows", status_code=403, json={"error": error})
+
+    output = _read("spend_limit_windows")
+
+    assert output.errors == []
+    assert output.records == []
+    assert output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({_LONG_REASON[:300]}\\)")
+    assert not output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({_LONG_REASON[:301]}\\)")
+
+
 @pytest.mark.parametrize(
     ("body", "expected_reason"),
     [
         pytest.param({"json": {"error": "Forbidden"}}, "Forbidden", id="error_is_a_string"),
         pytest.param({"json": {"error": {}}}, "no error message", id="error_without_message"),
+        pytest.param({"json": {"error": {"message": 12345}}}, "12345", id="message_is_a_number"),
         pytest.param({"json": []}, "no error message", id="body_is_a_list"),
         pytest.param({"text": "Forbidden"}, "no error message", id="body_is_not_json"),
     ],
