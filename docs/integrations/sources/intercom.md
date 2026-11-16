@@ -20,22 +20,6 @@ This page contains the setup guide and reference information for the [Intercom](
 
 ## Setup guide
 
-### Set up Intercom
-
-<!-- env:oss -->
-
-### Obtain an Intercom access token (Airbyte Open Source)
-
-To authenticate the connector in **Airbyte Open Source**, you need an access token. Follow the steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication).
-
-1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
-2. Click **Your apps** in the top-right corner, then click **New app**.
-3. Choose an **App name**, select your Workspace from the dropdown, and click **Create app**.
-4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. Grant only **read** permissions (not **write**). Click **Save** when you are finished.
-5. Under the **Access token** header, you will be prompted to regenerate your access token. Follow the instructions to do so, and copy the new token.
-
-<!-- /env:oss -->
-
 ### Set up the Intercom connector in Airbyte
 
 <!-- env:cloud -->
@@ -58,7 +42,15 @@ To authenticate the connector in **Airbyte Open Source**, you need an access tok
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for the Intercom connector.
-5. For **Access token**, enter the access token you generated in the previous section.
+5. For **Access token**, obtain and enter an Intercom access token:
+   1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
+   2. Click **Your apps** in the top-right corner, then click **New app**.
+   3. Choose an **App name**, select your Workspace from the dropdown, and click **Create app**.
+   4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. Grant only **read** permissions (not **write**). Click **Save** when you are finished.
+   5. Under the **Access token** header, regenerate your access token and copy the new token.
+   6. Enter the token in the **Access token** field in Airbyte.
+
+   For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication).
 
 <!-- /env:oss -->
 
