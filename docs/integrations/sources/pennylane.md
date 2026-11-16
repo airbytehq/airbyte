@@ -1,24 +1,72 @@
 # Pennylane
 
+This connector reads invoices, estimates, customers, suppliers, products, plan items, and categories from the [Pennylane Company API v1](https://pennylane.readme.io/v1.0/reference).
+
+:::warning API v1 is deprecated
+
+This connector uses `/api/external/v1/`, not API v2. Pennylane's [migration guide](https://pennylane.readme.io/docs/api-v2-vs-v1) states that v1 was scheduled for deprecation by the end of 2025 and that v2 is the stable API. Confirm that your company still has v1 access before configuring this connector. A v2 token alone does not provide the v1 scopes this connector requires.
+
+:::
+
+## Prerequisites
+
+You need a Pennylane company API token with access to API v1. The connector sends this token as a bearer token; it does not perform an OAuth authorization flow or refresh tokens.
+
+Grant the following [v1 scopes](https://pennylane.readme.io/v1.0/docs/v1-scopes) for the streams you want to sync:
+
+| Scope | Streams |
+| --- | --- |
+| `supplier_invoices` | `supplier_invoices`, `suppliers` |
+| `customer_invoices` | `customer_invoices`, `customer_estimates`, `customers`, `products`, `plan_items` |
+| `accounting` | `categories`, `category_groups` |
+
+The connection check reads `supplier_invoices`, so your token needs the `supplier_invoices` scope even if you only plan to sync other streams.
+
+See Pennylane's [token management guide](https://pennylane.readme.io/docs/generating-my-api-token) for account requirements and token settings. That guide describes the current v2 API; make sure the token you use here has the legacy v1 scopes above.
+
+## Setup guide
+
+1. In Airbyte, create a source and select **Pennylane**.
+2. Enter a name for the source.
+3. Set **Start time** to the earliest record update time you want to sync, in UTC, using the format `YYYY-MM-DDTHH:mm:ssZ`, for example, `2024-01-01T00:00:00Z`.
+4. Enter your Pennylane token in **API Key**.
+5. Select **Set up source** and wait for the connection check to complete.
+
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `start_time` | `string` | Start time, used for incremental syncs. No records created before that date will be synced.  |  |
-| `api_key` | `string` | Pennylane API key.  |  |
+Both settings are required and have no default value.
+
+| Input | Type | Description |
+| --- | --- | --- |
+| `start_time` | `string` | Initial lower bound for `updated_at` on streams that support incremental sync. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`. Records created before this time can still be synced if they were updated on or after it. |
+| `api_key` | `string` | Pennylane company API token with the required v1 scopes. |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| `supplier_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `suppliers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `plan_items` | `number` | DefaultPaginator | ✅ |  ❌  |
-| `customers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `customer_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `customer_estimates` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `products` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
+
+| Stream | Primary key | Full refresh | Incremental |
+| --- | --- | --- | --- |
+| `supplier_invoices` | `id` | Yes | Yes |
+| `suppliers` | `source_id` | Yes | Yes |
+| `plan_items` | `v2_id` | Yes | No |
+| `customers` | `source_id` | Yes | Yes |
+| `customer_invoices` | `id` | Yes | Yes |
+| `customer_estimates` | `id` | Yes | Yes |
+| `products` | `source_id` | Yes | Yes |
+| `category_groups` | `id` | Yes | No |
+| `categories` | `source_id` | Yes | Yes |
+
+### Sync behavior
+
+Incremental streams use `updated_at` as their cursor. The first sync reads records updated on or after **Start time**. Later incremental syncs resume from the saved cursor. Because the lower bound is inclusive, records at the cursor timestamp can be read again.
+
+`plan_items` and `category_groups` do not use **Start time** and are read in full on every sync. All streams follow the API's `current_page` and `total_pages` response fields, including when a page contains fewer records than requested.
+
+## Rate limits and troubleshooting
+
+Pennylane's [v1 rate limit](https://pennylane.readme.io/v1.0/docs/rate-limiting-1) is 5 requests per second per token, across all endpoints, in both production and sandbox environments. Requests from other integrations using the same token count toward this limit. Exceeding it returns HTTP `429`.
+
+- If the connection check returns HTTP `401`, verify that the token is valid and has not expired or been revoked.
+- If it returns HTTP `403`, verify the token's v1 scopes, especially `supplier_invoices`, which is required for the connection check. Access to other streams depends on their scopes listed above.
 
 ## IP allow list
 
@@ -30,8 +78,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.4.0 | 2026-11-13 | [91541](https://github.com/airbytehq/airbyte/pull/91541) | Paginate on `current_page`/`total_pages` instead of stopping on a short page. Add missing `customer_invoices` and `customers` fields, suggested streams, and a 1-hour heartbeat timeout (`maxSecondsBetweenMessages: 3600`) |
+| --- | --- | --- | --- |
+| 0.4.0 | 2026-11-15 | [91541](https://github.com/airbytehq/airbyte/pull/91541) | Paginate on `current_page`/`total_pages` instead of stopping on a short page. Add missing `customer_invoices` and `customers` fields, suggested streams, and a 1-hour heartbeat timeout (`maxSecondsBetweenMessages: 3600`) |
 | 0.3.53 | 2026-11-10 | [91670](https://github.com/airbytehq/airbyte/pull/91670) | Update dependencies |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
