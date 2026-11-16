@@ -64,6 +64,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: "P{{ config.get('accounts_step_days', 30) }}D"
         cursor_granularity: PT1S
@@ -142,6 +144,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -218,6 +222,8 @@ definitions:
         cursor_field: created_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -285,6 +291,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -361,6 +369,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -428,6 +438,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -497,6 +509,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -586,6 +600,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -653,6 +669,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -720,6 +738,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -787,6 +807,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -862,6 +884,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -929,6 +953,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -996,6 +1022,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -1063,6 +1091,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -1138,6 +1168,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -1208,6 +1240,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -1277,6 +1311,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
@@ -1586,6 +1622,8 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
