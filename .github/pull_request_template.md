@@ -23,6 +23,7 @@
 ## Can this PR be safely reverted and rolled back?
 <!--
 * If unsure, leave it blank.
+* Connector version bump: if YES, add `releases.safeDowngrades.<new version>` with a `reason` to the connector's `metadata.yaml`. If NO (state, config or schema migration), leave it out.
 -->
 - [ ] YES 💚
 - [ ] NO ❌

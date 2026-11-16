@@ -103,6 +103,7 @@ This transition is currently in progress. Once it is complete, the `icon` field 
 The `releases` section contains extra information about certain types of releases. The current types of releases are:
 
 - `breakingChanges`
+- `safeDowngrades`
 
 ### `breakingChanges`
 
@@ -155,6 +156,30 @@ The supported scope types are listed below.
 | Scope Type | Value Type  | Value Description    |
 | ---------- | ----------- | -------------------- |
 | stream     | `list[str]` | List of stream names |
+
+### `safeDowngrades`
+
+The optional `safeDowngrades` section of `releases` lists versions that can be safely rolled back. An entry means that moving connections from that exact version back to the current GA version is safe: the release makes no one-way migration of state, config or schema. Each entry must contain a `reason` that briefly explains why.
+
+```yaml
+releases:
+  safeDowngrades:
+    3.6.0:
+      reason: "No state, config or schema migration"
+```
+
+The key must be the exact version being released (the new `dockerImageTag`). If a version has no entry, rolling back from it is treated as not safe.
+
+Add an entry when the release can be reverted without affecting existing connections. Leave it out when the release:
+
+- Migrates state, config or schema in any way.
+- Writes state or configs that the previous version can't read back.
+
+This field only affects progressive rollouts. When a rollout of the version is replaced or cancelled, the rollout tooling removes the version pins it created, sending those connections back to the GA version, only if the version is listed in `safeDowngrades`. Otherwise the pins are kept.
+
+:::note
+The `safeDowngrades` field requires an `airbyte-internal-ops` release that includes the updated connector metadata models. Until then, metadata validation rejects it.
+:::
 
 #### `remoteRegistries`
 
