@@ -28,7 +28,9 @@ def _build_router(definition_name: str, config: dict):
     return factory.create_component(
         model_type=UnionPartitionRouterModel,
         component_definition=definition,
-        config=config,
+        # The normalized config: `requester_base.authenticator` selects on a key that only
+        # `ConfigNormalization` sets.
+        config=source._config,
         stream_name="test_stream",
     )
 

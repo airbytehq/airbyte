@@ -321,18 +321,26 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 #### OAuth apps with expiring user access tokens
 
-The connector keeps the OAuth access token it receives when you authenticate and does not refresh it. GitHub turns on **Expire user access tokens** by default for newly registered OAuth apps. A token from such an app [expires after eight hours](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#expiring-access-tokens), and from then on every sync fails with `GitHub authentication failed (HTTP 401)` until you authenticate the source again.
+GitHub turns on **Expire user access tokens** by default for newly registered OAuth apps. Such an app issues an access token that [expires after eight hours](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#expiring-access-tokens) and a refresh token to replace it.
 
 This applies only when Airbyte authenticates through a GitHub OAuth app that you registered yourself: OAuth override credentials for a [workspace](https://reference.airbyte.com/reference/workspaceoauthcredentials) or an [organization](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials) in Airbyte Cloud, or your own OAuth app on a self-managed deployment. The default **Authenticate your GitHub account** flow in Airbyte Cloud and personal access tokens are not affected.
 
-If you use your own OAuth app, do one of the following:
+Starting with version 2.9.0, the connector stores the refresh token when you authenticate and uses it to get a new access token when the old one expires. It works with both kinds of OAuth app, and you do not need to configure anything. Keep the following in mind:
 
-- Turn off **Expire user access tokens** for the app on GitHub, then authenticate the source again to get a new token. When you [register a new OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app), clear this checkbox before you save the app.
+- A source that you authenticated with an earlier connector version has no refresh token. Authenticate it again once after you upgrade.
+- The connector refreshes tokens only for github.com. For GitHub Enterprise Server and GitHub Enterprise Cloud with data residency, it keeps the token it received and does not refresh it.
+- A self-managed deployment needs an Airbyte version that passes the refresh token to the connector. With an older version, the connector receives only the access token and does not refresh it.
+- GitHub replaces the refresh token at every refresh, and a refresh token expires after six months. If the source does not sync for six months, authenticate it again.
+- If you turn off **Expire user access tokens** for an app that a source already uses, create a new source instead of authenticating the existing one again.
+
+If the connector cannot refresh the token in your setup, do one of the following:
+
+- Turn off **Expire user access tokens** for the app on GitHub, then authenticate a source to get a token that does not expire. When you [register a new OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app), clear this checkbox before you save the app.
 - Authenticate with a personal access token instead.
 
 ### Troubleshooting
 
-- Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
+- Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth: your own GitHub OAuth app issues expiring tokens, and the source has no refresh token or cannot use it. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
