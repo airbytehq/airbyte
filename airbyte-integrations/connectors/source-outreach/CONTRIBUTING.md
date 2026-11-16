@@ -7,7 +7,7 @@ For general guidance on contributing to Airbyte connectors, see the
 
 ### Pagination and page sizes
 
-Every stream except `events`, `duties` and `sequence_templates` sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
+Every stream except `events`, `duties`, `sequence_templates` and `custom_field_types` sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
 ([Pagination](https://developers.outreach.io/api/common-patterns/)).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
@@ -22,7 +22,7 @@ Every stream except `events`, `duties` and `sequence_templates` sends `sort=upda
 
 ### Incremental sync
 
-- Every stream except `events`, `duties` and `sequence_templates` is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
+- Every stream except `events`, `duties`, `sequence_templates` and `custom_field_types` is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
   cursor value, so the last record of the previous sync is read again.
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
@@ -69,6 +69,23 @@ The OAuth application needs these read scopes for the new streams:
 | `opportunity_stages` | `opportunityStages.read` |
 | `opportunity_prospect_roles` | `opportunityProspectRoles.read` |
 | `task_priorities` | `taskPriorities.read` |
+
+### Custom field types
+
+`custom_field_types` reads `GET /types`
+([Custom field types](https://developers.outreach.io/api/reference/type)). The response is not a list of JSON:API
+resources: it has one entry per object type that has admin-defined custom fields (`Account`, `Opportunity`,
+`OpportunityLineItem`, `OpportunityProspectRole`, `Product`, `Prospect`, `Purchase`), with the settings of each
+`customN` field under `meta.validations`. The stream lifts `meta` to the top level, so each record is
+`{"type": ..., "validations": {"custom1": {...}, ...}}` with `type` as the primary key.
+
+- The endpoint needs no extra OAuth scope, takes no paging or filter parameters and returns every entry in one response.
+- `definition` is a list of options for `inclusion` and `multi_inclusion`, a currency code such as `"USD"` for
+  `currency`, and `null` for the other validation types.
+- An object type with no configured custom fields is left out. The test account also returns `Product` with
+  Outreach's built-in picklists (`product_family`, `unit_of_measure`, `classification`).
+- The test account has text, picklist, date and currency fields on `Prospect`, `Account` and `Opportunity`, set up under
+  Admin > Records > (object) > Fields configuration.
 
 ### Error handling
 

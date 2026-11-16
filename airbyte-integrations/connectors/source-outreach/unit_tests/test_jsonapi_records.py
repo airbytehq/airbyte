@@ -30,6 +30,11 @@ _CONFIG = {
 
 _MANIFEST = yaml.safe_load(Path(_YAML_FILE_PATH).read_text())
 _STREAMS = _MANIFEST["definitions"]["streams"]
+# Streams that read JSON:API resources (id, attributes, relationships). `custom_field_types` reads /types, which
+# returns custom field settings per object type instead, and has its own tests.
+_JSONAPI_STREAMS = sorted(
+    name for name, stream in _STREAMS.items() if stream.get("transformations") == {"$ref": "#/definitions/jsonapi_flatten_transformations"}
+)
 
 
 def _legacy_flatten(element: dict) -> dict:
@@ -119,7 +124,7 @@ def _assert_matches_legacy(output, resources: list[dict]) -> None:
         assert not {"_flat", "attributes", "relationships", "type", "links"}.intersection(record)
 
 
-@pytest.mark.parametrize("stream_name", sorted(_STREAMS))
+@pytest.mark.parametrize("stream_name", _JSONAPI_STREAMS)
 def test_all_streams_flatten_jsonapi_records_exactly(stream_name: str) -> None:
     resources = [
         _resource(
