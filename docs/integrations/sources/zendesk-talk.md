@@ -6,7 +6,7 @@
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
 - One of the following authentication methods:
   - **OAuth 2.0** (recommended): A Zendesk OAuth client with a client ID, client secret, and refresh token
-  - **API Token**: A Zendesk API token and the email address associated with the token. Zendesk disables new API token creation on October 27, 2026.
+  - **API Token**: A Zendesk API token and the email address associated with the token. Zendesk disables new API token creation on October 27, 2026. Airbyte Cloud doesn't offer this option for new sources.
 
 ## Setup guide
 
@@ -42,9 +42,15 @@ Each refresh invalidates the previous access token and refresh token. If your re
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
-5. Choose your **Authentication** method and enter the required credentials. Use **OAuth 2.0** unless you already have an active API token.
+5. Under **Authentication**, authenticate with **OAuth 2.0**. Airbyte Cloud doesn't offer API token authentication for new sources.
 6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
 7. Click **Set up source**.
+
+### Existing Airbyte Cloud sources that use an API token or legacy OAuth
+
+Airbyte Cloud sources that already use **API Token** or **OAuth2.0 (Legacy)** authentication keep syncing, and you can still change their other settings. The setup form no longer lists these two options, so **Authentication** shows no selected option and the stored credentials aren't displayed. The source keeps its stored credentials until you select **OAuth2.0** and authenticate again.
+
+Zendesk permanently deactivates all API tokens on April 30, 2027. Re-authenticate every source that uses an API token with OAuth 2.0 before that date. After you switch a source to OAuth 2.0, you can't switch it back to an API token in Airbyte Cloud.
 
 <!-- /env:cloud -->
 
@@ -117,6 +123,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.1.0 | 2026-11-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Airbyte Cloud: the setup form offers only OAuth 2.0 authentication. Sources that use an API token or legacy OAuth keep working. Re-authenticate API token sources with OAuth before April 30, 2027 |
 | 2.0.36 | 2026-11-10 | [91795](https://github.com/airbytehq/airbyte/pull/91795) | Update dependencies |
 | 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
 | 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |

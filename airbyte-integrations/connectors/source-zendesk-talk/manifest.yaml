@@ -575,6 +575,13 @@ api_budget:
 
 spec:
   type: Spec
+  # The transformation leaves the config as it is. Referencing it loads components.py for the `spec` command,
+  # where the Airbyte Cloud spec hides the API token and legacy OAuth options from the setup form.
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.HideDeprecatedAuthOptionsInCloud
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
