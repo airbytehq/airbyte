@@ -1,10 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Tests for the spec the connector returns per Airbyte edition, and for sources that use an option the Cloud spec hides."""
+"""Tests for the authentication options the spec offers in the setup form, and for sources that use a hidden option."""
 
 import json
 import logging
-from copy import deepcopy
 from typing import Any, Mapping
 
 import jsonschema
@@ -13,7 +12,6 @@ import yaml
 from conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import Status, SyncMode
-from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -25,6 +23,7 @@ MANIFEST = yaml.safe_load(_YAML_FILE_PATH.read_text())
 MANIFEST_SPEC = MANIFEST["spec"]
 MANIFEST_STREAMS = MANIFEST["streams"]
 VOICE_API = "https://example.zendesk.com/api/v2/channels/voice"
+EDITIONS = ["CLOUD", "COMMUNITY", "ENTERPRISE", None]
 CONFIG_SHAPES = {
     "legacy_top_level_token": {
         "subdomain": "example",
@@ -80,8 +79,8 @@ def _auth_types(connection_specification: Mapping[str, Any]) -> list[str]:
     return [option["properties"]["auth_type"]["const"] for option in connection_specification["properties"]["credentials"]["oneOf"]]
 
 
-@pytest.mark.parametrize("edition", ["CLOUD", "cloud"])
-def test_cloud_spec_hides_api_token_and_legacy_oauth(monkeypatch: pytest.MonkeyPatch, edition: str) -> None:
+@pytest.mark.parametrize("edition", EDITIONS)
+def test_setup_form_offers_only_refresh_token_oauth(monkeypatch: pytest.MonkeyPatch, edition: str | None) -> None:
     _set_edition(monkeypatch, edition)
 
     connection_specification = _connection_specification()
@@ -90,76 +89,34 @@ def test_cloud_spec_hides_api_token_and_legacy_oauth(monkeypatch: pytest.MonkeyP
     assert _hidden_auth_types(connection_specification) == {"api_token", "oauth2.0"}
 
 
-@pytest.mark.parametrize("edition", ["COMMUNITY", "ENTERPRISE", "", None])
-def test_self_managed_spec_is_the_manifest_spec(monkeypatch: pytest.MonkeyPatch, edition: str | None) -> None:
+@pytest.mark.parametrize("edition", EDITIONS)
+def test_spec_is_the_manifest_spec_in_every_edition(monkeypatch: pytest.MonkeyPatch, edition: str | None) -> None:
     _set_edition(monkeypatch, edition)
 
-    connection_specification = _connection_specification()
-
-    assert connection_specification == MANIFEST_SPEC["connection_specification"]
-    assert _hidden_auth_types(connection_specification) == set()
+    assert _connection_specification() == MANIFEST_SPEC["connection_specification"]
 
 
-def test_cloud_spec_differs_from_the_manifest_spec_only_by_the_hidden_flag_and_the_description(monkeypatch: pytest.MonkeyPatch) -> None:
-    _set_edition(monkeypatch, "CLOUD")
+def test_credentials_description_does_not_recommend_an_api_token() -> None:
+    description = _connection_specification()["properties"]["credentials"]["description"]
 
-    connection_specification = deepcopy(dict(_connection_specification()))
-    credentials = connection_specification["properties"]["credentials"]
-    for option in credentials["oneOf"]:
-        option.pop("airbyte_hidden", None)
-    cloud_description = credentials.pop("description")
-    manifest_specification = deepcopy(MANIFEST_SPEC["connection_specification"])
-    manifest_description = manifest_specification["properties"]["credentials"].pop("description")
-
-    assert connection_specification == manifest_specification
-    assert "API token" in manifest_description and "recommend" in manifest_description
-    assert "recommend" not in cloud_description
-    assert "April 30, 2027" in cloud_description
+    assert "recommend" not in description
+    assert "April 30, 2027" in description
 
 
-def test_advanced_auth_is_the_same_in_every_edition(monkeypatch: pytest.MonkeyPatch) -> None:
-    _set_edition(monkeypatch, "CLOUD")
-    cloud_advanced_auth = get_source({}).spec(LOGGER).advanced_auth
-    _set_edition(monkeypatch, "COMMUNITY")
-    self_managed_advanced_auth = get_source({}).spec(LOGGER).advanced_auth
+def test_oauth_button_is_tied_to_the_visible_option() -> None:
+    advanced_auth = get_source({}).spec(LOGGER).advanced_auth
 
-    assert cloud_advanced_auth == self_managed_advanced_auth
-    assert cloud_advanced_auth.predicate_value == "oauth2_refresh"
-
-
-def test_cloud_spec_leaves_the_declared_spec_untouched(monkeypatch: pytest.MonkeyPatch) -> None:
-    from source_declarative_manifest.components import HideDeprecatedAuthOptionsInCloud
-
-    _set_edition(monkeypatch, "CLOUD")
-    declared = deepcopy(MANIFEST_SPEC["connection_specification"])
-    spec_component = Spec(connection_specification=declared, parameters={}, config_transformations=[HideDeprecatedAuthOptionsInCloud()])
-
-    specification = spec_component.generate_spec()
-
-    assert _hidden_auth_types(specification.connectionSpecification) == {"api_token", "oauth2.0"}
-    assert declared == MANIFEST_SPEC["connection_specification"]
-
-
-def test_spec_without_the_marker_is_unchanged_in_cloud(monkeypatch: pytest.MonkeyPatch) -> None:
-    _set_edition(monkeypatch, "CLOUD")
-    get_source({})  # loads components.py, which replaces Spec.generate_spec
-
-    specification = Spec(connection_specification=deepcopy(MANIFEST_SPEC["connection_specification"]), parameters={}).generate_spec()
-
-    assert _hidden_auth_types(specification.connectionSpecification) == set()
+    assert advanced_auth.predicate_key == ["credentials", "auth_type"]
+    assert advanced_auth.predicate_value == "oauth2_refresh"
 
 
 @pytest.mark.parametrize("config", CONFIG_SHAPES.values(), ids=CONFIG_SHAPES.keys())
-def test_existing_config_shapes_are_valid_against_the_cloud_spec(monkeypatch: pytest.MonkeyPatch, config: Mapping[str, Any]) -> None:
-    _set_edition(monkeypatch, "CLOUD")
-
+def test_existing_config_shapes_are_valid_against_the_spec(config: Mapping[str, Any]) -> None:
     jsonschema.validate(config, _connection_specification())
 
 
 @pytest.mark.parametrize("config", CONFIG_SHAPES.values(), ids=CONFIG_SHAPES.keys())
-def test_existing_config_shapes_pass_check_discover_and_read_in_cloud(monkeypatch: pytest.MonkeyPatch, config: Mapping[str, Any]) -> None:
-    _set_edition(monkeypatch, "CLOUD")
-
+def test_existing_config_shapes_pass_check_discover_and_read(config: Mapping[str, Any]) -> None:
     with HttpMocker() as http_mocker:
         http_mocker.get(
             HttpRequest(url=f"{VOICE_API}/stats/account_overview", query_params=ANY_QUERY_PARAMS),
