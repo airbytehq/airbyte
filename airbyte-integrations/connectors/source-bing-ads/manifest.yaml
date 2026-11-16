@@ -2590,13 +2590,10 @@ definitions:
           DownloadEntities: '{{ parameters["DownloadEntities"] }}'
           DownloadFileType: Csv
           FormatVersion: "'6.0'"
-          # Typically, you request a full download the first time you call the operation by setting this element to null.
-          # If you set a date and time that is more than 30 days ago, an error will be returned.
-          # ref: https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest#request-body
           LastSyncTimeInUTC: >-
             {%- set _start_date = stream_interval.get('start_time') -%}
-            {%- set min_available_date = format_datetime(now_utc() - duration('P30D'), '%Y-%m-%d') -%}
-            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and format_datetime(_start_date, '%Y-%m-%d') >= min_available_date else "" }}
+            {%- set min_available_datetime = now_utc() - duration('P30D') + duration('PT5M') -%}
+            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and str_to_datetime(_start_date) >= min_available_datetime else "" }}
           CompressionType: GZip
     transformations:
       - type: AddFields
