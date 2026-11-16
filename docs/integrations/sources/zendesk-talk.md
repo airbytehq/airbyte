@@ -123,7 +123,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
-| 2.1.0 | 2026-11-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Airbyte Cloud: the setup form offers only OAuth 2.0 authentication. Sources that use an API token or legacy OAuth keep working. Re-authenticate API token sources with OAuth before April 30, 2027 |
+| 2.1.0 | 2026-11-16 | [93024](https://github.com/airbytehq/airbyte/pull/93024) | Airbyte Cloud: the setup form offers only OAuth 2.0 authentication. Sources that use an API token or legacy OAuth keep working. Re-authenticate API token sources with OAuth before April 30, 2027 |
 | 2.0.36 | 2026-11-10 | [91795](https://github.com/airbytehq/airbyte/pull/91795) | Update dependencies |
 | 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
 | 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |
