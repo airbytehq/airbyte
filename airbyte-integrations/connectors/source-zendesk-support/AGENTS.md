@@ -78,6 +78,20 @@ How it is built, and why:
 
 **Why this matters:** do not add the stream to `suggestedStreams`. That would select it on every new connection, exposing users who never asked for archived-ticket audits to a request per updated ticket, and a single bulk update can mean six-figure request counts on the next sync. The first sync after the stream is selected reads every ticket since `start_date`, which is also how a user backfills archived-ticket audits.
 
+## 8. Zendesk Marketplace Headers Are Sent in Airbyte Cloud Only, Through a Derived Config Key
+
+Zendesk asks Marketplace integrations to send `X-Zendesk-Marketplace-Name`, `X-Zendesk-Marketplace-Organization-Id` and `X-Zendesk-Marketplace-App-Id` on [every request made from outside the Zendesk Apps framework](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/). In Airbyte Cloud the connector sends them on every data request, on article attachment downloads and on the OAuth token refresh, for every authentication option. Self-managed deployments send none: they run with the customer's own OAuth client or API token, and their traffic should not be attributed to Airbyte's Marketplace listing.
+
+How it is built, and why:
+
+1. **The edition reaches the manifest through the config.** Interpolation cannot read the environment, so `MarketplaceHeaders` in `components.py` (a `CustomConfigTransformation` under `spec.config_normalization_rules.transformations`) sets `config['__marketplace_headers']` when `AIRBYTE_EDITION` is `CLOUD` and removes the key otherwise. The gate reads `AIRBYTE_EDITION`, not the CDK's `is_cloud_environment()`, which reads `DEPLOYMENT_MODE`.
+2. **Three places read the key, and each has to.** `definitions.retriever.requester` covers every stream that `$ref`s it. The `file_uploader` requester of `article_attachments` is written out separately and repeats `request_headers`. `oauth_refresh_authenticator` lists the three headers under `refresh_request_headers`; a header that evaluates to `None` is not sent.
+3. **`$ref` with siblings is a shallow merge.** A stream that sets `request_headers` next to `$ref: "#/definitions/retriever/requester"` replaces the Marketplace headers instead of adding to them. `test_every_requester_in_the_manifest_sends_the_marketplace_headers` walks the resolved manifest and fails on any `HttpRequester` without the template, and on any `CustomRequester`.
+4. **The key is derived on every run, but it can end up in the stored config.** A transformation is not persisted by itself. The single-use refresh-token flow, however, emits the whole in-memory config as a control message when the token rotates, so a Cloud source on `OAuth2.0 with Refresh Token` stores `__marketplace_headers`. That is harmless: the spec allows additional properties, the transformation overwrites the key in Cloud and removes it elsewhere, and the values are not secret.
+5. **The authorization-code exchange is made by the platform, not by the connector.** It does not send these headers. `advanced_auth.oauth_config_specification.oauth_connector_input_specification` accepts `access_token_headers` if Zendesk asks for them there too.
+
+**Why this matters:** a new requester that is written out instead of `$ref`'d, or a custom component that makes its own HTTP call, silently sends no Marketplace headers. The IDs live in `MARKETPLACE_HEADERS` in `components.py`; `test_marketplace_ids_are_not_placeholders` fails while either is a placeholder.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
