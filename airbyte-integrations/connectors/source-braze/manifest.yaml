@@ -22,6 +22,52 @@ definitions:
           http_method: GET
           request_parameters:
             include_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_edited
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        start_datetime: "{{ config['start_date'] }}T00:00:00"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_edit.time[gt]
+    campaigns_parent:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns/list
+          http_method: GET
+          request_parameters:
+            include_archived: "true"
             last_edit.time[gt]: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
@@ -71,7 +117,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: campaign_id
               stream:
-                $ref: "#/definitions/streams/campaigns"
+                $ref: "#/definitions/streams/campaigns_parent"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: time
@@ -125,7 +171,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: campaign_id
               stream:
-                $ref: "#/definitions/streams/campaigns"
+                $ref: "#/definitions/streams/campaigns_parent"
       transformations:
         - type: AddFields
           fields:
@@ -137,6 +183,52 @@ definitions:
         schema:
           $ref: "#/schemas/campaigns_details"
     canvases:
+      type: DeclarativeStream
+      name: canvases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /canvas/list
+          http_method: GET
+          request_parameters:
+            include_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - canvases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/canvases"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_edited
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        start_datetime: "{{ config['start_date'] }}T00:00:00"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_edit.time[gt]
+    canvases_parent:
       type: DeclarativeStream
       name: canvases
       primary_key:
@@ -201,7 +293,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: canvas_id
               stream:
-                $ref: "#/definitions/streams/canvases"
+                $ref: "#/definitions/streams/canvases_parent"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: time
@@ -255,7 +347,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: canvas_id
               stream:
-                $ref: "#/definitions/streams/canvases"
+                $ref: "#/definitions/streams/canvases_parent"
       transformations:
         - type: AddFields
           fields:

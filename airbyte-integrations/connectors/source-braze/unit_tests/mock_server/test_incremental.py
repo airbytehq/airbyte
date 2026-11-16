@@ -63,3 +63,41 @@ def test_events_extractor(source_builder, events: list[str], http_mocker: HttpMo
     output = read(source_builder(config=config, catalog=catalog), config, catalog)
     assert not output.errors
     assert [message.record.data for message in output.records] == [{"event_name": event} for event in events]
+
+
+@pytest.mark.parametrize("stream, endpoint", [("campaigns", "campaigns"), ("canvases", "canvas")])
+@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+@pytest.mark.parametrize("edited_at", ["2026-01-02T12:34:56+00:00", "2026-01-02T12:34:56.123Z", None])
+def test_list_last_edited_cursor(
+    source_builder, http_mocker: HttpMocker, stream: str, endpoint: str, sync_mode: SyncMode, edited_at: str | None
+) -> None:
+    config = {"url": "https://rest.example.com", "api_key": "test-key", "start_date": "2026-01-01"}
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
+    records = [{"id": "older", "last_edited": "2026-01-01T10:00:00+00:00"}, {"id": "one", "last_edited": edited_at}] if edited_at else []
+    http_mocker.get(
+        HttpRequest(
+            f"https://rest.example.com/{endpoint}/list",
+            query_params={"include_archived": "true", "last_edit.time[gt]": "2026-01-01T00:00:00"},
+        ),
+        HttpResponse(json.dumps({stream: records})),
+    )
+    output = read(source_builder(config=config, catalog=catalog), config, catalog)
+    assert not output.errors
+    assert [message.record.data for message in output.records] == records
+    if sync_mode == SyncMode.incremental:
+        cursor = "2026-01-02T12:34:56" if edited_at else "2026-01-01T00:00:00"
+        assert output.most_recent_state.stream_state.__dict__ == {"last_edited": cursor}
+        if not edited_at:
+            return
+        state = [message.state for message in output.state_messages[-1:]]
+        http_mocker.get(
+            HttpRequest(
+                f"https://rest.example.com/{endpoint}/list",
+                query_params={"include_archived": "true", "last_edit.time[gt]": cursor},
+            ),
+            HttpResponse(json.dumps({stream: [records[-1]]})),
+        )
+        resumed = read(source_builder(config=config, catalog=catalog, state=state), config, catalog, state)
+        assert not resumed.errors
+        assert [message.record.data for message in resumed.records] == [records[-1]]
+        assert resumed.most_recent_state.stream_state.__dict__ == {"last_edited": cursor}
