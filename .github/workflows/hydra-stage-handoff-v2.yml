@@ -303,8 +303,8 @@ jobs:
           # Pin a specific hydrakit release. Update HYDRA_VERSION and
           # HYDRA_SHA256 together whenever bumping — the sha256 lives in the
           # release's SHA256SUMS.
-          HYDRA_VERSION: "v0.4.1"
-          HYDRA_SHA256: ""
+          HYDRA_VERSION: "v0.5.1"
+          HYDRA_SHA256: "78dd408b41c28a97411de33297fd4cdc09d2f10f58426f5ff08d214d004d86f5"
         run: |
           set -euo pipefail
           gh release download "$HYDRA_VERSION" -R airbytehq/hydrakit -p hydra.mjs -D "$RUNNER_TEMP"
