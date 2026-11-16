@@ -139,12 +139,17 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     }
 
     override fun releaseResources() {
-        if (::outputMessageRouter.isInitialized) {
-            outputMessageRouter.close()
+        try {
+            if (::outputMessageRouter.isInitialized) {
+                outputMessageRouter.close()
+            }
+        } finally {
+            try {
+                stateFilesAccessor.close()
+            } finally {
+                acquiredResources.getAndSet(null)?.forEach { it.value.close() }
+            }
         }
-
-        stateFilesAccessor.close()
-        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
     @SuppressFBWarnings(

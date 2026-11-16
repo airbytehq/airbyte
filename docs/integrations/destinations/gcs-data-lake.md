@@ -96,7 +96,7 @@ In Airbyte, configure the following fields:
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
 | **Default Namespace**    | No         | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined` |
-| **GCS Endpoint**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
+| **GCS Endpoint (Optional)**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
 
 ### BigLake-specific fields
 
@@ -104,7 +104,7 @@ When **Catalog Type** is set to `BigLake`, configure these additional fields:
 
 | Field                    | Required   | Description                                                          |
 |--------------------------|------------|----------------------------------------------------------------------|
-| **BigLake Catalog Name** | Yes        | Name of your BigLake catalog (from the setup step)                   |
+| **Catalog Name** | Yes        | Name of your BigLake catalog (from the setup step)                   |
 
 ### Polaris-specific fields
 
@@ -113,7 +113,7 @@ When **Catalog Type** is set to `Polaris`, configure these additional fields:
 | Field                  | Required   | Description                                                                            |
 |------------------------|------------|----------------------------------------------------------------------------------------|
 | **Polaris Server URI** | Yes        | The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`) |
-| **Catalog Name**       | Yes        | The name of the catalog in Polaris (for example: `quickstart_catalog`)                 |
+| **Polaris Catalog Name** | Yes        | The name of the catalog in Polaris (for example: `quickstart_catalog`)                 |
 | **Client ID**          | Yes        | The OAuth Client ID for authenticating with the Polaris server                         |
 | **Client Secret**      | Yes        | The OAuth Client Secret for authenticating with the Polaris server                     |
 
@@ -224,9 +224,9 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
 | 1.0.14 | 2026-10-22 | [89651](https://github.com/airbytehq/airbyte/pull/89651) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; drop Jetty from the Hadoop client. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
-| 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
+| 1.0.12 | 2026-09-16 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
 | 1.0.11 | 2026-09-01 | [84992](https://github.com/airbytehq/airbyte/pull/84992) | Upgrade to Bulk CDK 1.0.25. |
-| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
+| 1.0.10  | 2026-05-20 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
 | 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9                                                                  |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution                 |
 | 1.0.7   | 2026-02-09 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |

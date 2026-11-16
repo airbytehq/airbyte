@@ -63,38 +63,27 @@ def test_organization_memberships_pages_with_organization_and_sort() -> None:
 @pytest.mark.parametrize(
     "lookback,minimum",
     [
-        ({}, "2024-01-20T00:00:00.000000Z"),
-        ({"lookback_days": 0}, "2024-01-20T00:00:00.000000Z"),
-        ({"lookback_days": 2}, "2024-01-18T00:00:00.000000Z"),
-        ({"lookback_days": 7}, "2024-01-13T00:00:00.000000Z"),
+        ({}, "2024-01-19T23:55:00.000000Z"),
+        ({"lookback_days": 0}, "2024-01-19T23:55:00.000000Z"),
+        ({"lookback_days": 2}, "2024-01-17T23:55:00.000000Z"),
+        ({"lookback_days": -1}, "2024-01-19T23:55:00.000000Z"),
     ],
 )
-def test_scheduled_events_pages_from_state_minus_lookback(lookback: dict, minimum: str) -> None:
-    state = StateBuilder().with_stream_state("scheduled_events", {"start_time": "2024-01-20T00:00:00.000000Z"}).build()
-    records = [{**event(name), "start_time": f"2024-01-{day}T00:00:00.000000Z"} for name, day in [("one", 22), ("two", 21)]]
-    first = list_request("scheduled_events", min_start_time=minimum)
-    second = list_request("scheduled_events", "next-token", min_start_time=minimum)
+def test_scheduled_events_pages_from_start_date_and_filters_by_updated_at(lookback: dict, minimum: str) -> None:
+    state = StateBuilder().with_stream_state("scheduled_events", {"updated_at": "2024-01-20T00:00:00.000000Z"}).build()
+    included = {**event("included"), "updated_at": minimum}
+    excluded = {**event("excluded"), "updated_at": "2024-01-17T23:54:59.000000Z"}
+    first = list_request("scheduled_events")
+    second = list_request("scheduled_events", "next-token")
     with HttpMocker() as http:
         mock_user(http)
-        http.get(first, collection([records[0]], "next-token"))
-        http.get(second, collection([records[1]]))
+        http.get(first, collection([included], "next-token"))
+        http.get(second, collection([excluded]))
         output = read_stream("scheduled_events", {**CONFIG, **lookback}, state)
         assert not output.errors
-        assert {r.record.data["id"] for r in output.records} == {"one", "two"}
+        assert {r.record.data["id"] for r in output.records} == {"included"}
         http.assert_number_of_calls(first, 1)
         http.assert_number_of_calls(second, 1)
-
-
-def test_negative_lookback_reads_like_zero() -> None:
-    state = StateBuilder().with_stream_state("scheduled_events", {"start_time": "2024-01-20T00:00:00.000000Z"}).build()
-    with HttpMocker() as http:
-        mock_user(http)
-        target = list_request("scheduled_events", min_start_time="2024-01-20T00:00:00.000000Z")
-        http.get(target, collection([{**event("one"), "start_time": "2024-01-22T00:00:00.000000Z"}]))
-        output = read_stream("scheduled_events", {**CONFIG, "lookback_days": -1}, state)
-        assert not output.errors
-        assert [r.record.data["id"] for r in output.records] == ["one"]
-        http.assert_number_of_calls(target, 1)
 
 
 def test_null_lookback_is_rejected_by_the_unchanged_number_spec() -> None:

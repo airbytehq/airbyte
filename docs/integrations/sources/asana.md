@@ -118,6 +118,10 @@ If you continue to see rate limit errors, reduce the **Number of concurrent thre
 
 Airbyte syncs data from all Asana projects the authenticated user can access. The connector doesn't support filtering to specific projects.
 
+#### Portfolio streams
+
+The `portfolios_compact`, `portfolios`, `portfolios_memberships`, and `portfolio_items` streams depend on Asana portfolios, which aren't available on every Asana plan. If your Asana plan doesn't include portfolios, Asana returns an HTTP 402 error, and these streams sync no records.
+
 #### Organization exports
 
 The `organization_exports` stream syncs only the organization export IDs listed in the source configuration. To sync this stream, first create organization export requests in Asana and then enter the returned export IDs in **Organization Export IDs**.
@@ -127,7 +131,7 @@ Asana's organization export endpoints are only available to Enterprise organizat
 ### Troubleshooting
 
 - If you encounter access errors while using OAuth, make sure your Asana OAuth app is available in the authorizing workspace and is configured with **Full permissions**. The connector requests Asana's `default` OAuth scope during authorization. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
-- If the connector returns permissions errors for some streams, confirm that the authenticated Asana user can view those resources in Asana.
+- When Asana returns an HTTP 402, 403, 404, 412, or 451 error, the connector skips that request and continues the sync instead of failing. If a stream syncs fewer records than you expect, or no records, confirm that the authenticated Asana user can view those resources in Asana and that your Asana plan includes the related feature.
 - For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -161,6 +165,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.8.0 | 2026-11-11 | [91313](https://github.com/airbytehq/airbyte/pull/91313) | Migrate to manifest-only; restore support for legacy root-level access token configs and enable HTTP caching for parent streams. |
 | 1.7.2 | 2026-05-22 | [78331](https://github.com/airbytehq/airbyte/pull/78331) | Add default OAuth scope to consent URL |
 | 1.7.1 | 2026-05-18 | [78159](https://github.com/airbytehq/airbyte/pull/78159) | Remove explicit OAuth scopes from connector input specification |
 | 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
