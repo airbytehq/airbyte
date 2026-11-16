@@ -27,7 +27,7 @@ DOWNLOAD_URL = "https://example.s3.amazonaws.com/app-store-connect/report.csv.gz
 PAGE_TWO_CURSOR = "PAGE_TWO"
 
 Stage = Literal["request", "report", "instance", "segment", "detail", "download"]
-Family = Literal["installations", "downloads"]
+Family = Literal["installations", "downloads", "discovery", "sessions"]
 
 
 @dataclass(frozen=True)
@@ -60,6 +60,26 @@ ANALYTICS_SPECS = {
     "analytics_app_download_segments_historical": AnalyticsSpec("segment", "downloads", True),
     "analytics_app_download_segment_details_historical": AnalyticsSpec("detail", "downloads", True),
     "app_download_historical": AnalyticsSpec("download", "downloads", True),
+    "analytics_app_store_discovery_and_engagement_reports": AnalyticsSpec("report", "discovery", False),
+    "analytics_app_store_discovery_and_engagement_instances": AnalyticsSpec("instance", "discovery", False),
+    "analytics_app_store_discovery_and_engagement_segments": AnalyticsSpec("segment", "discovery", False),
+    "analytics_app_store_discovery_and_engagement_segment_details": AnalyticsSpec("detail", "discovery", False),
+    "app_store_discovery_and_engagement": AnalyticsSpec("download", "discovery", False),
+    "analytics_app_store_discovery_and_engagement_reports_historical": AnalyticsSpec("report", "discovery", True),
+    "analytics_app_store_discovery_and_engagement_instances_historical": AnalyticsSpec("instance", "discovery", True),
+    "analytics_app_store_discovery_and_engagement_segments_historical": AnalyticsSpec("segment", "discovery", True),
+    "analytics_app_store_discovery_and_engagement_segment_details_historical": AnalyticsSpec("detail", "discovery", True),
+    "app_store_discovery_and_engagement_historical": AnalyticsSpec("download", "discovery", True),
+    "analytics_app_sessions_reports": AnalyticsSpec("report", "sessions", False),
+    "analytics_app_sessions_instances": AnalyticsSpec("instance", "sessions", False),
+    "analytics_app_sessions_segments": AnalyticsSpec("segment", "sessions", False),
+    "analytics_app_sessions_segment_details": AnalyticsSpec("detail", "sessions", False),
+    "app_sessions": AnalyticsSpec("download", "sessions", False),
+    "analytics_app_sessions_reports_historical": AnalyticsSpec("report", "sessions", True),
+    "analytics_app_sessions_instances_historical": AnalyticsSpec("instance", "sessions", True),
+    "analytics_app_sessions_segments_historical": AnalyticsSpec("segment", "sessions", True),
+    "analytics_app_sessions_segment_details_historical": AnalyticsSpec("detail", "sessions", True),
+    "app_sessions_historical": AnalyticsSpec("download", "sessions", True),
 }
 
 
@@ -86,7 +106,11 @@ def _access_type(spec: AnalyticsSpec) -> str:
 def _report_name(spec: AnalyticsSpec) -> str:
     if spec.family == "installations":
         return "App Store Installation and Deletion Standard"
-    return "App Downloads Standard"
+    if spec.family == "downloads":
+        return "App Downloads Detailed"
+    if spec.family == "discovery":
+        return "App Store Discovery and Engagement Detailed"
+    return "App Sessions Detailed"
 
 
 def _fixture_name(spec: AnalyticsSpec, stage: Stage) -> str:
