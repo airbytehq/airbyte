@@ -15,6 +15,17 @@ This update fixes schema bugs in the `extensiveCalls` stream to match the actual
 
 These schema corrections change the data types in the destination table for the `extensiveCalls` stream. After upgrading, you must refresh the source schema and reset the `extensiveCalls` stream.
 
+### Migration steps
+
+1. In the navigation bar, click **Connections** and select the connection affected by the upgrade.
+2. Click the **Schema** tab.
+3. Click **Refresh source schema** and review the detected schema changes.
+4. Click **OK**.
+5. Click **Save changes**.
+6. [Clear the data](/platform/operator-guides/clear) for the `extensiveCalls` stream to remove data written with the previous schema.
+
+After the clear completes, you can sync the stream again with the corrected schema.
+
 ## Connector upgrade guide
 
 <MigrationGuide />
