@@ -2,6 +2,9 @@
 
 from typing import Any
 from unittest import TestCase
+from urllib.parse import quote
+
+import pytest
 
 from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -10,7 +13,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .config import START_CURSOR
 from .request_builder import PardotRequestBuilder, login_request
 from .response_builder import login_response, page_response
-from .utils import read_stream, record_ids, stream_state
+from .utils import read_stream, record_ids, sent_queries, stream_state
 
 
 _STREAM = "emails"
@@ -23,13 +26,13 @@ _FIELDS = (
 )
 
 
-def _request(sent_at_after: str = START_CURSOR) -> PardotRequestBuilder:
+def _request(sent_at_from: str = START_CURSOR) -> PardotRequestBuilder:
     return (
         PardotRequestBuilder.endpoint(_PATH)
         .with_query_param("limit", 1000)
         .with_query_param("fields", _FIELDS)
         .with_query_param("orderBy", "sentAt ASC")
-        .with_query_param("sentAtAfter", sent_at_after)
+        .with_query_param("sentAtAfterOrEqualTo", sent_at_from)
     )
 
 
@@ -75,6 +78,8 @@ class TestEmailsStream(TestCase):
 
         assert record_ids(output) == list(range(1, 1003))
         assert output.records[0].record.data == _email(1)
+        # A page that follows `nextPageUrl` sends `fields` and the page token, and no filter.
+        assert sent_queries(http_mocker)[1] == f"fields={_FIELDS}&nextPageToken=page-2"
         assert output.get_stream_statuses(_STREAM)[-1] == AirbyteStreamStatus.COMPLETE
         assert stream_state(output) == {"sentAt": START_CURSOR}
 
@@ -84,7 +89,7 @@ class TestEmailsStream(TestCase):
         http_mocker.post(login_request(), login_response())
         http_mocker.get(_request().build(), page_response([_email(number) for number in range(1, 1000)] + [last_of_page]))
         http_mocker.get(
-            _request(sent_at_after="2026-03-01T09:16:40-08:00").build(),
+            _request(sent_at_from="2026-03-01T09:16:40-08:00").build(),
             page_response([_email(1001, sent_at="2026-03-01T09:16:41-08:00")]),
         )
 
@@ -98,7 +103,7 @@ class TestEmailsStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM, {"sentAt": "2026-03-01T09:00:05-12:00"}).build()
         http_mocker.post(login_request(), login_response())
         http_mocker.get(
-            _request(sent_at_after="2026-03-01T09:00:05-12:00").build(),
+            _request(sent_at_from="2026-03-01T09:00:05-12:00").build(),
             page_response([_email(1003, sent_at="2026-03-02T10:30:00-08:00")]),
         )
 
@@ -107,3 +112,37 @@ class TestEmailsStream(TestCase):
         assert record_ids(output) == [1003]
         assert output.get_stream_statuses(_STREAM)[-1] == AirbyteStreamStatus.COMPLETE
         assert stream_state(output) == {"sentAt": "2026-03-02T10:30:00-12:00"}
+
+
+@pytest.mark.parametrize("offset", ["+01:00", "-08:00"])
+def test_restart_sends_one_inclusive_filter_with_the_value_encoded(offset: str) -> None:
+    # Past 100,000 records the API returns a full page with no page token, and the connector starts a new query from the
+    # last record's cursor value.
+    boundary = f"2026-03-01T09:16:40{offset}"
+    with HttpMocker() as http_mocker:
+        http_mocker.post(login_request(), login_response())
+        http_mocker.get(_request().build(), page_response([_email(number) for number in range(1, 1000)] + [_email(1000, sent_at=boundary)]))
+        http_mocker.get(_request(sent_at_from=boundary).build(), page_response([_email(1001, sent_at=boundary)]))
+
+        output = read_stream(_STREAM, SyncMode.incremental)
+
+        assert record_ids(output) == list(range(1, 1002))
+        assert sent_queries(http_mocker)[-1] == (
+            f"sentAtAfterOrEqualTo={quote(boundary)}&limit=1000&fields={quote(_FIELDS)}&orderBy=sentAt+ASC"
+        )
+
+
+def test_restart_reads_every_record_of_the_boundary_second() -> None:
+    # The new query starts at the second of the page's last record: it reads that record again and every other record of that second.
+    boundary = "2026-03-01T09:16:40-08:00"
+    with HttpMocker() as http_mocker:
+        http_mocker.post(login_request(), login_response())
+        http_mocker.get(_request().build(), page_response([_email(number) for number in range(1, 1000)] + [_email(1000, sent_at=boundary)]))
+        http_mocker.get(
+            _request(sent_at_from=boundary).build(),
+            page_response([_email(1000, sent_at=boundary), _email(1001, sent_at=boundary)]),
+        )
+
+        output = read_stream(_STREAM, SyncMode.incremental)
+
+        assert record_ids(output) == list(range(1, 1001)) + [1000, 1001]

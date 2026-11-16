@@ -18,13 +18,13 @@ _PATH = "v5/objects/visitor-page-views"
 _FIELDS = "id,url,title,visitorId,campaignId,visitId,durationInSeconds,salesforceId,createdAt"
 
 
-def _request(created_at_after: str = START_CURSOR) -> PardotRequestBuilder:
+def _request(created_at_from: str = START_CURSOR) -> PardotRequestBuilder:
     return (
         PardotRequestBuilder.endpoint(_PATH)
         .with_query_param("limit", 1000)
         .with_query_param("fields", _FIELDS)
         .with_query_param("orderBy", "createdAt ASC")
-        .with_query_param("createdAtAfter", created_at_after)
+        .with_query_param("createdAtAfterOrEqualTo", created_at_from)
     )
 
 
@@ -71,7 +71,7 @@ class TestVisitorPageViewsStream(TestCase):
         http_mocker.post(login_request(), login_response())
         http_mocker.get(_request().build(), page_response([_page_view(number) for number in range(1, 1000)] + [last_of_page]))
         http_mocker.get(
-            _request(created_at_after="2026-03-01T09:16:40-08:00").build(),
+            _request(created_at_from="2026-03-01T09:16:40-08:00").build(),
             page_response([_page_view(1001, created_at="2026-03-01T09:16:41-08:00")]),
         )
 
@@ -85,7 +85,7 @@ class TestVisitorPageViewsStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM, {"createdAt": "2026-03-01T09:00:05-12:00"}).build()
         http_mocker.post(login_request(), login_response())
         http_mocker.get(
-            _request(created_at_after="2026-03-01T09:00:05-12:00").build(),
+            _request(created_at_from="2026-03-01T09:00:05-12:00").build(),
             page_response([_page_view(1003, created_at="2026-03-02T10:30:00-08:00")]),
         )
 

@@ -18,13 +18,13 @@ _PATH = "v5/objects/opportunities"
 _FIELDS = "id,closedAt,name,type,stage,status,probability,value,campaignId,salesforceId,createdAt,updatedAt,createdById,updatedById"
 
 
-def _request(updated_at_after: str = START_CURSOR) -> PardotRequestBuilder:
+def _request(updated_at_from: str = START_CURSOR) -> PardotRequestBuilder:
     return (
         PardotRequestBuilder.endpoint(_PATH)
         .with_query_param("limit", 1000)
         .with_query_param("fields", _FIELDS)
         .with_query_param("orderBy", "updatedAt ASC")
-        .with_query_param("updatedAtAfter", updated_at_after)
+        .with_query_param("updatedAtAfterOrEqualTo", updated_at_from)
     )
 
 
@@ -77,7 +77,7 @@ class TestOpportunitiesStream(TestCase):
         http_mocker.post(login_request(), login_response())
         http_mocker.get(_request().build(), page_response([_opportunity(number) for number in range(1, 1000)] + [last_of_page]))
         http_mocker.get(
-            _request(updated_at_after="2026-03-01T09:16:40-08:00").build(),
+            _request(updated_at_from="2026-03-01T09:16:40-08:00").build(),
             page_response([_opportunity(1001, updated_at="2026-03-01T09:16:41-08:00")]),
         )
 
@@ -91,7 +91,7 @@ class TestOpportunitiesStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM, {"updatedAt": "2026-03-01T09:00:05-12:00"}).build()
         http_mocker.post(login_request(), login_response())
         http_mocker.get(
-            _request(updated_at_after="2026-03-01T09:00:05-12:00").build(),
+            _request(updated_at_from="2026-03-01T09:00:05-12:00").build(),
             page_response([_opportunity(1003, updated_at="2026-03-02T10:30:00-08:00")]),
         )
 

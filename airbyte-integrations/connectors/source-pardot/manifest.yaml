@@ -25,20 +25,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,isDeleted,folderId,cost,parentCampaignId,createdById,updatedById,createdAt,updatedAt,salesforceId
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -56,8 +54,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/campaigns?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/campaigns?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -159,20 +157,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,listId,prospectId,optedOut,isDeleted,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -190,8 +186,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/list-memberships?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/list-memberships?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -229,20 +225,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,title,description,isPublic,folderId,campaignId,isDeleted,isDynamic,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -260,8 +254,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/lists?updatedAtAfter=' ~ last_record.updatedAt
-              if last_record.updatedAt is not none) }}
+              else ('v5/objects/lists?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -350,20 +344,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,email,optedOut,isDeleted,isDoNotCall,isDoNotEmail,isEmailHardBounced,isReviewed,isStarred,doNotSell,prospectAccountId,campaignId,profileId,lifecycleStageId,userId,lastActivityAt,recentInteraction,firstName,lastName,salutation,jobTitle,emailBouncedAt,emailBouncedReason,source,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,firstActivityAt,firstAssignedAt,firstReferrerQuery,firstReferrerType,firstReferrerUrl,salesforceId,salesforceContactId,salesforceLeadId,salesforceAccountId,salesforceCampaignId,salesforceOwnerId,salesforceUrl,salesforceLastSync,assignedToId,convertedAt,convertedFromObjectName,convertedFromObjectType,grade,phone,fax,addressOne,addressTwo,city,state,zip,country,company,annualRevenue,website,industry,department,yearsInBusiness,employees,score,territory,comments,notes,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -381,8 +373,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/prospects?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/prospects?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -420,20 +412,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,email,username,isDeleted,firstName,jobTitle,role,roleName,salesforceId,tagReplacementLanguage,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -451,8 +441,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/users?updatedAtAfter=' ~ last_record.updatedAt
-              if last_record.updatedAt is not none) }}
+              else ('v5/objects/users?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -490,17 +480,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,visitId,prospectId,visitorId,emailId,type,typeName,details,campaignId,customRedirectId,emailTemplateId,fileId,formHandlerId,formId,landingPageId,listEmailId,multivariateTestVariationId,opportunityId,paidSearchAdId,siteSearchQueryId,visitorPageViewId,createdAt,updatedAt
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -518,8 +506,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/visitor-activities?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/visitor-activities?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -627,17 +615,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,visitorId,prospectId,visitorPageViewCount,firstVisitorPageViewAt,lastVisitorPageViewAt,durationInSeconds,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,createdAt,updatedAt
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -655,8 +641,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/visits?updatedAtAfter=' ~ last_record.updatedAt
-              if last_record.updatedAt is not none) }}
+              else ('v5/objects/visits?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -796,17 +782,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'sentAtAfter' in next_page_token.next_page_token) }}
+              'sentAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,type,sentAt,subject,clientType,isOperational,campaignId,prospectId,folderId,listId,listEmailId,emailTemplateId,trackerDomainId,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,createdById
             orderBy: >-
               {{ 'sentAt ASC' if (not next_page_token.next_page_token or
-              'sentAtAfter' in next_page_token.next_page_token) }}
-            sentAtAfter: >-
+              'sentAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            sentAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('sentAtAfter=([^&]+)')
-              if 'sentAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -824,8 +808,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/emails?sentAtAfter=' ~ last_record.sentAt if
-              last_record.sentAt is not none) }}
+              else ('v5/objects/emails?sentAtAfterOrEqualTo=' ~
+              (last_record.sentAt | urlencode) if last_record.sentAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -863,20 +847,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,status,isDeleted,salesforceId,description,businessHours,prospectsMultipleEntry,schedule,scheduleCreatedById,recipientListIds,suppressionListIds,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -894,8 +876,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/engagement-studio-programs?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/engagement-studio-programs?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -980,17 +962,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,folderId,folderRef,objectType,objectId,objectName,objectRef,createdAt,updatedAt,createdById,updatedById
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1008,8 +988,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/folder-contents?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/folder-contents?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1097,17 +1077,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,formId,prospectApiFieldId,type,dataFormat,sortOrder,hasDependents,hasProgressives,hasValues,label,errorMessage,cssClasses,isRequired,isAlwaysDisplay,isMaintainInitialValue,isDoNotPrefill,createdById,updatedById,createdAt,updatedAt
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1125,8 +1103,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/form-fields?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/form-fields?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1262,20 +1240,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,campaignId,salesforceId,isDeleted,layoutType,layoutTableBorder,isUseRedirectLocation,bitlyIsPersonalized,bitlyShortUrl,url,vanityUrl,folderId,formId,layoutTemplateId,title,description,isDoNotIndex,vanityUrlPath,redirectLocation,trackerDomainId,archiveDate,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1293,8 +1269,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/landing-pages?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/landing-pages?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1383,19 +1359,17 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: id,name,isDeleted,isLocked,position,matchType,createdAt,updatedAt
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1413,8 +1387,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/lifecycle-stages?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/lifecycle-stages?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1452,16 +1426,14 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'createdAtAfter' in next_page_token.next_page_token) }}
+              'createdAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: id,prospectId,previousStageId,nextStageId,secondsElapsed,createdAt
             orderBy: >-
               {{ 'createdAt ASC' if (not next_page_token.next_page_token or
-              'createdAtAfter' in next_page_token.next_page_token) }}
-            createdAtAfter: >-
+              'createdAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            createdAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('createdAtAfter=([^&]+)')
-              if 'createdAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1479,8 +1451,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/lifecycle-histories?createdAtAfter=' ~
-              last_record.createdAt if last_record.createdAt is not none) }}
+              else ('v5/objects/lifecycle-histories?createdAtAfterOrEqualTo=' ~
+              (last_record.createdAt | urlencode) if last_record.createdAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1518,20 +1490,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,subject,isPaused,isSent,isDeleted,isOperational,sentAt,campaignId,clientType,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,emailTemplateId,trackerDomainId,folderId,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1549,8 +1519,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/list-emails?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/list-emails?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1588,17 +1558,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,closedAt,name,type,stage,status,probability,value,campaignId,salesforceId,createdAt,updatedAt,createdById,updatedById
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1616,8 +1584,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/opportunities?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/opportunities?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1655,16 +1623,14 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: id,name,objectCount,createdById,updatedById,createdAt,updatedAt
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1682,8 +1648,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/tags?updatedAtAfter=' ~ last_record.updatedAt if
-              last_record.updatedAt is not none) }}
+              else ('v5/objects/tags?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1772,17 +1738,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'createdAtAfter' in next_page_token.next_page_token) }}
+              'createdAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,url,title,visitorId,campaignId,visitId,durationInSeconds,salesforceId,createdAt
             orderBy: >-
               {{ 'createdAt ASC' if (not next_page_token.next_page_token or
-              'createdAtAfter' in next_page_token.next_page_token) }}
-            createdAtAfter: >-
+              'createdAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            createdAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('createdAtAfter=([^&]+)')
-              if 'createdAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1800,8 +1764,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/visitor-page-views?createdAtAfter=' ~
-              last_record.createdAt if last_record.createdAt is not none) }}
+              else ('v5/objects/visitor-page-views?createdAtAfterOrEqualTo=' ~
+              (last_record.createdAt | urlencode) if last_record.createdAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1869,17 +1833,15 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,fieldId,type,salesforceId,isRequired,isRecordMultipleResponses,isUseValues,isAnalyticsSynced,createdAt,updatedAt,createdById,updatedById
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1897,8 +1859,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/custom-fields?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/custom-fields?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
@@ -1936,20 +1898,18 @@ definitions:
           request_parameters:
             limit: >-
               {{ 1000 if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             fields: >-
               id,name,basedOnProspectApiFieldId,embedCode,embedUrl,basedOn,tagReplacementLanguage,folderId,trackerDomainId,createdAt,updatedAt,isDeleted,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
             orderBy: >-
               {{ 'updatedAt ASC' if (not next_page_token.next_page_token or
-              'updatedAtAfter' in next_page_token.next_page_token) }}
-            updatedAtAfter: >-
+              'updatedAtAfterOrEqualTo=' in next_page_token.next_page_token) }}
+            updatedAtAfterOrEqualTo: >-
               {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token else
-              (next_page_token.next_page_token|regex_search('updatedAtAfter=([^&]+)')
-              if 'updatedAtAfter' in next_page_token.next_page_token) }}
+              not next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
         record_selector:
@@ -1967,8 +1927,8 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
-              else ('v5/objects/dynamic-contents?updatedAtAfter=' ~
-              last_record.updatedAt if last_record.updatedAt is not none) }}
+              else ('v5/objects/dynamic-contents?updatedAtAfterOrEqualTo=' ~
+              (last_record.updatedAt | urlencode) if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
               1000 }}
