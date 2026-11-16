@@ -61,7 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
-| 0.5.0 | 2026-11-16 | [PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER) | Upgrade to source-declarative-manifest 7.47.0, add incremental sync for campaigns and canvases, include archived campaigns and canvases, fix pagination page sizes, and complete retired News Feed streams without failing the sync |
+| 0.5.0 | 2026-11-16 | [93036](https://github.com/airbytehq/airbyte/pull/93036) | Upgrade to source-declarative-manifest 7.47.0, add incremental sync for campaigns and canvases, include archived campaigns and canvases, fix pagination page sizes, and complete retired News Feed streams without failing the sync |
 | 0.4.20 | 2025-08-16 | [65057](https://github.com/airbytehq/airbyte/pull/65057) | Update dependencies |
 | 0.4.19 | 2025-08-02 | [64411](https://github.com/airbytehq/airbyte/pull/64411) | Update dependencies |
 | 0.4.18 | 2025-07-26 | [63796](https://github.com/airbytehq/airbyte/pull/63796) | Update dependencies |
