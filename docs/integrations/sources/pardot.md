@@ -16,7 +16,7 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 ### Required configuration options
 
-- **Pardot Business Unit ID** (`pardot_business_unit_id`): This value uniquely identifies your account, and can be found at Setup > Pardot > Pardot Account Setup
+- **Pardot Business Unit ID** (`pardot_business_unit_id`): The 18-character ID, starting with `0Uv`, of the Account Engagement business unit to sync. In Salesforce Setup, enter `Business Unit Setup` in the **Quick Find** box and select **Business Unit Setup**. See [Find the Account Engagement business unit ID](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html).
 
 - **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
 
@@ -45,17 +45,13 @@ The Pardot source connector supports the following [sync modes](https://docs.air
 - Full Refresh
 - Incremental
 
-Incremental streams are based on the Pardot API's `UpdatedAt` field when the object is updateable and the API supports it; otherwise `CreatedAt` or `Id` are used in that order of preference.
+Most incremental streams use the `updatedAt` field as the cursor. The exceptions are **Emails**, which uses `sentAt`, **Lifecycle Histories** and **Visitor Page Views**, which use `createdAt`, and **Email Clicks**, which uses `created_at`.
 
-### Performance Considerations
+### Rate limits
 
-The Pardot connector should not run into Pardot API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Account Engagement limits the number of API requests your account can make each day, based on your edition.
 
-:::tip
-
-Pardot has daily API limits based on plan level. If one of these limits is hit, the connector will retry every two hours until quota is replenished.
-
-:::
+When Account Engagement returns a rate limit error (HTTP 429, or an error containing `Daily API rate limit met`), a server error (5xx), or a request timeout (408), the connector waits two hours and retries the request once. If the retry also fails, the sync fails. When the daily limit is the cause, the sync fails with the message `Reached the Pardot daily API request limit. The limit resets at the start of the next day in the Pardot account's time zone.`
 
 ## Supported Streams
 
@@ -66,7 +62,7 @@ Several output streams are available from this source. Unless noted otherwise, s
 - [Custom Fields](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-field-v5.html) (incremental)
 - [Custom Redirects](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-redirect-v5.html) (full refresh)
 - [Dynamic Content](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-v5.html) (incremental)
-- [Dynamic Content Variations](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-variation.html) (incremental parent)
+- [Dynamic Content Variations](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-variation.html) (full refresh)
 - [Emails](https://developer.salesforce.com/docs/marketing/pardot/guide/email-v5.html) (incremental)
 - [Email Clicks (v4 API)](https://developer.salesforce.com/docs/marketing/pardot/guide/batch-email-clicks-v4.html) (incremental)
 - [Engagement Studio Programs](https://developer.salesforce.com/docs/marketing/pardot/guide/engagement-studio-program-v5.html) (incremental)
@@ -105,7 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.64 | 2026-11-11 | [90951](https://github.com/airbytehq/airbyte/pull/90951) | Show a specific message when the Pardot daily API request limit is reached |
+| 1.0.64 | 2026-11-16 | [90951](https://github.com/airbytehq/airbyte/pull/90951) | Show a specific message when the Pardot daily API request limit is reached |
 | 1.0.63 | 2026-11-10 | [91648](https://github.com/airbytehq/airbyte/pull/91648) | Update dependencies |
 | 1.0.62 | 2026-11-03 | [90699](https://github.com/airbytehq/airbyte/pull/90699) | Update dependencies |
 | 1.0.61 | 2026-10-27 | [89997](https://github.com/airbytehq/airbyte/pull/89997) | Update dependencies |
