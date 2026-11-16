@@ -57,6 +57,20 @@ The BambooHR source connector supports the following [sync modes](https://docs.a
 | `meta_fields_stream` | [Get a list of fields](https://documentation.bamboohr.com/reference/list-fields) | None | No | Lists the fields available in your BambooHR account. Use it to find field names for **custom_reports_fields** and **employee_fields**. |
 | `time_off_requests_stream` | [Get time off requests](https://documentation.bamboohr.com/reference/list-time-off-requests-v1) | None | Yes | Cursor field: `created`. Each incremental sync re-reads the previous 365 days to capture updated requests. |
 | `timesheet_entries` | [Get timesheet entries](https://documentation.bamboohr.com/reference/list-timesheet-entries) | `id` | Yes | Cursor field: `start`. |
+| `users` | `GET /meta/users` | `id` | No | User accounts. |
+| `time_off_policies` | `GET /meta/time_off/policies` | `id` | No | Non-deleted policies. |
+| `time_off_types` | `GET /meta/time_off/types` | `id` | No | Active time-off types. |
+| `employee_time_off_policies` | `GET /employees/{employeeId}/time_off/policies` | `employeeId`, `timeOffPolicyId` | No | Assigned accruing policies, for each directory employee. |
+| `employee_dependents` | `GET /employeedependents` | `id` | No | Requires Benefits Administration permission. Contains masked personal identifiers. |
+| `training_types` | `GET /training/type` | `id` | No | Requires training-settings access. |
+| `training_categories` | `GET /training/category` | `id` | No | Training categories. |
+| `employee_trainings` | `GET /training/record/employee/{employeeId}` | `id` | No | Completed training records for each directory employee. |
+| `goals` | `GET /performance/employees/{employeeId}/goals` | `employee_id`, `id` | No | All statuses, including nested milestones. Shared goals appear once per directory employee. |
+| `job_openings` | `GET /applicant_tracking/jobs` | `id` | No | Non-deleted job openings. Requires ATS settings access. |
+| `job_applications` | `GET /applicant_tracking/applications` | `id` | No | Includes nested applicants. Requires ATS settings access. |
+
+Employee substreams include only employees returned by the Company Directory,
+which contains only Active employees.
 
 ## Limitations and troubleshooting
 
@@ -90,6 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.11.0 | 2026-11-16 | TBD | Add users, time-off policies and types, employee time-off policies, employee dependents, training, goals, job openings and job applications streams |
 | 0.10.0 | 2026-11-10 | [91540](https://github.com/airbytehq/airbyte/pull/91540) | Expand declared fields and improve timesheet and time-off incremental sync reliability. |
 | 0.9.4 | 2026-11-10 | [91320](https://github.com/airbytehq/airbyte/pull/91320) | Upgrade base image to source-declarative-manifest 7.47.0 |
 | 0.9.3 | 2025-05-24 | [60660](https://github.com/airbytehq/airbyte/pull/60660) | Update dependencies |

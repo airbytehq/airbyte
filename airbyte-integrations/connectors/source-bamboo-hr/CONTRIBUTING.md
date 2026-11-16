@@ -14,6 +14,27 @@ defines no pagination parameters for these six endpoints:
 
 Paths are relative to the company's `v1/` API base.
 
+## Employee resources and applicant tracking
+
+Employee time-off policies, trainings, and goals read one endpoint per employee
+returned by the directory. The directory contains only Active employees, so these
+streams do not include records for employees missing from the directory. Policies
+and trainings include `employeeId`; goals include `employee_id` because a shared
+goal can appear under multiple employees.
+
+Users, training types, training categories, and employee trainings return objects
+keyed by ID. Employee trainings return `[]` when empty. Training categories inside
+a training type can also be an empty array rather than an object.
+
+Job applications follow `nextPageUrl` until `paginationComplete` is true or the
+next URL is absent. The vendor fixes the page size. Applications remain full
+refresh because `newSince` excludes updates to existing applications.
+
+The API key owner needs training-settings access for training types, ATS settings
+access for job openings and applications, and Benefits Administration permission
+for dependents. Dependents contain masked personal identifiers and are not a
+suggested stream.
+
 ## Incremental limitations
 
 - The directory and field metadata endpoints expose no vendor cursor.
