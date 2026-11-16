@@ -2872,6 +2872,25 @@ schemas:
           - "null"
           - string
         description: The type of object this represents
+      remaining_duration:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          expires_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          redemptions_remaining:
+            type:
+              - "null"
+              - integer
+          type:
+            type:
+              - "null"
+              - string
       removed_at:
         type:
           - "null"
@@ -2896,6 +2915,10 @@ schemas:
           - string
         description: The date and time when the redemption was last updated
         format: date-time
+      uuid:
+        type:
+          - "null"
+          - string
   account_notes:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3623,12 +3646,54 @@ schemas:
           Determines if the quantity field is displayed on the hosted pages for
           the add-on.
         title: Display quantity?
+      external_sku:
+        type:
+          - "null"
+          - string
+      harmonized_system_code:
+        type:
+          - "null"
+          - string
       id:
         type: string
         description: The unique identifier for the add-on.
         maxLength: 13
         readOnly: true
         title: Add-on ID
+      item:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          object:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+      liability_gl_account_id:
+        type:
+          - "null"
+          - string
       measured_unit_id:
         type:
           - "null"
@@ -3643,6 +3708,10 @@ schemas:
         description: Describes your add-on and will appear in subscribers' invoices.
         maxLength: 255
         title: Name
+      object:
+        type:
+          - "null"
+          - string
       optional:
         type:
           - "null"
@@ -3654,12 +3723,53 @@ schemas:
           However, the add-on will not be included when a subscription is
           created through the API.
         title: Optional
+      percentage_tiers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            currency:
+              type:
+                - "null"
+                - string
+            tiers:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  ending_amount:
+                    type:
+                      - "null"
+                      - number
+                    format: float
+                  usage_percentage:
+                    type:
+                      - "null"
+                      - string
+      performance_obligation_id:
+        type:
+          - "null"
+          - string
       plan_id:
         type: string
         description: The ID of the plan to which the add-on is associated.
         maxLength: 13
         readOnly: true
         title: Plan ID
+      revenue_gl_account_id:
+        type:
+          - "null"
+          - string
       revenue_schedule_type:
         type: string
         description: >-
@@ -3703,12 +3813,57 @@ schemas:
           to configure quantity-based pricing models.
         maxLength: 256
         title: Tier type
+      tiers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            currencies:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                  unit_amount:
+                    type:
+                      - "null"
+                      - number
+                    format: float
+                  unit_amount_decimal:
+                    type:
+                      - "null"
+                      - string
+            ending_quantity:
+              type:
+                - "null"
+                - integer
+            usage_percentage:
+              type:
+                - "null"
+                - string
       updated_at:
         type: string
         description: The date and time when the add-on was last updated.
         format: date-time
         readOnly: true
         title: Last updated at
+      usage_calculation_type:
+        type:
+          - "null"
+          - string
       usage_percentage:
         type:
           - "null"
@@ -3718,6 +3873,10 @@ schemas:
           be up to 4 decimal places. A value between 0.0 and 100.0.
         format: float
         title: Usage Percentage
+      usage_timeframe:
+        type:
+          - "null"
+          - string
       usage_type:
         type: string
         description: Type of usage, returns usage type if `add_on_type` is `usage`.
@@ -3836,6 +3995,24 @@ schemas:
         type:
           - "null"
           - string
+      payment_gateway_references:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            reference_type:
+              type:
+                - "null"
+                - string
+            token:
+              type:
+                - "null"
+                - string
       payment_method:
         type: object
         properties:
@@ -4157,6 +4334,14 @@ schemas:
           - "null"
           - string
         maxLength: 256
+      redeem_by_interval_amount:
+        type:
+          - "null"
+          - integer
+      redeem_by_interval_unit:
+        type:
+          - "null"
+          - string
       redemption_resource:
         type:
           - "null"
@@ -4320,6 +4505,10 @@ schemas:
         description: The unique identifier of the credit payment.
         maxLength: 13
         title: Credit Payment ID
+      object:
+        type:
+          - "null"
+          - string
       original_credit_payment_id:
         type:
           - "null"
@@ -4593,6 +4782,139 @@ schemas:
           credit card, PayPal, Amazon, or ACH bank payment.
         maxLength: 256
         title: Collection method
+      coupon_redemptions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            coupon:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                code:
+                  type:
+                    - "null"
+                    - string
+                coupon_type:
+                  type:
+                    - "null"
+                    - string
+                discount:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    currencies:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                            format: float
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                    percent:
+                      type:
+                        - "null"
+                        - integer
+                    trial:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        length:
+                          type:
+                            - "null"
+                            - integer
+                        unit:
+                          type:
+                            - "null"
+                            - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+                expired_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                object:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            discounted:
+              type:
+                - "null"
+                - number
+              format: float
+            id:
+              type:
+                - "null"
+                - string
+            object:
+              type:
+                - "null"
+                - string
+            remaining_duration:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                expires_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                redemptions_remaining:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+            state:
+              type:
+                - "null"
+                - string
       created_at:
         type:
           - "null"
@@ -4631,6 +4953,32 @@ schemas:
         description: 3-letter ISO 4217 currency code.
         maxLength: 3
         title: Currency
+      custom_fields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            source_record_id:
+              type:
+                - "null"
+                - string
+            source_record_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
       customer_notes:
         type:
           - "null"
@@ -5192,6 +5540,10 @@ schemas:
         default: 0
         minimum: 0
         title: Net terms
+      net_terms_type:
+        type:
+          - "null"
+          - string
       number:
         type:
           - "null"
@@ -5240,6 +5592,39 @@ schemas:
           the purchase invoice the refund was created from.
         maxLength: 13
         title: Previous invoice ID
+      reference_only_currency_conversion:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+            format: date
+          rate:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          subtotal_in_cents:
+            type:
+              - "null"
+              - number
+            format: float
+          tax_in_cents:
+            type:
+              - "null"
+              - number
+            format: float
       refundable_amount:
         type:
           - "null"
@@ -5291,6 +5676,11 @@ schemas:
         description: The summation of charges and credits, before discounts and taxes.
         format: float
         title: Subtotal
+      subtotal_after_discount:
+        type:
+          - "null"
+          - number
+        format: float
       tax:
         type:
           - "null"
@@ -5474,6 +5864,14 @@ schemas:
           negative line items that credit the account.
         maxLength: 256
         title: Line item type
+      avalara_service_type:
+        type:
+          - "null"
+          - integer
+      avalara_transaction_type:
+        type:
+          - "null"
+          - integer
       description:
         type: string
         description: >-
@@ -5604,6 +6002,10 @@ schemas:
               type:
                 - "null"
                 - string
+      destination_tax_address_source:
+        type:
+          - "null"
+          - string
       discount:
         type:
           - "null"
@@ -5611,6 +6013,41 @@ schemas:
         description: The discount applied to the line item.
         format: float
         title: Discount
+      discounts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            coupon_id:
+              type:
+                - "null"
+                - string
+            coupon_redemption_id:
+              type:
+                - "null"
+                - string
+            currency:
+              type:
+                - "null"
+                - string
+            discount_amount:
+              type:
+                - "null"
+                - number
+              format: float
+            object:
+              type:
+                - "null"
+                - string
+            order_applied:
+              type:
+                - "null"
+                - integer
       end_date:
         type:
           - "null"
@@ -5627,6 +6064,10 @@ schemas:
           Credit Invoices and Subscription Billing Terms features are enabled.
         maxLength: 50
         title: External SKU
+      harmonized_system_code:
+        type:
+          - "null"
+          - string
       id:
         type: string
         maxLength: 13
@@ -5688,6 +6129,10 @@ schemas:
           credit balance. A new credit with the same amount will be created and
           placed back on the account.
         title: Legacy category
+      liability_gl_account_code:
+        type:
+          - "null"
+          - string
       object:
         type:
           - "null"
@@ -5699,6 +6144,10 @@ schemas:
           charge's origin.
         maxLength: 256
         title: Origin of line item
+      origin_tax_address_source:
+        type:
+          - "null"
+          - string
       original_line_item_invoice_id:
         type:
           - "null"
@@ -5709,6 +6158,10 @@ schemas:
           was created from a charge refund.
         maxLength: 13
         title: Original line item's invoice ID
+      performance_obligation_id:
+        type:
+          - "null"
+          - string
       plan_code:
         type:
           - "null"
@@ -5764,6 +6217,10 @@ schemas:
           subtotal before any discounts or taxes.
         default: 1
         title: Quantity
+      quantity_decimal:
+        type:
+          - "null"
+          - string
       refund:
         type: boolean
         title: Refund?
@@ -5775,6 +6232,14 @@ schemas:
           For refund charges, the quantity being refunded. For non-refund
           charges, the total quantity refunded (possibly over multiple refunds).
         title: Refunded Quantity
+      refunded_quantity_decimal:
+        type:
+          - "null"
+          - string
+      revenue_gl_account_code:
+        type:
+          - "null"
+          - string
       revenue_schedule_type:
         type:
           - "null"
@@ -5849,6 +6314,10 @@ schemas:
           does not work for credits (negative line items). Credits are always
           applied post-tax. Pre-tax discounts should use the Coupons feature.
         title: Tax exempt?
+      tax_inclusive:
+        type:
+          - "null"
+          - boolean
       tax_info:
         type:
           - "null"
@@ -5931,6 +6400,10 @@ schemas:
           URLs into Recurly's UI.
         maxLength: 32
         title: UUID
+      vertex_transaction_type:
+        type:
+          - "null"
+          - string
     title: Line item
   measured_units:
     type: object
@@ -6372,11 +6845,27 @@ schemas:
         maxLength: 13
         readOnly: true
         title: Shipping Method ID
+      liability_gl_account_id:
+        type:
+          - "null"
+          - string
       name:
         type: string
         description: The name of the shipping method displayed to customers.
         maxLength: 100
         title: Name
+      object:
+        type:
+          - "null"
+          - string
+      performance_obligation_id:
+        type:
+          - "null"
+          - string
+      revenue_gl_account_id:
+        type:
+          - "null"
+          - string
       tax_code:
         type: string
         description: >
@@ -6524,6 +7013,10 @@ schemas:
           - string
         description: ID of the billing information associated with the subscription.
         maxLength: 13
+      business_entity_id:
+        type:
+          - "null"
+          - string
       canceled_at:
         type:
           - "null"
@@ -6655,6 +7148,24 @@ schemas:
           - string
         description: Timestamp when the subscription was created
         format: date-time
+      credit_application_policy:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          allowed_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          mode:
+            type:
+              - "null"
+              - string
       currency:
         type:
           - "null"
@@ -6827,6 +7338,10 @@ schemas:
           - string
         description: Purchase order number associated with the subscription.
         maxLength: 256
+      price_segment_id:
+        type:
+          - "null"
+          - string
       quantity:
         type:
           - "null"
@@ -6881,6 +7396,11 @@ schemas:
           - "null"
           - number
         description: Number of billing cycles in the renewal period.
+      resume_at:
+        type:
+          - "null"
+          - string
+        format: date-time
       revenue_schedule_type:
         type:
           - "null"
@@ -7299,6 +7819,10 @@ schemas:
           - string
         description: Result of the CVV check
         maxLength: 256
+      description:
+        type:
+          - "null"
+          - string
       fraud_info:
         type:
           - "null"
@@ -7377,6 +7901,10 @@ schemas:
           - string
         description: Unique identifier for the transaction
         maxLength: 13
+      initiator:
+        type:
+          - "null"
+          - string
       invoice:
         type:
           - "null"
@@ -7417,6 +7945,24 @@ schemas:
           - string
         description: IPv4 address of the transaction
         maxLength: 256
+      merchant_reason_code:
+        type:
+          - "null"
+          - string
+      next_action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - string
       object:
         type:
           - "null"
@@ -7455,6 +8001,24 @@ schemas:
             type:
               - "null"
               - string
+      payment_gateway_references:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            reference_type:
+              type:
+                - "null"
+                - string
+            token:
+              type:
+                - "null"
+                - string
       payment_method:
         type: object
         description: Details of the payment method used for the transaction
@@ -7674,6 +8238,11 @@ schemas:
         title: Unique Coupon Code ID
       object:
         type: string
+      redeem_by_date:
+        type:
+          - "null"
+          - string
+        format: date-time
       redeemed_at:
         type:
           - "null"
