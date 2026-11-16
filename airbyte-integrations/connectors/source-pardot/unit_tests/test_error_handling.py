@@ -123,12 +123,13 @@ def test_daily_limit_429_uses_daily_limit_message(sleeps: list[float]) -> None:
     assert sleeps == [7201]
 
 
-def test_daily_limit_message_is_rate_limited_on_any_status() -> None:
+@pytest.mark.parametrize("status_code", [200, 400])
+def test_daily_limit_message_is_rate_limited_on_any_status(status_code: int) -> None:
     manifest = _resolved_manifest()
     handler_definition = manifest["definitions"]["error_handler"]
     handler = ModelToComponentFactory().create_component(DefaultErrorHandlerModel, handler_definition, config={})
     response = requests.Response()
-    response.status_code = 400
+    response.status_code = status_code
     response.request = requests.Request("GET", "https://pi.pardot.com/api/v5/objects/campaigns").prepare()
     response.url = response.request.url
     response.headers["Content-Type"] = "application/json"
@@ -172,7 +173,10 @@ def test_server_error_waits_7200_seconds_once_before_failing(sleeps: list[float]
 
 
 def test_401_fails_without_retry(sleeps: list[float]) -> None:
-    response = HttpResponse(body='{"code":66,"message":"Invalid access token"}', status_code=401)
+    response = HttpResponse(
+        body='{"code":184,"message":"access_token is invalid, unknown, or malformed"}',
+        status_code=401,
+    )
     with HttpMocker() as http_mocker:
         _mock_authentication(http_mocker)
         http_mocker.get(_CAMPAIGNS_REQUEST, response)
