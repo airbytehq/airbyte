@@ -2,7 +2,7 @@
 
 import copy
 import os
-from typing import Any, List, Mapping, MutableMapping
+from typing import Any, Callable, List, Mapping, MutableMapping
 
 import requests
 
@@ -49,20 +49,20 @@ def hide_auth_options_for_cloud(spec: ConnectorSpecification) -> ConnectorSpecif
     return spec
 
 
-_generate_spec = Spec.generate_spec
+def _edition_aware(generate_spec: Callable[[Spec], ConnectorSpecification]) -> Callable[[Spec], ConnectorSpecification]:
+    def generate_spec_for_edition(self: Spec) -> ConnectorSpecification:
+        spec = generate_spec(self)
+        return hide_auth_options_for_cloud(spec) if is_cloud_edition() else spec
 
-
-def _generate_spec_for_edition(self: Spec) -> ConnectorSpecification:
-    spec = _generate_spec(self)
-    return hide_auth_options_for_cloud(spec) if is_cloud_edition() else spec
+    generate_spec_for_edition._zendesk_support_edition_aware = True  # type: ignore[attr-defined]
+    return generate_spec_for_edition
 
 
 # A manifest cannot vary its spec by edition, so the CDK's spec generation is wrapped here. The wrapper only takes
 # effect once this module is imported, which during `spec` happens only because the manifest's spec block references
-# `CloudSpecHook` below. The guard keeps a re-import from wrapping the wrapper.
+# `CloudSpecHook` below. The guard keeps a second import of this module from wrapping the wrapper.
 if not getattr(Spec.generate_spec, "_zendesk_support_edition_aware", False):
-    _generate_spec_for_edition._zendesk_support_edition_aware = True  # type: ignore[attr-defined]
-    Spec.generate_spec = _generate_spec_for_edition  # type: ignore[method-assign]
+    Spec.generate_spec = _edition_aware(Spec.generate_spec)  # type: ignore[method-assign]
 
 
 class CloudSpecHook(ConfigTransformation):

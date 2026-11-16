@@ -7,6 +7,7 @@ at runtime: a source that already uses a hidden option keeps passing check, disc
 """
 
 import copy
+import importlib.util
 import json
 import logging
 import os
@@ -19,6 +20,7 @@ import pytest
 import yaml
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.declarative.spec.spec import Spec
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -192,6 +194,21 @@ def test_source_on_a_hidden_option_reads_in_cloud(monkeypatch, config, authentic
 
     assert len(output.records) == 1
     assert not output.errors
+
+
+def test_second_import_of_components_does_not_wrap_spec_generation_again(monkeypatch):
+    """A second copy of the module must find the wrapper in place and leave it, or the wrappers nest per import."""
+    _set_edition(monkeypatch, "CLOUD")
+    _connection_specification()  # makes sure the CDK has imported components.py once
+    installed = Spec.generate_spec
+    assert getattr(installed, "_zendesk_support_edition_aware", False)
+
+    module_spec = importlib.util.spec_from_file_location("components_second_import", _SOURCE_FOLDER_PATH / "components.py")
+    module_spec.loader.exec_module(importlib.util.module_from_spec(module_spec))
+
+    assert Spec.generate_spec is installed
+    options = _auth_options(_connection_specification())
+    assert {_option_name(option) for option in options if option.get("airbyte_hidden") is True} == _HIDDEN_IN_CLOUD
 
 
 _SPEC_IN_A_NEW_PROCESS = """

@@ -30,9 +30,9 @@ Zendesk is [removing API tokens as an authentication method](https://support.zen
 :::
 
 :::info
-In Airbyte Cloud, a new source can only use **OAuth 2.0 with Refresh Token**. The setup form no longer offers **API Token** or **OAuth2.0 (Legacy)**. Self-managed Airbyte still offers all three methods.
+In Airbyte Cloud, a new source can only use **OAuth2.0 with Refresh Token**. The setup form no longer offers **API Token** or **OAuth2.0 (Legacy)**. Self-managed Airbyte still offers all three methods.
 
-A Cloud source that already uses an API token or legacy OAuth keeps syncing, and you can still change its other settings. The form shows its **Authentication** field with no option selected and doesn't display the stored token, so you can't replace the token there. To move the source to OAuth, select **OAuth 2.0 with Refresh Token** in that field and authenticate. Do this for API token sources before April 30, 2027, when Zendesk deactivates all API tokens.
+A Cloud source that already uses an API token or legacy OAuth keeps syncing, and you can still change its other settings. The form shows its **Authentication** field with no option selected and doesn't display the stored token, so you can't replace the token there. To move the source to OAuth, select **OAuth2.0 with Refresh Token** in that field and authenticate. Do this for API token sources before April 30, 2027, when Zendesk deactivates all API tokens.
 :::
 
 <!-- env:cloud -->
