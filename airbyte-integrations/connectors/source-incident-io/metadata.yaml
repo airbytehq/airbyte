@@ -42,6 +42,13 @@ data:
               - schedules
               - severities
               - workflows
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   githubIssueLabel: source-incident-io
   icon: icon.svg
   license: ELv2
