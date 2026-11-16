@@ -1038,6 +1038,27 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/task_priorities"
+    custom_field_types:
+      type: DeclarativeStream
+      name: custom_field_types
+      primary_key:
+        - type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /types
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+      transformations:
+        - type: DpathFlattenFields
+          field_path: ["meta"]
+          delete_origin_value: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_field_types"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -1635,6 +1656,7 @@ streams:
   - $ref: "#/definitions/streams/opportunity_stages"
   - $ref: "#/definitions/streams/opportunity_prospect_roles"
   - $ref: "#/definitions/streams/task_priorities"
+  - $ref: "#/definitions/streams/custom_field_types"
 
 spec:
   type: Spec
@@ -1748,6 +1770,7 @@ metadata:
     opportunity_stages: false
     opportunity_prospect_roles: false
     task_priorities: false
+    custom_field_types: false
   yamlComponents:
     streams:
       accounts:
@@ -1843,6 +1866,8 @@ metadata:
         - recordSelector
       task_priorities:
         - incrementalSync
+        - recordSelector
+      custom_field_types:
         - recordSelector
     global:
       - authenticator
@@ -2234,6 +2259,56 @@ schemas:
           type:
             - "null"
             - integer
+  custom_field_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        description: Outreach object type that the custom fields belong to, for example Prospect, Account or Opportunity.
+        type: string
+      validations:
+        description: >-
+          Admin-defined settings for each custom field of this object type, keyed by field name (custom1, custom2, ...).
+        type:
+          - "null"
+          - object
+        additionalProperties:
+          type: object
+          additionalProperties: true
+          properties:
+            type:
+              description: >-
+                Validation type, for example string, inclusion, multi_inclusion, date, date_time, currency,
+                numerical, percentage, boolean, phone_number or url.
+              type:
+                - "null"
+                - string
+            required:
+              type:
+                - "null"
+                - boolean
+            label:
+              description: Display name the admin gave the field.
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            definition:
+              description: >-
+                Picklist options for inclusion and multi_inclusion, the currency code for currency, and null for
+                the other types.
+              type:
+                - "null"
+                - string
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
   accounts:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

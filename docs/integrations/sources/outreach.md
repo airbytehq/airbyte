@@ -64,6 +64,9 @@ List of available streams:
 - Opportunity Stages
 - Opportunity Prospect Roles
 - Task Priorities
+- Custom Field Types
+
+The Custom Field Types stream has one record per Outreach object type (for example `Prospect`, `Account` or `Opportunity`). Its `validations` column maps each custom field name, such as `custom1`, to the label, type, required flag and picklist options that your Outreach admin configured. Use it to look up what each `customN` column in the Prospects, Accounts and Opportunities streams holds. The stream supports Full Refresh only.
 
 :::warning Upcoming change to the Prospects stream
 Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
@@ -84,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.6.0 | 2026-11-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the custom_field_types stream |
 | 1.4.0 | 2026-11-12 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add sequence_templates, content_categories, content_category_memberships, content_category_ownerships, opportunity_stages, opportunity_prospect_roles and task_priorities streams |
 | 1.3.0 | 2026-11-12 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
 | 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
