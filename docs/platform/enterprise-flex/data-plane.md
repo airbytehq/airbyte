@@ -281,7 +281,9 @@ airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyt
 dataPlane:
   # Used to render the data plane creds secret into the Helm chart.
   secretName: airbyte-config-secrets
-  id: "preview-data-plane"
+  # Optional: the dataplaneId from step 2. If the client ID is wrong, Airbyte uses it
+  # to report the failed login against this data plane. Values that aren't UUIDs are ignored.
+  id: ""
 
   # Describe secret name and key where each of the client ID and secret are stored
   clientIdSecretName: airbyte-config-secrets
@@ -318,7 +320,9 @@ airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyt
 dataPlane:
   # Used to render the data plane creds secret into the Helm chart.
   secretName: airbyte-config-secrets
-  id: "preview-data-plane"
+  # Optional: the dataplaneId from step 2. If the client ID is wrong, Airbyte uses it
+  # to report the failed login against this data plane. Values that aren't UUIDs are ignored.
+  id: ""
 
   # Describe secret name and key where each of the client ID and secret are stored
   clientIdSecretName: airbyte-config-secrets
