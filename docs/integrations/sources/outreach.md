@@ -87,7 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.6.0 | 2026-11-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the custom_field_types stream |
+| 1.6.0 | 2026-11-16 | [93028](https://github.com/airbytehq/airbyte/pull/93028) | Add the custom_field_types stream |
 | 1.4.0 | 2026-11-12 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add sequence_templates, content_categories, content_category_memberships, content_category_ownerships, opportunity_stages, opportunity_prospect_roles and task_priorities streams |
 | 1.3.0 | 2026-11-12 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
 | 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
