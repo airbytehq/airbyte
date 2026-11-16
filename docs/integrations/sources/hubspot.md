@@ -519,6 +519,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------------ | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6.14.2 | 2026-11-12 | [73315](https://github.com/airbytehq/airbyte/pull/73315) | Migrate OAuth token requests from the deprecated `/oauth/v1/token` endpoint to HubSpot's date-based `/oauth/2026-03/token` endpoint ahead of the 2027-02-16 sunset |
 | 6.14.1 | 2026-11-04 | [90854](https://github.com/airbytehq/airbyte/pull/90854) | Fix `contacts` silently missing records: CRM Search now pages by record ID, and Full Refresh reads `contacts` from the list endpoint. |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
