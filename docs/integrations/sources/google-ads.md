@@ -107,18 +107,18 @@ If you are accessing your account through a Google Ads Manager account, you must
 8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
 </FieldAnchor>
 
-9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-
-<FieldAnchor field="conversion_window_days">
-10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+<FieldAnchor field="end_date">
+9. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 </FieldAnchor>
 
-<FieldAnchor field="end_date">
-11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
+
+<FieldAnchor field="conversion_window_days">
+11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 </FieldAnchor>
 
 <FieldAnchor field="num_workers">
-12. (Optional) Enter the **Number of Concurrent Threads** used for syncing. The default is 3, the minimum is 2, and the maximum is 25. Adjust based on your API usage and rate limits.
+12. (Optional) Set the **Number of Concurrent Threads** to control how many threads the connector uses to read data in parallel. This field defaults to 3 and accepts values from 2 to 25. See [Performance considerations](#performance-considerations) before you raise it.
 </FieldAnchor>
 
 13. Click **Set up source** and wait for the tests to complete.
@@ -134,15 +134,14 @@ If you are accessing your account through a Google Ads Manager account, you must
 4. Enter a **Source name** of your choosing.
 5. Enter a **Developer Token**. Google ignores this value since September 9, 2026; use your existing token or any non-empty placeholder string.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
-7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
+7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts. If you access your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
-10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+10. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+11. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
-13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-14. (Optional) Enter the **Number of Concurrent Threads** used for syncing. The default is 3, the minimum is 2, and the maximum is 25. Adjust based on your API usage and rate limits.
-15. Click **Set up source** and wait for the tests to complete.
+13. (Optional) Set the **Number of Concurrent Threads** to control how many threads the connector uses to read data in parallel. This field defaults to 3 and accepts values from 2 to 25. See [Performance considerations](#performance-considerations) before you raise it.
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 <HideInUI>
@@ -164,12 +163,12 @@ List of streams:
 - [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v23/campaign_criterion)
 
-These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
+These streams support incremental updates, including deletions, by reading the [Change Status](https://developers.google.com/google-ads/api/docs/change-status) resource. The Google Ads API only returns change history for the past 90 days, so the connector reads changes no older than 90 days regardless of your configured start date.
 
 The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
 
 :::warning
-It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
+The Google Ads API returns at most 10,000 Change Status rows per query. When a query reaches that limit, the connector narrows the time range and continues from the last change it received. If more than 10,000 changes share the same timestamp, down to the microsecond, the connector can't narrow the range further and the sync fails. If this happens, use a full refresh sync for the affected streams.
 :::
 
 ## Supported Streams
@@ -328,9 +327,13 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` are synced one day at a time. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
+Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` sync incrementally on `segments.date` in 14-day date windows for each customer account, except for `click_view` queries, which use one-day windows. They re-read the number of days set in **Conversion Window** on each sync. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
-Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
+Google Ads doesn't allow [metrics](https://developers.google.com/google-ads/api/fields/v23/metrics) to be requested for a manager account. If the text of a custom query contains `metrics`, the connector runs it only against non-manager accounts. Otherwise, the connector runs it against every customer account it syncs, including manager accounts. Each custom query must be valid for every account it runs against. If Google Ads rejects a custom query with an HTTP 400 error for any account, the sync fails with a configuration error that names the stream and includes Google's error message. For example:
+
+```text
+Google Ads rejected the custom query for stream 'my_custom_stream': Unrecognized field in the query: 'asset_group_asset.performance_label'. Correct or remove the invalid field or clause in the custom query configuration.
+```
 
 Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
 
@@ -385,7 +388,18 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Performance considerations
 
-This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
+This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas). The API access level of the Google Cloud project that owns the OAuth client sets the daily operation quota. Requests that exceed a quota or rate limit fail with a `RESOURCE_EXHAUSTED` error.
+
+The **Number of Concurrent Threads** setting controls how many threads the connector uses to read streams and customer accounts at the same time, and defaults to 3. Raising it can shorten syncs for accounts with many customer IDs or many enabled streams, but it also sends requests faster, which consumes your daily quota sooner and makes `RESOURCE_EXHAUSTED` errors more likely. Increase it gradually and watch your quota usage. Regardless of this setting, the connector sends no more than 100 requests per second.
+
+### Interrupted report downloads
+
+Google Ads streams large reports, and the connection sometimes drops partway through a download. The connector recovers from these interruptions automatically:
+
+- For streams that sync incrementally on `segments.date`, including custom queries, the connector splits the interrupted date window into smaller windows and reads each one separately, down to a single day.
+- If a one-day window, or a stream without a date window, is interrupted, the connector retries the same request up to 3 times. If all retries fail, the sync fails with a transient error.
+
+Records the connector read before an interruption are sent again when it retries or splits that window, so the destination can receive duplicate records. The **Incremental Sync - Append + Deduped** sync mode removes these duplicates by primary key. Other sync modes keep them. The `shopping_performance_view` stream and custom query streams have no primary key, so deduplication can't remove duplicates from them.
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
@@ -403,19 +417,19 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | 6.1.8 | 2026-11-02 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Correct the suggested streams to the current stream names (13 of the 16 used names from before 2.0.0). |
 | 6.1.7 | 2026-10-27 | [89917](https://github.com/airbytehq/airbyte/pull/89917) | Update dependencies |
 | 6.1.6 | 2026-10-20 | [78740](https://github.com/airbytehq/airbyte/pull/78740) | Update dependencies |
-| 6.1.5 | 2026-10-15 | [89011](https://github.com/airbytehq/airbyte/pull/89011) | Upgrade to Python 3.13 and python-connector-base 4.1.1; upgrade pendulum to 3.x. |
-| 6.1.4 | 2026-10-06 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
+| 6.1.5 | 2026-10-16 | [89011](https://github.com/airbytehq/airbyte/pull/89011) | Upgrade to Python 3.13 and python-connector-base 4.1.1; upgrade pendulum to 3.x. |
+| 6.1.4 | 2026-10-07 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
 | 6.1.3 | 2026-10-05 | [87630](https://github.com/airbytehq/airbyte/pull/87630) | Split interrupted reports with the CDK's request window splitting (CDK 7.33.0); retry dropped criterion first syncs and mid-stream read timeouts instead of failing. |
-| 6.1.2 | 2026-09-28 | [87026](https://github.com/airbytehq/airbyte/pull/87026) | Fix state migration discarding mid-sync per-partition checkpoints, which caused retries to restart incremental streams from the start date. |
-| 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
+| 6.1.2 | 2026-09-30 | [87026](https://github.com/airbytehq/airbyte/pull/87026) | Fix state migration discarding mid-sync per-partition checkpoints, which caused retries to restart incremental streams from the start date. |
+| 6.1.1 | 2026-08-26 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
 | 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
 | 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
 | 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
 | 5.0.1 | 2026-05-26 | [78419](https://github.com/airbytehq/airbyte/pull/78419) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
-| 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
+| 5.0.0 | 2026-05-25 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
 | 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
-| 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
+| 4.2.6-rc.2 | 2026-05-04 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
 | 4.2.6-rc.1 | 2026-04-28 | [77514](https://github.com/airbytehq/airbyte/pull/77514) | Update CDK to pre-release with stderr heartbeat diagnostics and concurrent-source deadlock fix |
 | 4.2.5 | 2026-04-27 | [77037](https://github.com/airbytehq/airbyte/pull/77037) | Promoted release candidate to GA |
 | 4.2.5-rc.1 | 2026-04-27 | [76074](https://github.com/airbytehq/airbyte/pull/76074) | Update CDK to pre-release with deadlock fix, add 5-minute HTTP socket timeout, and retry HTTP 500 (transient internal error) responses from the Google Ads API |
@@ -435,44 +449,44 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | 4.1.2 | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries |
 | 4.1.1 | 2025-11-24 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions |
 | 4.1.0 | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version. |
-| 4.1.0-rc.8 | 2025-10-29 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams |
-| 4.1.0-rc.7 | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams |
+| 4.1.0-rc.8 | 2025-11-14 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams |
+| 4.1.0-rc.7 | 2025-10-28 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams |
 | 4.1.0-rc.6 | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts |
 | 4.1.0-rc.5 | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader |
 | 4.1.0-rc.4 | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12 |
-| 4.1.0-rc.3 | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping |
+| 4.1.0-rc.3 | 2025-09-18 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping |
 | 4.1.0-rc.2 | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20 |
-| 4.1.0-rc.1 | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code |
+| 4.1.0-rc.1 | 2025-08-20 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code |
 | 4.0.2 | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies |
 | 4.0.1 | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies |
 | 4.0.0 | 2025-08-07 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20 |
 | 3.15.0 | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version. |
-| 3.15.0-rc.1 | 2025-07-20 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability |
+| 3.15.0-rc.1 | 2025-07-31 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability |
 | 3.14.2 | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability |
 | 3.14.1 | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies |
 | 3.14.0 | 2025-07-23 | [63733](https://github.com/airbytehq/airbyte/pull/63733) | Promoting release candidate 3.14.0-rc.1 to a main version. |
 | 3.14.0-rc.1 | 2025-07-18 | [63357](https://github.com/airbytehq/airbyte/pull/63357) | Migrate incremental events streams |
 | 3.13.0 | 2025-07-18 | [63369](https://github.com/airbytehq/airbyte/pull/63369) | Promoting release candidate 3.13.0-rc.2 to a main version. |
-| 3.13.0-rc.2 | 2025-07-16 | [63348](https://github.com/airbytehq/airbyte/pull/63348) | Minor metadata update |
-| 3.13.0-rc.1 | 2025-07-16 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `click_view`, `campaign_bidding_strategy`, and `ad_group_bidding_strategy` streams to low-code |
+| 3.13.0-rc.2 | 2025-07-17 | [63348](https://github.com/airbytehq/airbyte/pull/63348) | Minor metadata update |
+| 3.13.0-rc.1 | 2025-07-15 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `click_view`, `campaign_bidding_strategy`, and `ad_group_bidding_strategy` streams to low-code |
 | 3.12.0 | 2025-07-16 | [63335](https://github.com/airbytehq/airbyte/pull/63335) | Promoting release candidate 3.12.0-rc.2 to a main version. |
 | 3.12.0-rc.2 | 2025-07-15 | [63323](https://github.com/airbytehq/airbyte/pull/63323) | Fixes erroneous transformation override |
 | 3.12.0-rc.1 | 2025-07-15 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate additional streams to low-code: See PR for more details |
 | 3.11.0 | 2025-07-15 | [63302](https://github.com/airbytehq/airbyte/pull/63302) | Promoting release candidate 3.11.0-rc.1 to a main version. |
 | 3.11.0-rc.1 | 2025-07-14 | [62846](https://github.com/airbytehq/airbyte/pull/62846) | Migrate views streams to Low Code |
 | 3.10.0 | 2025-07-14 | [63282](https://github.com/airbytehq/airbyte/pull/63282) | Promoting release candidate 3.10.0-rc.1 to a main version. |
-| 3.10.0-rc.1 | 2025-07-10 | [62066](https://github.com/airbytehq/airbyte/pull/62066) | Migrate AdGroup stream to Low Code |
+| 3.10.0-rc.1 | 2025-07-11 | [62066](https://github.com/airbytehq/airbyte/pull/62066) | Migrate AdGroup stream to Low Code |
 | 3.9.0 | 2025-07-10 | [62900](https://github.com/airbytehq/airbyte/pull/62900) | Promoting release candidate 3.9.0-rc.6 to a main version. |
-| 3.9.0-rc.6 | 2025-07-08 | [62857](https://github.com/airbytehq/airbyte/pull/62857) | Add per partition state migration |
+| 3.9.0-rc.6 | 2025-07-09 | [62857](https://github.com/airbytehq/airbyte/pull/62857) | Add per partition state migration |
 | 3.9.0-rc.5 | 2025-07-04 | [62518](https://github.com/airbytehq/airbyte/pull/62518) | Fix state migration for new empty states |
 | 3.9.0-rc.4 | 2025-07-03 | [62513](https://github.com/airbytehq/airbyte/pull/62513) | Update rollout flag in metadata |
 | 3.9.0-rc.3 | 2025-07-03 | [62494](https://github.com/airbytehq/airbyte/pull/62494) | Handle ServiceUnavailableErrors and retry on account check |
 | 3.9.0-rc.2 | 2025-07-03 | [62505](https://github.com/airbytehq/airbyte/pull/62505) | Fix state migration for empty states |
-| 3.9.0-rc.1 | 2025-06-18 | [61674](https://github.com/airbytehq/airbyte/pull/61674) | Migrate Campaign stream to Low Code |
+| 3.9.0-rc.1 | 2025-06-26 | [61674](https://github.com/airbytehq/airbyte/pull/61674) | Migrate Campaign stream to Low Code |
 | 3.8.2 | 2025-05-31 | [51664](https://github.com/airbytehq/airbyte/pull/51664) | Update dependencies |
 | 3.8.1 | 2025-05-30 | [61002](https://github.com/airbytehq/airbyte/pull/61002) | Fix error during connection check for custom queries. |
 | 3.8.0 | 2025-05-30 | [61000](https://github.com/airbytehq/airbyte/pull/61000) | Promoting release candidate 3.8.0-rc.1 to a main version. |
-| 3.8.0-rc.1 | 2025-05-28 | [60949](https://github.com/airbytehq/airbyte/pull/60949) | Update API version to v18 |
+| 3.8.0-rc.1 | 2025-05-29 | [60949](https://github.com/airbytehq/airbyte/pull/60949) | Update API version to v18 |
 | 3.7.10 | 2025-01-11 | [47090](https://github.com/airbytehq/airbyte/pull/47090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.7.9 | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic |
 | 3.7.8 | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies |
