@@ -7,7 +7,7 @@ For general guidance on contributing to Airbyte connectors, see the
 
 ### Pagination and page sizes
 
-Every stream except `events`, `duties`, `sequence_templates` and `custom_field_types` sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
+Every stream except `events`, `duties`, `sequence_templates`, `custom_field_types`, `prospect_notes` and `account_notes` sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
 ([Pagination](https://developers.outreach.io/api/common-patterns/)).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
@@ -22,7 +22,7 @@ Every stream except `events`, `duties`, `sequence_templates` and `custom_field_t
 
 ### Incremental sync
 
-- Every stream except `events`, `duties`, `sequence_templates` and `custom_field_types` is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
+- Every stream except `events`, `duties`, `sequence_templates`, `custom_field_types`, `prospect_notes` and `account_notes` is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
   cursor value, so the last record of the previous sync is read again.
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
@@ -86,6 +86,20 @@ resources: it has one entry per object type that has admin-defined custom fields
   Outreach's built-in picklists (`product_family`, `unit_of_measure`, `classification`).
 - The test account has text, picklist, date and currency fields on `Prospect`, `Account` and `Opportunity`, set up under
   Admin > Records > (object) > Fields configuration.
+
+### Notes
+
+`prospect_notes` reads `GET /prospectNotes` and `account_notes` reads `GET /accountNotes`. They need the
+`prospectNotes.read` and `accountNotes.read` scopes; a token without them gets 403 `forbidden` with the detail
+`missing scope "prospectNotes.read"`, which the shared 403 filter turns into a `config_error`.
+
+- Both are full refresh. The records have `createdAt` but no `updatedAt`, while `message`, `noteType` and `pinned` can
+  be edited, so a `createdAt` cursor would miss edits. On a live request `sort=updatedAt` returns 400
+  `sort_parameter.unsupported_attribute` and `filter[updatedAt]` returns 400 `filter_parameter.unknown_filter`, so the
+  streams send neither. They page with `page[size]=1000` and `links.next` like the other streams.
+- `opportunityAssociationRule` is write-only in the OpenAPI spec and is not in the schemas.
+- The CI token (`SECRET_SOURCE-OUTREACH_CREDS`) does not hold the notes scopes, so both streams are left out of
+  `integration_tests/configured_catalog.json`. Mock-server tests in `unit_tests/mock_server/test_notes.py` cover them.
 
 ### Error handling
 

@@ -1059,6 +1059,68 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/custom_field_types"
+    prospect_notes:
+      type: DeclarativeStream
+      name: prospect_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /prospectNotes
+          http_method: GET
+          request_parameters:
+            count: "false"
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospect_notes"
+    account_notes:
+      type: DeclarativeStream
+      name: account_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accountNotes
+          http_method: GET
+          request_parameters:
+            count: "false"
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_notes"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -1657,6 +1719,8 @@ streams:
   - $ref: "#/definitions/streams/opportunity_prospect_roles"
   - $ref: "#/definitions/streams/task_priorities"
   - $ref: "#/definitions/streams/custom_field_types"
+  - $ref: "#/definitions/streams/prospect_notes"
+  - $ref: "#/definitions/streams/account_notes"
 
 spec:
   type: Spec
@@ -1771,6 +1835,8 @@ metadata:
     opportunity_prospect_roles: false
     task_priorities: false
     custom_field_types: false
+    prospect_notes: false
+    account_notes: false
   yamlComponents:
     streams:
       accounts:
@@ -1869,12 +1935,96 @@ metadata:
         - recordSelector
       custom_field_types:
         - recordSelector
+      prospect_notes:
+        - recordSelector
+      account_notes:
+        - recordSelector
     global:
       - authenticator
   testedStreams: {}
   assist: {}
 
 schemas:
+  prospect_notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      message:
+        type:
+          - "null"
+          - string
+      noteType:
+        type:
+          - "null"
+          - string
+      pinned:
+        type:
+          - "null"
+          - boolean
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  account_notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      message:
+        type:
+          - "null"
+          - string
+      noteType:
+        type:
+          - "null"
+          - string
+      pinned:
+        type:
+          - "null"
+          - boolean
   sequence_templates:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
