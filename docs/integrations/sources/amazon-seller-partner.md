@@ -519,6 +519,12 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
 
+### Date format in the Flat File Feedback Report
+
+Amazon writes the `date` column of the Flat File Feedback Report (`GET_SELLER_FEEDBACK_DATA`) in the local date format of each marketplace, for example `MM/DD/YY` for the US, `DD.MM.YY` for Germany, and `YY/MM/DD` for Japan. The connector converts these values to `YYYY-MM-DD` based on the marketplace for the region you selected. From 7.0.4, the connector accepts both two-digit and four-digit years, so a UK value of `16/09/2026` becomes `2026-09-16`. Before 7.0.4, four-digit years caused the sync to fail.
+
+If Amazon returns a date the connector can't parse, the sync fails with an error like `Could not parse the 'date' value '...' in the GET_SELLER_FEEDBACK_DATA report for marketplace ...`. Disable the Flat File Feedback Report stream to keep other streams syncing, and report the value and marketplace to Airbyte.
+
 ### Fulfillment Inbound shipment items pagination
 
 The `FbaInboundShipmentItems` stream reads items per shipment via the [getShipmentItemsByShipmentId](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) operation. Amazon's API model defines no pagination request parameter for this operation, although its response can include a `NextToken` value. If Amazon truncates the item list of a single shipment, the connector cannot request the remaining items for that shipment. If you observe incomplete item lists for very large shipments, [contact Airbyte Support](https://support.airbyte.com).
