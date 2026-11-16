@@ -37,8 +37,9 @@ def _walk_response_filters(value):
     "config, stream_len",
     [
         ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 44),
-        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 44),
-        ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 44),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 43),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": None}, "start_date": "2021-04-01"}, 43),
+        ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 43),
         (
             {
                 "access_token": "token",
@@ -62,6 +63,40 @@ def _walk_response_filters(value):
 def test_source_streams(config, stream_len):
     streams = get_source(config=config, state=None).streams(config=config)
     assert len(streams) == stream_len
+
+
+@pytest.mark.parametrize(
+    "environment",
+    [
+        pytest.param({"advertiser_id": "1111", "secret": ""}, id="empty-secret"),
+        pytest.param({"advertiser_id": "1111", "secret": None}, id="null-secret"),
+        pytest.param({"advertiser_id": "1111"}, id="missing-secret"),
+    ],
+)
+def test_discover_legacy_without_app_secret_omits_only_advertiser_ids(
+    requests_mock: Mocker, tmp_path: Path, environment: dict[str, str | None]
+) -> None:
+    config = {"access_token": "LEGACY_TOKEN", "start_date": "2024-01-01", "environment": environment}
+    config_file = tmp_path / "config.json"
+    config_file.write_text(json.dumps(config))
+    entrypoint = AirbyteEntrypoint(get_source(config=config))
+    args = entrypoint.parse_args(["discover", "--config", str(config_file)])
+
+    messages = [json.loads(message) for message in entrypoint.run(args)]
+
+    catalogs = [message["catalog"] for message in messages if message["type"] == "CATALOG"]
+    assert len(catalogs) == 1
+    legacy_stream_names = {stream["name"] for stream in catalogs[0]["streams"]}
+    oauth_config = {
+        "credentials": {"auth_type": "oauth2.0", "app_id": "1111", "secret": "secret", "access_token": "TOKEN"},
+        "start_date": "2024-01-01",
+    }
+    oauth_catalog = get_source(config=oauth_config).discover(logger=MagicMock(), config=oauth_config)
+    oauth_stream_names = {stream.name for stream in oauth_catalog.streams}
+    assert "advertiser_ids" in oauth_stream_names
+    assert legacy_stream_names == oauth_stream_names - {"advertiser_ids"}
+    assert "pixels" in legacy_stream_names
+    assert requests_mock.call_count == 0
 
 
 def test_check_rejects_sandbox_before_requesting_tiktok(requests_mock: Mocker, tmp_path: Path) -> None:

@@ -6158,7 +6158,10 @@ streams:
   - $ref: "#/definitions/creative_assets_music_stream"
   - $ref: "#/definitions/creative_assets_portfolios_stream"
   - $ref: "#/definitions/creative_assets_videos_stream"
-  - $ref: "#/definitions/advertiser_ids_stream"
+  - type: ConditionalStreams
+    condition: "{{ 'credentials' in config or (config.get('environment', {}).get('secret') or '') != '' }}"
+    streams:
+      - $ref: "#/definitions/advertiser_ids_stream"
   - $ref: "#/definitions/ads_reports_by_country_daily_stream"
   - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
   - $ref: "#/definitions/advertisers_reports_daily_stream"
