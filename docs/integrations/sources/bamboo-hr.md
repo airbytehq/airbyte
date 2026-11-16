@@ -104,7 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.11.0 | 2026-11-16 | TBD | Add users, time-off policies and types, employee time-off policies, employee dependents, training, goals, job openings and job applications streams |
+| 0.11.0 | 2026-11-16 | [93034](https://github.com/airbytehq/airbyte/pull/93034) | Add users, time-off policies and types, employee time-off policies, employee dependents, training, goals, job openings and job applications streams |
 | 0.10.0 | 2026-11-10 | [91540](https://github.com/airbytehq/airbyte/pull/91540) | Expand declared fields and improve timesheet and time-off incremental sync reliability. |
 | 0.9.4 | 2026-11-10 | [91320](https://github.com/airbytehq/airbyte/pull/91320) | Upgrade base image to source-declarative-manifest 7.47.0 |
 | 0.9.3 | 2025-05-24 | [60660](https://github.com/airbytehq/airbyte/pull/60660) | Update dependencies |
