@@ -21,7 +21,9 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 LOGGER = logging.getLogger("airbyte")
-MANIFEST_SPEC = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]
+MANIFEST = yaml.safe_load(_YAML_FILE_PATH.read_text())
+MANIFEST_SPEC = MANIFEST["spec"]
+MANIFEST_STREAMS = MANIFEST["streams"]
 VOICE_API = "https://example.zendesk.com/api/v2/channels/voice"
 CONFIG_SHAPES = {
     "legacy_top_level_token": {
@@ -174,6 +176,6 @@ def test_existing_config_shapes_pass_check_discover_and_read_in_cloud(monkeypatc
         output = read(source, config, CatalogBuilder().with_stream("addresses", SyncMode.full_refresh).build())
 
     assert status.status == Status.SUCCEEDED, status.message
-    assert len(catalog.streams) == 13
+    assert len(catalog.streams) == len(MANIFEST_STREAMS)
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1]
