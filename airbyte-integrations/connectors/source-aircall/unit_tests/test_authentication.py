@@ -214,3 +214,32 @@ def test_user_numbers_requests_send_the_selected_credentials(config: dict, autho
         assert output.errors == []
         assert [record.record.data for record in output.records] == [{"id": 1, "user_id": 7}]
         http_mocker.assert_number_of_calls(numbers, 1)
+
+
+# The dialer campaign streams override the base requester's error handler; they must keep its SelectiveAuthenticator.
+@pytest.mark.parametrize("config, authorization", _MODES)
+@pytest.mark.parametrize(
+    "stream_name, suffix, body",
+    [
+        ("dialer_campaigns", "/dialer_campaign", {"id": 8120349, "number_id": 1427754, "created_at": "2026-11-13T06:25:14.000Z"}),
+        ("dialer_campaign_phone_numbers", "/dialer_campaign/phone_numbers", {"numbers": [{"id": 1, "number": "33612345678"}]}),
+    ],
+)
+def test_dialer_campaign_requests_send_the_selected_credentials(
+    stream_name: str, suffix: str, body: dict, config: dict, authorization: str
+) -> None:
+    headers = {"Authorization": authorization}
+    child = HttpRequest(f"{_BASE_URL}/users/7{suffix}", headers=headers)
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest("https://api.aircall.io/v2/users", query_params={"per_page": "50"}, headers=headers),
+            HttpResponse(body=json.dumps({"users": [{"id": 7}], "meta": {}}), status_code=200),
+        )
+        http_mocker.get(child, HttpResponse(body=json.dumps(body), status_code=200))
+
+        output = _read(stream_name, config)
+
+        assert output.errors == []
+        assert len(output.records) == 1
+        assert output.records[0].record.data["user_id"] == 7
+        http_mocker.assert_number_of_calls(child, 1)
