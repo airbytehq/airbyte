@@ -1895,6 +1895,11 @@ spec:
                 value: "2"
                 value_type: integer
             condition: "{{ config.get('num_workers', 4) < 2 }}"
+    transformations:
+      # Changes no config. Referencing a custom component from the spec block is what makes the
+      # CDK import components.py during `spec`, where the Cloud-only spec changes are applied.
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.CloudSpecHook
 
 schemas:
   article_attachments:

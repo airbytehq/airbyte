@@ -29,6 +29,12 @@ Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/a
 Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Starting October 27, 2026, Zendesk accounts can't create new API tokens, so you can only use **API Token** authentication with an active token you already have. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Set up new sources with **OAuth 2.0 with Refresh Token**, and switch existing API token sources to OAuth before April 30, 2027.
 :::
 
+:::info
+In Airbyte Cloud, a new source can only use **OAuth 2.0 with Refresh Token**. The setup form no longer offers **API Token** or **OAuth2.0 (Legacy)**. Self-managed Airbyte still offers all three methods.
+
+A Cloud source that already uses an API token or legacy OAuth keeps syncing, and you can still change its other settings. The form shows its **Authentication** field with no option selected and doesn't display the stored token, so you can't replace the token there. To move the source to OAuth, select **OAuth 2.0 with Refresh Token** in that field and authenticate. Do this for API token sources before April 30, 2027, when Zendesk deactivates all API tokens.
+:::
+
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
@@ -96,7 +102,7 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
 <!-- /env:oss -->
-5. You can use OAuth or an API token to authenticate your Zendesk Support account.
+5. Authenticate your Zendesk Support account. Airbyte Cloud uses OAuth. Self-managed Airbyte accepts OAuth or an existing API token.
 <!-- env:cloud -->
 
 - **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
@@ -309,6 +315,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.0 | 2026-11-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Airbyte Cloud: the setup form for a new source only offers `OAuth2.0 with Refresh Token`. `API Token` and `OAuth2.0 (Legacy)` are hidden there but still accepted, so existing sources keep syncing. Re-authenticate API token sources with OAuth before April 30, 2027, when Zendesk deactivates all API tokens. Self-managed Airbyte is unchanged |
 | 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |

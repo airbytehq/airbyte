@@ -57,6 +57,12 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
 
+## 8. The Cloud Spec Hides `API Token` and `OAuth2.0 (Legacy)`
+
+In Airbyte Cloud the spec marks the `api_token` and `oauth2.0` branches of `credentials` as `airbyte_hidden: true`, so a new Cloud source can only use `OAuth2.0 with Refresh Token`. `components.py` wraps `Spec.generate_spec` and applies the change when `AIRBYTE_EDITION` is `CLOUD`; the self-managed spec is the manifest spec. The no-op `CloudSpecHook` under `spec.config_normalization_rules.transformations` exists only so the CDK imports `components.py` during `spec`.
+
+**Why this matters:** do not remove the hook from the spec block, and do not add a validator that rejects the hidden options. Hiding is a form hint; existing sources on a hidden option must keep passing check, discover and read.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
