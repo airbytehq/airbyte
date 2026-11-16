@@ -15,11 +15,10 @@ spec:
         type: string
         title: API token
         description: >-
-          Personal API token of your Apify account. In Apify Console, you can find
-          your API token in the
-          <a href="https://console.apify.com/account/integrations">Settings section
-          under the Integrations tab</a>
-          after you login. See the <a href="https://docs.apify.com/platform/integrations/api#api-token">Apify
+          Personal API token of your Apify account. Create an API token for Airbyte in
+          <a href="https://console.apify.com/settings/integrations?createApiToken=true&for=Airbyte&utm_source=airbyte&utm_medium=integrations">Apify Console</a>
+          and copy it right after creating it, as it is shown only once. See the
+          <a href="https://docs.apify.com/platform/integrations/api#api-token">Apify
           Docs</a>
           for more information.
         examples:
