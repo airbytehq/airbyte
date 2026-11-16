@@ -1488,10 +1488,12 @@ schemas:
         type:
           - string
           - 'null'
+        format: date
       end_date:
         type:
           - string
           - 'null'
+        format: date
       amount_micros:
         type:
           - integer
