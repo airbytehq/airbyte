@@ -319,8 +319,20 @@ Your token should have at least the `repo` scope. Depending on which streams you
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
+#### OAuth apps with expiring user access tokens
+
+The connector keeps the OAuth access token it receives when you authenticate and does not refresh it. GitHub turns on **Expire user access tokens** by default for newly registered OAuth apps. A token from such an app [expires after eight hours](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#expiring-access-tokens), and from then on every sync fails with `GitHub authentication failed (HTTP 401)` until you authenticate the source again.
+
+This applies only when Airbyte authenticates through a GitHub OAuth app that you registered yourself: OAuth override credentials for a [workspace](https://reference.airbyte.com/reference/workspaceoauthcredentials) or an [organization](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials) in Airbyte Cloud, or your own OAuth app on a self-managed deployment. The default **Authenticate your GitHub account** flow in Airbyte Cloud and personal access tokens are not affected.
+
+If you use your own OAuth app, do one of the following:
+
+- Turn off **Expire user access tokens** for the app on GitHub, then authenticate the source again to get a new token. When you [register a new OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app), clear this checkbox before you save the app.
+- Authenticate with a personal access token instead.
+
 ### Troubleshooting
 
+- Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
@@ -403,7 +415,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 2.1.2 | 2025-11-11 | [69271](https://github.com/airbytehq/airbyte/pull/69271) | Update dependencies |
 | 2.1.1 | 2025-11-04 | [69002](https://github.com/airbytehq/airbyte/pull/69002) | Update dependencies |
 | 2.1.0 | 2025-10-29 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
-| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
+| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | Breaking Change: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
 | 1.9.2 | 2025-10-21 | [68332](https://github.com/airbytehq/airbyte/pull/68332) | Update dependencies |
 | 1.9.1 | 2025-10-20 | [68197](https://github.com/airbytehq/airbyte/pull/68197) | Promoting release candidate 1.9.1-rc.1 to a main version. |
 | 1.9.1-rc.1 | 2025-10-13 | [67584](https://github.com/airbytehq/airbyte/pull/67584) | Graceful error handling of invalid credentials when running operations |

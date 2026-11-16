@@ -12,6 +12,24 @@ from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 
+def test_check_streams_use_only_stock_components():
+    resolved = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_MANIFEST_PATH.read_text()))
+
+    def assert_stock(component, path):
+        if isinstance(component, dict):
+            assert not str(component.get("type", "")).startswith("Custom"), path
+            assert "class_name" not in component, path
+            for key, value in component.items():
+                assert_stock(value, f"{path}.{key}")
+        elif isinstance(component, list):
+            for index, value in enumerate(component):
+                assert_stock(value, f"{path}[{index}]")
+
+    for name in resolved["check"]["stream_names"]:
+        stream = next(stream for stream in resolved["streams"] if stream["name"] == name)
+        assert_stock(stream, name)
+
+
 def _resolved_definitions() -> dict:
     manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
     resolved = ManifestReferenceResolver().preprocess_manifest(manifest)
