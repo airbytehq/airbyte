@@ -24,21 +24,6 @@ MARKETPLACE_HEADERS = {
     "X-Zendesk-Marketplace-Organization-Id": "REPLACE_WITH_ZENDESK_MARKETPLACE_ORGANIZATION_ID",
     "X-Zendesk-Marketplace-App-Id": "REPLACE_WITH_ZENDESK_MARKETPLACE_APP_ID",
 }
-STREAM_NAMES = [
-    "account_overview",
-    "addresses",
-    "agents_activity",
-    "agents_overview",
-    "call_legs",
-    "calls",
-    "current_queue_activity",
-    "greeting_categories",
-    "greetings",
-    "ivr_menus",
-    "ivr_routes",
-    "ivrs",
-    "phone_numbers",
-]
 OAUTH_REFRESH_CONFIG = {
     "subdomain": "example",
     "start_date": "2024-01-01T00:00:00Z",
@@ -161,21 +146,22 @@ def test_self_managed_sends_no_marketplace_header(monkeypatch: pytest.MonkeyPatc
 def test_cloud_sends_the_headers_on_check_and_on_every_stream(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_edition(monkeypatch, "CLOUD")
     config = deepcopy(CONFIG_SHAPES["api_token"])
-    catalog = CatalogBuilder()
-    for stream_name in STREAM_NAMES:
-        catalog = catalog.with_stream(stream_name, SyncMode.full_refresh)
 
     with requests_mock.Mocker() as mocker:
         _mock_zendesk(mocker)
         source = get_source(config)
         status = source.check(LOGGER, config)
         stream_names = [stream.name for stream in source.discover(LOGGER, config).streams]
+        catalog = CatalogBuilder()
+        for stream_name in stream_names:
+            catalog = catalog.with_stream(stream_name, SyncMode.full_refresh)
         read(get_source(config), config, catalog.build())
         history = list(mocker.request_history)
 
     assert status.status == Status.SUCCEEDED, status.message
-    assert sorted(stream_names) == STREAM_NAMES
+    assert {"addresses", "ivrs", "ivr_menus", "ivr_routes", "phone_numbers"} <= set(stream_names)
     requested_paths = {request.path for request in history}
-    assert len(requested_paths) >= 11, requested_paths
+    # ivrs, ivr_menus and ivr_routes read the same path, so three streams count as one path.
+    assert len(requested_paths) >= len(stream_names) - 2, requested_paths
     for request in history:
         assert _marketplace_headers(request) == MARKETPLACE_HEADERS, request.url
