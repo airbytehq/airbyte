@@ -19,7 +19,7 @@ from mock_server.helpers import NOW, START, list_request, page, record, run
         ("shipping_addresses", "accounts/account-1/shipping_addresses", "updated_at", False),
     ],
 )
-@pytest.mark.parametrize("suffix", ["", "Z"], ids=["legacy", "utc"])
+@pytest.mark.parametrize("suffix", ["", "Z", "+00:00"], ids=["legacy", "utc", "offset"])
 @freeze_time(NOW)
 def test_incremental_state_normalizes_legacy_cursor_and_resumes(stream, path, cursor, incremental_parent, suffix, monkeypatch, tmp_path):
     saved = "2026-01-07T13:19:48"
