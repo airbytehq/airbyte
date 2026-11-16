@@ -34,6 +34,14 @@ definitions:
     url_base: https://pokeapi.co/api/v2/pokemon
     request_headers:
       Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
