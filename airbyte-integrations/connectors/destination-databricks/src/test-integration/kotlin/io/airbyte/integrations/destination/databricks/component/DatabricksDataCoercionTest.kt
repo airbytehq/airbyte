@@ -302,9 +302,8 @@ class DatabricksDataCoercionTest(
                 .toArgs()
 
         /**
-         * Same as [timestampTz] but for timestamp without timezone. The Databricks JDBC driver
-         * reports TIMESTAMP_NTZ columns as "TIMESTAMP", so [readColumn] reads them as UTC
-         * OffsetDateTime strings (with Z suffix). All non-null outputs need Z appended.
+         * Same as [timestampTz] but for timestamp without timezone. TIMESTAMP_NTZ columns are read
+         * back by [readColumn] as ISO local date-time strings (microsecond precision, no offset).
          */
         @JvmStatic
         fun timestampNtz() =
@@ -312,19 +311,15 @@ class DatabricksDataCoercionTest(
                 .map { fixture ->
                     when (fixture.name) {
                         HIGH_PRECISION_TIMESTAMP ->
-                            fixture.copy(outputValue = "2025-01-23T01:01:00.123456Z")
+                            fixture.copy(outputValue = "2025-01-23T01:01:00.123456")
                         MAXIMUM_TIMESTAMP ->
-                            fixture.copy(outputValue = "9999-12-31T23:59:59.999999Z")
+                            fixture.copy(outputValue = "9999-12-31T23:59:59.999999")
                         OUT_OF_RANGE_TIMESTAMP ->
                             fixture.copy(
-                                outputValue = "+10000-01-01T00:00:00Z",
+                                outputValue = "+10000-01-01T00:00:00",
                                 changeReason = null,
                             )
-                        else ->
-                            fixture.let { f ->
-                                val output = f.outputValue
-                                if (output is String) f.copy(outputValue = "${output}Z") else f
-                            }
+                        else -> fixture
                     }
                 }
                 .toArgs()

@@ -2,8 +2,8 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created_at": "2023-04-12T18:13:36.000Z" },
-      "stream_descriptor": { "name": "teams" }
+      "stream_state": { "started_at": "1762128000" },
+      "stream_descriptor": { "name": "calls" }
     }
   }
 ]

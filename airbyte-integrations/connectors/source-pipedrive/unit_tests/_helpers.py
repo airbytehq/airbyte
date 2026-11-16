@@ -16,7 +16,7 @@ from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 
 API_TOKEN = "test_api_token"
 START_DATE = "2024-01-01T00:00:00Z"
-CONFIG: Mapping[str, Any] = {"api_token": API_TOKEN, "replication_start_date": START_DATE}
+CONFIG: Mapping[str, Any] = {"credentials": {"auth_type": "api_token", "api_token": API_TOKEN}, "replication_start_date": START_DATE}
 BASE_URL = "https://api.pipedrive.com/"
 
 

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import logging
 from datetime import date, datetime, timedelta
 
@@ -9,7 +10,7 @@ import pytest
 from facebook_business.exceptions import FacebookRequestError
 from freezegun import freeze_time
 from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
-from source_facebook_marketing.streams import AdsInsights, AdsInsightsAgeAndGender
+from source_facebook_marketing.streams import AdsInsights, AdsInsightsAgeAndGender, AdsInsightsCountry
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.utils import DateInterval
 
@@ -1042,6 +1043,85 @@ class TestBaseInsightsStream:
 
         transformed_record = stream._transform_objective_results(record)
         assert transformed_record == expected_record
+
+    def test_get_json_schema_built_once(self, mocker, api, some_config):
+        """Schema files are loaded only on the first call, not for every record."""
+        get_schema_spy = mocker.spy(ResourceSchemaLoader, "get_schema")
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results", "impressions"],
+            breakdowns=["country"],
+            insights_lookback_window=28,
+        )
+
+        for _ in range(100):
+            stream.get_json_schema()
+            stream._transform_objective_results({"results": [], "impressions": 100})
+
+        loaded = [call.args[1] for call in get_schema_spy.call_args_list]
+        assert loaded == ["ads_insights", "ads_insights_custom_fields", "ads_insights_breakdowns"]
+
+    @pytest.mark.parametrize(
+        "stream_class, kwargs, expected_properties",
+        [
+            pytest.param(
+                AdsInsights,
+                {"fields": ["objective_results", "impressions"], "breakdowns": ["country"]},
+                {"objective_results", "impressions", "country", "date_start", "date_stop", "account_id", "ad_id"},
+                id="custom_fields_and_breakdowns",
+            ),
+            pytest.param(
+                AdsInsights,
+                {"fields": ["impressions"], "breakdowns": ["country"], "level": "campaign"},
+                {"impressions", "country", "date_start", "date_stop", "account_id", "campaign_id"},
+                id="custom_fields_campaign_level",
+            ),
+            pytest.param(AdsInsightsCountry, {}, None, id="builtin_breakdown_subclass"),
+        ],
+    )
+    def test_get_json_schema_cached_matches_uncached(self, api, some_config, stream_class, kwargs, expected_properties):
+        """Cached schema is identical to a fresh build and stays unchanged across calls and record transforms."""
+        stream = stream_class(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            **kwargs,
+        )
+
+        first = copy.deepcopy(stream.get_json_schema())
+        stream.fields()
+        stream._transform_objective_results({"results": [], "impressions": 100})
+        dict(stream.get_json_schema())
+
+        assert stream.get_json_schema() is stream.get_json_schema()
+        assert stream.get_json_schema() == first
+        assert stream.get_json_schema() == stream_class._json_schema.func(stream)
+        if expected_properties is not None:
+            assert set(stream.get_json_schema()["properties"]) == expected_properties
+        else:
+            assert "country" in stream.get_json_schema()["properties"]
+
+    def test_objective_results_rename_decision_computed_once(self, mocker, api, some_config):
+        """The schema-based rename decision is made once per stream, not per record."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results", "impressions"],
+            insights_lookback_window=28,
+        )
+        get_json_schema_spy = mocker.spy(stream, "get_json_schema")
+
+        records = [stream._transform_objective_results({"results": [{"value": str(i)}]}) for i in range(10)]
+
+        assert records == [{"objective_results": [{"value": str(i)}]} for i in range(10)]
+        assert get_json_schema_spy.call_count == 1
 
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(

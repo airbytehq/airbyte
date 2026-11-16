@@ -2,7 +2,7 @@ name: "Hydra: Stage Handoff"
 # Event-driven handoff between Hydra pipeline stages.
 #
 # Event-driven handoffs are opt-in per PR via the `hyd-chain` label, applied
-# when a human runs `!daily_hands_free_triage for <issue|PR>` or adds the
+# when a human runs `!hands_free_item for <issue|PR>` or adds the
 # label manually. A one-off `/ai-prove-fix`, `/ai-review`, `/ai-ready`, or
 # `/ai-resolve-conflicts` comment from an engineer does NOT opt the PR in.
 # A Devin `/ai-fix` PR also inherits the label from a `Resolves`-linked
@@ -12,13 +12,13 @@ name: "Hydra: Stage Handoff"
 # When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, or when
 # a PR's Connector CI run finishes green (covers new `/ai-fix` PRs, pushes
 # including `/ai-resolve-conflicts`, and re-prove/re-review after commits),
-# this workflow launches the existing `daily_hands_free_triage` playbook
-# (airbytehq/ai-skills) scoped to that single PR. The playbook re-reads the
-# PR's current state, applies its normal decision tree, and triggers the next
-# stage if the PR is ready -- the same logic the 5am UTC sweep uses, minus the
-# up-to-24h wait. The launched session is single-pass (no in-session reminder
-# loop) because the next event re-triggers this workflow. The daily sweep
-# remains the catch-all for anything this misses.
+# this workflow launches the `hands_free_item` playbook (airbytehq/ai-skills)
+# scoped to that single PR. The playbook re-reads the PR's current state,
+# applies its normal decision tree, and triggers the next stage if the PR is
+# ready -- the same item playbook the 5am UTC `hands_free_sweep` starts for
+# each item, minus the up-to-24h wait. The launched session is single-pass
+# (no in-session reminder loop) because the next event re-triggers this
+# workflow. The daily sweep remains the catch-all for anything this misses.
 #
 # Set the repository variable HYDRA_HANDOFF_DRY_RUN=true to have the launched
 # session only report what it WOULD do.
@@ -72,6 +72,7 @@ jobs:
       ) ||
       (
         github.event.issue.pull_request &&
+        contains(github.event.issue.labels.*.name, 'hyd-chain') &&
         (github.event.comment.user.login == 'devin-ai-integration[bot]' || github.event.comment.user.login == 'airbyte-support-bot') &&
         (contains(github.event.comment.body, '<!-- prove_fix_result:') || contains(github.event.comment.body, '<!-- pr_ai_review_result:'))
       )
@@ -255,7 +256,7 @@ jobs:
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           max-acu-limit: "3"
-          playbook-macro: "!daily_hands_free_triage"
+          playbook-macro: "!hands_free_item"
           tags: |
             ai-oncall
             hydra-stage-handoff
@@ -270,12 +271,10 @@ jobs:
             https://github.com/${{ github.repository }}/pull/${{ steps.marker.outputs.pr }}
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            Process ONLY that PR. Skip Phase 1 and the Phase 2 collection queries entirely.
-            Re-read the PR's current state, apply the §2.5 decision tree, and take the single
-            next action if it is ready to advance (or no action if it is not). Do NOT run the
-            follow-up loop — this is a single pass (1 iteration). The next stage's result will
-            re-trigger this workflow. Do not post the
-            Phase 3 summary to #hands-free-ai-triage; per-item status via send_to_user is enough.
+            Process ONLY that PR. Re-read its current state, apply the §2.5 decision tree,
+            and take the single next action if it is ready to advance (or no action if it is
+            not). Do NOT run the follow-up loop — this is a single pass (1 iteration). The next
+            stage's result will re-trigger this workflow.
             ${{ steps.mode.outputs.dry_run == 'true' && 'DRY RUN MODE: state what you WOULD do, take no action.' || '' }}
 
       # The guard comment must not survive a failed launch: it would suppress

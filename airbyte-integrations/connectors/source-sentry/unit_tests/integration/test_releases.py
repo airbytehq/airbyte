@@ -151,6 +151,24 @@ class TestReleasesStream(TestCase):
         ), f"Expected state cursor to be latest record's dateCreated, got {state}"
 
     @HttpMocker()
+    def test_start_date_does_not_stop_releases_paging(self, http_mocker: HttpMocker):
+        """
+        The start date only applies to events. If releases used it, the data feed would stop after
+        page 1, whose last release (01-15) is older than the start date (01-17).
+        """
+        config = ConfigBuilder().with_start_date("2024-01-17T00:00:00Z").build()
+        http_mocker.get(
+            SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            [create_response("releases_mixed_dates", has_next=True, cursor="next"), create_response("releases", has_next=False)],
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 4, f"Expected both pages, got {len(output.records)} records"
+
+    @HttpMocker()
     def test_incremental_pagination_with_data_feed(self, http_mocker: HttpMocker):
         """
         Test is_data_feed: When Page 1 has old records, don't fetch Page 2.

@@ -16,7 +16,7 @@ For programmatic access-token credentials, the connector sets the JDBC `token` a
 
 ## 3. Metadata error tolerance is limited to discovery
 
-The metadata querier recognizes object-level errors `2003`, `2043`, `2037`, and `2057`, but its factory enables this tolerance only for the `discover` operation. `application.yml` separately classifies some of these errors; it does not configure `2057`.
+The metadata querier recognizes object-level errors `2003`, `2043`, `2037`, and `2057`, plus `904` in `discover`: a view with an invalid identifier is skipped as a whole, while a table falls back to per-column probes. `application.yml` classifies `904` as a configuration error when it propagates.
 
 **Why this matters:** Discovery tolerates these object-level errors so one broken view or unauthorized object does not fail the full discover; CHECK and READ do not receive that tolerance. Keep the tolerance narrow and confined to discovery.
 

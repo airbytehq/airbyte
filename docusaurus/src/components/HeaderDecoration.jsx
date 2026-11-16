@@ -289,7 +289,7 @@ const ConnectorMetadataCallout = ({
           </Chip>
         </div>
       </MetadataStat>
-      <MetadataStat label="Connector type (beta)">
+      <MetadataStat label="Connector type">
         <div className={styles.availability}>
           <Chip className={styles.available}>
             <EnabledIcon isEnabled /> Data replication

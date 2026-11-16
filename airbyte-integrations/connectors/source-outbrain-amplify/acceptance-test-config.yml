@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-outbrain-amplify:dev
+bypass_reason: "Standard-test scenarios not configured: GSM holds a test config for this connector, but no acceptance-test entry lists it"
 acceptance_tests:
   spec:
     tests:

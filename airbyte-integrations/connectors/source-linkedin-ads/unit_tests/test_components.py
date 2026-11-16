@@ -4,10 +4,11 @@
 
 import json
 import logging
-from typing import Mapping, Union
+from typing import Any, Mapping, Union
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from requests import Response
 from requests.exceptions import InvalidURL
 from requests.models import PreparedRequest
@@ -17,6 +18,16 @@ from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
+
+
+def test_record_extractor_allows_empty_final_page(components_module: Any, requests_mock: Any) -> None:
+    url = "https://api.linkedin.com/rest/adAccounts"
+    requests_mock.get(url, [{"json": {"elements": [{"id": 1}]}}, {"json": {"elements": []}}])
+    extractor = components_module.LinkedInAdsRecordExtractor()
+    assert list(extractor.extract_records(requests.get(url))) == [{"id": 1}]
+    assert list(extractor.extract_records(requests.get(url))) == []
+
+
 _DATA_VOLUME_RATE_LIMIT_MESSAGE = (
     "The data request limit has been exceeded. More than 45 million metric values were requested in a 5-minute window."
 )

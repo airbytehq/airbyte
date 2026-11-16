@@ -23,9 +23,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
 
 /**
  * Cold sync, mutation, warm sync and a second warm sync for every cursor-able type. Rows equal to
@@ -33,11 +30,18 @@ import org.junit.jupiter.params.provider.MethodSource
  * cursors are rounded up to microseconds, so a row between the true max and the rounded state value
  * is not re-emitted (`INC_TS_*` row 3).
  *
- * Every case runs twice: with the session `TIMEZONE` pinned to UTC and with the account default
- * (America/Los_Angeles on the shared account). The second run uses a copy of the cursor table,
- * because each run mutates its table. airbytehq/airbyte#83800: on 2.0.1 a plain `setTimestamp`
+ * Timestamp and date cases run twice: with the session `TIMEZONE` pinned to UTC and with the
+ * account default (America/Los_Angeles on the shared account), because the driver converts those
+ * bounds through the session timezone. airbytehq/airbyte#83800: on 2.0.1 a plain `setTimestamp`
  * bound on a TIMESTAMP_NTZ cursor was shifted by the session offset and the warm sync read 0 of 1
- * new rows under the account default.
+ * new rows under the account default. Number and varchar cursors bind as BigDecimal/String, which
+ * the session timezone cannot touch, so they only run under UTC. The default-timezone run uses the
+ * `*_DEFAULT_TZ` copy of the cursor table from `seed.sql`, because each run mutates its table.
+ *
+ * The cases are plain `@Test` methods rather than a `@ParameterizedTest` on purpose: JUnit only
+ * forks a parameterized test's invocations while few tasks are queued and otherwise runs them
+ * inline, so once this class is the only one left its invocations would run one at a time. Static
+ * test methods are all forked up front and spread over the worker threads.
  */
 class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
 
@@ -57,85 +61,123 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
          * the true max and the rounded state is not re-emitted (no loss: it was emitted before).
          */
         val warmAgainIds: List<Long> = listOf(6),
-    ) {
-        override fun toString(): String = table
-    }
+    )
+
+    private val number =
+        CursorCase(
+            "INC_NUMBER",
+            "12345678901234567.1234567891",
+            "VALUES (4, 5.5, 'below'), (5, 12345678901234567.1234567891, 'equal'), (6, 12345678901234567.1234567892, 'above')",
+            listOf(3, 5, 6),
+            "12345678901234567.1234567892",
+        )
+
+    private val timestampNtz =
+        CursorCase(
+            "INC_TS_NTZ",
+            "\"2026-01-02T04:00:00.000001\"",
+            "SELECT 4, '2026-01-02 03:00:00'::TIMESTAMP_NTZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 04:00:00.000001'::TIMESTAMP_NTZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 05:00:00.000000001'::TIMESTAMP_NTZ(9), 'above'",
+            listOf(5, 6),
+            "\"2026-01-02T05:00:00.000001\"",
+            warmAgainIds = emptyList(),
+        )
+
+    private val timestampTz =
+        CursorCase(
+            "INC_TS_TZ",
+            "\"2026-01-02T12:00:00.000001Z\"",
+            "SELECT 4, '2026-01-02 03:00:00 -08:00'::TIMESTAMP_TZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 17:30:00.000001 +05:30'::TIMESTAMP_TZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 05:00:00 -08:00'::TIMESTAMP_TZ(9), 'above'",
+            listOf(5, 6),
+            "\"2026-01-02T13:00:00.000000Z\"",
+        )
+
+    private val timestampLtz =
+        CursorCase(
+            "INC_TS_LTZ",
+            "\"2026-01-02T12:00:00.000001Z\"",
+            "SELECT 4, '2026-01-02 11:00:00 +00:00'::TIMESTAMP_LTZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 12:00:00.000001 +00:00'::TIMESTAMP_LTZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 13:00:00 +00:00'::TIMESTAMP_LTZ(9), 'above'",
+            listOf(5, 6),
+            "\"2026-01-02T13:00:00.000000Z\"",
+        )
+
+    private val date =
+        CursorCase(
+            "INC_DATE",
+            "\"2026-01-03\"",
+            "VALUES (4, '2026-01-02', 'below'), (5, '2026-01-03', 'equal'), (6, '2026-01-04', 'above')",
+            listOf(3, 5, 6),
+            "\"2026-01-04\"",
+        )
+
+    private val varchar =
+        CursorCase(
+            "INC_VARCHAR",
+            "\"c\"",
+            "VALUES (4, 'b', 'below'), (5, 'c', 'equal'), (6, 'd', 'above')",
+            listOf(3, 5, 6),
+            "\"d\"",
+        )
+
+    private val numberWithoutPrimaryKey =
+        CursorCase(
+            "INC_NOPK_NUMBER",
+            "30",
+            "VALUES (4, 25, 'below'), (5, 30, 'equal'), (6, 40, 'above')",
+            listOf(3, 5, 6),
+            "40",
+        )
 
     private lateinit var catalog: AirbyteCatalog
 
-    /** `"UTC"` pins the session TIMEZONE, `null` keeps the account default. */
-    private val sessionTimezones: List<String?> = listOf("UTC", null)
-
-    private fun tableFor(case: CursorCase, sessionTimezone: String?): String =
-        if (sessionTimezone == null) "${case.table}_DEFAULT_TZ" else case.table
-
     @BeforeAll
-    fun copyTablesAndDiscoverOnce() {
-        for (case in cases()) {
-            val source = "\"$database\".\"$schema\".\"${case.table}\""
-            val copy = "\"$database\".\"$schema\".\"${tableFor(case, null)}\""
-            execute(admin, "CREATE TABLE $copy LIKE $source")
-            execute(admin, "INSERT INTO $copy SELECT * FROM $source")
-        }
+    fun discoverOnce() {
         catalog = discover(spec())
     }
 
-    fun casesPerSessionTimezone(): List<Arguments> =
-        cases().flatMap { case -> sessionTimezones.map { tz -> Arguments.of(case, tz) } }
+    @Test fun numberCursor() = coldThenWarmThenWarmAgain(number, sessionTimezone = "UTC")
 
-    fun cases(): List<CursorCase> =
-        listOf(
-            CursorCase(
-                "INC_NUMBER",
-                "12345678901234567.1234567891",
-                "VALUES (4, 5.5, 'below'), (5, 12345678901234567.1234567891, 'equal'), (6, 12345678901234567.1234567892, 'above')",
-                listOf(3, 5, 6),
-                "12345678901234567.1234567892",
-            ),
-            CursorCase(
-                "INC_TS_NTZ",
-                "\"2026-01-02T04:00:00.000001\"",
-                "SELECT 4, '2026-01-02 03:00:00'::TIMESTAMP_NTZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 04:00:00.000001'::TIMESTAMP_NTZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 05:00:00.000000001'::TIMESTAMP_NTZ(9), 'above'",
-                listOf(5, 6),
-                "\"2026-01-02T05:00:00.000001\"",
-                warmAgainIds = emptyList(),
-            ),
-            CursorCase(
-                "INC_TS_TZ",
-                "\"2026-01-02T12:00:00.000001Z\"",
-                "SELECT 4, '2026-01-02 03:00:00 -08:00'::TIMESTAMP_TZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 17:30:00.000001 +05:30'::TIMESTAMP_TZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 05:00:00 -08:00'::TIMESTAMP_TZ(9), 'above'",
-                listOf(5, 6),
-                "\"2026-01-02T13:00:00.000000Z\"",
-            ),
-            CursorCase(
-                "INC_TS_LTZ",
-                "\"2026-01-02T12:00:00.000001Z\"",
-                "SELECT 4, '2026-01-02 11:00:00 +00:00'::TIMESTAMP_LTZ(9), 'below' UNION ALL SELECT 5, '2026-01-02 12:00:00.000001 +00:00'::TIMESTAMP_LTZ(9), 'equal' UNION ALL SELECT 6, '2026-01-02 13:00:00 +00:00'::TIMESTAMP_LTZ(9), 'above'",
-                listOf(5, 6),
-                "\"2026-01-02T13:00:00.000000Z\"",
-            ),
-            CursorCase(
-                "INC_DATE",
-                "\"2026-01-03\"",
-                "VALUES (4, '2026-01-02', 'below'), (5, '2026-01-03', 'equal'), (6, '2026-01-04', 'above')",
-                listOf(3, 5, 6),
-                "\"2026-01-04\"",
-            ),
-            CursorCase(
-                "INC_VARCHAR",
-                "\"c\"",
-                "VALUES (4, 'b', 'below'), (5, 'c', 'equal'), (6, 'd', 'above')",
-                listOf(3, 5, 6),
-                "\"d\"",
-            ),
-            CursorCase(
-                "INC_NOPK_NUMBER",
-                "30",
-                "VALUES (4, 25, 'below'), (5, 30, 'equal'), (6, 40, 'above')",
-                listOf(3, 5, 6),
-                "40",
-            ),
-        )
+    @Test
+    fun timestampNtzCursor() = coldThenWarmThenWarmAgain(timestampNtz, sessionTimezone = "UTC")
+
+    @Test
+    fun timestampNtzCursorInDefaultTimezone() =
+        coldThenWarmThenWarmAgain(timestampNtz, sessionTimezone = null)
+
+    @Test fun timestampTzCursor() = coldThenWarmThenWarmAgain(timestampTz, sessionTimezone = "UTC")
+
+    @Test
+    fun timestampTzCursorInDefaultTimezone() =
+        coldThenWarmThenWarmAgain(timestampTz, sessionTimezone = null)
+
+    @Test
+    fun timestampLtzCursor() = coldThenWarmThenWarmAgain(timestampLtz, sessionTimezone = "UTC")
+
+    @Test
+    fun timestampLtzCursorInDefaultTimezone() =
+        coldThenWarmThenWarmAgain(timestampLtz, sessionTimezone = null)
+
+    @Test fun dateCursor() = coldThenWarmThenWarmAgain(date, sessionTimezone = "UTC")
+
+    @Test
+    fun dateCursorInDefaultTimezone() = coldThenWarmThenWarmAgain(date, sessionTimezone = null)
+
+    @Test fun varcharCursor() = coldThenWarmThenWarmAgain(varchar, sessionTimezone = "UTC")
+
+    @Test
+    fun numberCursorWithoutPrimaryKey() =
+        coldThenWarmThenWarmAgain(numberWithoutPrimaryKey, sessionTimezone = "UTC")
+
+    @Test
+    fun emptyIncrementalTableEmitsNothing() {
+        val out =
+            read(
+                spec(),
+                configured(catalog, listOf("EMPTY_TABLE"), SyncMode.INCREMENTAL, cursor = "ID"),
+            )
+        out.assertNoErrors()
+        assertEquals(0, out.recordsOf("EMPTY_TABLE").size)
+        assertEquals(0, out.statesOf("EMPTY_TABLE").size)
+    }
 
     private fun cursorState(cursor: String): JsonNode =
         Jsons.readTree("""{"primary_key":{},"cursors":{"CUR":$cursor}}""")
@@ -143,10 +185,9 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
     private fun incremental(table: String): ConfiguredAirbyteCatalog =
         configured(catalog, listOf(table), SyncMode.INCREMENTAL, cursor = "CUR")
 
-    @ParameterizedTest(name = "{0}, session TIMEZONE {1}")
-    @MethodSource("casesPerSessionTimezone")
-    fun coldThenWarmThenWarmAgain(case: CursorCase, sessionTimezone: String?) {
-        val table = tableFor(case, sessionTimezone)
+    /** `"UTC"` pins the session TIMEZONE, `null` keeps the account default. */
+    private fun coldThenWarmThenWarmAgain(case: CursorCase, sessionTimezone: String?) {
+        val table = if (sessionTimezone == null) "${case.table}_DEFAULT_TZ" else case.table
         val spec = spec(sessionTimezone = sessionTimezone)
         val cold = read(spec, incremental(table))
         cold.assertNoErrors()
@@ -170,17 +211,5 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
         again.assertNoErrors()
         assertEquals(case.warmAgainIds, ids(again.recordsOf(table)))
         assertEquals(warmState, again.lastStateOf(table))
-    }
-
-    @Test
-    fun emptyIncrementalTableEmitsNothing() {
-        val out =
-            read(
-                spec(),
-                configured(catalog, listOf("EMPTY_TABLE"), SyncMode.INCREMENTAL, cursor = "ID"),
-            )
-        out.assertNoErrors()
-        assertEquals(0, out.recordsOf("EMPTY_TABLE").size)
-        assertEquals(0, out.statesOf("EMPTY_TABLE").size)
     }
 }

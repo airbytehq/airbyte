@@ -15,7 +15,7 @@ from conftest import get_source
 from airbyte_cdk.models import Status
 
 
-_CONFIG = {"api_token": "test-token", "replication_start_date": "2017-01-25 00:00:00Z"}
+_CONFIG = {"credentials": {"auth_type": "api_token", "api_token": "test-token"}, "replication_start_date": "2017-01-25 00:00:00Z"}
 _BASE_URL = "https://api.pipedrive.com"
 
 

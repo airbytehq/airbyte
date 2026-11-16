@@ -49,10 +49,11 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | Stream | Primary key | Supports full refresh | Supports incremental |
 |--------|-------------|-----------------------|----------------------|
 | `account` | `organization_id` | Yes | No |
+| `categories` | `id` | Yes | Yes |
 | `companies` | `id` | Yes | Yes |
 | `companies_attributes` | | Yes | No |
 | `contacts` | `id` | Yes | Yes |
-| `contacts_attributes` | | No | No |
+| `contacts_attributes` | | Yes | No |
 | `contacts_folders` | `id` | Yes | No |
 | `contacts_folders_lists` | `id` | Yes | No |
 | `contacts_lists` | `id` | Yes | No |
@@ -67,18 +68,27 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | `crm_tasktypes` | `id` | Yes | No |
 | `domains` | `id` | Yes | No |
 | `emailCampaigns` | `id` | Yes | Yes |
+| `email_templates` | `id` | Yes | No |
+| `inbound_email_events` | `uuid` | Yes | Yes |
 | `organization_invited_users` | `email` | Yes | No |
+| `processes` | `id` | Yes | No |
+| `products` | `id` | Yes | Yes |
 | `senders` | `id` | Yes | No |
 | `smsCampaigns` | `id` | Yes | Yes |
+| `transactional_email_events` | | Yes | Yes |
 | `webhooks` | `id` | Yes | No |
 
-Incremental streams pass the cursor value to Brevo as a `modifiedSince` query parameter so that only records modified on or after that timestamp are returned.
+Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns read and emit the full campaign list on every sync, including draft, queued and scheduled campaigns, because Brevo does not document that sending a campaign or updating its statistics changes `modifiedAt`. `start_date` does not limit these two streams, and their `modifiedAt` state is kept for compatibility.
+
+Brevo filters `transactional_email_events` by whole days, so every sync re-sends the events from the last synced day, and Incremental | Append will contain those repeats.
 
 ## Performance considerations
 
 Brevo enforces per-endpoint rate limits that vary by account tier. On the general tier available to all accounts, endpoints under `/v3/contacts/…` allow 10 requests per second, while most other endpoints this connector uses (CRM, campaigns, senders, domains, webhooks, account, organization) share a limit of 100 requests per hour. See Brevo's [rate limits documentation](https://developers.brevo.com/docs/api-limits) for the full per-tier breakdown.
 
-When Brevo returns `429 Too Many Requests`, the connector retries with exponential backoff. If you run other integrations against the same API key, consider creating a dedicated key for Airbyte to avoid contention.
+The `transactional_email_events` and `email_templates` streams use `/v3/smtp/` endpoints, which have a quota of 300 requests per hour on the general tier.
+
+When Brevo returns `429 Too Many Requests`, the `emailCampaigns`, `smsCampaigns`, `transactional_email_events`, and `email_templates` streams wait for the interval in Brevo's `x-sib-ratelimit-reset` response header before retrying. All other streams retry up to three times with exponential backoff, so a long sync can fail if the hourly quota runs out. If you run other integrations against the same API key, consider creating a dedicated key for Airbyte to avoid contention.
 
 ## IP allow list
 
@@ -91,6 +101,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.3.0 | 2026-11-15 | [91551](https://github.com/airbytehq/airbyte/pull/91551) | Add foundational fixes, six parity streams, and mock-server coverage. `emailCampaigns` and `smsCampaigns` now emit the full campaign list on every sync, including unsent campaigns. |
+| 0.2.54 | 2026-11-10 | [91355](https://github.com/airbytehq/airbyte/pull/91355) | Update dependencies |
+| 0.2.53 | 2026-11-04 | [90940](https://github.com/airbytehq/airbyte/pull/90940) | Simplify error handling while preserving retry and rate-limit behavior. |
+| 0.2.52 | 2026-11-03 | [90462](https://github.com/airbytehq/airbyte/pull/90462) | Update dependencies |
+| 0.2.51 | 2026-10-27 | [89794](https://github.com/airbytehq/airbyte/pull/89794) | Update dependencies |
 | 0.2.50 | 2026-10-20 | [89132](https://github.com/airbytehq/airbyte/pull/89132) | Update dependencies |
 | 0.2.49 | 2026-10-13 | [88539](https://github.com/airbytehq/airbyte/pull/88539) | Update dependencies |
 | 0.2.48 | 2026-10-06 | [87746](https://github.com/airbytehq/airbyte/pull/87746) | Update dependencies |

@@ -1,3 +1,4 @@
+bypass_reason: "No test config in GSM for this connector"
 acceptance_tests:
   spec:
     tests:
