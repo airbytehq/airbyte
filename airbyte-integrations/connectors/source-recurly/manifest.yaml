@@ -464,6 +464,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: credit_payments
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           request_parameters:
             sort: updated_at
             order: asc
