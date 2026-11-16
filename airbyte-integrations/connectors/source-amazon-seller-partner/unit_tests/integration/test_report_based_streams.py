@@ -1595,7 +1595,7 @@ class TestFatalReportErrorSurfacing:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
-        # NOW is 2024-06-01, a Saturday, so the stream's WEEK window resolves to the prior Sun-Sat.
+        # Request one complete week so this test isolates FATAL report handling.
         create_body = json.dumps(
             {
                 "reportType": stream_name,
@@ -1629,7 +1629,16 @@ class TestFatalReportErrorSurfacing:
             [HttpResponse(body=json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), status_code=HTTPStatus.OK)] * attempts,
         )
 
-        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1))
+        output = read_output(
+            config_builder=config()
+            .with_account_type("Vendor")
+            .with_start_date(pendulum.datetime(2024, 5, 19))
+            .with_end_date(pendulum.datetime(2024, 5, 25, 23, 59, 59))
+            .with_failed_retry_wait_time_in_seconds(1),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=True,
+        )
 
         assert_message_in_log_output(self._AMAZON_REPORT_OPTIONS_REASON, output, log_level=Level.ERROR)
         # Same assertion as the unrelated-reason test: the stream fails through the CDK's

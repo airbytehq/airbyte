@@ -2,6 +2,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Amazon Seller Partner Migration Guide
 
+Inbound windows retain their configured bounds, except future end dates are capped at the current UTC time in both sync modes so an incremental checkpoint cannot skip updates that have not happened yet. In incremental mode, shipment items are selected through updated parent shipments, not item-level modification timestamps. Item quantities can change without advancing the parent timestamp; retain full refresh if you need to detect those changes. Rolling mode also retains its configured lower bound, so use fixed mode to recover history beyond that window.
+
+Alternate Purchase and Item Comparison remain unchanged: Amazon [removed both report types on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations).
+
 ## Upgrading to 7.0.0
 
 Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) the Flat File Settlement Report (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) on March 17, 2025 and [removes it on November 11, 2026](https://developer-docs.amazon.com/sp-api/changelog/update-removal-of-xml-settlement-report-and-flat-file-settlement-report-date-changed-to-november-11-2026). This version removes the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream and adds its replacement, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report).

@@ -40,6 +40,10 @@ class ConfigBuilder:
         self._config["replication_start_date"] = start_date.strftime(TIME_FORMAT)
         return self
 
+    def with_brand_analytics_start_date(self, start_date: datetime) -> ConfigBuilder:
+        self._config["brand_analytics_start_date"] = start_date.strftime("%Y-%m-%d")
+        return self
+
     def with_end_date(self, end_date: datetime) -> ConfigBuilder:
         self._config["replication_end_date"] = end_date.strftime(TIME_FORMAT)
         return self
