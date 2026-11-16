@@ -66,9 +66,7 @@ def _job_status_request() -> RequestBuilder:
 def _job_status_response() -> HttpResponse:
     body = [
         {
-            "body": json.dumps(
-                {"id": _JOB_ID, "account_id": ACCOUNT_ID, "async_status": "Job Completed", "async_percent_completion": 100}
-            ),
+            "body": json.dumps({"id": _JOB_ID, "account_id": ACCOUNT_ID, "async_status": "Job Completed", "async_percent_completion": 100}),
         }
     ]
     return build_response(body=body, status_code=HTTPStatus.OK)
