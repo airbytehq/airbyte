@@ -29,6 +29,7 @@ Designed for organizations on the Claude Platform, this API provides programmati
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2026-11-10 | [91402](https://github.com/airbytehq/airbyte/pull/91402) | Update dependencies |
 | 0.0.14 | 2026-11-03 | [90524](https://github.com/airbytehq/airbyte/pull/90524) | Update dependencies |
 | 0.0.13 | 2026-10-27 | [89837](https://github.com/airbytehq/airbyte/pull/89837) | Update dependencies |
 | 0.0.12 | 2026-10-20 | [89143](https://github.com/airbytehq/airbyte/pull/89143) | Update dependencies |

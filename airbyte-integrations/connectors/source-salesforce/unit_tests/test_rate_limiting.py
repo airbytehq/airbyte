@@ -1,6 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import re
 import threading
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest import TestCase
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -8,6 +10,8 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import pytest
 import requests
 import requests_mock
+from config_builder import ConfigBuilder
+from conftest import generate_stream
 from requests.exceptions import ChunkedEncodingError, InvalidURL
 from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
@@ -19,10 +23,13 @@ from source_salesforce.api import (
     SalesforceTokenProvider,
 )
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
+from source_salesforce.streams import BulkDatetimeStreamSlicer
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.tcp_keepalive import TcpKeepaliveHTTPAdapter
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -259,6 +266,69 @@ def test_token_request_is_sent_with_timeout(requests_mock) -> None:
     sf.login()
 
     assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_rest_stream_request_is_sent_with_timeout(requests_mock, stream_config, stream_api) -> None:
+    """A stalled stream read must time out, not block the sync forever (issue #91214)."""
+    stream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    requests_mock.get(
+        re.compile(r"^https://fase-account\.salesforce\.com/services/data/.*"),
+        json={"records": [], "done": True},
+    )
+
+    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_bulk_job_requests_are_sent_with_timeout(requests_mock, stream_api) -> None:
+    """Creating, polling, downloading and deleting a Bulk job must time out too, not only REST reads."""
+    config = ConfigBuilder().start_date(datetime.now(timezone.utc) - timedelta(days=5)).stream_slice_step("P100D").build()
+    stream = generate_stream("Account", config, stream_api)
+    job_path = f"/services/data/{API_VERSION}/jobs/query"
+    requests_mock.register_uri("POST", job_path, json={"id": "a_job"})
+    requests_mock.register_uri("GET", f"{job_path}/a_job", json={"id": "a_job", "state": "JobComplete"})
+    requests_mock.register_uri("GET", f"{job_path}/a_job/results", text="Id,LastModifiedDate\n1,2026-11-01")
+    requests_mock.register_uri("DELETE", f"{job_path}/a_job")
+
+    stream_slice = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
+    list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+
+    bulk_requests = [r for r in requests_mock.request_history if "/jobs/query" in r.path]
+    assert {(r.method, r.path.rsplit("/", 1)[-1]) for r in bulk_requests} == {
+        ("POST", "query"),
+        ("GET", "a_job"),
+        ("GET", "results"),
+        ("DELETE", "a_job"),
+    }
+    assert [r.timeout for r in bulk_requests] == [_REQUEST_TIMEOUT_SECONDS] * len(bulk_requests)
+
+
+def test_bulk_requesters_use_tcp_keepalive(stream_api) -> None:
+    """Every Bulk job requester, abort included, must detect a dropped connection instead of waiting on it."""
+    config = ConfigBuilder().start_date(datetime.now(timezone.utc) - timedelta(days=5)).build()
+    stream = generate_stream("Account", config, stream_api)
+
+    with patch("source_salesforce.streams.HttpRequester", wraps=HttpRequester) as requester_spy:
+        stream._instantiate_declarative_stream(BulkDatetimeStreamSlicer(stream._stream_slicer_cursor), has_bulk_parent=False)
+
+    requesters = {call.kwargs["name"].rsplit(" - ", 1)[-1]: call.kwargs for call in requester_spy.call_args_list}
+    assert set(requesters) == {"creation requester", "polling requester", "download requester", "abort requester", "delete requester"}
+    for kwargs in requesters.values():
+        assert kwargs["use_tcp_keepalive"] is True
+        assert (kwargs["connect_timeout_in_seconds"], kwargs["read_timeout_in_seconds"]) == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_rest_stream_session_uses_tcp_keepalive(stream_config, stream_api) -> None:
+    stream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+
+    assert isinstance(stream._http_client._session.get_adapter("https://fase-account.salesforce.com"), TcpKeepaliveHTTPAdapter)
+
+
+def test_salesforce_client_session_uses_tcp_keepalive() -> None:
+    sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+
+    assert isinstance(sf.session.get_adapter("https://login.salesforce.com"), TcpKeepaliveHTTPAdapter)
 
 
 def test_describe_request_is_sent_with_timeout(requests_mock) -> None:

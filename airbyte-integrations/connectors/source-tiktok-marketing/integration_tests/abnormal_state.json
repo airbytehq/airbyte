@@ -259,6 +259,27 @@
           {
             "partition": {
               "advertiser_id": "7001035076276387841",
+              "buying_type": "AUCTION",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "modify_time": "2222-01-01 01:01:01Z"
+            }
+          },
+          {
+            "partition": {
+              "advertiser_id": "7001035076276387841",
+              "buying_type": "RESERVATION_TOP_VIEW",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "modify_time": "2222-01-01 01:01:01Z"
+            }
+          },
+          {
+            "partition": {
+              "advertiser_id": "7001035076276387841",
+              "buying_type": "RESERVATION_RF",
               "parent_slice": {}
             },
             "cursor": {
@@ -268,6 +289,27 @@
           {
             "partition": {
               "advertiser_id": "7002238017842757633",
+              "buying_type": "AUCTION",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "modify_time": "2222-01-01 01:01:01Z"
+            }
+          },
+          {
+            "partition": {
+              "advertiser_id": "7002238017842757633",
+              "buying_type": "RESERVATION_TOP_VIEW",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "modify_time": "2222-01-01 01:01:01Z"
+            }
+          },
+          {
+            "partition": {
+              "advertiser_id": "7002238017842757633",
+              "buying_type": "RESERVATION_RF",
               "parent_slice": {}
             },
             "cursor": {

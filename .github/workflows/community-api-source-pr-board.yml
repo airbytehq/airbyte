@@ -75,8 +75,8 @@ jobs:
           ref: master # PR head code is never checked out or executed in a job holding the app token.
           token: ${{ steps.app-token.outputs.token }} # permissions: {} leaves GITHUB_TOKEN without contents: read.
 
-      - name: Install yq
-        run: sudo snap install yq
+      - name: Check yq version
+        run: yq --version
 
       - name: Build certified API source set
         id: certified-sources

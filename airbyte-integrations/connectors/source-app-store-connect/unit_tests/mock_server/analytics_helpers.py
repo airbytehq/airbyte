@@ -13,7 +13,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
-from .request_builder import RequestBuilder
+from .request_builder import PAGE_SIZE, RequestBuilder
 from .response_builder import error_response, fixture_response, tabular_response
 from .utils import read_output
 
@@ -110,7 +110,7 @@ def _register_collection(
         return
 
     if is_target and paginate_target:
-        next_url = f"{request.url}?cursor={PAGE_TWO_CURSOR}"
+        next_url = f"{request.url}?cursor={PAGE_TWO_CURSOR}&limit={PAGE_SIZE}"
         first_request = request.build()
         second_request = request.with_cursor(PAGE_TWO_CURSOR).build()
         http_mocker.get(first_request, fixture_response(fixture_name, next_url=next_url))
