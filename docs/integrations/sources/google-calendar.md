@@ -31,6 +31,8 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
    - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
    - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams. Instead of `calendar.readonly`, you can authorize the five granular scopes Airbyte Cloud's OAuth flow requests (`calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, and `calendar.freebusy`).
 
+To find a calendar's ID, open its **Settings and sharing** in Google Calendar on a computer, then copy **Calendar ID** under **Integrate calendar**. See [Google's instructions for finding a Calendar ID](https://support.google.com/calendar/answer/44105).
+
 ## Set up the Google Calendar connector in Airbyte
 
 <!-- env:cloud -->
