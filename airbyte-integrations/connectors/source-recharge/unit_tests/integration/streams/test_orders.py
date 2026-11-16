@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from typing import Optional
 
 import freezegun
@@ -46,21 +47,53 @@ def test_api_version_switch(deprecated: Optional[bool], version: str) -> None:
 
 
 @freezegun.freeze_time("2024-02-29T23:59:59Z")
-def test_deprecated_pages_restart_in_each_thirty_day_slice() -> None:
+def test_deprecated_cursor_pages_restart_in_each_thirty_day_slice() -> None:
     first = orders_request("2021-01").with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").build()
-    second = orders_request("2021-01").with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").with_page(2).build()
+    second = (
+        RequestBuilder.get_endpoint("orders?limit=250&page_info=abc")
+        .with_access_token(ACCESS_TOKEN)
+        .with_old_api_version("2021-01")
+        .build()
+    )
     next_slice = orders_request("2021-01").with_updated_at_range("2024-01-31 00:00:00", "2024-02-29 23:59:59").build()
-    next_slice_second = orders_request("2021-01").with_updated_at_range("2024-01-31 00:00:00", "2024-02-29 23:59:59").with_page(2).build()
     with HttpMocker() as http_mocker:
-        http_mocker.get(first, orders_response(range(1, 251)).build())
+        response = orders_response(range(1, 251)).build()
+        http_mocker.get(
+            first,
+            HttpResponse(body=response.body, headers={"Link": '<https://api.rechargeapps.com/orders?limit=250&page_info=abc>; rel="next"'}),
+        )
         http_mocker.get(second, orders_response(range(251, 252)).build())
-        http_mocker.get(next_slice, orders_response(range(252, 502), "2024-02-01 00:00:00").build())
-        http_mocker.get(next_slice_second, orders_response(range(502, 503), "2024-02-01 00:00:00").build())
+        http_mocker.get(next_slice, orders_response(range(252, 253), "2024-02-01 00:00:00").build())
         output = read_incremental(orders_config(True), "orders")
-        assert sorted(record.record.data["id"] for record in output.records) == list(range(1, 503))
+        assert sorted(record.record.data["id"] for record in output.records) == list(range(1, 253))
         assert get_cursor_value_from_state_message(output, "updated_at") == "2024-02-01 00:00:00"
-        for request in (first, second, next_slice, next_slice_second):
+        for request in (first, second, next_slice):
             http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize("status_code", [200, 429, 500])
+@freezegun.freeze_time("2024-01-30T23:59:59Z")
+def test_deprecated_body_cursor_fallback_and_empty_last_page(status_code: int) -> None:
+    first = orders_request("2021-01").with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").build()
+    second = (
+        RequestBuilder.get_endpoint("orders?limit=250&page_info=abc%2B%2F%3D")
+        .with_access_token(ACCESS_TOKEN)
+        .with_old_api_version("2021-01")
+        .build()
+    )
+    body = json.loads(orders_response(range(101, 102)).build().body)
+    body["next_cursor"] = "abc+/="
+    with HttpMocker() as http_mocker:
+        http_mocker.get(first, HttpResponse(body=json.dumps(body)))
+        responses = [orders_response(range(0)).build()]
+        if status_code != 200:
+            responses.insert(0, HttpResponse(body="{}", status_code=status_code))
+        http_mocker.get(second, responses)
+        output = read_full_refresh(orders_config(True), "orders")
+        assert [record.record.data["id"] for record in output.records] == [101]
+        assert not output.errors
+        http_mocker.assert_number_of_calls(first, 1)
+        http_mocker.assert_number_of_calls(second, len(responses))
 
 
 @freezegun.freeze_time("2024-01-30T23:59:59Z")

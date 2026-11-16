@@ -30,6 +30,19 @@ definitions:
       start_from_page: 1
       page_size: 250
       inject_on_first_request: false
+  paginator_orders_deprecated:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 250
+      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url") or ("orders?limit=250&page_info=" ~ (response.next_cursor | urlencode) if response.get("next_cursor") else "") }}'
+      stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url") and not response.get("next_cursor") }}'
   paginator_modern_api:
     type: DefaultPaginator
     page_token_option:
@@ -348,10 +361,13 @@ definitions:
       data_path: orders
     retriever:
       $ref: '#/definitions/retriever_api_deprecated'
+      paginator:
+        $ref: '#/definitions/paginator_orders_deprecated'
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: '#/definitions/requester_deprecated_api'
         request_parameters:
-          sort_by: updated_at-asc
+          sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
     incremental_sync:
       $ref: '#/definitions/orders_incremental_sync'
     schema_loader:

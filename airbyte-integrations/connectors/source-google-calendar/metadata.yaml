@@ -36,22 +36,22 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.2.2
   dockerRepository: airbyte/source-google-calendar
   githubIssueLabel: source-google-calendar
   icon: icon.svg
   license: ELv2
   name: Google Calendar
   releaseDate: 2024-10-06
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-calendar
   tags:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: Google Calendar API reference
       url: https://developers.google.com/calendar/api/v3/reference
