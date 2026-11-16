@@ -615,14 +615,341 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      business_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      legal_entity_name:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      status_reason:
+        type:
+          - "null"
+          - string
+      ad_account_role:
+        type:
+          - "null"
+          - string
+      billing_type:
+        type:
+          - "null"
+          - string
+      industry:
+        type:
+          - "null"
+          - string
+      website:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      currency_code:
+        type:
+          - "null"
+          - string
+      test_account_type:
+        type:
+          - "null"
+          - string
+      tax_id:
+        type:
+          - "null"
+          - string
+      tax_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+      competitive_separation_categories:
+        type:
+          - "null"
+          - array
+      billing_address:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          street:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          region:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+          region_geo_id:
+            type:
+              - "null"
+              - string
+          tax_region:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
   campaigns:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      ad_account_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      derived_status:
+        type:
+          - "null"
+          - string
+      delivery:
+        type:
+          - "null"
+          - string
+      objective:
+        type:
+          - "null"
+          - string
+      delivery_goal_group:
+        type:
+          - "null"
+          - string
+      purchase_order:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
   campaign_performance:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      day:
+        type:
+          - "null"
+          - string
+        format: date
+      ad_account_id:
+        type:
+          - "null"
+          - string
+      campaign_id:
+        type:
+          - "null"
+          - string
+      campaign_name:
+        type:
+          - "null"
+          - string
+      campaign_status:
+        type:
+          - "null"
+          - string
+      entity_id:
+        type:
+          - "null"
+          - string
+      entity_name:
+        type:
+          - "null"
+          - string
+      entity_status:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - number
+      clicks:
+        type:
+          - "null"
+          - number
+      spend:
+        type:
+          - "null"
+          - number
+      ctr:
+        type:
+          - "null"
+          - number
+      reach:
+        type:
+          - "null"
+          - number
+      frequency:
+        type:
+          - "null"
+          - number
+      completion_rate:
+        type:
+          - "null"
+          - number
+      completes:
+        type:
+          - "null"
+          - number
+      conversion_rate:
+        type:
+          - "null"
+          - number
+      e_cpm:
+        type:
+          - "null"
+          - number
+      e_cpcl:
+        type:
+          - "null"
+          - number
+      first_quartiles:
+        type:
+          - "null"
+          - number
+      intent_rate:
+        type:
+          - "null"
+          - number
+      listeners:
+        type:
+          - "null"
+          - number
+      midpoints:
+        type:
+          - "null"
+          - number
+      new_listeners:
+        type:
+          - "null"
+          - number
+      new_listener_conversion_rate:
+        type:
+          - "null"
+          - number
+      new_listener_streams:
+        type:
+          - "null"
+          - number
+      off_spotify_impressions:
+        type:
+          - "null"
+          - number
+      paid_listens:
+        type:
+          - "null"
+          - number
+      paid_listens_frequency:
+        type:
+          - "null"
+          - number
+      paid_listens_reach:
+        type:
+          - "null"
+          - number
+      skips:
+        type:
+          - "null"
+          - number
+      starts:
+        type:
+          - "null"
+          - number
+      streams:
+        type:
+          - "null"
+          - number
+      streams_per_new_listener:
+        type:
+          - "null"
+          - number
+      streams_per_user:
+        type:
+          - "null"
+          - number
+      third_quartiles:
+        type:
+          - "null"
+          - number
+      video_views:
+        type:
+          - "null"
+          - number
+      video_expands:
+        type:
+          - "null"
+          - number
+      video_expand_rate:
+        type:
+          - "null"
+          - number
+      unmutes:
+        type:
+          - "null"
+          - number
