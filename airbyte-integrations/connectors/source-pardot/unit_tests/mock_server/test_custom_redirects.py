@@ -35,7 +35,6 @@ def _next_page_request() -> PardotRequestBuilder:
 
 
 def _custom_redirect(redirect_id: int) -> dict[str, Any]:
-    # The vendor documents `trackerDomain` as an object. The schema declares a flat `trackerDomain.domain` key instead.
     return {
         "id": redirect_id,
         "name": f"Redirect {redirect_id}",

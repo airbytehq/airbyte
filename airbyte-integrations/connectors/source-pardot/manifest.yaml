@@ -157,7 +157,7 @@ definitions:
               {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
-              id,listId,prospectId,optedOut,createdAt,updatedAt,createdById,updatedById
+              id,listId,prospectId,optedOut,isDeleted,createdAt,updatedAt,createdById,updatedById
             deleted: >-
               {{ 'all' if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
@@ -2497,6 +2497,10 @@ schemas:
       id:
         type:
           - integer
+      isDeleted:
+        type:
+          - "null"
+          - boolean
       listId:
         type:
           - integer
@@ -2528,6 +2532,10 @@ schemas:
         type:
           - "null"
           - string
+      campaignId:
+        type:
+          - "null"
+          - integer
       createdAt:
         type:
           - "null"
@@ -3416,6 +3424,15 @@ schemas:
         type:
           - "null"
           - string
+      trackerDomain:
+        type:
+          - "null"
+          - object
+        properties:
+          domain:
+            type:
+              - "null"
+              - string
       trackerDomain.domain:
         type:
           - "null"
@@ -3472,6 +3489,10 @@ schemas:
         type:
           - integer
           - "null"
+      folderId:
+        type:
+          - "null"
+          - integer
       id:
         type: integer
       isOperational:
@@ -3482,6 +3503,10 @@ schemas:
         type:
           - integer
           - "null"
+      listId:
+        type:
+          - "null"
+          - integer
       name:
         type:
           - string
@@ -3565,6 +3590,10 @@ schemas:
         type:
           - string
           - "null"
+      trackerDomainId:
+        type:
+          - "null"
+          - integer
     required:
       - id
       - sentAt
@@ -3937,6 +3966,10 @@ schemas:
         type:
           - string
           - "null"
+      trackerDomainId:
+        type:
+          - "null"
+          - integer
       updatedAt:
         type:
           - string

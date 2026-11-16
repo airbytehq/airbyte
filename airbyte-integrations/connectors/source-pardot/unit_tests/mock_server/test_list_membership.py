@@ -15,7 +15,7 @@ from .utils import read_stream, record_ids, stream_state
 
 _STREAM = "list_membership"
 _PATH = "v5/objects/list-memberships"
-_FIELDS = "id,listId,prospectId,optedOut,createdAt,updatedAt,createdById,updatedById"
+_FIELDS = "id,listId,prospectId,optedOut,isDeleted,createdAt,updatedAt,createdById,updatedById"
 
 
 def _request(updated_at_after: str = START_CURSOR) -> PardotRequestBuilder:
@@ -33,12 +33,13 @@ def _next_page_request() -> PardotRequestBuilder:
     return PardotRequestBuilder.endpoint(_PATH).with_query_param("fields", _FIELDS).with_query_param("nextPageToken", "page-2")
 
 
-def _list_membership(membership_id: int, updated_at: str = "2026-03-01T09:00:00-08:00") -> dict[str, Any]:
+def _list_membership(membership_id: int, updated_at: str = "2026-03-01T09:00:00-08:00", is_deleted: bool = False) -> dict[str, Any]:
     return {
         "id": membership_id,
         "listId": 21,
         "prospectId": 301,
         "optedOut": False,
+        "isDeleted": is_deleted,
         "createdAt": "2026-02-01T08:00:00-08:00",
         "updatedAt": updated_at,
         "createdById": 11,
@@ -65,6 +66,15 @@ class TestListMembershipStream(TestCase):
         assert output.records[0].record.data == _list_membership(1)
         assert output.get_stream_statuses(_STREAM)[-1] == AirbyteStreamStatus.COMPLETE
         assert stream_state(output) == {"updatedAt": START_CURSOR}
+
+    @HttpMocker()
+    def test_deleted_membership_comes_out_marked(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(login_request(), login_response())
+        http_mocker.get(_request().build(), page_response([_list_membership(1), _list_membership(2, is_deleted=True)]))
+
+        output = read_stream(_STREAM, SyncMode.incremental)
+
+        assert [(message.record.data["id"], message.record.data["isDeleted"]) for message in output.records] == [(1, False), (2, True)]
 
     @HttpMocker()
     def test_restarts_after_a_full_page_without_a_next_page_url(self, http_mocker: HttpMocker) -> None:
