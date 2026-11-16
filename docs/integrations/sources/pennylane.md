@@ -74,7 +74,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 1.1.0 | 2026-11-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add bank_establishments, customer_invoice_templates, sepa_mandates, gocardless_mandates and customer_contacts streams |
+| 1.1.0 | 2026-11-16 | [93032](https://github.com/airbytehq/airbyte/pull/93032) | Add bank_establishments, customer_invoice_templates, sepa_mandates, gocardless_mandates and customer_contacts streams |
 | 1.0.0 | 2026-11-06 | [91193](https://github.com/airbytehq/airbyte/pull/91193) | Migrate to Pennylane API v2, add nested invoice streams and accounting streams, and replace `plan_items` and `customer_estimates`. |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
