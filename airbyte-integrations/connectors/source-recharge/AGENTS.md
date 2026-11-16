@@ -50,8 +50,8 @@ to capture updates committed while the previous sync was running; orders and eve
 
 **Why this matters:** Making `sort_by` unconditional or retaining date filters on cursor pages sends
 parameters Recharge documents as incompatible with a cursor (whether it rejects or ignores them is not
-documented). Do not apply this omission to page-number pagination: the deprecated
-orders API needs filters and sorting on every page.
+documented). This also applies to the deprecated orders API, which follows cursor links to avoid
+the 2021-01 API's 100-page limit. Other deprecated streams still use page-number pagination.
 
 ## 3. Orders Switches API Versions and Keeps a Naive Cursor
 
@@ -68,13 +68,16 @@ as inclusive is the connector's assumption, not a documented contract. The
 fixtures and in production state, shows they are US-Eastern wall-clock time. Requests and state
 therefore retain `%Y-%m-%d %H:%M:%S` rather than converting them to UTC. Cursor parsing also accepts
 legacy ISO timestamps with `+00:00` offsets. Neither variant uses
-`lookback_window_days`. The deprecated variant uses page numbers, restarting at page 1 (no `page`
-parameter) in each slice and retaining date filters and sorting on every page; the modern variant
-uses cursors and omits those parameters after the first page.
+`lookback_window_days`. Both variants use cursor pagination and omit date filters and sorting after
+the first page of each slice. The deprecated variant follows the response's `Link` next URL using
+`page_info`, with a URL-encoded `next_cursor` body fallback. That URL already encodes the initial
+filters; only `limit` is compatible with cursor requests. Each slice restarts without a cursor,
+with its own date filters and sorting. Page-number pagination would fail above page 100 (25,000
+orders per slice) with a 422 response.
 
 **Why this matters:** Collapsing the variants can change the API selected by existing configurations
-or break pagination. Adding a second to the saved cursor skips boundary records; carrying page
-numbers across slices skips orders. Treating naive US-Eastern timestamps as UTC shifts the requested
+or break pagination. Adding a second to the saved cursor skips boundary records; carrying cursors
+across slices skips orders. Treating naive US-Eastern timestamps as UTC shifts the requested
 window rather than preserving the API's time convention.
 
 ## 4. Deprecated Orders Validation Errors Fail Fast

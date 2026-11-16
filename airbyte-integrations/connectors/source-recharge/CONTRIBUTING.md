@@ -15,11 +15,12 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    that floor makes the API reject the request, which fails `events` after retry exhaustion.
 2. **Cursor Pages Omit Sorting and Date Filters** — Recharge documents only the page size as
    compatible with a cursor, so later cursor-paginated requests send only the cursor and page size.
-   Keep sorting and date filters on the first page only,
-   except for the deprecated orders API, which needs them on every page. Shared incremental streams
+   Keep sorting and date filters on the first page only, including the deprecated orders API.
+   Shared incremental streams
    re-read the configured lookback plus one hour; orders and events do not.
 3. **Orders Switches API Versions and Keeps a Naive Cursor** — The orders API option selects either
-   deprecated page-number pagination or modern cursor pagination; an omitted option selects modern.
+   deprecated or modern cursor pagination; an omitted option selects modern. Deprecated orders
+   follows cursor links to avoid the API's 100-page limit.
    Orders keeps the naive timestamps the 2021-01 API returns (US-Eastern by observation; Recharge
    documents no timezone) and resumes from the saved cursor without a lookback window, so changing
    timestamps or slice pagination can skip records.

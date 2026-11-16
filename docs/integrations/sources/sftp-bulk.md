@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [SFTP Bulk]
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
 - **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
-- **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their creation or last modification time.
+- **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their last modification time.
 - **Load most recent file**: You can choose to load only the most recent file from the designated folder path. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data.
 
 ## Prerequisites
@@ -146,7 +146,7 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, Excel, JSONL, Parquet, and Document File Type Format.
 
 ## File Size Limitations
 
