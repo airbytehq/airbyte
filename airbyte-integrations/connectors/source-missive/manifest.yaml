@@ -26,19 +26,17 @@ definitions:
           path: contact_books
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,19 +75,17 @@ definitions:
           request_parameters:
             contact_book: "{{ stream_partition.contact_book_id }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -151,19 +147,17 @@ definitions:
             kind: "{{ config['kind'] }}"
             contact_book: "{{ stream_partition.contact_book_id }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,19 +202,17 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -257,19 +249,17 @@ definitions:
           path: teams
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -306,19 +296,17 @@ definitions:
           path: shared_labels
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -355,19 +343,17 @@ definitions:
           path: organizations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -407,19 +393,17 @@ definitions:
             all: "true"
             limit: '{{ config["limit"] }}'
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
