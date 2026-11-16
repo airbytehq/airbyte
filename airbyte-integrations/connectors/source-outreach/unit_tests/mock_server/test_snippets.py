@@ -8,7 +8,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import OutreachRequestBuilder
 from .response_builder import page_response, resource
-from .utils import given_token, read_stream, record_ids, stream_state
+from .utils import given_token, read_stream, record_ids, schema_errors, stream_state
 
 
 _STREAM = "snippets"
@@ -27,6 +27,7 @@ def _snippet(resource_id: int, updated_at: str) -> dict:
             "name": "Intro",
             "bodyHtml": "<p>Hi</p>",
             "containsCustomHtml": False,
+            "tags": ["prospecting", "q4"],
             "updatedAt": updated_at,
         },
         {
@@ -50,10 +51,22 @@ class TestSnippetsStream(TestCase):
                 "name": "Intro",
                 "bodyHtml": "<p>Hi</p>",
                 "containsCustomHtml": False,
+                "tags": ["prospecting", "q4"],
                 "updatedAt": "2024-01-02T03:04:05.000Z",
                 "owner": [7],
             }
         ]
+
+    @HttpMocker()
+    def test_records_match_the_declared_schema(self, http_mocker: HttpMocker) -> None:
+        given_token(http_mocker)
+        http_mocker.get(_request().build(), page_response([_snippet(1, "2024-01-02T03:04:05.000Z")]))
+
+        output = read_stream(_STREAM, SyncMode.full_refresh)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        assert schema_errors(output, _STREAM) == []
 
     @HttpMocker()
     def test_pagination_follows_links_next_until_it_is_absent(self, http_mocker: HttpMocker) -> None:
