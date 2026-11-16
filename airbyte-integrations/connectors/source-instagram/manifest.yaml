@@ -497,6 +497,74 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/StoryInsights"
+    StoryNavigationInsights:
+      type: DeclarativeStream
+      name: story_navigation_insights
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: "https://graph.facebook.com/v23.0/{{ stream_partition.story_insights_info.story_id }}/insights"
+          http_method: GET
+          # The story_navigation_action_type breakdown is only compatible with the navigation metric,
+          # so it cannot be requested together with the story_insights metrics.
+          request_parameters:
+            metric: navigation
+            breakdown: story_navigation_action_type
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 10 }}
+                error_message: >-
+                  Insights error: {{ response['error']['message'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: story_insights_info
+              partition_field: story_insights_info
+              stream:
+                $ref: "#/definitions/streams/Stories"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.InstagramStoryNavigationTransformation
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - id
+              value: "{{ stream_partition.story_insights_info.story_id  }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: "{{ stream_partition.story_insights_info.page_id }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: "{{ stream_partition.story_insights_info.business_account_id }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/StoryNavigationInsights"
     UserInsights:
       type: DeclarativeStream
       name: user_insights
@@ -732,6 +800,7 @@ streams:
   - $ref: "#/definitions/streams/UserLifetimeInsights"
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
+  - $ref: "#/definitions/streams/StoryNavigationInsights"
   - $ref: "#/definitions/streams/Api"
   - $ref: "#/definitions/streams/UserInsights"
 
@@ -762,6 +831,7 @@ metadata:
     UserLifetimeInsights: true
     Stories: true
     StoryInsights: true
+    StoryNavigationInsights: true
     Api: true
   yamlComponents:
     streams:
@@ -776,6 +846,8 @@ metadata:
       Stories:
         - transformations
       StoryInsights:
+        - transformations
+      StoryNavigationInsights:
         - transformations
 
 spec:
@@ -1352,6 +1424,51 @@ schemas:
           - integer
       views:
         description: The number of times the story has been viewed.
+        type:
+          - "null"
+          - integer
+  StoryNavigationInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      business_account_id:
+        description: The unique identifier of the business account associated with the story.
+        type:
+          - "null"
+          - string
+      page_id:
+        description: The unique identifier of the associated page where the story was posted.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier of the story.
+        type:
+          - "null"
+          - string
+      navigation:
+        description: The total number of navigation actions taken from the story.
+        type:
+          - "null"
+          - integer
+      tap_forward:
+        description: The number of taps to see the next story media (Forward).
+        type:
+          - "null"
+          - integer
+      tap_back:
+        description: The number of taps to see the previous story media (Back).
+        type:
+          - "null"
+          - integer
+      tap_exit:
+        description: The number of times the story was exited (Exit).
+        type:
+          - "null"
+          - integer
+      swipe_forward:
+        description: The number of swipes to the next account's story (Next Story).
         type:
           - "null"
           - integer

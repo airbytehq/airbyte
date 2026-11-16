@@ -230,6 +230,65 @@ class InstagramInsightsTransformation(RecordTransformation):
 
 
 @dataclass
+class InstagramStoryNavigationTransformation(RecordTransformation):
+    """
+    The transformation flattens the story `navigation` insight, requested with breakdown=story_navigation_action_type,
+    into a single object (dictionary). The total goes to `navigation` and every navigation action type becomes its own key.
+    The API documents the action types in upper case in one place and returns them in lower case in its examples, so the keys
+    are lower-cased.
+
+    Example input:
+        {
+          "data": [
+            {
+              "name": "navigation",
+              "period": "lifetime",
+              "values": [{"value": 25}],
+              "total_value": {
+                "value": 25,
+                "breakdowns": [
+                  {
+                    "dimension_keys": ["story_navigation_action_type"],
+                    "results": [
+                      {"dimension_values": ["tap_forward"], "value": 19},
+                      {"dimension_values": ["tap_back"], "value": 4},
+                      {"dimension_values": ["tap_exit"], "value": 1},
+                      {"dimension_values": ["swipe_forward"], "value": 1}
+                    ]
+                  }
+                ]
+              },
+              "id": "story_id/insights/navigation/lifetime"
+            }
+          ]
+        }
+
+    Example output:
+        {
+          "navigation": 25,
+          "tap_forward": 19,
+          "tap_back": 4,
+          "tap_exit": 1,
+          "swipe_forward": 1
+        }
+    """
+
+    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        for insight in record.pop("data", None) or []:
+            if insight.get("name") != "navigation":
+                continue
+            total_value = insight.get("total_value") or {}
+            values = insight.get("values") or [{}]
+            record["navigation"] = total_value.get("value", values[0].get("value"))
+            for breakdown in total_value.get("breakdowns") or []:
+                for result in breakdown.get("results") or []:
+                    dimension_values = result.get("dimension_values") or []
+                    if dimension_values and dimension_values[0] is not None:
+                        record[str(dimension_values[0]).lower()] = result.get("value")
+        return record
+
+
+@dataclass
 class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
     The transformation flattens a nested array of breakdown results located at total_value.breakdowns[0].results into a single object

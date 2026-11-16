@@ -247,3 +247,38 @@ insights_record_transformed = {
     "saved": 7,
     "shares": 1,
 }
+
+story_navigation_record = {
+    "data": [
+        {
+            "name": "navigation",
+            "period": "lifetime",
+            "values": [{"value": 25}],
+            "title": "Navigation",
+            "description": "This is the total number of actions taken from your story.",
+            "total_value": {
+                "value": 25,
+                "breakdowns": [
+                    {
+                        "dimension_keys": ["story_navigation_action_type"],
+                        "results": [
+                            {"dimension_values": ["tap_forward"], "value": 19},
+                            {"dimension_values": ["tap_back"], "value": 4},
+                            {"dimension_values": ["tap_exit"], "value": 1},
+                            {"dimension_values": ["swipe_forward"], "value": 1},
+                        ],
+                    }
+                ],
+            },
+            "id": "17969782069736348/insights/navigation/lifetime",
+        }
+    ]
+}
+
+story_navigation_record_transformed = {
+    "navigation": 25,
+    "tap_forward": 19,
+    "tap_back": 4,
+    "tap_exit": 1,
+    "swipe_forward": 1,
+}
