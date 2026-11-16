@@ -3,6 +3,7 @@
 """Tests for the error handlers declared in `manifest.yaml`."""
 
 import json
+import time
 from typing import Any, Iterator
 
 import pytest
@@ -45,9 +46,13 @@ ERROR_HANDLER_STREAMS = [
 
 @pytest.fixture(autouse=True)
 def no_sleep(monkeypatch: pytest.MonkeyPatch) -> list[float]:
-    """Skip real waits and record the requested durations."""
+    """Skip real waits and record the requested durations.
+
+    The rate limiter's clock moves forward by the skipped time, so a wait for the call budget ends as it does in a real run.
+    """
     slept: list[float] = []
     monkeypatch.setattr("time.sleep", lambda seconds=0, *_args, **_kwargs: slept.append(seconds))
+    monkeypatch.setattr("pyrate_limiter.clocks.time", lambda: time.time() + sum(slept))
     return slept
 
 
