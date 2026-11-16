@@ -44,18 +44,18 @@ The **Queries** field is not read by any stream and has no effect on syncs.
 
 The Datadog source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-|:------------------|:-----------|
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| Namespaces        | No         |
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Namespaces | No |
 
 Only the `logs` and `audit_logs` streams support incremental sync. They use the record timestamp, copied into the `sync_date` field, as the cursor. Each incremental sync starts one day before the saved cursor to pick up logs that arrive late, so expect some records to be read again. Use a deduplicated sync mode if you need each record once.
 
 ## Supported streams
 
 | Stream | Datadog endpoint | Sync modes | Application key permission |
-|:-------|:-----------------|:-----------|:---------------------------|
+| :--- | :--- | :--- | :--- |
 | `audit_logs` | [Get a list of Audit Logs events](https://docs.datadoghq.com/api/latest/audit/#get-a-list-of-audit-logs-events) | Full refresh, incremental | `audit_logs_read` |
 | `dashboards` | [Get all dashboards](https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards) | Full refresh | `dashboards_read` |
 | `downtimes` | [Get all downtimes](https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes) (v1) | Full refresh | `monitors_read` |
@@ -88,7 +88,7 @@ Datadog sets [rate limits](https://docs.datadoghq.com/api/latest/rate-limits/) p
 ### Common errors
 
 | Error message | Cause | Fix |
-|:--------------|:------|:----|
+| :--- | :--- | :--- |
 | The Application Key lacks the `<permission>` permission | The application key is scoped and doesn't include the permission the stream needs. | Add the named permission to the application key, or deselect the stream. |
 | Datadog rejected the API Key or the Application Key | A key is incomplete, invalid, or revoked, or the keys belong to an organization on a different site than the one selected in **Site**. | Check both keys and the **Site** setting. |
 | Datadog rejected the log search query | The **Query** value isn't valid Datadog log search syntax. | Correct the **Query** field. |
