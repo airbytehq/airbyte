@@ -106,7 +106,7 @@ data class FieldConversion(
         ): FieldConversion? = FieldConversion(from, to).takeIf { from != to && it.isSupported() }
 
         /**
-         * Whether the platform's name for a column type, [sourceTypeName], describes the CDK type
+         * Whether the platform's name for a column type, [sourceTypeName], matches the CDK type
          * [actual]. The platform's types are coarser than the CDK's: it sees a binary column as a
          * string, the JSON schema of a JSON column as a union ("multi"), and doesn't distinguish
          * array element types.

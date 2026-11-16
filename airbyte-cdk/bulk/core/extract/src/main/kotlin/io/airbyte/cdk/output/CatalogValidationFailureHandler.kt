@@ -71,7 +71,6 @@ data class FieldTypeMismatch(
         "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects $expected. Refresh the source schema to continue syncing this stream."
 }
 
-/** The type in the source no longer matches the field's `airbyte_source_type`. */
 data class FieldSourceTypeMismatch(
     override val streamID: StreamIdentifier,
     val fieldName: String,
@@ -82,7 +81,6 @@ data class FieldSourceTypeMismatch(
         "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects source type $expectedSourceType. Refresh the source schema to continue syncing this stream."
 }
 
-/** The field's values can't be emitted with its configured type. */
 data class UnsupportedFieldConversion(
     override val streamID: StreamIdentifier,
     val fieldName: String,

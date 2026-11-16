@@ -34,13 +34,8 @@ data class Stream(
     val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<EmittedField>?,
     val configuredCursor: DataOrMetaField?,
-    /**
-     * The fields whose values are read with their type in the source and emitted with their
-     * configured type, by field ID. [schema] keeps the source types, which the readers need.
-     */
     val fieldConversions: Map<String, FieldConversion> = emptyMap(),
 ) : Feed {
-    /** [schema] with the types the records are emitted with. */
     val outputSchema: Set<DataOrMetaField> by lazy {
         if (fieldConversions.isEmpty()) {
             schema
