@@ -60,8 +60,12 @@ Things worth knowing before touching either half:
   definition (`$ref: "#/definitions/<parent>_stream"`). Parent fields the child needs in its path
   or record come through `extra_fields` on the `ParentStreamConfig` and are read as
   `stream_slice.extra_fields['<field>']`; the partition value itself is `stream_partition.<field>`.
-  The parent is read with a fresh state manager (no `incremental_dependency`), i.e. from
-  `start_date`, which is what the Python parents did. Set `use_cache: true` on a parent's
+  Most parents are read with a fresh state manager (no `incremental_dependency`), i.e. from
+  `start_date`, which is what the Python parents did. `pull_request_commits` instead resumes
+  `pull_requests` per repository through `parent_state` (`incremental_dependency: true`),
+  with a global `pull_request_updated_at` cursor copied from the parent. Do not enable
+  client-side filtering on the child: every commit of an emitted PR must be emitted,
+  even if its author date predates the window. Set `use_cache: true` on a parent's
   requester so the parent read is served from the pages the parent stream itself fetched.
 - The Python parent-child streams nested their state under the repository and each parent id
   (`{repo: {project_id: {column_id: {updated_at}}}}`). `LegacyToPerPartitionStateMigration` only
@@ -720,7 +724,7 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 | `comments` | incremental | `updated_at` | server-side `since` | |
 | `issues` | incremental | `updated_at` | server-side `since` | |
 | `review_comments` | incremental | `updated_at` | server-side `since` | |
-| `pull_request_commits` | full refresh | — | — | substream of `pull_requests` |
+| `pull_request_commits` | incremental | `pull_request_updated_at` | parent per-repository cursor | substream of `pull_requests`; global child cursor |
 | `project_columns` | incremental | `updated_at` | client-side | substream of `projects` |
 | `project_cards` | incremental | `updated_at` | client-side | substream of `project_columns` |
 | `team_members` | full refresh | — | — | substream of `teams` |
@@ -743,7 +747,7 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 - **The five streams migrated in Step 3** (`assignees`, `branches`, `collaborators`, `issue_labels`, `tags`) have no usable cursor: none of their endpoints returns an `updated_at`/`created_at` field or accepts `since`, so they stay full refresh.
 - **The nine streams migrated in Step 5** (`events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`) have a cursor field but no server-side filter, so they are client-side incremental; `pull_requests` and `issue_milestones` additionally sort newest-first and use the data-feed stop condition. See the semi-incremental bullet above before adding another.
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
-- **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
+- **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record. `pull_request_commits` is incremental using the parent PR's `updated_at` as `pull_request_updated_at`, with parent state per repository; the other three have no cursor and stay full refresh. Commits removed by force-push or rebase are not deleted in incremental mode (primary key `sha`); Full Refresh | Overwrite removes them.
 - **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.
 - The GraphQL error contract is carried by the _order_ of `graphql_error_handler.response_filters`,
   not by the filters alone. GitHub reports GraphQL failures in the body — on a 200 and on a
