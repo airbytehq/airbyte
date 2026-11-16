@@ -9,7 +9,7 @@ For general guidance on contributing to Airbyte connectors, see the
 
 Every stream follows the full URL in `links.next` until it is absent
 ([Pagination](https://developers.outreach.io/api/common-patterns/)). Every stream sends `sort=updatedAt` except
-`events`, `duties`, `audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
+`events`, `duties`, `sequence_templates`, `audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
   ("must be a number between 1 and 1000, inclusive").
@@ -23,7 +23,7 @@ Every stream follows the full URL in `links.next` until it is absent
 
 ### Incremental sync
 
-- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except `events`, `duties` and the three below. The
+- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except `events`, `duties`, `sequence_templates` and the three below. The
   filter includes the cursor value, so the last record of the previous sync is read again.
 - `audit_logs` is incremental on `timestamp`, with `sort=timestamp` and `filter[timestamp][gte]`. `/auditLogs`
   rejects `sort=updatedAt` with `400 sort_parameter.unsupported_attribute`, and its records have no `updatedAt`.
@@ -61,6 +61,24 @@ Re-authenticate with the required scopes or deselect the affected streams.
   `/events` has no `updatedAt`; filtering on it returns 400 `filterParameter.unknownFilter`.
 - `duties` is full refresh because it has no timestamps. It sends neither a cursor filter nor
   a sort: `sort=updatedAt` returns 400 `sortParameter.unknownAttribute`.
+- `sequence_templates` is full refresh only: the live request with `filter[updatedAt][gte]=2000-01-01T00:00:00.000Z`,
+  `newFilterSyntax=true`, `sort=updatedAt` and `page[size]=1000` returns HTTP 400 with
+  `filterParameter.unfilterableAttribute` ("Filtering is not supported for attribute 'updatedAt'.") and
+  `sortParameter.unsortableAttribute` ("Sort is not supported for attribute 'updatedAt'."). It sends neither the cursor filter nor the sort.
+
+### Content and pipeline OAuth scopes
+
+The OAuth application needs these read scopes for the new streams:
+
+| Stream | Required scope |
+| :----- | :------------- |
+| `sequence_templates` | `sequenceTemplates.read` |
+| `content_categories` | `contentCategories.read` |
+| `content_category_memberships` | `contentCategoryMemberships.read` |
+| `content_category_ownerships` | `contentCategoryOwnerships.read` |
+| `opportunity_stages` | `opportunityStages.read` |
+| `opportunity_prospect_roles` | `opportunityProspectRoles.read` |
+| `task_priorities` | `taskPriorities.read` |
 
 ### OAuth scopes
 

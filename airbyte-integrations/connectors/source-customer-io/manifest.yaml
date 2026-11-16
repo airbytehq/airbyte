@@ -25,7 +25,8 @@ definitions:
           action: FAIL
           failure_type: config_error
           error_message: >-
-            Customer.io rejected the App API key. Enter a valid App API key (not a Track API key),
+            Customer.io rejected the API key. Enter a private API key (sk_...) or an existing
+            App API key (not a public or Track API key),
             select the Region your Customer.io account is hosted in (US or EU), and if your account
             restricts API access by IP address, add the Airbyte IP addresses to the allowlist.
         - type: HttpResponseFilter
@@ -33,8 +34,9 @@ definitions:
           action: FAIL
           failure_type: config_error
           error_message: >-
-            Customer.io denied this App API key access to the requested data. Use an App API key
-            whose scope includes this data, and if your account restricts API access by IP address,
+            Customer.io denied this API key access to the requested data. Use a private API key
+            (sk_...) or an existing App API key (not a public or Track API key) whose scope includes
+            this data, and if your account restricts API access by IP address,
             add the Airbyte IP addresses to the allowlist.
   substream_error_handler:
     type: DefaultErrorHandler
@@ -1123,9 +1125,10 @@ spec:
         type: string
         title: App API Key
         description: >-
-          App API key for the Customer.io workspace you want to sync. In Customer.io, go to
-          Account Settings > API Credentials and create an App API key for that workspace.
-          Copy it right away, because Customer.io shows it only once. Track API keys do not work.
+          Private API key (sk_...) for the Customer.io workspace you want to sync, or an existing
+          legacy App API key. In Customer.io, go to Account Settings > API Credentials > Create
+          API key > Private API key. Copy it right away, because Customer.io shows it only once.
+          Public API keys (pk_) and Track API keys do not work.
         airbyte_secret: true
         order: 0
       region:
