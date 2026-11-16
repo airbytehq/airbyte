@@ -980,15 +980,6 @@ schemas:
           - "null"
         description: Dashboard identifier.
         readOnly: true
-      is_read_only:
-        type:
-          - boolean
-          - "null"
-        description: >-
-          Whether this dashboard is read-only. If true, only the author and
-          admins can make changes to it. Datadog has deprecated this property in
-          favor of the Restriction Policies API, but still returns it.
-        readOnly: true
       layout_type:
         type:
           - string

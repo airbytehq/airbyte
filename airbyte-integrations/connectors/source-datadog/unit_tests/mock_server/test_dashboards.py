@@ -41,3 +41,16 @@ class TestDashboardsStream(TestCase):
         assert len(output.records) == 2
         assert records["active"]["deleted"] is False
         assert records["deleted"]["deleted"] is True
+
+    @HttpMocker()
+    def test_passes_is_read_only_through_untouched(self, http_mocker: HttpMocker) -> None:
+        # Undeclared since 2.0.0 and still sent by Datadog: stripping it from the records would be a breaking change.
+        dashboard = {"id": "read-only", "is_read_only": True}
+        http_mocker.get(_request("false").build(), DatadogPaginatedResponseBuilder("dashboards").with_records([dashboard]).build())
+        http_mocker.get(_request("true").build(), DatadogPaginatedResponseBuilder("dashboards").build())
+
+        output = read_stream("dashboards")
+
+        assert output.errors == []
+        assert len(output.records) == 1
+        assert output.records[0].record.data.get("is_read_only") is True

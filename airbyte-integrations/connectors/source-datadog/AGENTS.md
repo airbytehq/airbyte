@@ -149,7 +149,7 @@ Most properties are typed from the vendor's schemas. These are in live records a
 | `users.attributes.is_access_configurable_bot` | boolean | 2026-11-12 |
 | `logs.attributes.source` | string | 2026-11-13; absent from the same records a day earlier |
 
-`dashboards.is_read_only` has a history. Datadog deprecated it ([guide](https://docs.datadoghq.com/dashboards/guide/is-read-only-deprecation/)), and 2.0.0 removed it from the schema as a breaking change. The API still returns it, and `DashboardSummaryDefinition` still lists it as deprecated, so 2.1.0 declares it again.
+`dashboards.is_read_only` stays undeclared, as since 2.0.0. Datadog is removing support for it and recommends `restricted_roles` or Restriction Policies instead ([guide](https://docs.datadoghq.com/dashboards/guide/is-read-only-deprecation/)), and 2.0.0 removed it from the schema as a breaking change. The API still returns it, so records carry it as an undeclared boolean, in 2.0.25 and in 2.1.0. Do not declare it again: that adds a column that a later major release has to remove. Do not strip it from the records either, with a `RemoveFields` or any other transformation: removing a field that the released version emits is a breaking change.
 
 Every schema keeps `additionalProperties: true`, so a field the schema lacks never fails a sync.
 

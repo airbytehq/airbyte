@@ -12,7 +12,6 @@ from unit_tests.conftest import CONFIG, get_source
 ADDED_FIELDS = [
     ("audit_logs", "attributes.message", "string", None, None),
     ("dashboards", "deleted", "boolean", None, None),
-    ("dashboards", "is_read_only", "boolean", None, None),
     ("logs", "attributes.source", "string", None, None),
     ("monitors", "creator.id", "integer", None, None),
     ("monitors", "draft_status", "string", None, None),
@@ -78,4 +77,11 @@ def test_sync_date_stays_a_plain_string(schemas: dict[str, Mapping[str, Any]], s
     assert "format" not in sync_date, (
         f"`{stream}.sync_date` was declared before 2.1.0, and a `format` on an existing field is a breaking change: "
         "a destination that already has the column as a string would have to turn it into a timestamp."
+    )
+
+
+def test_dashboards_is_read_only_stays_undeclared(schemas: dict[str, Mapping[str, Any]]) -> None:
+    assert "is_read_only" not in schemas["dashboards"]["properties"], (
+        "Datadog is retiring `dashboards.is_read_only`, and 2.0.0 removed it from the schema as a breaking change. "
+        "Declaring it again adds a column that a later major release would have to remove."
     )
