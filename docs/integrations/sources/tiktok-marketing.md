@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 ## Prerequisites
 
-Version 5.5.0 and later support production accounts only. If you use **Sandbox Access Token**, follow the [migration guide](tiktok-marketing-migrations.md#upgrading-to-550) to connect a production advertiser.
+Version 5.5.0 and later support production accounts only. Sandbox access tokens cannot authorize production advertisers. Use production **OAuth2.0** credentials as described in the setup guide below.
 
 <!-- env:cloud -->
 
