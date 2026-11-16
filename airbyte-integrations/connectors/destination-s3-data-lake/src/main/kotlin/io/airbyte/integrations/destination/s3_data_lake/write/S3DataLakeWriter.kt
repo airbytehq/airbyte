@@ -14,9 +14,9 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
-import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
-import javax.inject.Singleton
+import io.airbyte.integrations.destination.s3_data_lake.spec.generateStagingBranchName
+import jakarta.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
@@ -27,7 +27,7 @@ class S3DataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
-    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -35,7 +35,7 @@ class S3DataLakeWriter(
             mutableMapOf()
         val conflictingStreams:
             MutableList<
-                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>
+                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>,
             > =
             mutableListOf()
         catalog.streams.forEach { incomingStream ->
@@ -43,9 +43,8 @@ class S3DataLakeWriter(
                 tableIdGenerator.toTableIdentifier(incomingStream.mappedDescriptor)
             if (processedTableIds.containsKey(incomingTableId)) {
                 val conflictingStream = processedTableIds[incomingTableId]!!
-                conflictingStreams.add(
+                conflictingStreams +=
                     Triple(conflictingStream, incomingStream.mappedDescriptor, incomingTableId)
-                )
             } else {
                 processedTableIds[incomingTableId] = incomingStream.mappedDescriptor
             }
@@ -57,7 +56,7 @@ class S3DataLakeWriter(
                         val s1Desc = s1.toPrettyString()
                         val s2Desc = s2.toPrettyString()
                         "$s1Desc - $s2Desc (both writing to $tableId)"
-                    }
+                    },
             )
         }
     }
@@ -69,7 +68,7 @@ class S3DataLakeWriter(
             icebergTableSynchronizer,
             s3DataLakeUtil,
             icebergUtil,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
+            stagingBranchName = generateStagingBranchName(stream),
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )

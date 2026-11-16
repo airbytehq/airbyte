@@ -67,9 +67,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: created_before
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
             page_size: 1000
+            cursor_value: "{{ last_record['created_at'] }}"
+            stop_condition: "{{ not last_record or last_page_size < 1000 }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at

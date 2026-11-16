@@ -22,7 +22,7 @@ class ProtobufTypeMismatchException(
             streamName: String,
             columnName: String,
             expectedType: AirbyteType,
-            actualValueCase: AirbyteValueProtobuf.ValueCase
+            actualValueCase: AirbyteValueProtobuf.ValueCase,
         ): String {
             return """
                 |Protobuf type mismatch detected in stream '$streamName', column '$columnName':
@@ -31,7 +31,8 @@ class ProtobufTypeMismatchException(
                 |This error indicates that the source connector is using the wrong protobuf setter method.
                 |The source must use the protobuf setter that corresponds to the declared schema type.
                 |Please fix the source connector to use the correct protobuf setter method for this column.
-            """.trimMargin()
+            """
+                .trimMargin()
         }
     }
 }

@@ -99,12 +99,16 @@ The Guardian API source connector supports the following [sync modes](https://do
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 | Namespaces        | No         |
 
 ## Performance considerations
 
-The key that you are assigned is rate-limited and as such any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins.
+The key that you are assigned is rate-limited and as such any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins. A free [developer key](https://open-platform.theguardian.com/access/) allows up to 1 call per second and 500 calls per day. The connector requests 50 results per page (the API maximum) and splits the date range into 7-day windows, so a large initial sync over several years may need to be spread over multiple days.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -113,6 +117,7 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.27 | 2026-10-07 | [88327](https://github.com/airbytehq/airbyte/pull/88327) | Fix pagination requesting page 1 twice (duplicate records) and send `page-size=50` as a query parameter instead of an ignored request body; document incremental sync support |
 | 0.2.26 | 2025-05-25 | [60501](https://github.com/airbytehq/airbyte/pull/60501) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [60109](https://github.com/airbytehq/airbyte/pull/60109) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59627](https://github.com/airbytehq/airbyte/pull/59627) | Update dependencies |

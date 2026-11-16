@@ -32,14 +32,12 @@ definitions:
             locale: "{{config['locale']}}"
             color: "{{config['color']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -214,14 +212,12 @@ definitions:
           http_method: GET
           request_parameters: {}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -396,14 +392,12 @@ definitions:
           http_method: GET
           request_parameters: {}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -530,14 +524,12 @@ definitions:
             locale: "{{config['locale']}}"
             color: "{{config['color']}}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -746,14 +738,12 @@ definitions:
           http_method: GET
           request_parameters: {}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -977,14 +967,12 @@ streams:
           locale: "{{config['locale']}}"
           color: "{{config['color']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -1158,14 +1146,12 @@ streams:
         http_method: GET
         request_parameters: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -1339,14 +1325,12 @@ streams:
         http_method: GET
         request_parameters: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -1472,14 +1456,12 @@ streams:
           locale: "{{config['locale']}}"
           color: "{{config['color']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -1687,14 +1669,12 @@ streams:
         http_method: GET
         request_parameters: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:

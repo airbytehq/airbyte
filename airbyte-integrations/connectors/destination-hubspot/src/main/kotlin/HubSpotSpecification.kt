@@ -23,7 +23,7 @@ enum class CredentialsType(@get:JsonValue val type: String) {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type"
+    property = "type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = OAuthCredentialsSpec::class, name = "OAuth"),

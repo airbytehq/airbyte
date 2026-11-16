@@ -30,13 +30,13 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
     }
 
     override fun mapStreamDescriptor(
-        descriptor: DestinationStream.Descriptor
+        descriptor: DestinationStream.Descriptor,
     ): DestinationStream.Descriptor {
         // Map the special character but not the '+', because only the former is replaced in file
         // paths.
         return descriptor.copy(
             namespace = descriptor.namespace?.replace("ø", "o"),
-            name = descriptor.name.replace("é", "e")
+            name = descriptor.name.replace("é", "e"),
         )
     }
 
@@ -60,8 +60,8 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
                                     .replace(Regex("(^\\d+)")) { "_${it.groupValues[0]}" } to
                                     fieldNameMangler(v)
                             }
-                            .toMap()
-                    )
+                            .toMap(),
+                    ),
                 )
             else -> value
         }
@@ -97,7 +97,7 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
             is ArrayValue -> ArrayValue(value.values.map { timestampsToInteger(it) })
             is ObjectValue ->
                 ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> timestampsToInteger(v) }
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> timestampsToInteger(v) },
                 )
             else -> value
         }

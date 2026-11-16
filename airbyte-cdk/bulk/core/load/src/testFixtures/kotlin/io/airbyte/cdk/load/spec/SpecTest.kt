@@ -51,7 +51,7 @@ abstract class SpecTest(
     fun testSpecOss() {
         testSpec(
             expectedSpecFilename = "expected-spec-oss.json",
-            additionalProperties = mapOf(AIRBYTE_EDITION to "OSS")
+            additionalProperties = mapOf(AIRBYTE_EDITION to "OSS"),
         )
     }
 
@@ -60,7 +60,7 @@ abstract class SpecTest(
         testSpec(
             expectedSpecFilename = "expected-spec-cloud.json",
             additionalProperties = mapOf(AIRBYTE_EDITION to "CLOUD"),
-            featureFlags = arrayOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+            featureFlags = arrayOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
         )
     }
 
@@ -89,7 +89,7 @@ abstract class SpecTest(
         Assertions.assertEquals(
             specMessages.size,
             1,
-            "Expected to receive exactly one connection status message, but got ${specMessages.size}: $specMessages"
+            "Expected to receive exactly one connection status message, but got ${specMessages.size}: $specMessages",
         )
 
         val spec = specMessages.first().spec
@@ -104,7 +104,7 @@ abstract class SpecTest(
             )
         val diff =
             OnlyErrorDiffViewer.from(
-                    DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
+                    DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher),
                 )
                 .toString()
         assertAll(
@@ -112,15 +112,15 @@ abstract class SpecTest(
             {
                 Assertions.assertTrue(
                     diff.isEmpty(),
-                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t")
+                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t"),
                 )
             },
             {
                 Assertions.assertTrue(
                     expectedSpec == actualSpecPrettyPrint,
-                    "File contents did not equal generated spec, see git diff for details"
+                    "File contents did not equal generated spec, see git diff for details",
                 )
-            }
+            },
         )
     }
 }

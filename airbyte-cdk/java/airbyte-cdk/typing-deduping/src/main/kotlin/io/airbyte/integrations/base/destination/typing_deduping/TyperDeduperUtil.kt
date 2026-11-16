@@ -25,7 +25,7 @@ object TyperDeduperUtil {
         executorService: ExecutorService,
         destinationHandler: DestinationHandler<DestinationState>,
         migrations: List<Migration<DestinationState>>,
-        initialStates: List<DestinationInitialStatus<DestinationState>>
+        initialStates: List<DestinationInitialStatus<DestinationState>>,
     ): List<DestinationInitialStatus<DestinationState>> {
         // TODO: Either the migrations run the soft reset and create v2 tables or the actual
         // prepare tables.
@@ -53,10 +53,12 @@ object TyperDeduperUtil {
                 CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()
             getResultsOrLogAndThrowFirst(
                 "The following exceptions were thrown attempting to run migrations:\n",
-                migrationResultFutures
+                migrationResultFutures,
             )
             val migrationResults: Map<StreamId, Migration.MigrationResult<DestinationState>> =
-                futures.mapValues { it.value.toCompletableFuture().join() }
+                futures.mapValues {
+                    it.value.toCompletableFuture().join()
+                }
 
             // Check if we need to refetch DestinationInitialState
             val invalidatedStreams: Set<StreamId> =
@@ -68,7 +70,7 @@ object TyperDeduperUtil {
                     destinationHandler.gatherInitialState(
                         currentStates
                             .filter { invalidatedStreams.contains(it.streamConfig.id) }
-                            .map { it.streamConfig }
+                            .map { it.streamConfig },
                     )
                 LOGGER.info("Updated states: $updatedStates")
             } else {
@@ -77,28 +79,27 @@ object TyperDeduperUtil {
 
             // Update the DestinationInitialStates with the new DestinationStates,
             // and also update initialStates with the refetched states.
-            currentStates =
-                currentStates.map { initialState ->
-                    // migrationResults will always contain an entry for each stream, so we can
-                    // safely use !!
-                    val updatedDestinationState =
-                        migrationResults[initialState.streamConfig.id]!!.updatedDestinationState
-                    if (invalidatedStreams.contains(initialState.streamConfig.id)) {
-                        // We invalidated this stream's DestinationInitialState.
-                        // Find the updated DestinationInitialState, and update it with our new
-                        // DestinationState
-                        return@map updatedStates
-                            .filter { updatedState ->
-                                updatedState.streamConfig.id.equals(initialState.streamConfig.id)
-                            }
-                            .first()
-                            .copy(destinationState = updatedDestinationState)
-                    } else {
-                        // Just update the original DestinationInitialState with the new
-                        // DestinationState.
-                        return@map initialState.copy(destinationState = updatedDestinationState)
-                    }
+            currentStates = currentStates.map { initialState ->
+                // migrationResults will always contain an entry for each stream, so we can
+                // safely use !!
+                val updatedDestinationState =
+                    migrationResults[initialState.streamConfig.id]!!.updatedDestinationState
+                if (invalidatedStreams.contains(initialState.streamConfig.id)) {
+                    // We invalidated this stream's DestinationInitialState.
+                    // Find the updated DestinationInitialState, and update it with our new
+                    // DestinationState
+                    return@map updatedStates
+                        .filter { updatedState ->
+                            updatedState.streamConfig.id.equals(initialState.streamConfig.id)
+                        }
+                        .first()
+                        .copy(destinationState = updatedDestinationState)
+                } else {
+                    // Just update the original DestinationInitialState with the new
+                    // DestinationState.
+                    return@map initialState.copy(destinationState = updatedDestinationState)
                 }
+            }
         }
         return currentStates
     }
@@ -119,7 +120,7 @@ object TyperDeduperUtil {
         destinationHandler: DestinationHandler<DestinationState>,
         v1V2Migrator: DestinationV1V2Migrator,
         v2TableMigrator: V2TableMigrator,
-        parsedCatalog: ParsedCatalog
+        parsedCatalog: ParsedCatalog,
     ) {
         val futures =
             parsedCatalog.streams.map {
@@ -128,12 +129,12 @@ object TyperDeduperUtil {
                         v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, it)
                         v2TableMigrator.migrateIfNecessary(it)
                     },
-                    executorService
+                    executorService,
                 )
             }
         getResultsOrLogAndThrowFirst(
             "The following exceptions were thrown attempting to run migrations:\n",
-            CompletableFutures.allOf(futures.toList()).toCompletableFuture().join()
+            CompletableFutures.allOf(futures.toList()).toCompletableFuture().join(),
         )
     }
 
@@ -145,7 +146,7 @@ object TyperDeduperUtil {
     fun <DestinationState> prepareSchemas(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<DestinationState>,
-        parsedCatalog: ParsedCatalog
+        parsedCatalog: ParsedCatalog,
     ) {
         val rawSchema = parsedCatalog.streams.map { it.id.rawNamespace }
         val finalSchema = parsedCatalog.streams.map { it.id.finalNamespace }
@@ -158,12 +159,12 @@ object TyperDeduperUtil {
         executorService: ExecutorService,
         destinationHandler: DestinationHandler<DestinationState>,
         migration: Migration<DestinationState>,
-        initialStatus: DestinationInitialStatus<DestinationState>
+        initialStatus: DestinationInitialStatus<DestinationState>,
     ): CompletionStage<Migration.MigrationResult<DestinationState>> {
         return CompletableFuture.supplyAsync(
             {
                 LOGGER.info(
-                    "Maybe executing ${migration.javaClass.simpleName} migration for stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}."
+                    "Maybe executing ${migration.javaClass.simpleName} migration for stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}.",
                 )
 
                 // We technically don't need to track this, but might as well hedge against
@@ -174,16 +175,18 @@ object TyperDeduperUtil {
                     migration.migrateIfNecessary(
                         destinationHandler,
                         initialStatus.streamConfig,
-                        initialStatus
+                        initialStatus,
                     )
                 val updatedNeedsSoftReset =
                     softReset || migrationResult.updatedDestinationState.needsSoftReset()
                 return@supplyAsync migrationResult.copy(
                     updatedDestinationState =
-                        migrationResult.updatedDestinationState.withSoftReset(updatedNeedsSoftReset)
+                        migrationResult.updatedDestinationState.withSoftReset(
+                            updatedNeedsSoftReset,
+                        ),
                 )
             },
-            executorService
+            executorService,
         )
     }
 
@@ -206,14 +209,14 @@ object TyperDeduperUtil {
         destinationHandler: DestinationHandler<*>,
         streamConfig: StreamConfig?,
         minExtractedAt: Optional<Instant>,
-        suffix: String
+        suffix: String,
     ) {
         try {
             LOGGER.info(
                 "Attempting typing and deduping for {}.{} with suffix {}",
                 streamConfig!!.id.originalNamespace,
                 streamConfig.id.originalName,
-                suffix
+                suffix,
             )
             val unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false)
             destinationHandler.execute(unsafeSql)
@@ -225,7 +228,7 @@ object TyperDeduperUtil {
                     streamConfig!!.id.originalNamespace,
                     streamConfig.id.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 val saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true)
                 destinationHandler.execute(saferSql)
@@ -235,7 +238,7 @@ object TyperDeduperUtil {
                     streamConfig!!.id.originalNamespace,
                     streamConfig.id.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 throw e
             }
@@ -256,12 +259,12 @@ object TyperDeduperUtil {
     fun executeSoftReset(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         LOGGER.info(
             "Attempting soft reset for stream {} {}",
             streamConfig.id.originalNamespace,
-            streamConfig.id.originalName
+            streamConfig.id.originalName,
         )
         destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig))
         executeTypeAndDedupe(
@@ -269,10 +272,10 @@ object TyperDeduperUtil {
             destinationHandler,
             streamConfig,
             Optional.empty(),
-            SOFT_RESET_SUFFIX
+            SOFT_RESET_SUFFIX,
         )
         destinationHandler.execute(
-            sqlGenerator.overwriteFinalTable(streamConfig.id, SOFT_RESET_SUFFIX)
+            sqlGenerator.overwriteFinalTable(streamConfig.id, SOFT_RESET_SUFFIX),
         )
     }
 }

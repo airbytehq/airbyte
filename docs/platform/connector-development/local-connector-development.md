@@ -17,7 +17,6 @@ When developing connectors locally, you'll want to ensure the following tools ar
 1. [`docker`](#docker) - Used when building and running connector container images.
 1. [`gradle`](#gradle) - Required when working with Java and Kotlin connectors.
 1. [Airbyte CDKs](#airbyte-connector-development-kits-cdks) - The Airbyte Connector Development Kit (CDK) tools, including the [`airbyte-cdk` CLI](#the-airbyte-cdk-cli).
-1. [`airbyte-ci` (deprecated)](#airbyte-ci-deprecated) - Used for a large number of tasks such as building and publishing.
 
 ### Poe the Poet
 
@@ -72,6 +71,55 @@ Using this syntax you can avoid the long task prefixes such as typing `gradle :i
 
 :::
 
+#### Building against mirror repositories
+
+By default the Gradle build resolves artifacts from public repositories. In restricted environments
+where public repositories are unreachable, each repository URL can be pointed at an internal mirror
+using an `airbyte.dependencies.maven.*` property:
+
+| Property | Public default |
+| --- | --- |
+| `airbyte.dependencies.maven.central` | `mavenCentral()` |
+| `airbyte.dependencies.maven.gradlePluginPortal` | `gradlePluginPortal()` |
+| `airbyte.dependencies.maven.airbytePublicJars` | `https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/` |
+| `airbyte.dependencies.maven.jitpack` | `https://jitpack.io` |
+| `airbyte.dependencies.maven.elasticSearchSnapshots` | `https://snapshots.elastic.co/maven/` |
+| `airbyte.dependencies.maven.redshift` | `https://s3.amazonaws.com/redshift-maven-repository/release` |
+| `airbyte.dependencies.maven.confluent` | `https://packages.confluent.io/maven` |
+
+Values can be supplied in any of the ways Gradle accepts project properties:
+
+```bash
+# On the command line
+./gradlew build -P'airbyte.dependencies.maven.central'=https://artifacts.example.com/maven-remote/
+
+# Via the environment, for CI
+export ORG_GRADLE_PROJECT_airbyte.dependencies.maven.central=https://artifacts.example.com/maven-remote/
+
+# Or persistently, in ~/.gradle/gradle.properties
+airbyte.dependencies.maven.central=https://artifacts.example.com/maven-remote/
+```
+
+Setting a property to an empty string omits that repository entirely. This is useful when no mirror
+exists for a given upstream: connectors that need it then fail with a clear dependency resolution
+error rather than hanging on an unreachable host.
+
+```bash
+./gradlew build -P'airbyte.dependencies.maven.redshift'=
+```
+
+To verify which repositories a given invocation resolved, run with `--info` and look for the
+`Searched in the following repositories` output on a resolution failure.
+
+Gradle itself is downloaded by the wrapper before any of these properties are read, so mirroring the
+distribution means changing `distributionUrl` in `gradle/wrapper/gradle-wrapper.properties`. The
+wrapper does not read this value from a system property or environment variable, so either edit the
+file locally or regenerate it:
+
+```bash
+./gradlew wrapper --gradle-distribution-url=https://artifacts.example.com/gradle-service-remote/gradle-8.14-bin.zip
+```
+
 ### Airbyte Connector Development Kits (CDKs)
 
 What we loosely refer to as the "Airbyte CDK" is actually a combination of several CDKs and tools:
@@ -95,14 +143,6 @@ uv tool install --upgrade 'airbyte-cdk[dev]'
 
 For a list of available commands in the `airbyte-cdk` CLI, run `airbyte-cdk --help`.
 
-### airbyte-ci (deprecated)
-
-Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific tasks. See `airbyte-ci --help` for a list of commands you can run.
-
-:::warning
-The Airbyte CI tool is now deprecated and will be phased out shortly. Most airbyte-ci commands have a simpler equivalent in Poe, which you can discover using `poe --help`.
-:::
-
 ## Common Development Tasks
 
 ### Installing Connector Dependencies
@@ -122,6 +162,9 @@ poe test-unit-tests
 
 #  Run all integration tests:
 poe test-integration-tests
+
+# Python sources: run the in-process standard tests, with the CDK version the connector pins:
+poe test-standard-tests
 ```
 
 :::tip
@@ -134,20 +177,24 @@ poe test-integration-tests
 
 ### Listing and Fetching Secrets
 
-You can use either Poe or `airbyte-cdk` to fetch secrets. These are equivalent:
+You can use either Poe or `airbyte-internal-ops` to fetch secrets. These are equivalent:
 
 ```bash
-airbyte-cdk secrets fetch
+uvx airbyte-internal-ops secrets fetch
 poe fetch-secrets
 ```
 
-Using the `airbyte-cdk` you can also list the available secrets (if any) for the given connector:
+Using `airbyte-internal-ops` you can also list the available secrets (if any) for the given connector:
 
 ```bash
-airbyte-cdk secrets list
+uvx airbyte-internal-ops secrets list
 ```
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
+
+:::note
+The `airbyte-cdk secrets fetch|list` commands are still available for backward compatibility, but `airbyte-internal-ops secrets ...` is now the recommended interface.
+:::
 
 ## Managing Connector Secrets in GSM
 
@@ -174,13 +221,13 @@ To understand which secrets are required for a connector, consult the `metadata.
 
 ### Fetching and Listing Connector Secrets Locally
 
-To view a list of secrets, or to fetch them locally, you can use the [Airbyte CDK CLI](#the-airbyte-cdk-cli):
+To view a list of secrets, or to fetch them locally, you can use the `airbyte-internal-ops` CLI via `uvx`. The canonical CLI reference lives at [airbyte_ops_mcp/cli/secrets](https://airbytehq.github.io/airbyte-ops-mcp/airbyte_ops_mcp/cli/secrets.html).
 
-- `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
-- `airbyte-cdk secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
+- `uvx airbyte-internal-ops secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
+- `uvx airbyte-internal-ops secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
   - Note: The `secrets list` command is purely a metadata operation; no secrets are downloaded to your machine locally when running this step.
-- `airbyte-cdk secrets fetch`
-  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them available for local connector testing.
+- `uvx airbyte-internal-ops secrets fetch`
+  - Fetching the secrets saves them to local `.json` files within the connector's `secrets` directory, making them available for local connector testing.
 
 :::caution
 The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that this is true for your case, and please always use caution whenever handling sensitive credentials.
@@ -193,7 +240,6 @@ Maintainers can execute any of the following connector admin commands upon reque
 - `/bump-version` - Run the bump version command, which advances the connector version(s) and adds a changelog entry for any modified connector(s).
 - `/format-fix` - Fixes any formatting issues.
 - `/run-connector-tests` - Run the connector tests for any modified connectors.
-- `/run-cat-tests` - Run the legacy connector acceptance tests (CAT) for any modified connectors. This is helpful if the connector has poor test coverage overall.
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/poe` - Run a Poe task.
 

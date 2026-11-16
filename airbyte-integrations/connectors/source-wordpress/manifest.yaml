@@ -187,6 +187,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: modified_after
+        lookback_window: "PT{{ config.get('lookback_window', 0) }}H"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -236,6 +237,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: after
+        lookback_window: "PT{{ config.get('lookback_window', 0) }}H"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -284,7 +286,8 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: "modified_after\t"
+          field_name: modified_after
+        lookback_window: "PT{{ config.get('lookback_window', 0) }}H"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,6 +415,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: modified_after
+        lookback_window: "PT{{ config.get('lookback_window', 0) }}H"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -581,6 +585,18 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         format: date-time
         order: 3
+      lookback_window:
+        type: integer
+        description: >-
+          Lookback window in hours for incremental streams (editor_blocks,
+          comments, pages, media). Specifies how many hours of previously
+          synced data to re-fetch on each sync to prevent data loss.
+          Duplicates are handled by destination deduplication. Set to 0 to
+          disable.
+        title: Lookback Window (hours)
+        minimum: 0
+        default: 0
+        order: 4
     additionalProperties: true
 
 metadata:

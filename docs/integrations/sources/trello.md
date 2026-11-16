@@ -76,6 +76,10 @@ The connector is restricted by normal Trello [requests limitation](https://devel
 
 The Trello connector should not run into Trello API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -83,6 +87,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.3.11 | 2026-11-09 | [91444](https://github.com/airbytehq/airbyte/pull/91444) | Upgrade to CDK 7 and update the board partition router to read parent streams through the CDK 7 partition API |
 | 1.3.10 | 2025-08-24 | [65474](https://github.com/airbytehq/airbyte/pull/65474) | Update dependencies |
 | 1.3.9 | 2025-08-10 | [64813](https://github.com/airbytehq/airbyte/pull/64813) | Update dependencies |
 | 1.3.8 | 2025-08-02 | [64394](https://github.com/airbytehq/airbyte/pull/64394) | Update dependencies |

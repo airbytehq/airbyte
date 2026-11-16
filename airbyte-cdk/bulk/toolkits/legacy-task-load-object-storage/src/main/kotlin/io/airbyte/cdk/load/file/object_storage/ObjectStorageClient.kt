@@ -9,19 +9,27 @@ import kotlinx.coroutines.flow.Flow
 
 interface ObjectStorageClient<T : RemoteObject<*>> {
     suspend fun list(prefix: String): Flow<T>
+
     suspend fun move(remoteObject: T, toKey: String): T
+
     suspend fun move(key: String, toKey: String): T
+
     suspend fun <U> get(key: String, block: (InputStream) -> U): U
+
     suspend fun getMetadata(key: String): Map<String, String>
+
     suspend fun put(key: String, bytes: ByteArray): T
+
     suspend fun delete(remoteObject: T)
+
     suspend fun delete(key: String)
+
     suspend fun delete(keys: Set<String>)
 
     /** Experimental sane replacement interface */
     suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String> = emptyMap()
+        metadata: Map<String, String> = emptyMap(),
     ): StreamingUpload<T>
 }
 

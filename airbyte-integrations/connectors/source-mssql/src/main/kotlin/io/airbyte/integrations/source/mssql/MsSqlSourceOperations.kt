@@ -18,7 +18,7 @@ import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -83,7 +83,11 @@ class MsSqlSourceOperations :
                         if (type.precision!! < 25) FloatFieldType else DoubleFieldType
                     JDBCType.DOUBLE -> DoubleFieldType
                     JDBCType.NUMERIC,
-                    JDBCType.DECIMAL -> BigDecimalFieldType
+                    JDBCType.DECIMAL ->
+                        // SQL Server NUMERIC/DECIMAL with scale 0 holds whole numbers; map to
+                        // Airbyte integer so downstream destinations preserve integral semantics
+                        // (e.g. Snowflake NUMBER vs FLOAT).
+                        if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
                     JDBCType.CHAR,
                     JDBCType.VARCHAR,
                     JDBCType.LONGVARCHAR,
@@ -245,8 +249,7 @@ class MsSqlSourceOperations :
         GEOMETRY(MsSqlServerGeometryFieldType, "GEOMETRY"),
         GEOGRAPHY(MsSqlServerGeographyFieldType, "GEOGRAPHY"),
         DOUBLE(DoubleFieldType, "MONEY", "SMALLMONEY"),
-        HIERARCHY(MsSqlServerHierarchyFieldType, "HIERARCHYID"),
-        ;
+        HIERARCHY(MsSqlServerHierarchyFieldType, "HIERARCHYID");
 
         constructor(
             jdbcType: JdbcFieldType<*>,
@@ -275,7 +278,7 @@ class MsSqlSourceOperations :
 
     fun SelectQuerySpec.sql(): String {
         val components: List<String> =
-            listOf(sql(select, limit), from.sql(), where.sql(), orderBy.sql())
+            listOf(sql(select, limit), from.sql(select), where.sql(), orderBy.sql())
         val sql: String = components.filter { it.isNotBlank() }.joinToString(" ")
         return sql
     }
@@ -290,12 +293,36 @@ class MsSqlSourceOperations :
                 Limit(0) -> "TOP 0 "
                 is Limit -> "TOP ${limit.n} "
             }
-        return "SELECT $topClause" +
-            when (selectNode) {
-                is SelectColumns -> selectNode.columns.joinToString(", ") { it.sql() }
-                is SelectColumnMaxValue -> "MAX(${selectNode.column.sql()})"
-            }
+        return "SELECT $topClause" + selectNode.projection()
     }
+
+    /** Renders the projection list for the outer SELECT of a [SelectQuerySpec]. */
+    fun SelectNode.projection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.sql() }
+            is SelectColumnMaxValue -> "MAX(${column.sql()})"
+        }
+
+    /**
+     * Renders the projection list used by the inner subquery of [FromSample]. Emits raw quoted
+     * column identifiers (never per-column transformations such as `[col].ToString()` used for
+     * hierarchy columns) so that:
+     * 1. The derived `randomly_sampled` table exposes every column by its original name, which is
+     *
+     * ```
+     *    what the outer SELECT references when applying transformations.
+     * ```
+     * 2. HIDDEN period columns on system-versioned temporal tables (`PERIOD FOR SYSTEM_TIME`)
+     *
+     * ```
+     *    remain accessible to the outer query; `SELECT *` would silently drop them.
+     * ```
+     */
+    fun SelectNode.innerSampleProjection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.id.quoted() }
+            is SelectColumnMaxValue -> column.id.quoted()
+        }
 
     /**
      * Quotes an identifier for SQL Server using square brackets. If the identifier contains a
@@ -304,10 +331,10 @@ class MsSqlSourceOperations :
      */
     fun String.quoted(): String = "[${this.replace("]", "]]")}]"
 
-    fun Field.sql(): String =
+    fun DataField.sql(): String =
         if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
-    fun FromNode.sql(): String =
+    fun FromNode.sql(outerSelect: SelectNode): String =
         when (this) {
             NoFrom -> ""
             is From -> {
@@ -316,15 +343,17 @@ class MsSqlSourceOperations :
             }
             is FromSample -> {
                 val ns = this.namespace
+                val maybeWhere = where?.sql() ?: ""
                 if (sampleRateInv == 1L) {
-                    if (ns == null) "FROM ${name.quoted()}"
-                    else "FROM ${ns.quoted()}.${name.quoted()}"
+                    if (ns == null) "FROM ${name.quoted()} $maybeWhere"
+                    else "FROM ${ns.quoted()}.${name.quoted()} $maybeWhere"
                 } else {
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
+                    val innerProjection = outerSelect.innerSampleProjection()
 
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
+                    "FROM (SELECT TOP $sampleSize $innerProjection FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }
@@ -352,7 +381,8 @@ class MsSqlSourceOperations :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        from.bindings() + where.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -374,7 +404,13 @@ class MsSqlSourceOperations :
         when (this) {
             NoLimit,
             Limit(0),
-            is Limit, -> emptyList()
+            is Limit -> emptyList()
+        }
+
+    fun FromNode.bindings(): List<SelectQuery.Binding> =
+        when (this) {
+            is FromSample -> where?.bindings() ?: emptyList()
+            else -> emptyList()
         }
 
     override val globalCursor: MetaField = MsSqlServerCdcMetaFields.CDC_CURSOR
@@ -434,13 +470,13 @@ class MsSqlSourceOperations :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         // Add CDC_UPDATED_AT field
         recordData[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 timestamp,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         // Add CDC_LSN field with empty string as default
@@ -471,7 +507,7 @@ class MsSqlSourceOperations :
         recordData[MsSqlServerCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
                 lsnValue,
-                MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
+                MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
     }
 

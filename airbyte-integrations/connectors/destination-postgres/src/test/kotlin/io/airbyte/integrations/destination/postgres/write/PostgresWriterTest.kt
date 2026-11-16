@@ -57,7 +57,7 @@ class PostgresWriterTest {
                 streamStateStore,
                 postgresClient,
                 tempTableNameGenerator,
-                postgresConfiguration
+                postgresConfiguration,
             )
     }
 
@@ -75,7 +75,7 @@ class PostgresWriterTest {
             ColumnSchema(
                 inputSchema = emptyMap(),
                 inputToFinalColumnNames = emptyMap(),
-                finalSchema = emptyMap()
+                finalSchema = emptyMap(),
             )
         val importType = Dedupe(primaryKey = emptyList(), cursor = emptyList())
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
@@ -114,7 +114,7 @@ class PostgresWriterTest {
             ColumnSchema(
                 inputSchema = emptyMap(),
                 inputToFinalColumnNames = emptyMap(),
-                finalSchema = emptyMap()
+                finalSchema = emptyMap(),
             )
         val importType = Dedupe(primaryKey = emptyList(), cursor = emptyList())
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
@@ -138,7 +138,7 @@ class PostgresWriterTest {
 
         assertTrue(
             loader is DirectLoadTableAppendStreamLoader,
-            "Should use Append loader in raw mode even if importType is Dedupe"
+            "Should use Append loader in raw mode even if importType is Dedupe",
         )
     }
 
@@ -156,7 +156,7 @@ class PostgresWriterTest {
             ColumnSchema(
                 inputSchema = emptyMap(),
                 inputToFinalColumnNames = emptyMap(),
-                finalSchema = emptyMap()
+                finalSchema = emptyMap(),
             )
         // Use a mock for ImportType that is NOT Dedupe
         val appendImportType = mockk<ImportType>()

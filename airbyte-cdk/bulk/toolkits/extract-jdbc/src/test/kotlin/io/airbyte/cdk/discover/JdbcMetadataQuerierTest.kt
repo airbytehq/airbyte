@@ -30,6 +30,129 @@ class JdbcMetadataQuerierTest {
         )
 
     @Test
+    fun testEmptyNamespacesDiscoversAllSchemas() {
+        h2.execute("CREATE SCHEMA OTHER_SCHEMA")
+        h2.execute("CREATE TABLE OTHER_SCHEMA.extra (k INT PRIMARY KEY)")
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+            }
+        val baseConfig: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+        // Bypass the factory default of {"PUBLIC"} to exercise the empty-namespaces path.
+        val config: H2SourceConfiguration = baseConfig.copy(namespaces = emptySet())
+        factory.session(config).use { mdq: MetadataQuerier ->
+            val namespaces: Set<String> = mdq.streamNamespaces().toSet()
+            Assertions.assertTrue(
+                namespaces.contains("PUBLIC"),
+                "expected PUBLIC in discovered namespaces $namespaces",
+            )
+            Assertions.assertTrue(
+                namespaces.contains("OTHER_SCHEMA"),
+                "expected OTHER_SCHEMA in discovered namespaces $namespaces",
+            )
+            val publicStreams: List<String> = mdq.streamNames("PUBLIC").map { it.toString() }
+            val otherStreams: List<String> = mdq.streamNames("OTHER_SCHEMA").map { it.toString() }
+            Assertions.assertTrue(
+                publicStreams.contains("PUBLIC.KV"),
+                "expected PUBLIC.KV among $publicStreams",
+            )
+            Assertions.assertTrue(
+                otherStreams.contains("OTHER_SCHEMA.EXTRA"),
+                "expected OTHER_SCHEMA.EXTRA among $otherStreams",
+            )
+            // Columns should have been discovered for tables in both schemas.
+            val otherDesc = StreamDescriptor().withNamespace("OTHER_SCHEMA").withName("EXTRA")
+            val otherStreamID: StreamIdentifier = StreamIdentifier.from(otherDesc)
+            val otherTable = (mdq as JdbcMetadataQuerier).findTableName(otherStreamID)
+            Assertions.assertNotNull(otherTable)
+            val otherColumns = mdq.columnMetadata(otherTable!!).map { it.name }
+            Assertions.assertTrue(
+                otherColumns.contains("K"),
+                "expected column K on OTHER_SCHEMA.EXTRA, got $otherColumns",
+            )
+        }
+    }
+
+    @Test
+    fun testEmptyNamespacesRespectsIgnoredNamespaces() {
+        h2.execute("CREATE SCHEMA OTHER_SCHEMA")
+        h2.execute("CREATE TABLE OTHER_SCHEMA.extra (k INT PRIMARY KEY)")
+        val filteringFactory =
+            JdbcMetadataQuerier.Factory(
+                selectQueryGenerator = H2SourceOperations(),
+                fieldTypeMapper = H2SourceOperations(),
+                checkQueries = JdbcCheckQueries(),
+                constants = DefaultJdbcConstants(ignoredNamespaces = setOf("OTHER_SCHEMA")),
+            )
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+            }
+        val baseConfig: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+
+        // Auto-discovery path: OTHER_SCHEMA must be filtered out.
+        val autoConfig: H2SourceConfiguration = baseConfig.copy(namespaces = emptySet())
+        filteringFactory.session(autoConfig).use { mdq: MetadataQuerier ->
+            val namespaces: Set<String> = mdq.streamNamespaces().toSet()
+            Assertions.assertFalse(
+                namespaces.contains("OTHER_SCHEMA"),
+                "OTHER_SCHEMA should have been filtered out, got $namespaces",
+            )
+            Assertions.assertTrue(
+                namespaces.contains("PUBLIC"),
+                "expected PUBLIC in $namespaces",
+            )
+        }
+
+        // Explicit-namespace path: naming OTHER_SCHEMA bypasses the filter.
+        val explicitConfig: H2SourceConfiguration =
+            baseConfig.copy(namespaces = setOf("OTHER_SCHEMA"))
+        filteringFactory.session(explicitConfig).use { mdq: MetadataQuerier ->
+            val namespaces: Set<String> = mdq.streamNamespaces().toSet()
+            Assertions.assertTrue(
+                namespaces.contains("OTHER_SCHEMA"),
+                "expected OTHER_SCHEMA (explicitly requested) in $namespaces",
+            )
+        }
+    }
+
+    @Test
+    fun testIgnoredStreamsFiltersTablesAndViews() {
+        h2.execute("CREATE TABLE hidden (id INT PRIMARY KEY)")
+        h2.execute("CREATE VIEW kv_view AS SELECT * FROM kv")
+        val filteringFactory =
+            JdbcMetadataQuerier.Factory(
+                selectQueryGenerator = H2SourceOperations(),
+                fieldTypeMapper = H2SourceOperations(),
+                checkQueries = JdbcCheckQueries(),
+                constants = DefaultJdbcConstants(ignoredStreams = setOf("HIDDEN", "KV_VIEW")),
+            )
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+            }
+        val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+        filteringFactory.session(config).use { mdq: MetadataQuerier ->
+            val streams: List<String> = mdq.streamNames("PUBLIC").map { it.name }
+            Assertions.assertFalse(
+                streams.contains("HIDDEN"),
+                "HIDDEN table should have been filtered, got $streams",
+            )
+            Assertions.assertFalse(
+                streams.contains("KV_VIEW"),
+                "KV_VIEW view should have been filtered, got $streams",
+            )
+            Assertions.assertTrue(
+                streams.contains("KV"),
+                "expected KV in $streams",
+            )
+        }
+    }
+
+    @Test
     fun test() {
         val configPojo =
             H2SourceConfigurationSpecification().apply {

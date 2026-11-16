@@ -45,6 +45,10 @@ The SurveyCTO source connector supports the following streams:
 
 - Surveycto
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -52,6 +56,7 @@ The SurveyCTO source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------- |
+| 0.1.47 | 2026-10-20 | [89524](https://github.com/airbytehq/airbyte/pull/89524) | Upgrade to airbyte-cdk 7 and Python 3.13 base image; fix connection check failing with urllib3 2.x |
 | 0.1.46 | 2025-05-24 | [60563](https://github.com/airbytehq/airbyte/pull/60563) | Update dependencies |
 | 0.1.45 | 2025-05-10 | [60167](https://github.com/airbytehq/airbyte/pull/60167) | Update dependencies |
 | 0.1.44 | 2025-05-04 | [59619](https://github.com/airbytehq/airbyte/pull/59619) | Update dependencies |

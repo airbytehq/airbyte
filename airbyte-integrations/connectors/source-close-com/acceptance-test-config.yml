@@ -63,7 +63,6 @@ acceptance_tests:
             bypass_reason: "return records randomly"
           - name: opportunity_status_change_activities
             bypass_reason: "return records randomly"
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

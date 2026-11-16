@@ -1,4 +1,4 @@
-# Asynchronous Job streams
+# Asynchronous Job Streams
 
 In the Connector Builder UI, you can create two types of streams: **Synchronous Request** and **Asynchronous Job**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
 

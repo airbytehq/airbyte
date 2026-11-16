@@ -19,6 +19,10 @@ class ConfigBuilder:
         self._config["start_date"] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         return self
 
+    def end_date(self, end_date: datetime) -> "ConfigBuilder":
+        self._config["end_date"] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return self
+
     def stream_slice_step(self, stream_slice_step: str) -> "ConfigBuilder":
         self._config["stream_slice_step"] = stream_slice_step
         return self
@@ -35,8 +39,20 @@ class ConfigBuilder:
         self._config["client_secret"] = client_secret
         return self
 
+    def auth_type(self, auth_type: str) -> "ConfigBuilder":
+        self._config["auth_type"] = auth_type
+        return self
+
+    def domain_url(self, domain_url: str) -> "ConfigBuilder":
+        self._config["domain_url"] = domain_url
+        return self
+
     def refresh_token(self, refresh_token: str) -> "ConfigBuilder":
         self._config["refresh_token"] = refresh_token
+        return self
+
+    def preserve_na_values(self, preserve_na_values: bool) -> "ConfigBuilder":
+        self._config["preserve_na_values"] = preserve_na_values
         return self
 
     def build(self) -> Mapping[str, Any]:

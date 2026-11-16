@@ -34,7 +34,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['next'] }}"
+            cursor_value: "{{ response.get('data', {}).get('next', {}) }}"
+            stop_condition: "{{ not response.get('data', {}).get('next', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -108,10 +109,13 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['next'] }}"
+            cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+            stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -335,10 +339,13 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['next'] }}"
+            cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+            stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -369,10 +376,13 @@ definitions:
                     paginator:
                       type: DefaultPaginator
                       page_token_option:
-                        type: RequestPath
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: next
                       pagination_strategy:
                         type: CursorPagination
-                        cursor_value: "{{ last_record['next'] }}"
+                        cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+                        stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
                   schema_loader:
                     type: InlineSchemaLoader
                     schema:
@@ -558,7 +568,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_record['next'] }}"
+          cursor_value: "{{ response.get('data', {}).get('next', {}) }}"
+          stop_condition: "{{ not response.get('data', {}).get('next', {}) }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -631,10 +642,13 @@ streams:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestPath
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_record['next'] }}"
+          cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+          stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -848,10 +862,13 @@ streams:
       paginator:
         type: DefaultPaginator
         page_token_option:
-          type: RequestPath
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_record['next'] }}"
+          cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+          stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -882,10 +899,13 @@ streams:
                   paginator:
                     type: DefaultPaginator
                     page_token_option:
-                      type: RequestPath
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: next
                     pagination_strategy:
                       type: CursorPagination
-                      cursor_value: "{{ last_record['next'] }}"
+                      cursor_value: "{{ response.get('pagination', {}).get('next', {}) }}"
+                      stop_condition: "{{ not response.get('pagination', {}).get('next', {}) }}"
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:

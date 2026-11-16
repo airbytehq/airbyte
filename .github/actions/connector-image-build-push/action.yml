@@ -76,11 +76,11 @@ runs:
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-    - name: Install Poe and yq
+    - name: Install Poe and check yq version
       shell: bash
       run: |
         uv tool install poethepoet
-        sudo snap install yq
+        yq --version
 
     - name: Validate inputs and resolve variables
       id: vars

@@ -40,6 +40,10 @@ The RD Station Marketing source connector supports the following [sync modes](ht
 
 Each endpoint has its own performance limitations, which also consider the account plan. For more informations, visit the page [API request limit](https://developers.rdstation.com/reference/limite-de-requisicoes-da-api?lng=en).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

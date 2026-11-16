@@ -9,8 +9,8 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
@@ -51,19 +51,21 @@ class DefaultJdbcPartitionFactory(
             return null
         }
 
-        if (opaqueStateValue == null) {
+        // The CDK emits an empty object as the placeholder state for a stream that has not
+        // checkpointed yet; it carries no resume point, so treat it like no state at all.
+        if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState)
         }
         val sv: DefaultJdbcStreamStateValue =
             Jsons.treeToValue(opaqueStateValue, DefaultJdbcStreamStateValue::class.java)
-        val pkMap: Map<Field, JsonNode> =
+        val pkMap: Map<EmittedField, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
                     handler.accept(ResetStream(stream.id))
                     streamState.reset()
                     return coldStart(streamState)
                 }
-        val cursorPair: Pair<Field, JsonNode>? =
+        val cursorPair: Pair<EmittedField, JsonNode>? =
             if (sv.cursors.isEmpty()) {
                 null
             } else {
@@ -93,11 +95,11 @@ class DefaultJdbcPartitionFactory(
                     streamState,
                     primaryKey = pkMap.keys.toList(),
                     lowerBound = pkMap.values.toList(),
-                    upperBound = null
+                    upperBound = null,
                 )
             }
         } else {
-            val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
+            val (cursor: EmittedField, cursorCheckpoint: JsonNode) = cursorPair
             if (!isCursorBasedIncremental) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
@@ -118,23 +120,23 @@ class DefaultJdbcPartitionFactory(
                 null
             } else {
                 // Incremental ongoing.
-                DefaultJdbcCursorIncrementalPartition(
+                DefaultUnsplittableJdbcCursorIncrementalPartition(
                     selectQueryGenerator,
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
-                    cursorUpperBound = streamState.cursorUpperBound,
+                    explicitCursorUpperBound = streamState.cursorUpperBound,
                 )
             }
         }
     }
 
-    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<EmittedField, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
-        val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val fields: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
             handler.accept(
                 InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
@@ -144,7 +146,9 @@ class DefaultJdbcPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.cursorPair(
+        stream: Stream,
+    ): Pair<EmittedField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -152,8 +156,8 @@ class DefaultJdbcPartitionFactory(
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? = stream.schema.find { it.id == cursorLabel }
-        if (cursor !is Field) {
+        val cursor: DataOrMetaField? = stream.schema.find { it.id == cursorLabel }
+        if (cursor !is EmittedField) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),
             )
@@ -170,7 +174,7 @@ class DefaultJdbcPartitionFactory(
 
     private fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return DefaultJdbcUnsplittableSnapshotPartition(
@@ -186,13 +190,13 @@ class DefaultJdbcPartitionFactory(
                 upperBound = null,
             )
         }
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
         if (pkChosenFromCatalog.isEmpty()) {
             return DefaultJdbcUnsplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
             )
         }
         return DefaultJdbcSplittableSnapshotWithCursorPartition(
@@ -210,7 +214,7 @@ class DefaultJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: DefaultJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<DefaultJdbcPartition> {
         val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
             opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }
@@ -220,18 +224,16 @@ class DefaultJdbcPartitionFactory(
                 unsplitPartition.split(splitPartitionBoundaries)
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
-            is DefaultJdbcCursorIncrementalPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
-            is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
-            is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            else -> listOf(unsplitPartition)
         }
     }
 
     private fun DefaultJdbcSplittableSnapshotPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>,
     ): List<DefaultJdbcSplittableSnapshotPartition> {
-        val inners: List<List<JsonNode>> =
-            splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        val inners: List<List<JsonNode>> = splitPointValues.mapNotNull {
+            it.pkMap(streamState.stream)?.values?.toList()
+        }
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -246,10 +248,11 @@ class DefaultJdbcPartitionFactory(
     }
 
     private fun DefaultJdbcSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>,
     ): List<DefaultJdbcSplittableSnapshotWithCursorPartition> {
-        val inners: List<List<JsonNode>> =
-            splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        val inners: List<List<JsonNode>> = splitPointValues.mapNotNull {
+            it.pkMap(streamState.stream)?.values?.toList()
+        }
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -261,24 +264,6 @@ class DefaultJdbcPartitionFactory(
                 upperBound,
                 cursor,
                 cursorUpperBound,
-            )
-        }
-    }
-
-    private fun DefaultJdbcCursorIncrementalPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
-    ): List<DefaultJdbcCursorIncrementalPartition> {
-        val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
-        val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners
-        val ubs: List<JsonNode> = inners + listOf(cursorUpperBound)
-        return lbs.zip(ubs).mapIndexed { idx: Int, (lowerBound, upperBound) ->
-            DefaultJdbcCursorIncrementalPartition(
-                selectQueryGenerator,
-                streamState,
-                cursor,
-                lowerBound,
-                isLowerBoundIncluded = idx == 0,
-                upperBound,
             )
         }
     }

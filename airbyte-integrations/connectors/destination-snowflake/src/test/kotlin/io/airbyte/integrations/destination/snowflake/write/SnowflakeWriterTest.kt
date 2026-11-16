@@ -46,14 +46,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -65,8 +65,8 @@ internal class SnowflakeWriterTest {
                         stream to
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
-                                tempTable = null
-                            )
+                                tempTable = null,
+                            ),
                     )
             }
         val streamStateStore = mockk<StreamStateStore<DirectLoadTableExecutionConfig>>()
@@ -105,14 +105,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -125,7 +125,7 @@ internal class SnowflakeWriterTest {
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
                                 tempTable = null,
-                            )
+                            ),
                     )
             }
         val tempTableNameGenerator =
@@ -167,14 +167,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -187,7 +187,7 @@ internal class SnowflakeWriterTest {
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
                                 tempTable = null,
-                            )
+                            ),
                     )
             }
         val tempTableNameGenerator =
@@ -229,14 +229,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -249,7 +249,7 @@ internal class SnowflakeWriterTest {
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
                                 tempTable = null,
-                            )
+                            ),
                     )
             }
         val tempTableNameGenerator =
@@ -292,14 +292,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -311,8 +311,8 @@ internal class SnowflakeWriterTest {
                         stream to
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
-                                tempTable = null
-                            )
+                                tempTable = null,
+                            ),
                     )
             }
         val streamStateStore = mockk<StreamStateStore<DirectLoadTableExecutionConfig>>()
@@ -353,14 +353,14 @@ internal class SnowflakeWriterTest {
                             ColumnSchema(
                                 inputToFinalColumnNames = emptyMap(),
                                 finalSchema = emptyMap(),
-                                inputSchema = emptyMap()
+                                inputSchema = emptyMap(),
                             ),
-                        importType = Append
+                        importType = Append,
                     )
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor(
                         namespace = tableName.namespace,
-                        name = tableName.name
+                        name = tableName.name,
                     )
             }
         val catalog = DestinationCatalog(listOf(stream))
@@ -372,8 +372,8 @@ internal class SnowflakeWriterTest {
                         stream to
                             DirectLoadInitialStatus(
                                 realTable = DirectLoadTableStatus(false),
-                                tempTable = null
-                            )
+                                tempTable = null,
+                            ),
                     )
             }
         val streamStateStore = mockk<StreamStateStore<DirectLoadTableExecutionConfig>>()

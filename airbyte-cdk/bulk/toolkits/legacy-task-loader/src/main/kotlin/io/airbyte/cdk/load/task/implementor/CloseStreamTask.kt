@@ -15,7 +15,7 @@ import jakarta.inject.Singleton
 class CloseStreamTask(
     private val syncManager: SyncManager,
     val streamDescriptor: DestinationStream.Descriptor,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
 ) : Task {
     override val terminalCondition: TerminalCondition = SelfTerminating
 

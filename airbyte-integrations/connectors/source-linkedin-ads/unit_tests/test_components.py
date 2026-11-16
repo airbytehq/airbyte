@@ -2,10 +2,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
+from typing import Any, Mapping, Union
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from requests import Response
 from requests.exceptions import InvalidURL
 from requests.models import PreparedRequest
@@ -15,6 +18,26 @@ from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
+
+
+def test_record_extractor_allows_empty_final_page(components_module: Any, requests_mock: Any) -> None:
+    url = "https://api.linkedin.com/rest/adAccounts"
+    requests_mock.get(url, [{"json": {"elements": [{"id": 1}]}}, {"json": {"elements": []}}])
+    extractor = components_module.LinkedInAdsRecordExtractor()
+    assert list(extractor.extract_records(requests.get(url))) == [{"id": 1}]
+    assert list(extractor.extract_records(requests.get(url))) == []
+
+
+_DATA_VOLUME_RATE_LIMIT_MESSAGE = (
+    "The data request limit has been exceeded. More than 45 million metric values were requested in a 5-minute window."
+)
+
+
+def _response(status_code: int, body: Union[Mapping[str, str], bytes]) -> Response:
+    response = Response()
+    response.status_code = status_code
+    response._content = body if isinstance(body, bytes) else json.dumps(body).encode()
+    return response
 
 
 @pytest.fixture
@@ -149,3 +172,49 @@ def test_linkedin_ads_error_handler_http_response(components_module):
 
     # For a successful response, DefaultErrorHandler returns SUCCESS action
     assert error_resolution.response_action == ResponseAction.SUCCESS
+
+
+@pytest.mark.parametrize(
+    "body,expected_message",
+    [
+        pytest.param(
+            {"message": _DATA_VOLUME_RATE_LIMIT_MESSAGE},
+            "LinkedIn Ads metric-value rate limit is exceeded.",
+            id="data_volume_throttle",
+        ),
+        pytest.param(
+            {"message": "Rate limit exceeded for LinkedIn API."},
+            "HTTP Status Code: 429. Error: Too many requests.",
+            id="count_throttle",
+        ),
+        pytest.param({}, "HTTP Status Code: 429. Error: Too many requests.", id="missing_message"),
+        pytest.param(b"not-json", "HTTP Status Code: 429. Error: Too many requests.", id="malformed_body"),
+    ],
+)
+def test_linkedin_ads_error_handler_rate_limit_response(components_module, body, expected_message):
+    error_handler = components_module.LinkedInAdsErrorHandler(parameters={}, config={})
+
+    error_resolution = error_handler.interpret_response(_response(429, body))
+
+    assert error_resolution.response_action == ResponseAction.RATE_LIMITED
+    assert error_resolution.failure_type == FailureType.transient_error
+    assert error_resolution.error_message == expected_message
+
+
+@pytest.mark.parametrize(
+    "response_or_exception,expected_backoff",
+    [
+        pytest.param(
+            _response(429, {"message": _DATA_VOLUME_RATE_LIMIT_MESSAGE}),
+            330.0,
+            id="data_volume_throttle",
+        ),
+        pytest.param(_response(429, {"message": "Rate limit exceeded."}), None, id="count_throttle"),
+        pytest.param(_response(429, b"not-json"), None, id="malformed_body"),
+        pytest.param(InvalidURL("Invalid URL"), None, id="request_exception"),
+    ],
+)
+def test_linkedin_ads_data_volume_backoff_strategy(components_module, response_or_exception, expected_backoff):
+    strategy = components_module.LinkedInAdsDataVolumeBackoffStrategy()
+
+    assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=1) == expected_backoff

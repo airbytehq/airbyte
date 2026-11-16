@@ -21,11 +21,11 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 
 class SnowflakeRawDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> SnowflakeConfiguration
+    private val configProvider: (ConfigurationSpecification) -> SnowflakeConfiguration,
 ) : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val output = mutableListOf<OutputRecord>()
 
@@ -54,7 +54,7 @@ class SnowflakeRawDataDumper(
 
                 val resultSet =
                     statement.executeQuery(
-                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}"
+                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}",
                     )
 
                 while (resultSet.next()) {
@@ -86,7 +86,7 @@ class SnowflakeRawDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
     }

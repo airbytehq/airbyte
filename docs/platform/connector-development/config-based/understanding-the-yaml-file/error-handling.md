@@ -1,4 +1,4 @@
-# Error handling
+# Error Handling
 
 By default, only server errors (HTTP 5XX) and too many requests (HTTP 429) will be retried up to 5 times with exponential backoff.
 Other HTTP errors will result in a failed read.
@@ -349,6 +349,7 @@ requester:
           - type: "ExponentialBackoffStrategy"
 ```
 
-## More readings
+## Related
 
+- *No-Code Connector Builder*: [Error Handling](/platform/connector-development/connector-builder-ui/error-handling)
 - [Requester](./requester.md)

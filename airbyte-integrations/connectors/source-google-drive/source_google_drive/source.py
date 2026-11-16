@@ -31,9 +31,14 @@ class SourceGoogleDrive(FileBasedSource):
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
         oauth_connector_input_specification = OauthConnectorInputSpecification(
-            consent_url="https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent",
+            consent_url="https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent",
             access_token_url="https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code",
-            scope="https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/admin.directory.group.member.readonly https://www.googleapis.com/auth/admin.directory.user.readonly",
+            scopes=[
+                {"scope": "https://www.googleapis.com/auth/drive.readonly"},
+                {"scope": "https://www.googleapis.com/auth/admin.directory.group.readonly"},
+                {"scope": "https://www.googleapis.com/auth/admin.directory.group.member.readonly"},
+                {"scope": "https://www.googleapis.com/auth/admin.directory.user.readonly"},
+            ],
         )
 
         return ConnectorSpecification(

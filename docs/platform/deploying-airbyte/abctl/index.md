@@ -6,6 +6,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindows } from "@fortawesome/free-brands-svg-icons";
+import MinioImagePre23Abctl from "@site/static/_minio_image_pre_2_3_abctl.md";
 
 # abctl
 
@@ -17,7 +18,7 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. abctl only manages its own kind cluster. It can't install Airbyte on an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](../chart-v2-community.mdx) instead.
 
 ### What abctl does
 
@@ -31,7 +32,7 @@ Before you use abctl, install Docker Desktop on your machine:
 
 - [Mac](https://docs.docker.com/desktop/install/mac-install/).
 - [Windows](https://docs.docker.com/desktop/install/windows-install/).
-- [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2) for an example.
+- [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2.md) for an example.
 
 ## Install abctl
 
@@ -99,22 +100,22 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
     <a class="abctl-download button button--primary" data-architecture="linux" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Linux Release</a>
 
-3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+3. Extract the archive. This creates a directory named `abctl-<version>-linux-<arch>`, which contains the executable and other needed files. Replace `<version>` with the downloaded version, including the `v` prefix, and `<arch>` with `amd64` or `arm64`.
 
     ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    tar -xvzf abctl-<version>-linux-<arch>.tar.gz
     ```
 
 4. Make the extracted executable accessible. This allows you to run `abctl` as a command.
 
     ```bash
-    chmod +x abctl/abctl
+    chmod +x abctl-<version>-linux-<arch>/abctl
     ```
 
 5. Add `abctl` to your PATH. This allows you to run `abctl` from any directory in your terminal.
 
     ```bash
-    sudo mv abctl /usr/local/bin
+    sudo mv abctl-<version>-linux-<arch>/abctl /usr/local/bin
     ```
 
 6. Verify the installation. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
@@ -165,6 +166,18 @@ abctl version
 </TabItem>
 </Tabs>
 
+### Customize the install location
+
+By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
+
+```shell
+curl -LsfS https://get.airbyte.com | DIR_INSTALL=/apps/bin bash -
+```
+
+:::note
+`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/`. It's not affected by this setting and you can't relocate it.
+:::
+
 ## Install and manage local Airbyte instances
 
 This section shows you how to use abctl. It's not a step-by-step guide to deploy Airbyte. See Airbyte's [Quickstart](../../using-airbyte/getting-started/oss-quickstart.md) or [deployment guides](../deploying-airbyte.md) for a complete explanation.
@@ -172,6 +185,8 @@ This section shows you how to use abctl. It's not a step-by-step guide to deploy
 ### Install or update Airbyte
 
 To install or update Airbyte, run:
+
+<MinioImagePre23Abctl />
 
 ```bash
 abctl local install
@@ -184,6 +199,24 @@ abctl local install --secret YOUR_SECRET --values values.yaml
 ```
 
 For a list of all flags, see the [full reference](#reference).
+
+#### Pin a specific Helm chart version
+
+To install a specific version of the Airbyte Helm chart instead of the latest, use the `--chart-version` flag. This is useful when you need to reproduce a known-good deployment or stay on a tested version.
+
+```bash
+abctl local install --chart-version 0.422.2 --values values.yaml --secret secret.yaml --port 8000
+```
+
+The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
+
+#### Install from a local Helm chart
+
+To install from a local chart directory (for example, in air-gapped environments), use the `--chart` flag. `--chart` and `--chart-version` are mutually exclusive — you can't pass both.
+
+```bash
+abctl local install --chart ./path/to/local/airbyte-chart
+```
 
 :::note
 Depending on your internet speed, `abctl local install` may take up to 30 minutes.
@@ -231,13 +264,12 @@ abctl local credentials --email YOUR_EMAIL --password YOUR_PASSWORD
 
 abctl returns something like this:
 
-```bash
-{
-  "email": "[YOUR EMAIL]",
-  "password": "[RANDOM PASSWORD]",
-  "client-id": "[RANDOM CLIENT-ID]",
-  "client-secret": "[RANDOM CLIENT-SECRET]"
-}
+```text
+Credentials:
+  Email: [YOUR EMAIL]
+  Password: [RANDOM PASSWORD]
+  Client-Id: [RANDOM CLIENT-ID]
+  Client-Secret: [RANDOM CLIENT-SECRET]
 ```
 
 ### Manage your local Kubernetes instance
@@ -248,10 +280,10 @@ To display Kubernetes deployment information, run:
 abctl local deployments
 ```
 
-If you need to restart Kubernetes, run:
+To restart a Kubernetes deployment, specify its name:
 
 ```bash
-abctl local deployments --restart
+abctl local deployments --restart airbyte-abctl-server
 ```
 
 ### Uninstall Airbyte
@@ -290,7 +322,7 @@ To display version information about the abctl tool, run `abctl version`.
 
 ```bash
 $ abctl version
-version: v0.19.0
+version: v0.30.4
 ```
 
 ## Help and debugging
@@ -352,11 +384,11 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 
     | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
     | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-    | --chart             | ""      | Path to chart.                                                                                                                                                                                                                                         | ./my-chart                 |
-    | --chart-version     | latest  | Which Airbyte helm-chart version to install.                                                                                                                                                                                                          | 0.422.2                    |
+    | --chart             | ""      | Path to a local Helm chart directory. Use this to install from a local chart (for example, in air-gapped environments or during development). Mutually exclusive with `--chart-version`.                                                                  | ./my-chart                 |
+    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. Mutually exclusive with `--chart`. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
-    | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
+    | --docker-server     | https://index.docker.io/v1/ | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
     | --docker-username   | ""      | Docker username to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_USERNAME`.                                                                                                 | myusername                 |
     | --insecure-cookies  | -       | Disables secure cookie requirements. Only set if using `--host` with an insecure (non `https`) connection.                                                                                                                                           | -                          |
     | --low-resource-mode | false   | Run Airbyte in low resource mode.                                                                                                                                                                                                                     | true                       |
@@ -438,7 +470,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     For example:
     ```
     $ abctl version
-    version: v0.19.0
+    version: v0.30.4
     ```
 
 </details>

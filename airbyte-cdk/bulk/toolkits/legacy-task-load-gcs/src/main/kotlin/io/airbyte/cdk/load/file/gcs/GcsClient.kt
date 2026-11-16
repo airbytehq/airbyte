@@ -69,7 +69,7 @@ class GcsS3Client(
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<GcsBlob> {
         val s3Upload = s3Client.startStreamingUpload(key, metadata)
         return object : StreamingUpload<GcsBlob> {
@@ -107,7 +107,10 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
         val targetBlobId = BlobId.of(config.gcsBucketName, fullTargetKey)
 
         storage.copy(
-            Storage.CopyRequest.newBuilder().setSource(sourceBlobId).setTarget(targetBlobId).build()
+            Storage.CopyRequest.newBuilder()
+                .setSource(sourceBlobId)
+                .setTarget(targetBlobId)
+                .build(),
         )
         storage.delete(sourceBlobId)
 
@@ -148,7 +151,7 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<GcsBlob> {
         log.info { "Starting streaming upload for $key" }
         return GcsStreamingUpload(storage, key, config, metadata)

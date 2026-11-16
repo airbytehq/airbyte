@@ -21,7 +21,7 @@ internal class MongoUtilsTest {
                     "\"connectedAccounts\":" +
                     "{\"google\":{\"provider\":\"google\",\"refreshToken\":\"test-rfrsh-google-token-1\",\"accessToken\":\"test-access-google-token-1\",\"expiresAt\":\"2020-09-01T21:07:00Z\",\"createdAt\":\"2020-09-01T20:07:01Z\"}," +
                     "\"figma\":{\"provider\":\"figma\",\"refreshToken\":\"test-rfrsh-figma-token-1\",\"accessToken\":\"test-access-figma-token-1\",\"expiresAt\":\"2020-12-13T22:08:03Z\",\"createdAt\":\"2020-09-14T22:08:03Z\",\"figmaInfo\":{\"teamID\":\"501087711831561793\"}}," +
-                    "\"slack\":{\"provider\":\"slack\",\"accessToken\":\"test-access-slack-token-1\",\"createdAt\":\"2020-09-01T20:15:07Z\",\"slackInfo\":{\"userID\":\"UM5AD2YCE\",\"teamID\":\"T2VGY5GH5\"}}}}"
+                    "\"slack\":{\"provider\":\"slack\",\"accessToken\":\"test-access-slack-token-1\",\"createdAt\":\"2020-09-01T20:15:07Z\",\"slackInfo\":{\"userID\":\"UM5AD2YCE\",\"teamID\":\"T2VGY5GH5\"}}}}",
             )
         Assertions.assertTrue(node[fieldName].isObject)
 

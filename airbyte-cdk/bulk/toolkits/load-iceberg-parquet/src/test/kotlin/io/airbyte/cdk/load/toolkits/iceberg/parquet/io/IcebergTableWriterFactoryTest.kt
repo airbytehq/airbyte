@@ -13,6 +13,7 @@ import kotlin.random.Random
 import kotlin.test.assertNotNull
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.encryption.EncryptedOutputFile
 import org.apache.iceberg.encryption.EncryptionKeyMetadata
@@ -65,6 +66,7 @@ internal class IcebergTableWriterFactoryTest {
             every { locationProvider() } returns locationProvider
             every { properties() } returns tableProperties
             every { schema() } returns tableSchema
+            every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
         }
 
@@ -76,7 +78,7 @@ internal class IcebergTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )
@@ -121,6 +123,7 @@ internal class IcebergTableWriterFactoryTest {
             every { locationProvider() } returns locationProvider
             every { properties() } returns tableProperties
             every { schema() } returns tableSchema
+            every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
         }
 
@@ -132,7 +135,7 @@ internal class IcebergTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )
@@ -176,6 +179,7 @@ internal class IcebergTableWriterFactoryTest {
             every { locationProvider() } returns locationProvider
             every { properties() } returns tableProperties
             every { schema() } returns tableSchema
+            every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
         }
 
@@ -227,6 +231,7 @@ internal class IcebergTableWriterFactoryTest {
             every { locationProvider() } returns locationProvider
             every { properties() } returns tableProperties
             every { schema() } returns tableSchema
+            every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
         }
 

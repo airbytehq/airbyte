@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import pytest
 from freezegun import freeze_time
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -50,6 +51,49 @@ def test_analytics_stream_slices(requests_mock):
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
     assert [partition.to_slice() for partition in list(stream.generate_partitions())] == expected_partitions
+
+
+@freeze_time("2021-01-02")
+@pytest.mark.parametrize(
+    "stream_name,parent_url,parent_records,partition_field,expected_entities",
+    [
+        pytest.param(
+            "ad_campaign_analytics",
+            "https://api.linkedin.com/rest/adAccounts/1/adCampaigns",
+            [{"id": entity_id} for entity_id in range(1, 52)],
+            "campaign_id",
+            list(range(1, 52)),
+            id="campaigns",
+        ),
+        pytest.param(
+            "ad_creative_analytics",
+            "https://api.linkedin.com/rest/adAccounts/1/creatives",
+            [{"id": f"urn:li:sponsoredCreative:{entity_id}"} for entity_id in range(1, 52)],
+            "creative_id",
+            [f"urn:li:sponsoredCreative:{entity_id}" for entity_id in range(1, 52)],
+            id="creatives",
+        ),
+    ],
+)
+def test_analytics_stream_batches_entities_at_manifest_limit(
+    requests_mock,
+    stream_name,
+    parent_url,
+    parent_records,
+    partition_field,
+    expected_entities,
+):
+    config = {**TEST_CONFIG, "start_date": "2021-01-01", "end_date": "2021-01-02"}
+
+    stream = find_stream(stream_name, config)
+    requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+    requests_mock.get(parent_url, json={"elements": parent_records})
+
+    entity_batches = [partition.to_slice()[partition_field] for partition in list(stream.generate_partitions())]
+    emitted_entities = [entity for batch in entity_batches for entity in batch]
+
+    assert [len(batch) for batch in entity_batches] == [50, 1]
+    assert emitted_entities == expected_entities
 
 
 def test_read_records(requests_mock):

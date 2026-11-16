@@ -31,6 +31,7 @@ import kotlinx.coroutines.runBlocking
  */
 interface DestinationCheckerV2 {
     fun check()
+
     fun cleanup() {}
 }
 
@@ -62,12 +63,12 @@ class DestinationCheckerSyncV2(
                         System.currentTimeMillis(),
                     )
                     .asProtocolMessage()
-                    .serializeToString()
+                    .serializeToString(),
             )
             pipe.println(
                 DestinationRecordStreamComplete(mockStream, System.currentTimeMillis())
                     .asProtocolMessage()
-                    .serializeToString()
+                    .serializeToString(),
             )
             pipe.close()
         }

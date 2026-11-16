@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.util.Jsons
@@ -21,7 +21,7 @@ class MsSqlServerJdbcStreamStateValueTest {
 
     @Test
     fun `test cursorIncrementalCheckpoint stores JsonNode directly`() {
-        val cursor = Field("numeric_cursor", BigDecimalFieldType)
+        val cursor = EmittedField("numeric_cursor", BigDecimalFieldType)
         val checkpoint = Jsons.valueToTree<JsonNode>("123.45")
 
         val stateValue =
@@ -37,7 +37,7 @@ class MsSqlServerJdbcStreamStateValueTest {
 
     @Test
     fun `test cursorIncrementalCheckpoint returns nullNode for null cursor`() {
-        val cursor = Field("numeric_cursor", BigDecimalFieldType)
+        val cursor = EmittedField("numeric_cursor", BigDecimalFieldType)
         val nullCheckpoint = Jsons.nullNode()
 
         val stateValue =
@@ -49,7 +49,7 @@ class MsSqlServerJdbcStreamStateValueTest {
 
     @Test
     fun `test snapshotCheckpoint stores JsonNode directly`() {
-        val primaryKey = listOf(Field("id", IntFieldType))
+        val primaryKey = listOf(EmittedField("id", IntFieldType))
         val checkpoint = listOf(Jsons.valueToTree<JsonNode>(42))
 
         val stateValue = MsSqlServerJdbcStreamStateValue.snapshotCheckpoint(primaryKey, checkpoint)
@@ -64,7 +64,7 @@ class MsSqlServerJdbcStreamStateValueTest {
 
     @Test
     fun `test snapshotCheckpoint returns nullNode for null pk`() {
-        val primaryKey = listOf(Field("id", IntFieldType))
+        val primaryKey = listOf(EmittedField("id", IntFieldType))
         val nullCheckpoint = listOf(Jsons.nullNode())
 
         val stateValue =
@@ -76,15 +76,15 @@ class MsSqlServerJdbcStreamStateValueTest {
 
     @Test
     fun `test snapshotWithCursorCheckpoint stores JsonNode with incremental state`() {
-        val primaryKey = listOf(Field("id", IntFieldType))
-        val cursor = Field("updated_at", BigDecimalFieldType)
+        val primaryKey = listOf(EmittedField("id", IntFieldType))
+        val cursor = EmittedField("updated_at", BigDecimalFieldType)
         val checkpoint = listOf(Jsons.valueToTree<JsonNode>(100))
 
         val stateValue =
             MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
                 primaryKey,
                 checkpoint,
-                cursor
+                cursor,
             )
 
         // Verify pk value is stored as JsonNode and incremental state is embedded
@@ -100,7 +100,7 @@ class MsSqlServerJdbcStreamStateValueTest {
         val incrementalState =
             Jsons.treeToValue(
                 deserialized.incrementalState,
-                MsSqlServerJdbcStreamStateValue::class.java
+                MsSqlServerJdbcStreamStateValue::class.java,
             )
         assertEquals(listOf("updated_at"), incrementalState.cursorField)
     }

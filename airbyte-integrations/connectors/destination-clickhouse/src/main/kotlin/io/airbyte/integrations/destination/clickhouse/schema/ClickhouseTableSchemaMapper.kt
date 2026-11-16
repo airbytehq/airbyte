@@ -115,7 +115,7 @@ class ClickhouseTableSchemaMapper(
                 .toMap()
 
         return tableSchema.copy(
-            columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema)
+            columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema),
         )
     }
 }

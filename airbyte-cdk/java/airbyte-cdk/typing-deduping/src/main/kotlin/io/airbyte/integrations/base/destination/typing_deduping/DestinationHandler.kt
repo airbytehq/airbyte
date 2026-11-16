@@ -14,7 +14,7 @@ interface DestinationHandler<DestinationState> {
      */
     @Throws(Exception::class)
     fun gatherInitialState(
-        streamConfigs: List<StreamConfig>
+        streamConfigs: List<StreamConfig>,
     ): List<DestinationInitialStatus<DestinationState>>
 
     @Throws(Exception::class)

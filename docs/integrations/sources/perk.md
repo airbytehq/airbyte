@@ -21,6 +21,10 @@ Configuration requires your Perk API key and a start date from which to sync dat
 | profiles |  | DefaultPaginator | ✅ |  ❌  |
 | invoices_lines |  | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,7 @@ Configuration requires your Perk API key and a start date from which to sync dat
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-11-09 | [91406](https://github.com/airbytehq/airbyte/pull/91406) | Update dependencies |
 | 0.0.1 | 2026-02-16 | | Initial release by [@claudiangr](https://github.com/claudiangr) via Connector Builder |
 
 </details>

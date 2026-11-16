@@ -372,7 +372,7 @@ definitions:
           $ref: "#/schemas/contact_events"
   base_requester:
     type: HttpRequester
-    url_base: https://api.lessannoyingcrm.com/v2
+    url_base: https://api.lessannoyingcrm.com/v2/
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"

@@ -25,6 +25,8 @@ abstract class JdbcPartitionsCreatorFactory<
     }
 
     abstract fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P>
+
+    fun interface AcquiredResources : AutoCloseable
 }
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */
@@ -67,7 +69,7 @@ class JdbcPartitionCreatorFactorySupplier<
     T : JdbcPartitionsCreatorFactory<A, S, P>,
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
-    P : JdbcPartition<S>
+    P : JdbcPartition<S>,
 >(val factory: T) : PartitionsCreatorFactorySupplier<T> {
     override fun get(): T = factory
 }

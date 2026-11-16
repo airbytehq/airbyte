@@ -31,8 +31,12 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val username: String
     abstract val password: String
     abstract val enableJson: Boolean?
+
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
+
     abstract val recordWindowSize: Long?
+    abstract val useReplicatedEngines: Boolean?
+    abstract val clusterName: String?
 }
 
 @Singleton
@@ -76,7 +80,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Enable JSON")
     @get:JsonPropertyDescription(
-        "Use the JSON type for Object fields. If disabled, the JSON will be converted to a string."
+        "Use the JSON type for Object fields. If disabled, the JSON will be converted to a string.",
     )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
@@ -105,11 +109,37 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Record Window Size")
     @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb",
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    @get:JsonSchemaTitle("Enable Replication")
+    @get:JsonPropertyDescription(
+        "Enable this to ensure synced data is replicated across all nodes in a self-managed" +
+            " ClickHouse cluster. Not needed for single-node deployments or ClickHouse Cloud." +
+            " See the <a href=\"https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication\">" +
+            "ClickHouse replication docs</a> for more information.",
+    )
+    @get:JsonProperty("use_replicated_engines")
+    @get:JsonSchemaInject(json = """{"order": 9, "default": false, "group": "advanced"}""")
+    override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonSchemaTitle("Cluster Name")
+    @get:JsonPropertyDescription(
+        "Name of your ClickHouse cluster. When provided, table definitions are automatically" +
+            " propagated to all cluster nodes. Required for clusters using the Atomic database" +
+            " engine. Leave empty for single-node setups, ClickHouse Cloud, or databases using" +
+            " the <a href=\"https://clickhouse.com/docs/engines/database-engines/replicated\">" +
+            "Replicated database engine</a>.",
+    )
+    @get:JsonProperty("cluster_name")
+    @get:JsonSchemaInject(
+        json =
+            """{"order": 10, "default": "", "group": "advanced", "pattern": "^[A-Za-z0-9_.-]*$"}""",
+    )
+    override val clusterName: String? = ""
 }
 
 @Singleton
@@ -153,7 +183,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Enable JSON")
     @get:JsonPropertyDescription(
-        "Use the JSON type when possible. If disabled, the JSON will be converted to a string."
+        "Use the JSON type when possible. If disabled, the JSON will be converted to a string.",
     )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
@@ -182,16 +212,20 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Record Window Size")
     @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb",
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    @get:JsonIgnore override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonIgnore override val clusterName: String? = ""
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
     HTTP("http"),
-    HTTPS("https")
+    HTTPS("https"),
 }
 
 @Singleton

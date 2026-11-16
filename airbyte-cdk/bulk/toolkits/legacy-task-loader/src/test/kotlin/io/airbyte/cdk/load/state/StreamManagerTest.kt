@@ -54,6 +54,15 @@ class StreamManagerTest {
     }
 
     @Test
+    fun `loader started flag is false until marked`() {
+        val manager = StreamManager(stream1)
+
+        Assertions.assertFalse(manager.isLoaderStarted())
+        manager.markLoaderStarted()
+        Assertions.assertTrue(manager.isLoaderStarted())
+    }
+
+    @Test
     fun `cannot increment after end-of-stream`() {
         val manager = StreamManager(stream1)
         val ck = checkpoint("c1")
@@ -104,7 +113,7 @@ class StreamManagerTest {
                         records = 3,
                         serializedBytes = 5,
                         rejectedRecords = 2,
-                    )
+                    ),
             ),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
@@ -116,7 +125,7 @@ class StreamManagerTest {
                         records = 4,
                         serializedBytes = 5,
                         rejectedRecords = 1,
-                    )
+                    ),
             ),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
@@ -234,7 +243,7 @@ class StreamManagerTest {
                                         records = 9,
                                         serializedBytes = 10,
                                         rejectedRecords = 1,
-                                    )
+                                    ),
                             ),
                         )
                     "2" ->
@@ -247,12 +256,12 @@ class StreamManagerTest {
                 if (index < 2) {
                     Assertions.assertFalse(
                         manager.isBatchProcessingCompleteForCheckpoints(),
-                        "steps: $steps; step: $index"
+                        "steps: $steps; step: $index",
                     )
                 } else {
                     Assertions.assertTrue(
                         manager.isBatchProcessingCompleteForCheckpoints(),
-                        "steps: $steps; final step"
+                        "steps: $steps; final step",
                     )
                 }
             }

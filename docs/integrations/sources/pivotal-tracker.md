@@ -1,5 +1,17 @@
 # Pivotal Tracker
 
+:::warning
+
+## Deprecation Notice
+
+The Pivotal Tracker source connector has been archived because the Pivotal Tracker service was shut down by Broadcom on April 30, 2025. The `www.pivotaltracker.com` domain no longer resolves and the REST API v5 that this connector relies on is no longer available, so the connector cannot sync any data. It is no longer supported or available for use in Airbyte.
+
+### Recommended Actions
+
+Pivotal Tracker has no successor API. If you have an export of your Pivotal Tracker data (CSV/JSON), you can load it with the [File source](https://docs.airbyte.com/integrations/sources/file) or a custom connector; see the [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+
+:::
+
 ## Overview
 
 The Pivotal Tracker source supports Full Refresh syncs. It supports pulling from :
@@ -49,6 +61,10 @@ The Pivotal Trakcer connector should not run into Stripe API limitations under n
 Access your profile [here](https://www.pivotaltracker.com/profile) go down and click in **Create New Token**.
 Use this to pull data from Pivotal Tracker.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -56,6 +72,7 @@ Use this to pull data from Pivotal Tracker.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.23 | 2026-10-07 | [88261](https://github.com/airbytehq/airbyte/pull/88261) | Archive connector: Pivotal Tracker service and API were shut down on 2025-04-30 |
 | 0.3.22 | 2025-05-10 | [60085](https://github.com/airbytehq/airbyte/pull/60085) | Update dependencies |
 | 0.3.21 | 2025-05-03 | [59485](https://github.com/airbytehq/airbyte/pull/59485) | Update dependencies |
 | 0.3.20 | 2025-04-27 | [59040](https://github.com/airbytehq/airbyte/pull/59040) | Update dependencies |

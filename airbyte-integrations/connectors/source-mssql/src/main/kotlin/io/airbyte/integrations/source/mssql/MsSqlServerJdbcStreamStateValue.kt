@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mssql
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -32,6 +32,7 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /**
          * Determines if a given version number represents a legacy state format
+         *
          * @param version The version number to check (null is considered legacy)
          * @return true if the version is legacy and needs migration
          */
@@ -43,7 +44,7 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /** Value representing the progress of an ongoing incremental cursor read. */
         fun cursorIncrementalCheckpoint(
-            cursor: Field,
+            cursor: EmittedField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue {
             return when (cursorCheckpoint.isNull) {
@@ -53,14 +54,14 @@ data class MsSqlServerJdbcStreamStateValue(
                         MsSqlServerJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
                             cursor = cursorCheckpoint,
-                        )
+                        ),
                     )
             }
         }
 
         /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
         fun snapshotCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
@@ -73,16 +74,16 @@ data class MsSqlServerJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
                             pkValue = pkNode,
                             stateType = StateType.PRIMARY_KEY.stateType,
-                        )
+                        ),
                     )
             }
         }
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
         fun snapshotWithCursorCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
-            cursor: Field,
+            cursor: EmittedField,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
             val pkNode = primaryKeyCheckpoint.first()
@@ -98,9 +99,9 @@ data class MsSqlServerJdbcStreamStateValue(
                                 Jsons.valueToTree(
                                     MsSqlServerJdbcStreamStateValue(
                                         cursorField = listOf(cursor.id),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     )
             }
         }
