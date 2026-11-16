@@ -13,8 +13,7 @@ class PerEntityToGlobalCursorStateMigration(StateMigration):
     `{"use_global_cursor": false, "states": [{"partition": {"entity_id": ...}, "cursor": {"date": ...}}], "state": {"date": ...}}`.
     The conversions streams now group entities, so the CDK forces a global cursor, but it switches back to per-partition
     tracking whenever the incoming state has `"use_global_cursor": false`. The new cursor is the saved global `state`, which
-    the CDK already uses for entities it has no cursor for. When that is missing, the earliest entity cursor is used, so no
-    entity is read from a later date than before.
+    is left unset when absent so the stream starts from its configured start date.
     """
 
     _CURSOR_FIELD = "date"
@@ -36,11 +35,4 @@ class PerEntityToGlobalCursorStateMigration(StateMigration):
 
     def _global_cursor(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         saved = (stream_state.get("state") or {}).get(self._CURSOR_FIELD)
-        if saved:
-            return saved
-        entity_cursors = [
-            partition_state["cursor"][self._CURSOR_FIELD]
-            for partition_state in stream_state.get("states") or []
-            if (partition_state.get("cursor") or {}).get(self._CURSOR_FIELD)
-        ]
-        return min(entity_cursors) if entity_cursors else None
+        return saved or None

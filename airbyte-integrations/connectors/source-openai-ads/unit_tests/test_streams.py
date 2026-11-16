@@ -437,15 +437,16 @@ def _state_written_by_0_1_x(entity_ids: tuple[str, ...], with_global_state: bool
         ("ad_conversions", ("ad_1",)),
     ],
 )
-@pytest.mark.parametrize("with_global_state,expected_since", [(True, "2026-09-07"), (False, "2026-09-03")])
+@pytest.mark.parametrize("with_global_state", [True, False])
 def test_conversions_resume_from_0_1_x_per_entity_state_with_one_cursor(
-    requests_mock: Mocker, stream: str, entity_ids: tuple[str, ...], with_global_state: bool, expected_since: str
+    requests_mock: Mocker, stream: str, entity_ids: tuple[str, ...], with_global_state: bool
 ) -> None:
     _mock_campaign_ad_group_ad(requests_mock)
     row = {"entity_id": entity_ids[0], "date": "2026-09-12", "conversions": 1}
     requests_mock.post(f"{_URL}/conversions/insights", json={"object": "list", "data": [row], "count": 1, "account_currency": "USD"})
     state = StateBuilder().with_stream_state(stream, _state_written_by_0_1_x(entity_ids + ("stale_1",), with_global_state)).build()
     config = {**_CONFIG, "lookback_window": 2}
+    expected_since = "2026-09-07" if with_global_state else config["start_date"]
 
     output = _read(stream, SyncMode.incremental, state, config)
 
@@ -474,7 +475,7 @@ def test_conversions_state_migration_keeps_global_state_and_skips_new_state(comp
         "lookback_window": 1,
         "parent_state": {},
     }
-    assert migration.migrate(_state_written_by_0_1_x(("cmpn_1", "cmpn_2"), with_global_state=False))["state"] == {"date": "2026-09-06"}
+    assert "state" not in migration.migrate(_state_written_by_0_1_x(("cmpn_1", "cmpn_2"), with_global_state=False))
     assert "state" not in migration.migrate({"use_global_cursor": False, "states": []})
 
 
