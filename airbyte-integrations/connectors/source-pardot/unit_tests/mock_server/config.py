@@ -24,5 +24,9 @@ class ConfigBuilder:
         self._config["is_sandbox"] = is_sandbox
         return self
 
+    def with_pardot_api_host(self, host: str) -> "ConfigBuilder":
+        self._config["pardot_api_host"] = host
+        return self
+
     def build(self) -> dict[str, Any]:
         return dict(self._config)

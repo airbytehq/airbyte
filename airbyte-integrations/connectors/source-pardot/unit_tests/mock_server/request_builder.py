@@ -15,7 +15,7 @@ def login_request(host: str = "login.salesforce.com") -> HttpRequest:
     """The login request. The body is compared as it is sent, so the order of its fields counts."""
     return HttpRequest(
         f"https://{host}/services/oauth2/token",
-        body="client_id=test-client-id&grant_type=refresh_token&client_secret=test-client-secret&refresh_token=test-refresh-token",
+        body="grant_type=refresh_token&client_id=test-client-id&client_secret=test-client-secret&refresh_token=test-refresh-token",
     )
 
 
