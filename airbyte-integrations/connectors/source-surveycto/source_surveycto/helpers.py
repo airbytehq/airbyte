@@ -25,7 +25,7 @@ class Helpers(object):
 
         url = f"https://{server_name}.surveycto.com/" + f"api/v2/forms/data/wide/json/{form_id}?date={start_date}"
 
-        retry_strategy = Retry(total=3, status_forcelist=[429, 409], method_whitelist=["HEAD", "GET", "OPTIONS"])
+        retry_strategy = Retry(total=3, status_forcelist=[429, 409], allowed_methods=["HEAD", "GET", "OPTIONS"])
         adapter = HTTPAdapter(max_retries=retry_strategy)
         http = requests.Session()
         http.mount("https://", adapter)

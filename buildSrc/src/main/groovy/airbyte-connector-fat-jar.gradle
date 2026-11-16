@@ -60,6 +60,9 @@ class AirbyteConnectorFatJarPlugin implements Plugin<Project> {
 
             // The root build stores every Zip entry uncompressed, which more than doubles a fat jar.
             jar.entryCompression = ZipEntryCompression.DEFLATED
+            // Connectors with large dependency trees (destination-bigquery, destination-s3-data-lake) have more than
+            // the 65535 entries a plain zip allows.
+            jar.zip64 = true
             // Duplicates must reach the transformers below, which merge them.
             jar.duplicatesStrategy = DuplicatesStrategy.INCLUDE
             // Debezium, Kafka, JDBC drivers and Jackson register implementations in META-INF/services.

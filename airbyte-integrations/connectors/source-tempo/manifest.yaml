@@ -5,6 +5,15 @@ check:
   stream_names:
     - workload-schemes
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies: []
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: IGNORE
   streams:
     accounts:
       type: DeclarativeStream
@@ -22,15 +31,7 @@ definitions:
           path: accounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -141,15 +142,7 @@ definitions:
           path: customers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -200,15 +193,7 @@ definitions:
           path: worklogs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -359,15 +344,7 @@ definitions:
           path: workload-schemes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -452,15 +429,7 @@ streams:
         path: accounts
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -570,15 +539,7 @@ streams:
         path: customers
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -628,15 +589,7 @@ streams:
         path: worklogs
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -786,15 +739,7 @@ streams:
         path: workload-schemes
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
