@@ -18,7 +18,7 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 <FieldAnchor field="token">
 
-**API token**: In Apify Console, copy your personal API token from [**Settings** > **Integrations**](https://console.apify.com/account/integrations). For details, see [API token](https://docs.apify.com/platform/integrations/api#api-token) in the Apify documentation.
+**API token**: Create an API token for Airbyte in [Apify Console](https://console.apify.com/settings/integrations?createApiToken=true&for=Airbyte&utm_source=airbyte&utm_medium=integrations) and copy it right after creating it. It is shown only once. For details, see [API token](https://docs.apify.com/platform/integrations/api#api-token) in the Apify documentation.
 
 </FieldAnchor>
 
@@ -96,6 +96,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.68 | 2026-11-16 | [93035](https://github.com/airbytehq/airbyte/pull/93035) | Link to the Apify Console create-API-token form in the token field description |
 | 2.2.67 | 2026-11-10 | [91349](https://github.com/airbytehq/airbyte/pull/91349) | Update dependencies |
 | 2.2.66 | 2026-11-03 | [90475](https://github.com/airbytehq/airbyte/pull/90475) | Update dependencies |
 | 2.2.65 | 2026-10-27 | [89790](https://github.com/airbytehq/airbyte/pull/89790) | Update dependencies |
