@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [DC Hub](ht
 
 </HideInUI>
 
-DC Hub (dchub.cloud): data center and energy intelligence. The Data Center Power Index (DCPI) scores 300+ markets daily on where data centers can get grid power. Also available as 94 MCP tools at https://dchub.cloud/mcp.
+DC Hub (dchub.cloud): data center and energy intelligence. The Data Center Power Index (DCPI) scores 300+ markets daily on where data centers can get grid power. Also available as 96 MCP tools at https://dchub.cloud/mcp.
 
 This connector syncs DC Hub's public REST API: DCPI market scores and verdicts, data center market inventory, US grid operator snapshots, interconnection queue projects, and data center capacity listings. The API is described at https://dchub.cloud/openapi.json.
 
