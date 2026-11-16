@@ -1949,6 +1949,11 @@ schemas:
           subchannel:
             type: string
             description: The subchannel associated with the acquisition
+      bill_date:
+        type:
+          - "null"
+          - string
+        format: date-time
       bill_to:
         type:
           - "null"
@@ -2856,6 +2861,11 @@ schemas:
           - string
         description: The currency in which the redemption was made
         maxLength: 3
+      discount_period_ends_at:
+        type:
+          - "null"
+          - string
+        format: date-time
       discounted:
         type:
           - "null"
@@ -2872,6 +2882,11 @@ schemas:
           - "null"
           - string
         description: The type of object this represents
+      remaining_discount:
+        type:
+          - "null"
+          - number
+        format: float
       remaining_duration:
         type:
           - "null"
@@ -3955,6 +3970,10 @@ schemas:
         description: When the billing information was created.
         format: date-time
         readOnly: true
+      date_of_birth:
+        type:
+          - "null"
+          - string
       first_name:
         type:
           - "null"
@@ -4232,6 +4251,14 @@ schemas:
                 description: Temporal unit of the free trial
                 maxLength: 256
                 title: Trial unit
+      discount_application_mode:
+        type:
+          - "null"
+          - string
+      discount_periods:
+        type:
+          - "null"
+          - integer
       duration:
         type:
           - "null"
@@ -4605,6 +4632,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      gateway_code:
+        type:
+          - "null"
+          - string
       type:
         type:
           - "null"
@@ -6577,6 +6608,10 @@ schemas:
           - string
         description: ID of the dunning campaign associated with the plan.
         maxLength: 256
+      harmonized_system_code:
+        type:
+          - "null"
+          - string
       hosted_pages:
         type: object
         description: Provides details about hosted pages related to the plan.
@@ -6622,6 +6657,10 @@ schemas:
           - string
         description: Unit of the billing interval for the plan.
         maxLength: 256
+      liability_gl_account_id:
+        type:
+          - "null"
+          - string
       name:
         type:
           - "null"
@@ -6633,6 +6672,10 @@ schemas:
           - "null"
           - string
         description: Indicates the type of object which in this case is 'plan'.
+      performance_obligation_id:
+        type:
+          - "null"
+          - string
       pricing_model:
         type:
           - "null"
@@ -6673,6 +6716,10 @@ schemas:
                 - "null"
                 - integer
               description: The starting billing cycle for the ramp interval.
+      revenue_gl_account_id:
+        type:
+          - "null"
+          - string
       revenue_schedule_type:
         type:
           - "null"
@@ -6685,12 +6732,43 @@ schemas:
           - string
         description: The accounting code associated with the setup fee.
         maxLength: 256
+      setup_fee_liability_gl_account_id:
+        type:
+          - "null"
+          - string
+      setup_fee_performance_obligation_id:
+        type:
+          - "null"
+          - string
+      setup_fee_revenue_gl_account_id:
+        type:
+          - "null"
+          - string
       setup_fee_revenue_schedule_type:
         type:
           - "null"
           - string
         description: Revenue schedule type for the setup fee.
         maxLength: 256
+      setup_fees:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            currency:
+              type:
+                - "null"
+                - string
+            unit_amount:
+              type:
+                - "null"
+                - number
+              format: float
       state:
         type:
           - "null"
@@ -6735,6 +6813,10 @@ schemas:
           - string
         description: Timestamp indicating when the plan was last updated.
         format: date-time
+      vertex_transaction_type:
+        type:
+          - "null"
+          - string
   shipping_addresses:
     type:
       - "null"
@@ -7254,6 +7336,11 @@ schemas:
           - "null"
           - string
         description: Type of net terms (e.g., days).
+      next_action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
       object:
         type:
           - "null"
@@ -7647,6 +7734,10 @@ schemas:
           - string
         description: Universally unique identifier for the subscription.
         maxLength: 32
+      vat_reverse_charge_notes:
+        type:
+          - "null"
+          - string
   transactions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
