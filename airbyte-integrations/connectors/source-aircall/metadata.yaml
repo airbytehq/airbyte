@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.3.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -17,7 +17,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   releases:
     rolloutConfiguration:
       defaultRolloutMode: autopilot
@@ -50,18 +50,18 @@ data:
               - teams
               - users
     unsafeDowngrades:
-      1.2.0:
+      1.3.0:
         message: >-
-          Version 1.2.0 moves the API ID and API token of saved configurations into `credentials`, and earlier
+          Version 1.3.0 moves the API ID and API token of saved configurations into `credentials`, and earlier
           versions cannot read the migrated configuration.
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
   tags:
     - cdk:low-code
     - language:manifest-only
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 200
+    ql: 300
+  supportLevel: certified
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -75,7 +75,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
   allowedHosts:
     hosts:
       - api.aircall.io
@@ -101,6 +101,9 @@ data:
     - title: API announcements
       url: https://developers.aircall.io/api-references/#announcements
       type: api_deprecations
+    - title: API changelog
+      url: https://developers.aircall.io/api-references/#changelog
+      type: api_release_history
     - title: Status page
       url: https://status.aircall.com/
       type: status_page

@@ -37,6 +37,52 @@ def test_timestamp_formats_are_enforced(manifest_path: Path) -> None:
         validator.validate({**record, "created_at": "not-a-timestamp"})
 
 
+@pytest.mark.parametrize("stream", ["accounts", "issues"])
+@pytest.mark.parametrize("tags", [[], ["synthetic-priority", "synthetic-support"]])
+def test_tags_accept_string_lists(manifest_path: Path, stream: str, tags: list[str]) -> None:
+    schema = yaml.safe_load(manifest_path.read_text())["schemas"][stream]
+    assert schema["properties"]["tags"]["items"] == {"type": "string"}
+    record = json.loads((FIXTURES / f"{stream}.json").read_text())
+    Draft7Validator(schema).validate({**record, "tags": tags})
+
+
+@pytest.mark.parametrize("stream", ["accounts", "issues"])
+def test_tags_reject_object_lists(manifest_path: Path, stream: str) -> None:
+    schema = yaml.safe_load(manifest_path.read_text())["schemas"][stream]
+    record = json.loads((FIXTURES / f"{stream}.json").read_text())
+    with pytest.raises(ValidationError):
+        Draft7Validator(schema).validate({**record, "tags": [{"id": "synthetic-tag"}]})
+
+
+@pytest.mark.parametrize(
+    "stream,field",
+    [
+        ("accounts", "created_at"),
+        ("issues", "first_response_time"),
+        ("issues", "resolution_time"),
+        ("issues", "latest_message_time"),
+        ("issues", "snoozed_until_time"),
+        ("issue_messages", "timestamp"),
+        ("custom_fields", "created_at"),
+        ("custom_fields", "updated_at"),
+    ],
+)
+@pytest.mark.parametrize(
+    "value,valid",
+    [(None, True), ("2026-01-10T12:00:00Z", True), ("2026-01-10T12:00:00.123+02:00", True), ("not-a-timestamp", False)],
+)
+def test_upgrade_timestamp_formats_are_enforced(manifest_path: Path, stream: str, field: str, value: str | None, valid: bool) -> None:
+    schema = yaml.safe_load(manifest_path.read_text())["schemas"][stream]
+    assert schema["properties"][field] == {"type": ["null", "string"], "format": "date-time"}
+    validator = Draft7Validator(schema, format_checker=FormatChecker())
+    record = {**json.loads((FIXTURES / f"{stream}.json").read_text()), field: value}
+    if valid:
+        validator.validate(record)
+    else:
+        with pytest.raises(ValidationError):
+            validator.validate(record)
+
+
 @pytest.mark.parametrize("stream", ["audit_logs", "macro_groups", "surveys", "training_data"])
 @pytest.mark.parametrize("value", [None, 123])
 def test_new_stream_ids_are_non_nullable_strings(manifest_path: Path, stream: str, value: int | None) -> None:

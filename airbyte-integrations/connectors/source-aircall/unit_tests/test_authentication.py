@@ -144,7 +144,7 @@ def test_credentials_configs_are_not_migrated(config: dict, tmp_path: Path, caps
 
 @pytest.mark.parametrize("config", [_API_KEY_CONFIG, _OAUTH_CONFIG], ids=["api_key", "oauth"])
 def test_top_level_api_key_is_removed_once_credentials_are_set(config: dict) -> None:
-    # An Airbyte API PATCH merges new credentials into a config saved before 1.2.0.
+    # An Airbyte API PATCH merges new credentials into a config saved before 1.3.0.
     source = get_source(config={**json.loads(json.dumps(config)), "api_id": "old-id", "api_token": "old-token"})
 
     assert source._config == config

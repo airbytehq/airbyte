@@ -5,6 +5,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # The credentials spec was restructured under `credentials` in 1.1.0;
+        # legacy flat configs are migrated at runtime by config_normalization_rules.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,14 +19,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-        empty_streams:
-          - name: "acl"
-            bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
-          - name: "freebusy"
-            bypass_reason: "The sandbox calendar may have no busy blocks in the rolling 75-day window"
   # The CDK standard-test runner used in CI reads every section below. Entries sharing a config are
-  # merged into one scenario whose basic read leaves out basic_read's empty_streams; incremental runs
-  # read_from_future_state separately.
+  # merged into one scenario; incremental runs read_from_future_state separately.
   discovery:
     tests:
       - config_path: "secrets/config.json"

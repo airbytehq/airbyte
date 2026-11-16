@@ -30,6 +30,19 @@ def requester(requester_definition: dict[str, Any]) -> HttpRequester:
     return ModelToComponentFactory().create_component(HttpRequesterModel, requester_definition, CONFIG, name="test")
 
 
+@pytest.mark.parametrize(
+    "requester_definition",
+    [
+        MANIFEST["definitions"]["streams"][name]["retriever"]["requester"]
+        for name in STREAM_NAMES
+        if name not in {"transactional_email_events", "email_templates", "products", "categories", "emailCampaigns", "smsCampaigns"}
+    ],
+    ids=[
+        name
+        for name in STREAM_NAMES
+        if name not in {"transactional_email_events", "email_templates", "products", "categories", "emailCampaigns", "smsCampaigns"}
+    ],
+)
 def test_single_default_error_handler(requester_definition: dict[str, Any], requester: HttpRequester) -> None:
     assert requester_definition["error_handler"] == {
         "type": "DefaultErrorHandler",
@@ -70,6 +83,4 @@ def test_exponential_backoff(requester: HttpRequester, attempt_count: int, expec
     response.status_code = 429
     assert isinstance(requester.error_handler, DefaultErrorHandler)
     assert requester.error_handler.backoff_strategies
-    strategy = requester.error_handler.backoff_strategies[0]
-
-    assert strategy.backoff_time(response, attempt_count=attempt_count) == expected_delay
+    assert requester.error_handler.backoff_time(response, attempt_count=attempt_count) == expected_delay

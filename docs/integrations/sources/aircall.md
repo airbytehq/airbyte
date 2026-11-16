@@ -59,16 +59,16 @@ To authenticate with an API key, create one:
 | **Authentication** | Yes | **OAuth 2.0** (default) or **API Key**. OAuth stores the access token Aircall returns when an Admin authorizes the app. **API Key** needs the **API ID** and the **API Token** shown with it when you created the key. |
 | **Window size (days)** | No | Days of calls requested at a time, from 1 to 365. The default is 1. A window that holds more than 10,000 calls is split and partly read again, so a larger window only saves requests for companies with few calls. If a sync fails with `could not split its request window`, lower this setting. See [10,000-result limit](#10000-result-limit). |
 | **Contacts window size (days)** | No | Days of newly created contacts requested at a time, from 1 to 365. The default is 30. Lower it if a sync fails with the 10,000-results error for contacts. |
-| **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. All workers share one [rate limit](#rate-limit). |
+| **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. The connector never runs fewer than 2 workers, so a value of 1 runs 2. All workers share one [rate limit](#rate-limit). |
 | **Sync conversation intelligence (AI Assist)** | No | Adds the six [conversation intelligence](#conversation-intelligence) streams. Off by default. They need the AI Assist or AI Assist Pro package and cost one request per call for each selected stream on every sync. |
 
 Connections created before version 0.5.0 also have a Start date. The connector no longer uses it, and the form hides it.
 
-Sources created before version 1.2.0 move their API ID and API token under **API Key** the next time the source runs. If you edit such a source before that, the form asks for the API key again, so click **Retest saved source** or run a sync first.
+Sources created before version 1.3.0 move their API ID and API token under **API Key** the next time the source runs. If you edit such a source before that, the form asks for the API key again, so click **Retest saved source** or run a sync first.
 
 #### Configure the source with the Airbyte API or Terraform
 
-Before version 1.2.0, the API ID and API token were top-level fields. Airbyte moves existing configurations under **API Key** automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
+Before version 1.3.0, the API ID and API token were top-level fields. Airbyte moves existing configurations under **API Key** automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
 
 - For OAuth 2.0, set `auth_type` to `oauth2.0` and provide `client_id`, `client_secret` and `access_token`.
 - For an API key, set `auth_type` to `api_key` and provide `api_id` and `api_token`.
@@ -115,6 +115,8 @@ Every other stream is full refresh only. Aircall filters some of these lists, su
 | [`contacts`](https://developers.aircall.io/api-references/#list-all-contacts) | Full refresh | `id` | All plans |
 | [`conversation_engagements`](https://developers.aircall.io/api-references/#list-the-engagements-of-a-conversation) | Full refresh, incremental | `id` | Conversations API |
 | [`conversations`](https://developers.aircall.io/api-references/#list-all-conversations) | Full refresh, incremental | `id` | Conversations API |
+| [`dialer_campaign_phone_numbers`](https://developers.aircall.io/api-references/#retrieve-phone-numbers) | Full refresh | `user_id`, `id` | Power Dialer (Professional or Enterprise plan) |
+| [`dialer_campaigns`](https://developers.aircall.io/api-references/#retrieve-a-dialer-campaign) | Full refresh | `user_id`, `id` | Power Dialer (Professional or Enterprise plan) |
 | [`numbers`](https://developers.aircall.io/api-references/#list-all-numbers) | Full refresh | `id` | All plans |
 | [`sms_templates`](https://developers.aircall.io/api-references/#list-sms-templates) | Full refresh | `id` | All plans |
 | [`tags`](https://developers.aircall.io/api-references/#list-all-tags) | Full refresh | `id` | All plans |
@@ -133,6 +135,7 @@ Notes:
 - `contacts` returns shared contacts only ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts)).
 - `users` reads the [User V2 API](https://developers.aircall.io/api-references/#user-v2-overview).
 - `user_numbers` returns the numbers each user is assigned to, with `user_id` identifying the user. It makes at least one request per user.
+- `dialer_campaigns` and `dialer_campaign_phone_numbers` return each user's active Power Dialer campaign and the phone numbers on it, with `user_id` identifying the user. Aircall keeps one active campaign per user and no history: deleting a campaign deletes its numbers. Users without an active campaign are skipped with a log message. Each stream makes one request per user. `number` holds the digits without the leading `+`.
 - `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)). With OAuth 2.0, Aircall returns only the webhooks created with Airbyte's token, so the stream is usually empty; authenticate with an API key to sync your company's webhooks ([Webhook API overview](https://developers.aircall.io/api-references/#webhook-api-overview)).
 - `conversation_engagements` returns the calls, messages, WhatsApp messages, assignments, unassignments, closes and reopens of each conversation. The first sync and every full refresh make at least one request per conversation. Each incremental sync re-reads the engagements of every conversation active since three days before the previous sync, so syncing more often than daily repeats most of that work.
 - `whatsapp_templates` returns the templates of each number, with `number_id` identifying the number.
@@ -162,7 +165,7 @@ Aircall keeps only six months of call history in the API ([List all Calls](https
 
 ### Rate limit
 
-Aircall allows 120 requests per minute per company, shared by every API key and integration on your Aircall account ([Rate limiting](https://developers.aircall.io/api-references/#rate-limiting)). Each sync uses at most 100 of them and, when Aircall rejects a request for exceeding the limit, waits until Aircall resets the counter. Raising **Concurrent workers** doesn't raise the limit. Aircall Support can raise the limit for your API keys. A higher limit saves the waits when your syncs and other integrations together exceed it, but a single sync still sends at most 100 requests per minute.
+Aircall allows 120 requests per minute per company, shared by every API key and integration on your Aircall account ([Rate limiting](https://developers.aircall.io/api-references/#rate-limiting)). Each sync uses at most 100 of them and, when Aircall rejects a request for exceeding the limit, waits until Aircall resets the counter. Requests that fail with a server error (HTTP 500, 502, 503 or 504) are retried with exponential backoff. Raising **Concurrent workers** doesn't raise the limit. Aircall Support can raise the limit for your API keys. A higher limit saves the waits when your syncs and other integrations together exceed it, but a single sync still sends at most 100 requests per minute.
 
 ### Streams that sync no records
 
@@ -172,6 +175,7 @@ Some streams need an Aircall add-on or a specific number setup. When your compan
 | :--- | :--- |
 | `conversations`, `conversation_engagements` | The Conversations API must be enabled for your company ([List all Conversations](https://developers.aircall.io/api-references/#list-all-conversations)). Without it, each sync still spends one request per 30 days since January 2014 on each of the two streams, about 157 each, so deselect both streams. |
 | `trackers` | The AI Assist or AI Assist Pro package ([List all Trackers](https://developers.aircall.io/api-references/#list-all-trackers)). |
+| `dialer_campaigns`, `dialer_campaign_phone_numbers` | Power Dialer, included in the Aircall [Professional and Enterprise plans](https://aircall.io/pricing/). Users without an active Power Dialer campaign are skipped. |
 | `whatsapp_templates` | Only numbers registered for WhatsApp return templates ([List WhatsApp Templates](https://developers.aircall.io/api-references/#list-whatsapp-templates)). |
 
 If a sync fails with `Aircall rejected the credentials` or `Aircall returned HTTP 403`, the API key is wrong or was deleted, the Airbyte integration was deleted in Aircall, or your Aircall plan doesn't include that data. Re-authenticate the source if it uses OAuth 2.0, create a new API key and update the source if it uses one, or check your plan. For the conversation intelligence streams, see [Conversation intelligence](#conversation-intelligence).
@@ -191,12 +195,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.2.0 | 2026-11-11 | [90836](https://github.com/airbytehq/airbyte/pull/90836) | Add OAuth 2.0 authentication as the default; existing API key configurations move to the API Key option automatically |
+| 1.3.0 | 2026-11-16 | [90836](https://github.com/airbytehq/airbyte/pull/90836) | Add OAuth 2.0 authentication as the default; existing API key configurations move to the API Key option automatically |
+| 1.2.1 | 2026-11-13 | [92573](https://github.com/airbytehq/airbyte/pull/92573) | Mark the connector as certified |
+| 1.2.0 | 2026-11-13 | [92571](https://github.com/airbytehq/airbyte/pull/92571) | Add the Power Dialer `dialer_campaigns` and `dialer_campaign_phone_numbers` streams, back off exponentially on 5xx, and upgrade to `source-declarative-manifest` 7.48.0 |
 | 1.1.0 | 2026-11-11 | [92012](https://github.com/airbytehq/airbyte/pull/92012) | Add user_numbers, IVR options on calls and opt-in conversation intelligence streams |
 | 1.0.0 | 2026-11-11 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
 | 0.6.1 | 2026-11-10 | [91341](https://github.com/airbytehq/airbyte/pull/91341) | Update dependencies |
-| 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
-| 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
+| 0.6.0 | 2026-11-09 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
+| 0.5.0 | 2026-11-09 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
