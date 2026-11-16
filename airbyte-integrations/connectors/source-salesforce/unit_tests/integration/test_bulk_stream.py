@@ -13,7 +13,7 @@ from salesforce_describe_response_builder import SalesforceDescribeResponseBuild
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
 from source_salesforce.streams import BulkSalesforceStream
 
-from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from integration.test_rest_stream import create_http_request as create_standard_http_request
 from integration.test_rest_stream import create_http_response as create_standard_http_response
@@ -119,6 +119,37 @@ class BulkStreamTest(TestCase):
 
         assert len(output.records) == 1
         self._http_mocker.assert_number_of_calls(delete_request, 1)
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_not_found_on_job_results_when_read_then_fail_with_config_error_without_retry(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+        )
+        results_request = HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results")
+        salesforce_message = "The requested job results do not exist"
+        self._http_mocker.get(
+            results_request,
+            HttpResponse(json.dumps([{"errorCode": "NOT_FOUND", "message": salesforce_message}]), status_code=404),
+        )
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert not output.records
+        assert output.get_stream_statuses(_STREAM_NAME)[-1] == AirbyteStreamStatus.INCOMPLETE
+        assert output.errors
+        error = output.errors[0].trace.error
+        assert error.failure_type == FailureType.config_error
+        assert error.message == (
+            "Salesforce object not found. The requested resource does not exist in this Salesforce instance. "
+            f"Error message from Salesforce: {salesforce_message}"
+        )
+        self._http_mocker.assert_number_of_calls(results_request, 1)
 
     @freezegun.freeze_time(_NOW.isoformat())
     def test_given_null_bytes_when_read_then_remove_null_bytes(self) -> None:

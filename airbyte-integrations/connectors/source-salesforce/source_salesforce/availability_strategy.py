@@ -28,7 +28,7 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
              And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
              we cannot filter out these streams, so we check for them before reading from the streams.
         """
-        if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+        if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST, codes.NOT_FOUND]:
             try:
                 error_data = error.response.json()[0]
             except JSONDecodeError as json_error:
