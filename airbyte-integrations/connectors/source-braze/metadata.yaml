@@ -2,6 +2,18 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  allowedHosts:
+    hosts:
+      - "*.braze.com"
+      - "*.braze.eu"
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - campaigns
+      - campaigns_details
+      - canvases
+      - canvases_details
+      - segments_details
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
@@ -24,6 +36,10 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
   supportLevel: community
   tags:
     - language:manifest-only
@@ -42,6 +58,57 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Braze campaigns list
+      url: https://www.braze.com/docs/api/endpoints/export/campaigns/get_campaigns
+      type: api_reference
+    - title: Braze campaign details
+      url: https://www.braze.com/docs/api/endpoints/export/campaigns/get_campaign_details
+      type: api_reference
+    - title: Braze release notes
+      url: https://www.braze.com/docs/releases/home
+      type: api_release_history
+    - title: Braze deprecations
+      url: https://www.braze.com/docs/releases/deprecations
+      type: api_deprecations
+    - title: Braze OpenAPI specs
+      url: https://www.braze.com/docs/api/using_openapi_specs/
+      type: openapi_spec
+    - title: Braze export canvas get canvases OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_canvas_get_canvases.yaml
+      type: openapi_spec
+    - title: Braze export canvas get canvas details OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_canvas_get_canvas_details.yaml
+      type: openapi_spec
+    - title: Braze export canvas get canvas analytics OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_canvas_get_canvas_analytics.yaml
+      type: openapi_spec
+    - title: Braze export campaigns get campaign analytics OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_campaigns_get_campaign_analytics.yaml
+      type: openapi_spec
+    - title: Braze events list OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/events_list.yaml
+      type: openapi_spec
+    - title: Braze export custom events get custom events analytics OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_custom_events_get_custom_events_analytics.yaml
+      type: openapi_spec
+    - title: Braze export kpi get kpi daily new users date OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_kpi_get_kpi_daily_new_users_date.yaml
+      type: openapi_spec
+    - title: Braze export kpi get kpi dau date OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_kpi_get_kpi_dau_date.yaml
+      type: openapi_spec
+    - title: Braze export kpi get kpi uninstalls date OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_kpi_get_kpi_uninstalls_date.yaml
+      type: openapi_spec
+    - title: Braze export segments get segment OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_segments_get_segment.yaml
+      type: openapi_spec
+    - title: Braze export segments get segment details OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_segments_get_segment_details.yaml
+      type: openapi_spec
+    - title: Braze export segments get segment analytics OpenAPI
+      url: https://www.braze.com/docs/assets/api/openapi/export_segments_get_segment_analytics.yaml
+      type: openapi_spec
     - title: Braze REST API reference
       url: https://www.braze.com/docs/api/home
       type: api_reference
