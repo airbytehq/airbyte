@@ -17,6 +17,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
+METADATA_PATH = Path(__file__).parent.parent / "metadata.yaml"
 CONFIG = {"api_key": "fake-api-key", "application_key": "fake-application-key", "site": "datadoghq.com"}
 
 

@@ -9,6 +9,10 @@ class ConfigBuilder:
     def __init__(self) -> None:
         self._config: dict[str, Any] = dict(CONFIG)
 
+    def with_site(self, site: str) -> "ConfigBuilder":
+        self._config["site"] = site
+        return self
+
     def with_start_date(self, start_date: str) -> "ConfigBuilder":
         self._config["start_date"] = start_date
         return self

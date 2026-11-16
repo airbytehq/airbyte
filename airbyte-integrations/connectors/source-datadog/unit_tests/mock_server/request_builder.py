@@ -54,8 +54,13 @@ class DatadogRequestBuilder:
 
     def __init__(self, path: str) -> None:
         self._path = path
+        self._host = f"api.{CONFIG['site']}"
         self._query_params: dict[str, str] = {}
         self._any_query_params = False
+
+    def with_host(self, host: str) -> "DatadogRequestBuilder":
+        self._host = host
+        return self
 
     def with_query_param(self, name: str, value: str | int) -> "DatadogRequestBuilder":
         self._query_params[name] = str(value)
@@ -67,7 +72,7 @@ class DatadogRequestBuilder:
 
     def build(self) -> HttpRequest:
         return HttpRequest(
-            url=f"https://api.{CONFIG['site']}/api/{self._path}",
+            url=f"https://{self._host}/api/{self._path}",
             query_params=ANY_QUERY_PARAMS if self._any_query_params else self._query_params or None,
             headers={"DD-API-KEY": CONFIG["api_key"], "DD-APPLICATION-KEY": CONFIG["application_key"]},
         )

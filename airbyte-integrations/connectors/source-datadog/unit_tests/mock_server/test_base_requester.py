@@ -1,15 +1,18 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from collections.abc import Callable
+import logging
+import re
+from collections.abc import Callable, Mapping
 from typing import Any
 from unittest import mock
 
 import pytest
+import yaml
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from unit_tests.conftest import read_stream, stream_errors
+from unit_tests.conftest import METADATA_PATH, get_source, read_stream, stream_errors
 from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.request_builder import DatadogRequestBuilder
 from unit_tests.mock_server.response_builder import UNEXPECTED_ERROR_BODIES, DatadogPaginatedResponseBuilder, datadog_error
@@ -33,6 +36,9 @@ STREAMS = [
 STREAM_IDS = [stream for stream, *_ in STREAMS]
 ROOT_LIST_STREAMS = {"downtimes", "monitors"}
 
+# Read from the spec, so a site that is added there is tested here as well.
+SITES = get_source().spec(logging.getLogger("airbyte")).connectionSpecification["properties"]["site"]["enum"]
+
 # The two `errors` values Datadog answered with a 403 on 2026-11-13: for a key without the permission of the
 # endpoint, and for a wrong API key, a wrong application key or a wrong site.
 MISSING_PERMISSION = ["Forbidden", "Failed permission authorization checks"]
@@ -46,6 +52,16 @@ def _missing_permission_message(permission: str | None, datadog_text: str) -> st
             "Grant the missing permission to the Application Key in Datadog."
         )
     return f"The Application Key lacks the {permission} permission: {datadog_text}. Grant {permission} to the Application Key in Datadog."
+
+
+def _allowed_hosts(config: Mapping[str, Any]) -> list[str]:
+    # The Airbyte platform fills each `${name}` of an `allowedHosts` entry from the config, and drops an entry it cannot fill.
+    entries = yaml.safe_load(METADATA_PATH.read_text())["data"]["allowedHosts"]["hosts"]
+    filled = [
+        re.sub(r"\$\{([^}]+)\}", lambda placeholder: str(config.get(placeholder.group(1), placeholder.group(0))), entry)
+        for entry in entries
+    ]
+    return [host for host in filled if "${" not in host]
 
 
 def _users_request() -> HttpRequest:
@@ -70,6 +86,26 @@ def test_every_stream_sends_both_keys(stream: str, endpoint: Callable[[], Datado
         output = read_stream(stream)
 
     assert output.errors == []
+
+
+@pytest.mark.parametrize("site", SITES)
+@pytest.mark.parametrize(("stream", "endpoint"), [(stream, endpoint) for stream, endpoint, _ in STREAMS], ids=STREAM_IDS)
+def test_every_stream_calls_only_a_host_of_the_allow_list(site: str, stream: str, endpoint: Callable[[], DatadogRequestBuilder]) -> None:
+    config = ConfigBuilder().with_site(site).build()
+    empty_answer = "[]" if stream in ROOT_LIST_STREAMS else "{}"
+    with HttpMocker() as http_mocker:
+        # A request to any other host finds no mock, and the read fails.
+        for host in _allowed_hosts(config):
+            http_mocker.get(endpoint().with_host(host).with_any_query_params().build(), HttpResponse(empty_answer))
+
+        output = read_stream(stream, config=config)
+
+    assert output.errors == []
+
+
+@pytest.mark.parametrize("site", SITES)
+def test_allow_list_resolves_to_the_api_host_of_the_site_and_nothing_else(site: str) -> None:
+    assert _allowed_hosts(ConfigBuilder().with_site(site).build()) == [f"api.{site}"]
 
 
 @pytest.mark.parametrize(("stream", "endpoint", "permission"), STREAMS, ids=STREAM_IDS)
