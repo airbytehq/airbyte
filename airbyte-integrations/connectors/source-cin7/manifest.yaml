@@ -24,7 +24,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - bank_accounts
+    - sale_list
 
 definitions:
   streams:

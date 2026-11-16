@@ -43,6 +43,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.55 | 2026-11-12 | [78510](https://github.com/airbytehq/airbyte/pull/78510) | Update the connection check to avoid requiring bank account permissions. |
 | 0.3.54 | 2026-11-10 | [91447](https://github.com/airbytehq/airbyte/pull/91447) | Update dependencies |
 | 0.3.53 | 2026-11-03 | [90520](https://github.com/airbytehq/airbyte/pull/90520) | Update dependencies |
 | 0.3.52 | 2026-10-27 | [89849](https://github.com/airbytehq/airbyte/pull/89849) | Update dependencies |
