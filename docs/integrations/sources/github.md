@@ -332,7 +332,7 @@ If you use your own OAuth app, do one of the following:
 
 ### Troubleshooting
 
-- **Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth**: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
+- Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
