@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class BigQueryDatabaseHandlerTest {
     companion object {
@@ -135,6 +137,55 @@ class BigQueryDatabaseHandlerTest {
         val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `access denied job errors are wrapped with remediation`(executionError: Boolean) {
+        val message =
+            "Access Denied: Table proj:airbyte_internal.tbl: Permission bigquery.tables.delete denied on table proj:airbyte_internal.tbl (or it may not exist)."
+        val bqError = BigQueryError("accessDenied", "loc", message)
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()).status } returns
+                mockk {
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns
+                        if (executionError) BigQueryError("invalidQuery", "loc", "Query failed")
+                        else bqError
+                    every { executionErrors } returns
+                        if (executionError) listOf(bqError) else emptyList()
+                }
+        }
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+
+        val exception =
+            assertThrows<ConfigErrorException> { handler.execute(Sql.of("DROP TABLE tbl")) }
+
+        assertEquals(
+            "The BigQuery service account is missing a required permission. $message Grant the service account the BigQuery Data Editor role on the dataset named above, then retry the sync.",
+            exception.message,
+        )
+        assertTrue(exception.cause is BigQueryException)
+        assertTrue((exception.cause as BigQueryException).errors.contains(bqError))
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["rateLimitExceeded", "invalidQuery"])
+    fun `other job errors remain BigQueryException`(reason: String) {
+        val bqError = BigQueryError(reason, "loc", "Query failed")
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()).status } returns
+                mockk {
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns bqError
+                    every { executionErrors } returns emptyList()
+                }
+        }
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+
+        val exception = assertThrows<BigQueryException> { handler.execute(Sql.of("SELECT 1")) }
+
+        assertEquals(reason, exception.error.reason)
     }
 
     @Test
