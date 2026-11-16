@@ -12,6 +12,8 @@ definitions:
     campaigns:
       type: DeclarativeStream
       name: campaigns
+      $parameters:
+        required_ability: Marketing > Other > Campaigns > View
       primary_key:
         - id
       retriever:
@@ -144,6 +146,8 @@ definitions:
     list_membership:
       type: DeclarativeStream
       name: list_membership
+      $parameters:
+        required_ability: Marketing > Segmentation > View AND Prospect > Prospects > View
       primary_key:
         - id
       retriever:
@@ -212,6 +216,8 @@ definitions:
     lists:
       type: DeclarativeStream
       name: lists
+      $parameters:
+        required_ability: Marketing > Segmentation > Lists > View
       primary_key:
         - id
       retriever:
@@ -280,6 +286,8 @@ definitions:
     prospect_accounts:
       type: DeclarativeStream
       name: prospect_accounts
+      $parameters:
+        required_ability: Prospect > Prospect Accounts > View
       primary_key:
         - id
       retriever:
@@ -329,6 +337,8 @@ definitions:
     prospects:
       type: DeclarativeStream
       name: prospects
+      $parameters:
+        required_ability: Prospect > Prospects > View
       primary_key:
         - id
       retriever:
@@ -397,6 +407,8 @@ definitions:
     users:
       type: DeclarativeStream
       name: users
+      $parameters:
+        required_ability: Admin > User > View
       primary_key:
         - id
       retriever:
@@ -465,6 +477,8 @@ definitions:
     visitor_activities:
       type: DeclarativeStream
       name: visitor_activities
+      $parameters:
+        required_ability: Prospect > Visitors > View
       primary_key:
         - id
       retriever:
@@ -530,6 +544,8 @@ definitions:
     visitors:
       type: DeclarativeStream
       name: visitors
+      $parameters:
+        required_ability: Prospect > Visitors > View
       primary_key:
         - id
       retriever:
@@ -598,6 +614,8 @@ definitions:
     visits:
       type: DeclarativeStream
       name: visits
+      $parameters:
+        required_ability: Prospect > Prospects > View
       primary_key:
         - id
       retriever:
@@ -667,6 +685,8 @@ definitions:
     folders:
       type: DeclarativeStream
       name: folders
+      $parameters:
+        required_ability: Admin > Folders > View
       primary_key:
         - id
       retriever:
@@ -712,6 +732,8 @@ definitions:
     custom_redirects:
       type: DeclarativeStream
       name: custom_redirects
+      $parameters:
+        required_ability: Marketing > Content > Custom Redirects > View
       primary_key:
         - id
       retriever:
@@ -761,6 +783,8 @@ definitions:
     emails:
       type: DeclarativeStream
       name: emails
+      $parameters:
+        required_ability: Marketing > Emails > Emails > View
       primary_key:
         - id
       retriever:
@@ -826,6 +850,8 @@ definitions:
     engagement_studio_programs:
       type: DeclarativeStream
       name: engagement_studio_programs
+      $parameters:
+        required_ability: Marketing > Engagement Studio > Engagement Program > View
       primary_key:
         - id
       retriever:
@@ -894,6 +920,8 @@ definitions:
     files:
       type: DeclarativeStream
       name: files
+      $parameters:
+        required_ability: Marketing > Content > Files > View
       primary_key:
         - id
       retriever:
@@ -939,6 +967,8 @@ definitions:
     folder_contents:
       type: DeclarativeStream
       name: folder_contents
+      $parameters:
+        required_ability: Admin > Folders > View
       primary_key:
         - id
       retriever:
@@ -1004,6 +1034,8 @@ definitions:
     forms:
       type: DeclarativeStream
       name: forms
+      $parameters:
+        required_ability: Marketing > Forms > Forms > View
       primary_key:
         - id
       retriever:
@@ -1052,6 +1084,8 @@ definitions:
     form_fields:
       type: DeclarativeStream
       name: form_fields
+      $parameters:
+        required_ability: Marketing > Forms > Forms > View
       primary_key:
         - id
       retriever:
@@ -1117,6 +1151,8 @@ definitions:
     form_handlers:
       type: DeclarativeStream
       name: form_handlers
+      $parameters:
+        required_ability: Marketing > Forms > Form Handlers > View
       primary_key:
         - id
       retriever:
@@ -1165,6 +1201,8 @@ definitions:
     form_handler_fields:
       type: DeclarativeStream
       name: form_handler_fields
+      $parameters:
+        required_ability: Forms > Form Handlers > View
       primary_key:
         - id
       retriever:
@@ -1211,6 +1249,8 @@ definitions:
     landing_pages:
       type: DeclarativeStream
       name: landing_pages
+      $parameters:
+        required_ability: Landing Pages > Landing Page > View
       primary_key:
         - id
       retriever:
@@ -1279,6 +1319,8 @@ definitions:
     layout_templates:
       type: DeclarativeStream
       name: layout_templates
+      $parameters:
+        required_ability: Marketing > Landing Pages > Layout Templates > View
       primary_key:
         - id
       retriever:
@@ -1328,6 +1370,8 @@ definitions:
     lifecycle_stages:
       type: DeclarativeStream
       name: lifecycle_stages
+      $parameters:
+        required_ability: Prospect > Lifecycle > View Report
       primary_key:
         - id
       retriever:
@@ -1395,6 +1439,8 @@ definitions:
     lifecycle_histories:
       type: DeclarativeStream
       name: lifecycle_histories
+      $parameters:
+        required_ability: Prospect > Lifecycle > View report
       primary_key:
         - id
       retriever:
@@ -1459,6 +1505,8 @@ definitions:
     list_emails:
       type: DeclarativeStream
       name: list_emails
+      $parameters:
+        required_ability: Marketing > Emails > Emails > View
       primary_key:
         - id
       retriever:
@@ -1527,6 +1575,8 @@ definitions:
     opportunities:
       type: DeclarativeStream
       name: opportunities
+      $parameters:
+        required_ability: Prospect > Opportunities > View
       primary_key:
         - id
       retriever:
@@ -1592,6 +1642,8 @@ definitions:
     tags:
       type: DeclarativeStream
       name: tags
+      $parameters:
+        required_ability: Marketing > Segmentation > Tags > View
       primary_key:
         - id
       retriever:
@@ -1656,6 +1708,8 @@ definitions:
     tracker_domains:
       type: DeclarativeStream
       name: tracker_domains
+      $parameters:
+        required_ability: Marketing > Content > Files > View OR Marketing > Content > Custom Redirects > View OR Marketing > Forms > Forms > View OR Marketing > Forms > Form Handlers > View OR Marketing > Landing Pages > Landing Pages > View
       primary_key:
         - id
       retriever:
@@ -1705,6 +1759,8 @@ definitions:
     visitor_page_views:
       type: DeclarativeStream
       name: visitor_page_views
+      $parameters:
+        required_ability: Prospect > Prospects > View
       primary_key:
         - id
       retriever:
@@ -1770,6 +1826,8 @@ definitions:
     account:
       type: DeclarativeStream
       name: account
+      $parameters:
+        required_ability: Admin > Account > Edit Settings
       primary_key:
         - id
       retriever:
@@ -1798,6 +1856,8 @@ definitions:
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
+      $parameters:
+        required_ability: Prospect > Prospects > Configure Fields
       primary_key:
         - id
       retriever:
@@ -1863,6 +1923,8 @@ definitions:
     dynamic_contents:
       type: DeclarativeStream
       name: dynamic_contents
+      $parameters:
+        required_ability: Content > Dynamic Content > View
       primary_key:
         - id
       retriever:
@@ -1931,6 +1993,8 @@ definitions:
     dynamic_content_variations:
       type: DeclarativeStream
       name: dynamic_content_variations
+      $parameters:
+        required_ability: Content > Dynamic Content > View
       primary_key:
         - id
       retriever:
@@ -1975,15 +2039,62 @@ definitions:
           $ref: "#/schemas/dynamic_content_variations"
   error_handler:
     type: DefaultErrorHandler
-    max_retries: 12
+    max_retries: 5
     backoff_strategies:
-      - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 7200
+      - type: ExponentialBackoffStrategy
+        factor: 10
+    # The vendor documents no HTTP status per error code, so every filter reads the code in the body:
+    # `code` in version 5, `@attributes.err_code` in version 4 (`email_clicks`).
     response_filters:
+      # Code 122, the daily limit: stop, it resets the next day. Its text is matched too.
       - type: HttpResponseFilter
-        action: RATE_LIMITED
+        predicate: >-
+          {{ response.get('code') == 122 or
+          (response.get('@attributes') or {}).get('err_code') in [122, '122'] }}
         error_message_contains: Daily API rate limit met
-        error_message: Reached the Pardot daily API request limit. The limit resets at the start of the next day in the Pardot account's time zone.
+        action: FAIL
+        failure_type: transient_error
+        error_message: >-
+          The daily API request limit of this Account Engagement account is used up. It resets at the
+          start of the next day in the account's time zone. The next sync continues from the last
+          saved position.
+      # Code 66: more than five concurrent requests.
+      - type: HttpResponseFilter
+        predicate: >-
+          {{ response.get('code') == 66 or
+          (response.get('@attributes') or {}).get('err_code') in [66, '66'] }}
+        action: RETRY
+      # Code 184: the access token is invalid, unknown or malformed.
+      - type: HttpResponseFilter
+        predicate: >-
+          {{ response.get('code') == 184 or
+          (response.get('@attributes') or {}).get('err_code') in [184, '184'] }}
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Account Engagement rejected the access token. Check that the Salesforce app has the
+          "Manage Pardot services (pardot_api)" scope and that the user behind the refresh token is
+          synced to this business unit.
+      # Code 201: no active business unit with this ID on this host.
+      - type: HttpResponseFilter
+        predicate: >-
+          {{ response.get('code') == 201 or
+          (response.get('@attributes') or {}).get('err_code') in [201, '201'] }}
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Account Engagement found no active business unit for this Business Unit ID on this host.
+          Check the ID, and select the demo host for a sandbox or a Developer Edition org.
+      # Code 49: access denied.
+      - type: HttpResponseFilter
+        predicate: >-
+          {{ response.get('code') == 49 or
+          (response.get('@attributes') or {}).get('err_code') in [49, '49'] }}
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          The user cannot read this object. Ask an Account Engagement admin for the
+          "{{ parameters.get('required_ability', 'View') }}" ability, or deselect the stream.
   base_requester:
     type: HttpRequester
     url_base: https://pi.pardot.com/api/
