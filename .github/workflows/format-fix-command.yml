@@ -43,19 +43,22 @@ jobs:
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
-      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
-      # permissions to add commits to our main repo as well as forks. This will only work on
-      # forks if the user installs the app into their fork. Until we document this as a clear
+      # NOTE: We still use a PAT (rather than a GitHub App) when pushing, because the workflow
+      # needs permissions to add commits to our main repo as well as forks. This will only work
+      # on forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
+      #
+      # SECURITY: We intentionally do NOT persist the PAT into .git/config here
+      # (persist-credentials: false). This job runs fork-controlled pre-commit hooks, and a
+      # persisted credential would be readable by those hooks. The PAT is supplied only at
+      # push time, after pre-commit has run. See the "Push changes" step below.
       - name: Checkout Airbyte
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
           fetch-depth: 1
-          # Important that token is a PAT so that CI checks are triggered again.
-          # Without this we would be forever waiting on required checks to pass.
-          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          persist-credentials: false
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
@@ -113,11 +116,18 @@ jobs:
           git commit -m "chore: auto-fix lint and format issues"
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
+      # The PAT is injected only here, after fork-controlled pre-commit has finished, and is
+      # passed via an env var (never interpolated into the command line or logged). Using a PAT
+      # ensures the push re-triggers required CI checks on the PR.
       - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
         if: steps.git-diff.outputs.changes == 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          CONTRIBUTOR_REPO: ${{ steps.job-vars.outputs.repo }}
+          CONTRIBUTOR_BRANCH: ${{ steps.job-vars.outputs.branch }}
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git push "https://x-access-token:${GH_PAT}@github.com/${CONTRIBUTOR_REPO}.git" \
+            "HEAD:${CONTRIBUTOR_BRANCH}"
 
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
