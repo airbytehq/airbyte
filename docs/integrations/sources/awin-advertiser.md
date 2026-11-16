@@ -3,13 +3,30 @@
 Website: https://www.awin.com/
 Documentation: https://help.awin.com/apidocs/for-advertisers
 
+## Prerequisites
+
+- An Awin advertiser account with API access. Accelerate and Advanced plans include API access. See [Awin's API overview](https://help.awin.com/docs/awins-apis-overview) for plan availability and exceptions.
+- An Awin user with access to that advertiser account. The API requires at least viewer access to retrieve account data. Review [Awin's authentication guide](https://help.awin.com/apidocs/api-authentication) for the permissions needed to obtain a token.
+
+## Setup
+
+1. Sign in to Awin and open [API Credentials](https://ui.awin.com/awin-api) from the user menu.
+2. Enter your Awin password and click **Show my API token**.
+3. In the Airbyte source configuration, paste the token into **API Key** (`api_key`), without the `Bearer` prefix. The connector adds this prefix automatically. Use the user token, not a Conversion API key.
+4. Enter the advertiser account ID in `advertiserId`. You can find it in your Awin dashboard or account settings.
+5. Set **Start Date**, **Lookback Days**, and **Step Increment** as described below. To sync `creative_performance`, also select **Creative performance regions**.
+
+The token grants access to the accounts associated with your Awin user, rather than a single advertiser account. Changes to account access can take up to 10 minutes to appear in the API.
+
 ## Configuration
+
+`advertiserId`, `api_key`, `step_increment`, `lookback_days`, and `start_date` are required. `regions` is optional unless you want records from `creative_performance`.
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `advertiserId` | `string` | advertiserId. Your Awin Advertiser ID. You can find this in your Awin dashboard or account settings. | |
-| `api_key` | `string` | API Key. Your Awin API key. Generate this from your Awin account under API Credentials. | |
-| `step_increment` | `string` | Step Increment. The time window size for each API request in ISO8601 duration format. For the campaign performance stream, Awin API explicitly limits the period between startDate and endDate to 400 days maximum. | P400D |
+| `advertiserId` | `string` | Your Awin advertiser account ID. You can find this in your Awin dashboard or account settings. | |
+| `api_key` | `string` | API Key. Your Awin user API token from **API Credentials**. The connector uses Bearer token authentication. | |
+| `step_increment` | `string` | Step Increment. Request window for `campaign_performance` and `transactions`, in ISO 8601 duration format. For example, `P30D` requests 30-day windows. The campaign report allows at most 400 days per request. This setting doesn't affect `publisher_performance` or `creative_performance`, which always request one day at a time. | P400D |
 | `lookback_days` | `integer` | Lookback Days. Number of days to look back on each sync to catch any updates to existing records. | |
 | `start_date` | `string` | Start Date. Start date for data replication in YYYY-MM-DD format | |
 | `regions` | `array<string>` | Creative performance regions. Awin regions to request for the `creative_performance` stream. The Awin creative report requires a region, so the stream reads one report per selected region and returns no records when none are selected. A region added after this stream has synced data is read only from the last synced date minus `lookback_days`, so refresh the `creative_performance` stream after adding a region to backfill its earlier history. | |
@@ -18,16 +35,31 @@ Documentation: https://help.awin.com/apidocs/for-advertisers
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 | --- | --- | --- | --- | --- |
-| campaign_performance | date.publisherId.campaign | No pagination | ✅ | ✅ |
-| transactions | id | No pagination | ✅ | ✅ |
-| publisher_performance | date.publisherId.region.currency | No pagination | ✅ | ✅ |
-| creative_performance | date.region.creativeId.publisherId | No pagination | ✅ | ✅ |
-| publishers | id | No pagination | ✅ | ❌ |
-| accounts | accountId | No pagination | ✅ | ❌ |
+| `campaign_performance` | `date`, `publisherId`, `campaign` | No pagination | ✅ | ✅ |
+| `transactions` | `id` | No pagination | ✅ | ✅ |
+| `publisher_performance` | `date`, `publisherId`, `region`, `currency` | No pagination | ✅ | ✅ |
+| `creative_performance` | `date`, `region`, `creativeId`, `publisherId` | No pagination | ✅ | ✅ |
+| `publishers` | `id` | No pagination | ✅ | ❌ |
+| `accounts` | `accountId` | No pagination | ✅ | ❌ |
 
-The `transactions` stream requests basket products, so records include `basketProducts` when Awin returns product-level tracking data. Each transaction also has an `is_deleted` field, which is `true` when `commissionStatus` was `deleted` the last time the transaction was read. Each sync re-reads only transactions whose `transactionDate` falls within `lookback_days`, so a transaction deleted after it leaves that window keeps `is_deleted: false`; set `lookback_days` to cover your programmes' validation period. The stream sends no `status` filter, so `is_deleted` can only be `true` for deleted transactions that Awin includes in its default response.
+- `campaign_performance` aggregates clicks and transactions by campaign and publisher, with daily intervals. It uses Awin's default `includeNumbersWithoutCampaign=false`, so it excludes activity without a campaign parameter.
+- `transactions` returns individual transactions.
+- `publisher_performance` aggregates transactions, clicks, and impressions by publisher. Awin omits publishers with no activity in the requested period.
+- `creative_performance` aggregates transactions, clicks, and impressions by creative for each selected region.
+- `publishers` returns publishers with an active relationship with the configured advertiser, including their regions and promotion types.
+- `accounts` returns all advertiser accounts associated with your API token's user. Unlike the other streams, it isn't limited to `advertiserId`.
 
-The `publisher_performance` and `creative_performance` streams request one day at a time and add the report day as the `date` field. A first sync sends one request per day since `start_date` (per selected region for `creative_performance`), and Awin allows 20 API calls per minute per user across all streams, so each year of history adds at least 18 minutes per report and region.
+### Transaction updates and deletions
+
+The `transactions` stream requests basket products, so records include `basketProducts` when Awin returns product-level tracking data. Each transaction also has an `is_deleted` field, which is `true` when `commissionStatus` was `deleted` the last time the transaction was read.
+
+After the initial sync, incremental syncs re-read transactions from the saved cursor minus `lookback_days`, based on `transactionDate`, not the date of an amendment or deletion. A transaction deleted after it leaves that window can retain `is_deleted: false` in your destination. Set `lookback_days` to cover your programs' validation period. The stream sends no `status` filter, so `is_deleted` can only be `true` for deleted transactions that Awin includes in its default response. This field doesn't remove destination records automatically.
+
+### Daily reports and rate limits
+
+The `publisher_performance` and `creative_performance` streams use transaction dates in UTC, request one day at a time, and add the report day as the `date` field. A first sync sends one request per day since `start_date` (per selected region for `creative_performance`).
+
+[Awin limits API requests](https://help.awin.com/apidocs/introduction-to-awins-apis) to 20 calls per minute per user, shared with any other integrations using that user. The connector limits its requests to 20 per minute across all streams. A year of history therefore requires about 365 requests per daily report (per selected region for `creative_performance`), before lookback reads or retries.
 
 ## IP allow list
 
@@ -40,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.1.0 | 2026-11-10 | [91539](https://github.com/airbytehq/airbyte/pull/91539) | Add `publisher_performance`, `creative_performance`, `publishers` and `accounts` streams, add basket products and an `is_deleted` field to `transactions` |
+| 0.1.0 | 2026-11-15 | [91539](https://github.com/airbytehq/airbyte/pull/91539) | Add `publisher_performance`, `creative_performance`, `publishers` and `accounts` streams, add basket products and an `is_deleted` field to `transactions` |
 | 0.0.43 | 2026-11-10 | [91364](https://github.com/airbytehq/airbyte/pull/91364) | Update dependencies |
 | 0.0.42 | 2026-11-03 | [90448](https://github.com/airbytehq/airbyte/pull/90448) | Update dependencies |
 | 0.0.41 | 2026-10-27 | [89797](https://github.com/airbytehq/airbyte/pull/89797) | Update dependencies |
