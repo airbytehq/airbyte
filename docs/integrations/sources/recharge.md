@@ -128,25 +128,25 @@ This error from Recharge can occur due to:
 
 The following table lists the required read scopes for each stream. See Recharge's [authentication reference](https://developer.rechargepayments.com/2021-01/authentication) for the API token scope list.
 
-| Stream Name        | Required Read Scope(s)                                                                                                                                |
-| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Addresses          | `read_customers`                                                                                                                                      |
-| Bundle Selections  | `read_subscriptions`                                                                                                                                  |
-| Charges            | `read_orders`                                                                                                                                         |
-| Collections        | `read_products`                                                                                                                                       |
-| Credit Adjustments | `read_credit_adjustments`                                                                                                                             |
-| Customers          | `read_customers`                                                                                                                                      |
-| Discounts          | `read_discounts`                                                                                                                                      |
-| Events             | `read_events`                                                                                                                                         |
+| Stream Name        | Required Read Scope(s)                                              |
+| :----------------- | :------------------------------------------------------------------ |
+| Addresses          | `read_customers`                                                    |
+| Bundle Selections  | `read_subscriptions`                                                |
+| Charges            | `read_orders`                                                       |
+| Collections        | `read_products`                                                     |
+| Credit Adjustments | `read_credit_adjustments`                                           |
+| Customers          | `read_customers`                                                    |
+| Discounts          | `read_discounts`                                                    |
+| Events             | `read_events`                                                       |
 | Metafields         | `read_customers`, `read_subscriptions`, `read_orders`, `store_info` |
-| Onetimes           | `read_subscriptions`                                                                                                                                  |
-| Orders             | `read_orders`                                                                                                                                         |
-| Payment Methods    | `read_payment_methods`                                                                                                                                |
-| Plans           | `read_plans`                                                                                                                                             |
-| Shop               | `read_store`                                                                                                                                          |
-| Subscriptions      | `read_subscriptions`                                                                                                                                  |
+| Onetimes           | `read_subscriptions`                                                |
+| Orders             | `read_orders`                                                       |
+| Payment Methods    | `read_payment_methods`                                              |
+| Plans              | `read_plans`                                                        |
+| Shop               | `read_store`                                                        |
+| Subscriptions      | `read_subscriptions`                                                |
 
-The `Metafields` stream requests all six [owner resources](https://developer.rechargepayments.com/2021-11/metafields): `address`, `customer`, `subscription`, `order`, `charge`, and `store`. Grant all four scopes listed above; the connector doesn't provide an option to select a subset of owner resources.
+The `Metafields` stream requests all six [owner resources](https://developer.rechargepayments.com/2021-11/metafields): `address`, `customer`, `subscription`, `order`, `charge`, and `store`. Grant all four scopes in the table; the connector doesn't provide an option to select a subset of owner resources.
 
 Additional access requirements apply to these streams:
 
