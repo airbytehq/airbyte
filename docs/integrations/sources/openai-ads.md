@@ -33,7 +33,7 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data before this date will not be replicated. The default is 2026-02-01. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
 7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
 8. (Optional) Enter the **Lookback Window** in days, from 1 to 90. Conversions are requested with a 30-day click window and OpenAI needs at least one day to process conversions, so keep the default of 32 or more when you sync conversions streams. See [Lookback window](#lookback-window).
-9. (Optional) Enter the **Number of concurrent workers**, from 2 to 20. Values below 2 run with 2 workers. The default is 3.
+9. (Optional) Enter the **Number of concurrent workers**, from 2 to 20. The default is 3.
 10. Click **Set up source**.
 
 #### For Airbyte Open Source
@@ -119,7 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.12  | 2026-11-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | Request conversions for up to 100 entities at a time, and raise the minimum lookback window to 1 day and the minimum number of workers to 2                                                   |
+| 0.1.12  | 2026-11-16 | [93041](https://github.com/airbytehq/airbyte/pull/93041) | Request conversions for up to 100 entities at a time, and raise the minimum lookback window to 1 day and the minimum number of workers to 2                                                   |
 | 0.1.11  | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
 | 0.1.10  | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests                                                                                            |
 | 0.1.9   | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies                                                                                                                                                                           |

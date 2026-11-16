@@ -7,12 +7,14 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+import yaml
 from freezegun import freeze_time
 from jsonschema import Draft7Validator
 from requests_mock import ANY, Mocker
 
 from airbyte_cdk.models import AirbyteStateMessageSerializer, Status, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -21,7 +23,6 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
-_OLD_MANIFEST_PATH = Path(__file__).parent / "resource" / "manifest_0_1_11.yaml"
 _URL = "https://api.ads.openai.com/v1"
 _CONFIG = {"api_key": "test-key", "start_date": "2026-09-01", "end_date": "2026-09-14"}
 _TIME_RANGE = '{"type":"date_range","since":"2026-09-01","until":"2026-09-14"}'
@@ -493,8 +494,14 @@ def test_0_1_11_manifest_reads_state_migrated_by_the_current_connector(requests_
     assert "states" not in migrated_stream_state
 
     rollback_state = StateBuilder().with_stream_state("ad_conversions", migrated_stream_state).build()
-    old_source = YamlDeclarativeSource(
-        path_to_yaml=str(_OLD_MANIFEST_PATH),
+    old_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    for stream_name in ("campaign_conversions_stream", "ad_group_conversions_stream", "ad_conversions_stream"):
+        stream = old_manifest["definitions"][stream_name]
+        stream["retriever"]["partition_router"] = stream["retriever"]["partition_router"]["underlying_partition_router"]
+        del stream["state_migrations"]
+    old_manifest["definitions"]["conversions_requester"]["request_body_json"]["entity_ids"] = '{{ [ stream_slice["entity_id"] ] }}'
+    old_source = ConcurrentDeclarativeSource(
+        source_config=old_manifest,
         catalog=CatalogBuilder().build(),
         config=config,
         state=rollback_state,
