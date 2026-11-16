@@ -1692,6 +1692,203 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: '#/schemas/fiscal_years'
+    bank_establishments:
+      type: DeclarativeStream
+      name: bank_establishments
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: bank_establishments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("next_cursor") }}'
+            stop_condition: '{{ not response.get("has_more") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/bank_establishments'
+    customer_invoice_templates:
+      type: DeclarativeStream
+      name: customer_invoice_templates
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: customer_invoice_templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("next_cursor") }}'
+            stop_condition: '{{ not response.get("has_more") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/customer_invoice_templates'
+    sepa_mandates:
+      type: DeclarativeStream
+      name: sepa_mandates
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: sepa_mandates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("next_cursor") }}'
+            stop_condition: '{{ not response.get("has_more") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/sepa_mandates'
+    gocardless_mandates:
+      type: DeclarativeStream
+      name: gocardless_mandates
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: gocardless_mandates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("next_cursor") }}'
+            stop_condition: '{{ not response.get("has_more") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/gocardless_mandates'
+    customer_contacts:
+      type: DeclarativeStream
+      name: customer_contacts
+      primary_key:
+      - customer_id
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/child_requester'
+          path: customers/{{ stream_partition.customer_id }}/contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("next_cursor") }}'
+            stop_condition: '{{ not response.get("has_more") }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/streams/customers'
+            parent_key: id
+            partition_field: customer_id
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - customer_id
+          value: '{{ stream_partition.customer_id }}'
+          value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/customer_contacts'
   base_requester:
     type: HttpRequester
     url_base: https://app.pennylane.com/api/external/v2/
@@ -1761,6 +1958,11 @@ streams:
 - $ref: '#/definitions/streams/billing_subscription_lines'
 - $ref: '#/definitions/streams/journals'
 - $ref: '#/definitions/streams/trial_balance'
+- $ref: '#/definitions/streams/bank_establishments'
+- $ref: '#/definitions/streams/customer_invoice_templates'
+- $ref: '#/definitions/streams/sepa_mandates'
+- $ref: '#/definitions/streams/gocardless_mandates'
+- $ref: '#/definitions/streams/customer_contacts'
 spec:
   type: Spec
   connection_specification:
@@ -4504,3 +4706,198 @@ schemas:
         type: string
     additionalProperties: true
     $schema: http://json-schema.org/draft-07/schema#
+  bank_establishments:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  customer_invoice_templates:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  sepa_mandates:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      bank:
+        type:
+        - 'null'
+        - string
+      bic:
+        type:
+        - 'null'
+        - string
+      iban:
+        type:
+        - 'null'
+        - string
+      sequence_type:
+        type:
+        - 'null'
+        - string
+      signed_at:
+        type:
+        - 'null'
+        - string
+        format: date
+      identifier:
+        type:
+        - 'null'
+        - string
+      customer:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          url:
+            type:
+            - 'null'
+            - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  gocardless_mandates:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      external_reference:
+        type:
+        - 'null'
+        - string
+      customer:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          url:
+            type:
+            - 'null'
+            - string
+      status:
+        type:
+        - 'null'
+        - string
+      external_customer_account:
+        type:
+        - 'null'
+        - string
+      external_customer_label:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  customer_contacts:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      first_name:
+        type:
+        - 'null'
+        - string
+      last_name:
+        type:
+        - 'null'
+        - string
+      role:
+        type:
+        - 'null'
+        - string
+      email:
+        type:
+        - 'null'
+        - string
+      telephone_number:
+        type:
+        - 'null'
+        - string
+      mobile_number:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      customer_id:
+        type:
+        - 'null'
+        - integer
