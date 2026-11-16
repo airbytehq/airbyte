@@ -25,7 +25,7 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean,
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
@@ -33,7 +33,7 @@ class DestinationMessageFactory(
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
-        serializedSizeBytes: Long
+        serializedSizeBytes: Long,
     ): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
@@ -55,7 +55,7 @@ class DestinationMessageFactory(
                 val descriptor =
                     namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream
+                        name = message.record.stream,
                     )
                 val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
@@ -91,7 +91,7 @@ class DestinationMessageFactory(
                             val idSource =
                                 (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
                                     ?: throw IllegalStateException(
-                                        "Expected `partition_id` on record"
+                                        "Expected `partition_id` on record",
                                     ))
                             CheckpointId(idSource as String)
                         } else {
@@ -190,9 +190,9 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
+                                        message.state.additionalProperties,
                                     ),
-                                streamCheckpoints = snapshotStreamCheckpoints(message.state)
+                                streamCheckpoints = snapshotStreamCheckpoints(message.state),
                             )
                         } else {
                             GlobalCheckpoint(
@@ -210,8 +210,8 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
-                                    )
+                                        message.state.additionalProperties,
+                                    ),
                             )
                         }
                     }
@@ -263,7 +263,7 @@ class DestinationMessageFactory(
         }
 
     private fun fromAirbyteStreamState(
-        streamState: AirbyteStreamState
+        streamState: AirbyteStreamState,
     ): CheckpointMessage.Checkpoint {
         val descriptor =
             namespaceMapper.map(
@@ -304,7 +304,7 @@ class DestinationMessageFactory(
                         } else {
                             null
                         },
-                    name = message.record.streamName
+                    name = message.record.streamName,
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(
@@ -326,7 +326,7 @@ data object ProbeMessage : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         throw UnsupportedOperationException(
             "ProbeMessage cannot be converted to AirbyteMessage. " +
-                "It is only used by the source to verify that the data channel is open."
+                "It is only used by the source to verify that the data channel is open.",
         )
     }
 }

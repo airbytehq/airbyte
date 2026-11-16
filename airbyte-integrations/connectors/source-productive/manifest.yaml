@@ -39,21 +39,17 @@ definitions:
           path: tags
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -91,21 +87,17 @@ definitions:
           path: deals
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -143,21 +135,17 @@ definitions:
           path: pages
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -195,21 +183,17 @@ definitions:
           path: tasks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -247,21 +231,17 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -296,24 +276,20 @@ definitions:
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
-          path: boards
+          path: folders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -351,21 +327,17 @@ definitions:
           path: events
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -403,21 +375,17 @@ definitions:
           path: prices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -455,21 +423,17 @@ definitions:
           path: timers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -507,21 +471,17 @@ definitions:
           path: filters
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -559,21 +519,17 @@ definitions:
           path: widgets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -611,21 +567,17 @@ definitions:
           path: bookings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -663,21 +615,17 @@ definitions:
           path: comments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -715,21 +663,17 @@ definitions:
           path: expenses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -767,21 +711,17 @@ definitions:
           path: holidays
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -819,21 +759,17 @@ definitions:
           path: invoices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -871,21 +807,17 @@ definitions:
           path: payments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -923,21 +855,17 @@ definitions:
           path: projects
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -975,21 +903,17 @@ definitions:
           path: salaries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1027,21 +951,17 @@ definitions:
           path: sections
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1079,21 +999,17 @@ definitions:
           path: services
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1131,21 +1047,17 @@ definitions:
           path: sessions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1183,21 +1095,17 @@ definitions:
           path: companies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1235,21 +1143,17 @@ definitions:
           path: pipelines
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1287,21 +1191,17 @@ definitions:
           path: tax_rates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1339,21 +1239,17 @@ definitions:
           path: workflows
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1391,21 +1287,17 @@ definitions:
           path: activities
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1443,21 +1335,17 @@ definitions:
           path: dashboards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1495,21 +1383,17 @@ definitions:
           path: line_items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1547,21 +1431,17 @@ definitions:
           path: rate_cards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1599,21 +1479,17 @@ definitions:
           path: task_lists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1651,21 +1527,17 @@ definitions:
           path: attachments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1703,21 +1575,17 @@ definitions:
           path: memberships
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1755,21 +1623,17 @@ definitions:
           path: entitlements
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1807,21 +1671,17 @@ definitions:
           path: lost_reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1859,21 +1719,17 @@ definitions:
           path: subsidiaries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1911,21 +1767,17 @@ definitions:
           path: time_entries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -1963,21 +1815,17 @@ definitions:
           path: custom_fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2015,21 +1863,17 @@ definitions:
           path: deal_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2067,21 +1911,17 @@ definitions:
           path: organizations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2119,21 +1959,17 @@ definitions:
           path: page_versions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2171,21 +2007,17 @@ definitions:
           path: service_types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2223,21 +2055,17 @@ definitions:
           path: document_types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2275,21 +2103,17 @@ definitions:
           path: exchange_rates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2327,21 +2151,17 @@ definitions:
           path: contact_entries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2379,21 +2199,17 @@ definitions:
           path: approval_policies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2428,21 +2244,17 @@ definitions:
           path: holiday_calendars
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2480,21 +2292,17 @@ definitions:
           path: payment_reminders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2532,21 +2340,17 @@ definitions:
           path: workflow_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2559,58 +2363,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/workflow_statuses"
-    project_assignments:
-      type: DeclarativeStream
-      name: project_assignments
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: page[size]
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page[number]
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: project_assignments
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/project_assignments"
     time_entry_versions:
       type: DeclarativeStream
       name: time_entry_versions
@@ -2636,21 +2388,17 @@ definitions:
           path: time_entry_versions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2688,21 +2436,17 @@ definitions:
           path: custom_field_options
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2740,21 +2484,17 @@ definitions:
           path: invoice_attributions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2792,21 +2532,17 @@ definitions:
           path: reports/booking_reports
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2844,21 +2580,17 @@ definitions:
           path: organization_memberships
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2896,21 +2628,17 @@ definitions:
           path: reports/timesheet_reports
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2948,21 +2676,17 @@ definitions:
           path: payment_reminder_sequences
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 4
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-          request_parameters:
-            X-Organization-Id: "{{ config['organization_id'] }}"
+            type: DefaultErrorHandler
+            max_retries: 4
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -2978,6 +2702,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.productive.io/api/v2/
+    request_headers:
+      X-Organization-Id: "{{ config['organization_id'] }}"
     authenticator:
       type: ApiKeyAuthenticator
       api_token: '{{ config["api_key"] }}'
@@ -3023,7 +2749,6 @@ streams:
   - $ref: "#/definitions/streams/payments"
   - $ref: "#/definitions/streams/pipelines"
   - $ref: "#/definitions/streams/prices"
-  - $ref: "#/definitions/streams/project_assignments"
   - $ref: "#/definitions/streams/projects"
   - $ref: "#/definitions/streams/rate_cards"
   - $ref: "#/definitions/streams/reports_booking-reports"
@@ -3414,13 +3139,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    project_assignments:
-      hasRecords: true
-      streamHash: 1e62dcdcde3da9f93df1561dcce6b3960eb4a60d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     time_entry_versions:
       hasRecords: true
       streamHash: de9550bb8814c8e724d0c888cd9276d42975b2db
@@ -3520,7 +3238,6 @@ metadata:
     holiday_calendars: true
     payment_reminders: true
     workflow_statuses: true
-    project_assignments: true
     time_entry_versions: true
     custom_field_options: true
     invoice_attributions: true
@@ -13259,139 +12976,6 @@ schemas:
                   id:
                     type:
                       - string
-                      - "null"
-    additionalProperties: true
-  project_assignments:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      attributes:
-        type:
-          - object
-          - "null"
-        properties:
-          watched:
-            type:
-              - boolean
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-      relationships:
-        type:
-          - object
-          - "null"
-        properties:
-          person:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
-                      - "null"
-          project:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
-                      - "null"
-          organization:
-            type:
-              - object
-              - "null"
-            properties:
-              data:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-          favorite_filter:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
-                      - "null"
-          docs_favorite_filter:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
-                      - "null"
-          budgets_favorite_filter:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
-                      - "null"
-          invoices_favorite_filter:
-            type:
-              - object
-              - "null"
-            properties:
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  included:
-                    type:
-                      - boolean
                       - "null"
     additionalProperties: true
   time_entry_versions:

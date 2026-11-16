@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.task.Task
 
 interface LoadPipelineStep {
     val numWorkers: Int
+
     fun taskForPartition(partition: Int): Task
 }
 

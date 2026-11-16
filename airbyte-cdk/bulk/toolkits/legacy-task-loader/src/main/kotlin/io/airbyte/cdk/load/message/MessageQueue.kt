@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 
 interface QueueReader<T> {
     fun consume(): Flow<T>
+
     suspend fun poll(): T?
 }
 
 interface QueueWriter<T> : CloseableCoroutine {
     suspend fun publish(message: T)
+
     fun isClosedForPublish(): Boolean
 }
 
@@ -27,12 +29,16 @@ open class ChannelMessageQueue<T>(val channel: Channel<T>) : MessageQueue<T> {
     private val isClosed = AtomicBoolean(false)
 
     override suspend fun publish(message: T) = channel.send(message)
+
     override fun consume(): Flow<T> = channel.receiveAsFlow()
+
     override suspend fun poll(): T? = channel.tryReceive().getOrNull()
+
     override suspend fun close() {
         if (isClosed.setOnce()) {
             channel.close()
         }
     }
+
     override fun isClosedForPublish(): Boolean = isClosed.get()
 }

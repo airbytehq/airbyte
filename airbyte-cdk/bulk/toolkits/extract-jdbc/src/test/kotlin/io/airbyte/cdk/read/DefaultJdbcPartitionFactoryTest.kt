@@ -22,6 +22,7 @@ import io.airbyte.cdk.read.TestFixtures.record
 import io.airbyte.cdk.read.TestFixtures.sharedState
 import io.airbyte.cdk.read.TestFixtures.stream
 import io.airbyte.cdk.read.TestFixtures.ts
+import io.airbyte.cdk.util.Jsons
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -42,7 +43,7 @@ class DefaultJdbcPartitionFactoryTest {
         sanityCheck(stream, factory, partition)
         // Check query generation
         partition.nonResumableQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace)),
         )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -55,7 +56,7 @@ class DefaultJdbcPartitionFactoryTest {
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
-                )
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue())
@@ -75,10 +76,10 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertEquals(ts, partition.cursor)
         // Check query generation
         partition.cursorUpperBoundQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace)),
         )
         partition.nonResumableQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace)),
         )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -91,7 +92,7 @@ class DefaultJdbcPartitionFactoryTest {
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
-                )
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue(cursor = cursorValue))
@@ -112,7 +113,7 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertNull(partition.upperBound)
         // Check query generation
         partition.nonResumableQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace)),
         )
         partition
             .resumableQuery(limit = 10L)
@@ -122,8 +123,8 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     NoWhere,
                     OrderBy(id),
-                    Limit(10L)
-                )
+                    Limit(10L),
+                ),
             )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -139,7 +140,7 @@ class DefaultJdbcPartitionFactoryTest {
                     ),
                     NoWhere,
                     OrderBy(id),
-                )
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue())
@@ -180,10 +181,10 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertNull(partition.upperBound)
         // Check query generation
         partition.cursorUpperBoundQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace)),
         )
         partition.nonResumableQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumns(id, ts, msg), From(stream.name, stream.namespace)),
         )
         partition
             .resumableQuery(limit = 10L)
@@ -193,8 +194,8 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     NoWhere,
                     OrderBy(id),
-                    Limit(10L)
-                )
+                    Limit(10L),
+                ),
             )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -209,8 +210,8 @@ class DefaultJdbcPartitionFactoryTest {
                         NoWhere,
                     ),
                     NoWhere,
-                    OrderBy(id)
-                )
+                    OrderBy(id),
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue(cursor = cursorValue))
@@ -236,6 +237,68 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertIterableEquals(listOf(IntCodec.encode(44)), splits[1].upperBound)
         Assertions.assertIterableEquals(listOf(IntCodec.encode(44)), splits[2].lowerBound)
         Assertions.assertNull(splits[2].upperBound)
+    }
+
+    @Test
+    fun testEmptyStateUnsplittableSnapshot() {
+        val stream = stream(withPK = false, withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcUnsplittableSnapshotPartition)
+        val partition = result as DefaultJdbcUnsplittableSnapshotPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+    }
+
+    @Test
+    fun testEmptyStateSplittableSnapshot() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotPartition)
+        val partition = result as DefaultJdbcSplittableSnapshotPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+        Assertions.assertEquals(listOf(id), partition.checkpointColumns)
+        Assertions.assertNull(partition.lowerBound)
+        Assertions.assertNull(partition.upperBound)
+    }
+
+    @Test
+    fun testEmptyStateSplittableSnapshotWithCursor() {
+        val stream = stream()
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotWithCursorPartition)
+        val partition = result as DefaultJdbcSplittableSnapshotWithCursorPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+        Assertions.assertEquals(listOf(id), partition.checkpointColumns)
+        Assertions.assertEquals(ts, partition.cursor)
+        Assertions.assertNull(partition.lowerBound)
+        Assertions.assertNull(partition.upperBound)
+    }
+
+    @Test
+    fun testCompletedSnapshotStateYieldsNoPartition() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(opaqueStateValue()))
+        factory.assertFailures()
+        Assertions.assertNull(result)
+    }
+
+    @Test
+    fun testNullSentinelStateYieldsNoPartition() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
+        // The isNull sentinel for completed empty-table streams still yields no partition.
+        val result = factory.create(stream.bootstrap(Jsons.nullNode()))
+        factory.assertFailures()
+        Assertions.assertNull(result)
     }
 
     @Test
@@ -289,8 +352,8 @@ class DefaultJdbcPartitionFactoryTest {
             SelectQuerySpec(
                 SelectColumns(id, ts, msg),
                 From(stream.name, stream.namespace),
-                Where(Greater(id, IntCodec.encode(22)))
-            )
+                Where(Greater(id, IntCodec.encode(22))),
+            ),
         )
         partition
             .resumableQuery(limit = 10L)
@@ -300,8 +363,8 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
-                    Limit(10L)
-                )
+                    Limit(10L),
+                ),
             )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -317,7 +380,7 @@ class DefaultJdbcPartitionFactoryTest {
                     ),
                     NoWhere,
                     OrderBy(id),
-                )
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue())
@@ -349,7 +412,7 @@ class DefaultJdbcPartitionFactoryTest {
                 SelectColumns(id, ts, msg),
                 From(stream.name, stream.namespace),
                 Where(Greater(id, IntCodec.encode(22))),
-            )
+            ),
         )
         partition
             .resumableQuery(limit = 10L)
@@ -359,8 +422,8 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
-                    Limit(10L)
-                )
+                    Limit(10L),
+                ),
             )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -375,8 +438,8 @@ class DefaultJdbcPartitionFactoryTest {
                         Where(Greater(id, IntCodec.encode(22))),
                     ),
                     NoWhere,
-                    OrderBy(id)
-                )
+                    OrderBy(id),
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue(cursor = cursorValue))
@@ -414,7 +477,7 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertTrue(partition.isLowerBoundIncluded)
         // Check query generation
         partition.cursorUpperBoundQuery.assertQueryEquals(
-            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace))
+            SelectQuerySpec(SelectColumnMaxValue(ts), From(stream.name, stream.namespace)),
         )
         partition.nonResumableQuery.assertQueryEquals(
             SelectQuerySpec(
@@ -423,10 +486,10 @@ class DefaultJdbcPartitionFactoryTest {
                 Where(
                     And(
                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
-                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
+                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
                     ),
                 ),
-            )
+            ),
         )
         partition
             .samplingQuery(sampleRateInvPow2 = 8)
@@ -441,13 +504,13 @@ class DefaultJdbcPartitionFactoryTest {
                         Where(
                             And(
                                 GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
-                                LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
-                            )
+                                LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                            ),
                         ),
                     ),
                     NoWhere,
-                    OrderBy(ts)
-                )
+                    OrderBy(ts),
+                ),
             )
         // Check state generation
         partition.completeState.assertJsonEquals(opaqueStateValue(cursor = cursorUpperBound))

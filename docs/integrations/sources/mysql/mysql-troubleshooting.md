@@ -99,6 +99,34 @@ SET GLOBAL thread_pool_idle_timeout = 120;
 `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
 :::
 
+### EOFException: Failed to read next byte from position
+
+A CDC sync may fail while reading the binary log with this error:
+
+```text
+Caused by: java.io.EOFException: Failed to read next byte from position <binlog_position>
+```
+
+MySQL closed the connection because Airbyte didn't read from it within `net_write_timeout` seconds (default 60). This can happen when Airbyte reads a large backlog or a large transaction while the destination is slow to accept data.
+
+To resolve this error, increase `net_write_timeout` on your MySQL server. Start with 3600 seconds.
+
+1. Check the current value.
+
+   ```sql
+   SHOW GLOBAL VARIABLES LIKE 'net_write_timeout';
+   ```
+
+2. Increase the value.
+
+   ```sql
+   SET GLOBAL net_write_timeout = 3600;
+   ```
+
+   `SET GLOBAL` only applies to new connections, and MySQL resets it when the server restarts. To keep the value, use `SET PERSIST` on MySQL 8.0 and later, or set it in your MySQL configuration file. On Amazon RDS and Aurora, set it in your DB parameter group.
+
+3. Run the sync again.
+
 ### (Advanced) Enable GTIDs
 
 Global transaction identifiers \(GTIDs\) uniquely identify transactions that occur on a server within a cluster. Though not required for a Airbyte MySQL connector, using GTIDs simplifies replication and enables you to more easily confirm if primary and replica servers are consistent. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-gtids.html#option_mysqld_gtid-mode)

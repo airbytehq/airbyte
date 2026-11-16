@@ -12,7 +12,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - attendees
+    - organizations
 
 definitions:
   streams:
@@ -90,7 +90,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 10
+            page_size: 50
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
             stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
@@ -247,7 +247,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/organizations/{{ stream_partition['organization_id'] }}/orders
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/orders/
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -607,6 +607,28 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["private_token"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [401]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Eventbrite rejected the private token. Copy the private token from
+            https://www.eventbrite.com/platform/api-keys and make sure it has not been revoked.
+        - type: HttpResponseFilter
+          http_codes: [429]
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: >-
+            Eventbrite hourly rate limit reached (2,000 requests per hour per token); waiting before retrying.
 
 streams:
   - $ref: "#/definitions/streams/organizations"
@@ -623,6 +645,16 @@ streams:
   - $ref: "#/definitions/streams/ticket_classes"
   - $ref: "#/definitions/streams/available_ticket_classes"
   - $ref: "#/definitions/streams/venues"
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2000
+          interval: PT1H
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
 
 spec:
   type: Spec

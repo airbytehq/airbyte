@@ -18,34 +18,42 @@ import org.apache.parquet.io.PositionOutputStream
 
 class ParquetWriter(private val writer: ApacheParquetWriter<GenericRecord>) : Closeable {
     fun write(record: GenericRecord) = writer.write(record)
+
     override fun close() = writer.close()
 }
 
 fun OutputStream.toParquetWriter(
     avroSchema: Schema,
-    config: ParquetWriterConfiguration
+    config: ParquetWriterConfiguration,
 ): ParquetWriter {
     // Custom OutputFile implementation wrapping the OutputStream
     val outputFile =
         object : OutputFile {
             var position: Long = 0
+
             override fun create(blockSizeHint: Long) =
                 object : PositionOutputStream() {
                     override fun write(b: Int) {
                         position += 1
                         this@toParquetWriter.write(b)
                     }
+
                     override fun write(bytes: ByteArray, off: Int, len: Int) {
                         position += len
                         this@toParquetWriter.write(bytes, off, len)
                     }
+
                     override fun flush() = this@toParquetWriter.flush()
+
                     override fun close() = this@toParquetWriter.close()
+
                     override fun getPos() = position
                 }
 
             override fun createOrOverwrite(blockSizeHint: Long) = create(blockSizeHint)
+
             override fun supportsBlockSize() = true
+
             override fun defaultBlockSize() = 0L
         }
 
@@ -73,7 +81,7 @@ data class ParquetWriterConfiguration(
     val maxPaddingSizeMb: Int,
     val pageSizeKb: Int,
     val dictionaryPageSizeKb: Int,
-    val dictionaryEncoding: Boolean
+    val dictionaryEncoding: Boolean,
 ) {
     val compressionCodec
         get() = CompressionCodecName.valueOf(compressionCodecName)

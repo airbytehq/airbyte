@@ -28,6 +28,8 @@ definitions:
           record_filter:
             type: RecordFilter
             condition: "{{ record['reportTypeId'] == parameters['report_type_id'] }}"
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
     report:
       type: DeclarativeStream
       name: report
@@ -36,17 +38,14 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: jobs/{{ stream_partition['id'] }}/reports
-          request_parameters:
-            startTimeAtOrAfter: "{{ stream_interval['start_time'] if '1990-01-01T00:00:00.000000Z' != stream_interval['start_time'] else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - reports
-            record_filter:
-              type: RecordFilter
-              condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -57,14 +56,18 @@ definitions:
                 $ref: "#/definitions/streams/jobs"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: createTime
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-          - "%Y%m%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: createdAfter
 
     report_types:
       type: DeclarativeStream
@@ -76,8 +79,6 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
-          # Handled by ContentOwnerRequester, not the CDK's request options provider.
-          # Static values only -- these are not interpolated. See components.py.
           extra_request_parameters:
             includeSystemManaged: "true"
         record_selector:
@@ -87,15 +88,7 @@ definitions:
             field_path:
               - reportTypes
         paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('nextPageToken') }}"
-            stop_condition: "{{ not response.get('nextPageToken') }}"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
+          $ref: "#/definitions/next_page_token_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -124,6 +117,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_declarative_manifest.components.ReportsStateMigration
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.ReportsCreateTimeStateMigration
     
     channel_annotations_a1:
       $ref: "#/definitions/streams/base_report_stream"
@@ -286,6 +281,36 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_province_a3"
+    channel_reach_basic_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_reach_basic_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+      $parameters:
+        report_type_id: channel_reach_basic_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_reach_basic_a1"
+    channel_reach_combined_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_reach_combined_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - traffic_source_type
+        - traffic_source_detail
+        - operating_system
+        - device_type
+      $parameters:
+        report_type_id: channel_reach_combined_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_reach_combined_a1"
     channel_sharing_service_a1:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_sharing_service_a1
@@ -452,6 +477,112 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_traffic_source_a2"
 
+  next_page_token_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('nextPageToken') }}"
+      stop_condition: "{{ not response.get('nextPageToken') }}"
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: pageToken
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      # Google rejected the access token itself. The token refresh succeeded moments before,
+      # so this is rare, but the user can only fix it by re-authenticating. Matched on the
+      # vendor body so that the no-channel 401 below keeps its own message.
+      # No `http_codes` here: a filter matches on `http_codes` OR `predicate`, so the status
+      # code is checked inside the predicate instead.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: >-
+          {{ (response.get('error') or {}).get('code') == 401 and
+          'invalid authentication credentials' in ((response.get('error') or {}).get('message') or '') }}
+        error_message: >-
+          Google rejected the YouTube Reporting API credentials:
+          {{ ((response.get('error') or {}).get('message') or 'invalid authentication credentials')[:300] }}
+          Re-authenticate the source. If the error persists after re-authenticating, the
+          authorized Google account likely does not have an associated YouTube channel: the
+          YouTube Analytics source requires an account that owns or manages a YouTube channel.
+      # Any other 401 comes from the YouTube Reporting API itself after a successful token
+      # refresh -- a bad or revoked refresh token fails earlier, against token_refresh_endpoint.
+      # So the credentials are valid but unusable for this API, which in practice means the
+      # authorized Google account has no YouTube channel linked to it.
+      # `action` is required for a filter to apply at all: without it `_matches_filter`
+      # returns None, the filter is skipped, and the CDK's generic text is shown instead of
+      # `error_message`.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+        error_message: >-
+          The authorized Google account does not appear to have an associated YouTube
+          channel. The YouTube Analytics source requires an account that owns or manages a
+          YouTube channel, because all Reporting API data belongs to a channel or content
+          owner. Create a YouTube channel for this account, or re-authenticate with an
+          account that already has one. If you are connecting as a content owner, also
+          confirm the Content Owner ID is correct.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          The YouTube Reporting API denied access:
+          {{ ((response.get('error') or {}).get('message') or 'see the YouTube Reporting API error')[:300] }}.
+          Confirm the authorized account owns or manages the channel and, if a Content Owner
+          ID is set, that the account is allowed to act on behalf of that content owner.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        predicate: >-
+          {{ response.get('error', {}).get('code') == 429 and
+          'FreeQuotaRequestsPerDayPerProject' in response|string }}
+        error_message: Daily YouTube API project quota is exhausted.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: []
+        predicate: >-
+          {{ response.get('error', {}).get('code', 0) >= 500 and
+          response.get('error', {}).get('code', 0) < 600 }}
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        predicate: >-
+          {{ response.get('error', {}).get('code') == 429 and
+          'FreeQuotaRequestsPerDayPerProject' not in response|string }}
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 30
+
+  # Only the report download gets the 404 filter: a 404 on a listing endpoint is a real
+  # error, but a report file that is gone by the time it is downloaded must not fail the
+  # whole sync.
+  download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: >-
+          Skipping a YouTube report file that is no longer available for download
+          (HTTP 404), most likely because YouTube removed it after its retention
+          period. The rows in that file are not synced; the rest of the sync continues
+          so one missing file does not fail every stream.
+      - $ref: "#/definitions/base_error_handler/response_filters/0"
+      - $ref: "#/definitions/base_error_handler/response_filters/1"
+      - $ref: "#/definitions/base_error_handler/response_filters/2"
+      - $ref: "#/definitions/base_error_handler/response_filters/3"
+      - $ref: "#/definitions/base_error_handler/response_filters/4"
+      - $ref: "#/definitions/base_error_handler/response_filters/5"
+    backoff_strategies:
+      $ref: "#/definitions/base_error_handler/backoff_strategies"
+
   base_requester:
     type: CustomRequester
     class_name: source_declarative_manifest.components.ContentOwnerRequester
@@ -464,59 +595,28 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+      refresh_token_error_status_codes:
+        - 400
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_grant
     error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-        # A 401 here comes from the YouTube Reporting API itself, which means the OAuth token
-        # refresh already succeeded -- a bad or revoked refresh token fails earlier, against
-        # token_refresh_endpoint, and never reaches this handler. So the credentials are valid
-        # but unusable for this API, which in practice means the authorized Google account has
-        # no YouTube channel linked to it.
-        # `action` is required for this filter to apply at all: without it `_matches_filter`
-        # returns None, the filter is skipped, and the CDK's generic 401 text is shown instead
-        # of `error_message`.
-        - type: HttpResponseFilter
-          action: FAIL
-          failure_type: config_error
-          http_codes:
-            - 401
-          error_message: >-
-            The authorized Google account does not appear to have an associated YouTube
-            channel. The YouTube Analytics source requires an account that owns or manages a
-            YouTube channel, because all Reporting API data belongs to a channel or content
-            owner. Create a YouTube channel for this account, or re-authenticate with an
-            account that already has one. If you are connecting as a content owner, also
-            confirm the Content Owner ID is correct.
-        - type: HttpResponseFilter
-          http_codes:
-            - 403
-          error_message: >-
-            Authorization failed. Please ensure you have the correct
-            permissions.
-        - type: HttpResponseFilter
-          action: RETRY
-          http_codes: []
-          predicate: >-
-            {{ 'code' in response and response['error']['code'] >= 500 and
-            response['error']['code'] < 600 }}
-        - type: HttpResponseFilter
-          action: RETRY
-          predicate: >-
-            {{ 'code' in response and response['error']['code'] == 429 and
-            'FreeQuotaRequestsPerDayPerProject' not in response }}
-      backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 30
+      $ref: "#/definitions/base_error_handler"
   base_retriever:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/base_requester"
       url_base: "{{ stream_partition['extra_fields']['downloadUrl'] }}"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     record_selector:
       type: RecordSelector
       extractor:
         type: DpathExtractor
         field_path: [ ]
+      # Report files are CSV, so every value arrives as a string. Cast each one to the type
+      # its schema declares.
+      schema_normalization: Default
     partition_router:
       type: SubstreamPartitionRouter
       parent_stream_configs:
@@ -543,6 +643,8 @@ streams:
   - $ref: "#/definitions/streams/channel_end_screens_a1"
   - $ref: "#/definitions/streams/channel_playback_location_a3"
   - $ref: "#/definitions/streams/channel_province_a3"
+  - $ref: "#/definitions/streams/channel_reach_basic_a1"
+  - $ref: "#/definitions/streams/channel_reach_combined_a1"
   - $ref: "#/definitions/streams/channel_sharing_service_a1"
   - $ref: "#/definitions/streams/channel_subtitles_a3"
   - $ref: "#/definitions/streams/channel_traffic_source_a3"
@@ -552,6 +654,11 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 4
 
 spec:
   type: Spec
@@ -576,6 +683,7 @@ spec:
       credentials:
         type: object
         title: Authenticate via OAuth 2.0
+        order: 1
         required:
           - client_id
           - client_secret
@@ -597,9 +705,28 @@ spec:
             description: A refresh token generated using the above client ID and secret
             title: Refresh Token
             airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          Number of report files to download in parallel. The YouTube Reporting API quota is
+          shared by every connection that uses the same Google Cloud project, so higher values
+          can hit rate limits sooner.
+        default: 2
+        minimum: 1
+        maximum: 4
+        order: 2
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: https://www.googleapis.com/auth/yt-analytics.readonly
+          - scope: https://www.googleapis.com/auth/yt-analytics-monetary.readonly
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: true
@@ -644,6 +771,8 @@ metadata:
     channel_end_screens_a1: false
     channel_playback_location_a3: false
     channel_province_a3: false
+    channel_reach_basic_a1: false
+    channel_reach_combined_a1: false
     channel_sharing_service_a1: false
     channel_subtitles_a3: false
     channel_traffic_source_a3: false
@@ -691,27 +820,27 @@ schemas:
       annotation_click_through_rate:
         type:
           - "null"
-          - string
+          - number
       annotation_clickable_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_clicks:
         type:
           - "null"
-          - string
+          - integer
       annotation_closable_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_close_rate:
         type:
           - "null"
-          - string
+          - number
       annotation_closes:
         type:
           - "null"
-          - string
+          - integer
       annotation_id:
         type:
           - "null"
@@ -719,7 +848,7 @@ schemas:
       annotation_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_type:
         type:
           - "null"
@@ -893,11 +1022,11 @@ schemas:
       card_click_rate:
         type:
           - "null"
-          - string
+          - number
       card_clicks:
         type:
           - "null"
-          - string
+          - integer
       card_id:
         type:
           - "null"
@@ -905,19 +1034,19 @@ schemas:
       card_impressions:
         type:
           - "null"
-          - string
+          - integer
       card_teaser_click_rate:
         type:
           - "null"
-          - string
+          - number
       card_teaser_clicks:
         type:
           - "null"
-          - string
+          - integer
       card_teaser_impressions:
         type:
           - "null"
-          - string
+          - integer
       card_type:
         type:
           - "null"
@@ -1053,7 +1182,7 @@ schemas:
       views_percentage:
         type:
           - "null"
-          - string
+          - number
   channel_device_os_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1135,11 +1264,11 @@ schemas:
       end_screen_element_click_rate:
         type:
           - "null"
-          - string
+          - number
       end_screen_element_clicks:
         type:
           - "null"
-          - string
+          - integer
       end_screen_element_id:
         type:
           - "null"
@@ -1147,7 +1276,7 @@ schemas:
       end_screen_element_impressions:
         type:
           - "null"
-          - string
+          - integer
       end_screen_element_type:
         type:
           - "null"
@@ -1235,7 +1364,7 @@ schemas:
       annotation_click_through_rate:
         type:
           - "null"
-          - integer
+          - number
       annotation_clickable_impressions:
         type:
           - "null"
@@ -1251,7 +1380,7 @@ schemas:
       annotation_close_rate:
         type:
           - "null"
-          - integer
+          - number
       annotation_closes:
         type:
           - "null"
@@ -1271,7 +1400,7 @@ schemas:
       card_click_rate:
         type:
           - "null"
-          - integer
+          - number
       card_clicks:
         type:
           - "null"
@@ -1283,7 +1412,7 @@ schemas:
       card_teaser_click_rate:
         type:
           - "null"
-          - integer
+          - number
       card_teaser_clicks:
         type:
           - "null"
@@ -1338,6 +1467,68 @@ schemas:
         type:
           - "null"
           - integer
+  channel_reach_basic_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      video_thumbnail_impressions:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions_ctr:
+        type:
+          - "null"
+          - number
+  channel_reach_combined_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      traffic_source_detail:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions_ctr:
+        type:
+          - "null"
+          - number
   channel_sharing_service_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1360,7 +1551,7 @@ schemas:
       shares:
         type:
           - "null"
-          - string
+          - integer
       sharing_service:
         type:
           - "null"
@@ -1797,15 +1988,15 @@ schemas:
       playlist_saves_added:
         type:
           - "null"
-          - string
+          - integer
       playlist_saves_removed:
         type:
           - "null"
-          - string
+          - integer
       playlist_starts:
         type:
           - "null"
-          - string
+          - integer
       province_code:
         type:
           - "null"
@@ -1821,7 +2012,7 @@ schemas:
       views:
         type:
           - "null"
-          - string
+          - integer
       watch_time_minutes:
         type:
           - "null"

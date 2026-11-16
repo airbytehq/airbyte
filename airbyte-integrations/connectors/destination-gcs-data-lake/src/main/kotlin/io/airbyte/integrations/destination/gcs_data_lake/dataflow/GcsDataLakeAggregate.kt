@@ -86,7 +86,7 @@ class GcsDataLakeAggregate(
      */
     private fun transformForIcebergSchema(
         value: AirbyteValue,
-        field: Types.NestedField
+        field: Types.NestedField,
     ): AirbyteValue {
         val fieldName = field.name()
 

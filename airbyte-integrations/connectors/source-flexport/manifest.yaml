@@ -18,7 +18,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ parameters.path }}"
+          path: network/companies
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -54,7 +54,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ parameters.path }}"
+          path: invoices
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -90,7 +90,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ parameters.path }}"
+          path: network/locations
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -126,7 +126,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ parameters.path }}"
+          path: products
           http_method: GET
         record_selector:
           type: RecordSelector

@@ -18,13 +18,13 @@ class BigqueryCheckCleaner : CheckCleaner<BigqueryConfiguration> {
         bq.getTable(
                 BigqueryRawTableNameGenerator(config)
                     .getTableName(stream.mappedDescriptor)
-                    .toTableId()
+                    .toTableId(),
             )
             ?.delete()
         bq.getTable(
                 BigqueryFinalTableNameGenerator(config)
                     .getTableName(stream.mappedDescriptor)
-                    .toTableId()
+                    .toTableId(),
             )
             ?.delete()
     }

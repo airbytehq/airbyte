@@ -50,8 +50,10 @@ class CustomPageIncrement(PaginationStrategy):
         current_page = res.get("currentPage")
         total_pages = res.get("pages")
 
-        # The first request to the API does not include the page_token, so it comes in as None when determing whether to paginate
-        last_page_token_value = last_page_token_value or 0
+        # The first request to the API does not include the page_token, so it comes in as None when determing whether to paginate.
+        # In that case the page we just received (currentPage) is the one to increment from, otherwise page 1 is requested twice.
+        if last_page_token_value is None:
+            last_page_token_value = current_page
         if current_page < total_pages:
             return last_page_token_value + 1
         else:

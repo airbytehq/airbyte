@@ -5,7 +5,7 @@
 import string
 
 import pytest
-from source_firebase_realtime_database.firebase_rtdb import Records
+from source_firebase_realtime_database.firebase_rtdb import Records, database_url_from
 from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatabase
 
 
@@ -39,6 +39,21 @@ def test_stream_name_from(config, stream_name):
     expected = stream_name
 
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "database_name, database_url",
+    [
+        ("my-database", "https://my-database.firebaseio.com"),
+        ("my-database-default-rtdb", "https://my-database-default-rtdb.firebaseio.com"),
+        ("my-database.europe-west1.firebasedatabase.app", "https://my-database.europe-west1.firebasedatabase.app"),
+        ("https://my-database.europe-west1.firebasedatabase.app/", "https://my-database.europe-west1.firebasedatabase.app"),
+        ("https://my-database.asia-southeast1.firebasedatabase.app", "https://my-database.asia-southeast1.firebasedatabase.app"),
+        (" https://my-database.firebaseio.com/ ", "https://my-database.firebaseio.com"),
+    ],
+)
+def test_database_url_from(database_name, database_url):
+    assert database_url_from(database_name) == database_url
 
 
 class PseudoClient:

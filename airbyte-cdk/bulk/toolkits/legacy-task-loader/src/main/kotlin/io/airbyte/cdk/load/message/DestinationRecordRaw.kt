@@ -91,13 +91,13 @@ data class DestinationRecordRaw(
                 )
                 ?.let { enrichedValue.abValue = it }
                 ?: enrichedValue.nullify(
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
                 )
 
             declaredFields[fieldName] = enrichedValue
         }
         // Then, get the undeclared fields
-        rawJson.fields().forEach { (fieldName, fieldValue) ->
+        rawJson.properties().forEach { (fieldName, fieldValue) ->
             if (!schemaFields.contains(fieldName)) {
                 undeclaredFields[fieldName] = fieldValue
             }

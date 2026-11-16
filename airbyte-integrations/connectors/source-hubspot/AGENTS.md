@@ -25,9 +25,10 @@ APIs.
   `CONTRIBUTING.md` section 1.
 - The engagements stream dynamically selects between two different API endpoints. See `CONTRIBUTING.md`
   section 2.
-- Pagination resets at 10,000 results for search endpoints. See `CONTRIBUTING.md` section 3.
-- Custom objects use `StateDelegatingStream` with two different sub-stream implementations. See
-  `CONTRIBUTING.md` section 4.
+- CRM search pagination uses `hs_object_id` keyset paging with `after` always set to 0. See
+  `CONTRIBUTING.md` section 3.
+- Contacts and custom objects use `StateDelegatingStream` to select full-refresh or incremental
+  implementations. See `CONTRIBUTING.md` section 4.
 - Many streams use character-based property chunking (15,000 char limit). See `CONTRIBUTING.md` section 5.
 - Authentication retries on 401 to handle mid-sync token expiration. See `CONTRIBUTING.md` section 8.
 
@@ -39,7 +40,7 @@ declarative connector patterns. Read this before making changes to the connector
 
 ## 1. HubspotAssociationsExtractor: Hidden API Calls Inside Record Extraction
 
-The CRM search streams (contacts, companies, deals, tickets, leads, engagements_*, deal_splits) use
+The CRM search streams (contacts, companies, deals, tickets, leads, listings, engagements_*, deal_splits) use
 `HubspotAssociationsExtractor` as their record extractor. This extractor does **not** simply parse the
 HTTP response -- it makes **additional batch POST requests** to the HubSpot Associations v4 API
 (`/crm/v4/associations/{entity}/{association}/batch/read`) for every page of results.
@@ -81,37 +82,58 @@ total results per query. This is documented in
 beyond offset 10,000 returns a 400 error. The limit applies per-query, not per-account -- you can
 issue multiple queries with different filters to access more data.
 
-The custom pagination strategy works around this by:
+The custom pagination strategy uses keyset pagination on every page:
 
-1. Tracking the current offset (`after`) and detecting when it approaches 10,000.
-2. When the limit is reached, resetting `after` to 0 and adding an `id` filter using the last
-   record's `hs_object_id + 1` to effectively start a new query window.
-3. The CRM search request body includes a `sorts` clause ordering by `hs_object_id ASCENDING` and a
-   filter `hs_object_id >= {id}` to ensure deterministic ordering and seamless continuation.
+1. It keeps `after` at 0 and adds an `hs_object_id >= {id}` filter, where `id` is the previous
+   page's last record ID plus one.
+2. CRM search requests sort by `hs_object_id ASCENDING`, so each new query starts after the last
+   emitted record without relying on an offset into a changing result set.
+3. Short pages continue when the response has a `paging` entry; an empty page or a response without
+   paging ends the stream.
 
-This is necessary because HubSpot's search endpoint was designed for filtered discovery, not bulk
-export. The 10,000 limit is intentional on HubSpot's side and cannot be increased.
+This keeps each query far below HubSpot's 10,000-result cap and avoids skipped records when a record
+leaves the filtered result set while the sync is running.
 
-**Why this matters:** Without this workaround, any CRM object type with more than 10,000 modified records since the last sync would silently stop paginating and miss data. The pagination token is a dict with two possible shapes (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor string, so any code touching page tokens must handle both. This affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
+**Why this matters:** Offset paging over a changing result set can shift later pages and silently skip stable records. The keyset token is always `{"after": 0}` initially and then `{"after": 0, "id": M}`. This strategy affects all CRM search streams: contacts, companies, deals, tickets, leads, listings, all engagement subtypes, deal_splits, and custom objects.
 
 ---
 
-## 4. StateDelegatingStream for Custom Objects
+## 4. StateDelegatingStream for Contacts and Custom Objects
 
-Custom HubSpot objects use `DynamicDeclarativeStream` with `StateDelegatingStream` to select between
-two completely different stream implementations based on whether incoming stream state exists:
+Custom HubSpot objects use `DynamicDeclarativeStream` with `StateDelegatingStream`, and the built-in
+`contacts` stream also uses `StateDelegatingStream` to select between two stream implementations
+based on whether incoming stream state exists:
 
 - **No state (full refresh):** Uses `GET /crm/v3/objects/{entity}` with property chunking and
   `GroupByKeyMergeStrategy` to merge chunked responses by `id`.
 - **Has state (incremental):** Uses `POST /crm/v3/objects/{entity}/search` with the CRM search
   pagination strategy and date range filters.
 
-This split exists because HubSpot's CRM Search API requires filter parameters that depend on knowing a
-cursor position (i.e., state). On first sync with no state, it is more reliable to use the simpler
-list endpoint which returns all objects without needing filter constraints. The search endpoint is more
-efficient for incremental syncs because it supports `lastmodifieddate` filters, avoiding full scans.
+For contacts, the full-refresh stream fetches properties from `/crm/v3/properties/contact`, chunks
+the list endpoint's property requests, and uses the same association extraction and field
+transformations as the search stream. With state, contacts uses the CRM Search endpoint and its
+`lastmodifieddate` filters. The web analytics contacts parent also uses the search stream definition.
 
-**Why this matters:** These are two completely independent stream implementations that happen to share a name. They have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will not carry over to the other. If you change how custom objects sync, you need to verify both the full-refresh and incremental paths separately.
+For custom objects, the split exists because HubSpot's CRM Search API requires filter parameters that
+depend on knowing a cursor position (i.e., state). On first sync with no state, the list endpoint
+returns all objects without needing filter constraints. The search endpoint is more efficient for
+incremental syncs because it supports `lastmodifieddate` filters, avoiding full scans.
+
+**Why this matters:** These are independent stream implementations that happen to share a name. They
+have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will
+not carry over to the other. Verify both full-refresh and incremental paths when changing either
+contacts or custom-object behavior.
+
+**State after a no-state read can be later than the sync start.** The no-state sub-stream filters
+client-side with no end bound and saves the newest `updatedAt` it emitted (the CDK does not cap it
+at the slice end). A record that is read early and then edited before the scan finishes ends up below
+that saved cursor, so the next incremental CRM Search skips the edit. This affects the first
+incremental sync of a new connection and any sync after a reset or refresh; full refresh does not read
+state and is unaffected. Do not "fix" this with an `end_datetime` on the no-state sub-stream: the
+client-side filter would then drop records edited mid-sync, which is the full-refresh loss the list
+endpoint avoids. Until the saved cursor is capped at the sync start, users should set `lookback_window`
+to at least the duration of a no-state sync. `test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window`
+covers both the loss and the mitigation.
 
 ---
 
@@ -133,9 +155,9 @@ into character-bounded chunks.
 
 ---
 
-## 6. Per-Record API Enrichment (Campaigns and Marketing Emails)
+## 6. Per-Record API Enrichment (Campaigns, Marketing Emails and Flows)
 
-Two streams make **additional API calls during record transformation** to enrich each record:
+Three streams make **additional API calls during record transformation** to enrich each record:
 
 - **Campaigns:** HubSpot's campaign list endpoint (`/email/public/v1/campaigns`) only returns a
   summary with `id`, `appId`, `appName`, and `lastUpdatedTime`. To get full campaign details
@@ -145,8 +167,26 @@ Two streams make **additional API calls during record transformation** to enrich
 - **Marketing Emails:** HubSpot's v3 email API separates content data and performance statistics into
   different endpoints. For every email record, the connector makes a GET request to
   `/marketing/v3/emails/{emailId}/statistics` to fetch performance metrics.
+- **Flows:** HubSpot's Flows v4 list endpoint (`/automation/v4/flows`) returns only summaries
+  (`id`, `name`, `flowType`, `isEnabled`, `objectTypeId`, `revisionId`, `createdAt`, `updatedAt`,
+  `uuid`). The action graph and enrollment criteria require a GET to `/automation/v4/flows/{flowId}`
+  per record, performed by `HubspotFlowDetailsTransformation`.
 
 **Why this matters:** Unlike the association extractor (which batches per page), these enrichments make one extra HTTP call per individual record. A sync of 50,000 campaigns means 50,000 additional API calls on top of the pagination calls. This is the most API-intensive pattern in the connector and the most likely to hit rate limits on large accounts.
+
+Two details of the `flows` implementation are worth preserving if you touch it:
+
+- Its record selector sets `transform_before_filtering: false` so the client-side incremental filter
+  runs **before** the enrichment. Flipping this to `true` would silently issue a detail request for
+  every flow in the portal on every sync, not just the changed ones.
+- Unlike `AddFieldsFromEndpointTransformation`, a failed detail request logs a warning and emits the
+  summary record instead of failing the stream. HubSpot requires extra `*.sensitive.read` scopes for
+  flows referencing sensitive data, so a single restricted flow would otherwise break the sync.
+
+HubSpot also offers `POST /automation/v4/flows/batch/read`, which would collapse the per-record calls
+into one request per page. It is not used: the batch size limit is undocumented, it returns HTTP 207
+for partial failures (requiring separate partial-error handling), and flow counts are low enough
+(hundreds per portal) that the simpler per-record pattern is adequate.
 
 ---
 
@@ -154,9 +194,10 @@ Two streams make **additional API calls during record transformation** to enrich
 
 HubSpot's API uses inconsistent datetime formats across different endpoint versions:
 
-- **Legacy v1 endpoints** (engagements, campaigns, deal_pipelines, workflows, email_events,
+- **Legacy v1 endpoints** (engagements, campaigns, workflows, email_events,
   subscription_changes, form_submissions) return **millisecond Unix timestamps** (e.g.,
   `1672531200000`). The connector uses the `%ms` format string for these.
+- `deal_pipelines` calls Pipelines API 2026-09, and `DealPipelinesV1ShapeTransformation` converts the records back to the V1 shape (ms timestamps, `pipelineId`/`stageId`, `active`, constant `objectType`/`objectTypeId`, and `default` from `id == "default"`) to keep output stable.
 - **CRM v3 endpoints** (contacts, companies, deals, tickets, etc.) return **ISO 8601 strings** with
   varying precision:
   - `%Y-%m-%dT%H:%M:%S.%fZ` (with milliseconds, e.g., `2023-01-01T00:00:00.000Z`)

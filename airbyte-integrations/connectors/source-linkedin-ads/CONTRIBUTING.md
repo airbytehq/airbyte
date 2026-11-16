@@ -85,14 +85,12 @@ member-demographic streams cannot batch campaigns and remain one request per cam
 
 ## 4. DNS Resolution Errors Treated as Transient
 
-The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
-(retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
-failures that surface as `InvalidURL` exceptions in the requests library.
+The `accounts` stream relies on the CDK default error mapping to classify `InvalidURL` as a transient,
+retryable error. The custom `LinkedInAdsErrorHandler` still covers the other streams, handling intermittent
+DNS resolution failures that surface as `InvalidURL` exceptions in the requests library.
 
-**Why this matters:** Without this handler, a temporary DNS blip during a long-running sync would
-permanently fail the entire sync instead of retrying. If you replace or modify the error handler, make
-sure `InvalidURL` exceptions are still caught and retried, or syncs on unstable networks will fail
-intermittently.
+**Why this matters:** Preserve `InvalidURL` retries when changing either error handler so temporary DNS
+failures do not permanently fail checks or syncs.
 
 ---
 
@@ -101,7 +99,10 @@ intermittently.
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
 (e.g., `1629581275000`), while analytics streams use date objects with nested `year/month/day` fields.
-The `LinkedInAdsRecordExtractor` converts millisecond timestamps to RFC3339 format during extraction.
+The `accounts` stream flattens `changeAuditStamps` with `AddFields` and `format_datetime`, emitting
+second-precision UTC RFC3339 strings and removing the nested audit stamps. Missing or null stamps are
+skipped; value expressions must guard missing keys because values are evaluated before conditions.
+Other streams retain `LinkedInAdsRecordExtractor` for timestamp conversion during extraction.
 
 The manifest declares multiple `cursor_datetime_formats` per stream: `"%ms"` for millisecond
 timestamps, `"%Y-%m-%dT%H:%M:%S%z"` for ISO 8601, and `"%Y-%m-%d"` for date-only analytics cursors.
@@ -150,6 +151,53 @@ allow up to 30 minutes so each retry starts after the rolling window can clear.
 **Why this matters:** Do not replace the data-volume backoff with a faster generic 429 strategy. Count-based
 429 responses must continue using the exponential fallback, and unrecognized response bodies must not be
 treated as data-volume throttles.
+
+---
+
+## 8. Videos Stream: Creative References That Are Not Posts
+
+The `videos` stream resolves each creative's `content.reference` through the Posts API
+(`GET /rest/posts/{urn}`, in the internal `videos_creative_posts` stream) before fetching the video by
+URN. Two kinds of creative reference cannot be fetched as a post, and neither can reference a video:
+
+- **Message Ads (Sponsored InMail) creatives** reference `urn:li:adInMailContent:` URNs. LinkedIn
+  documents the wrong-URN-type rejection as a restli `400 INVALID_URN_TYPE` that names the URN in
+  `message`, but the API returns `400 UGC_VALIDATIONS_FAILED`, whose `message` is generic and whose
+  offending URN appears only under `errorDetails` (observed with `Linkedin-Version: 202601`, for any
+  content ID):
+
+  ```json
+  {"code": "UGC_VALIDATIONS_FAILED", "errorDetailType": "com.linkedin.common.error.BadRequest", "message": "Validations failed on the UGC entity. Please see errorDetails for more information.", "errorDetails": {"inputErrors": [{"description": "urn:li:adInMailContent:2825243 is not a valid urn type"}]}, "status": 400}
+  ```
+
+  The `IGNORE` response filter matches both shapes. Its `errorDetails` clause matches only
+  `urn:li:adInMailContent:`, the one non-post reference type the Creatives API documents, so a
+  `UGC_VALIDATIONS_FAILED` 400 that echoes a share or ugcPost URN for any other reason still fails the
+  stream. The `message` clause keeps its original bare `URN` substring test, so a 400 whose message
+  merely contains "returned" is skipped as well.
+- **Creatives with an explicitly null `content.reference`.** `SubstreamPartitionRouter` skips a parent
+  record whose key is missing but still emits a partition for a null value, which would request the
+  literal path `posts/None`. LinkedIn rejects that with `400 "Key parameter value 'None' is invalid"`,
+  which carries no URN signal. Instead of matching that message, the `creatives` instance that feeds the
+  `videos_creative_posts` partitions has a `record_filter` that drops creatives without a non-empty
+  reference, so the request is never sent. The filter is added through nested `$ref` overrides and
+  applies only to that parent instance; the exposed `creatives` stream is unchanged.
+
+**Why this matters:** Widening the `errorDetails` clause back to any `urn:li:` token silently drops
+genuine video posts while the sync reports success, and replacing the parent `record_filter` with an
+error filter would depend on an error message that has no URN signal to match. `test_videos.py` pins
+both behaviors: the InMail tests use the body captured from the live API, a `UGC_VALIDATIONS_FAILED`
+body naming a share URN must fail the stream, and the null-reference test mocks no `posts/None`
+request, so it fails if that request is ever sent.
+
+## 9. Stock Components for Connection Checks
+
+The `accounts` check stream must stay on stock CDK components so connection checks do not import
+`components.py` or require permission to execute custom code. The static
+`test_check_streams_use_only_stock_components` test enforces this on every supported CDK version.
+
+**Why this matters:** Adding a custom component anywhere in the resolved check stream can prevent
+source creation and re-authentication in environments that do not trust custom code.
 
 ## Incremental Stream Considerations
 

@@ -22,12 +22,12 @@ from airbyte.constants import (
     AB_RAW_ID_COLUMN,
     DEBUG_MODE,
 )
-from airbyte.progress import progress
+from airbyte.progress import ProgressStyle, ProgressTracker
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import DestinationSyncMode
 from pandas import Index
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 from sqlalchemy import (
     Column,
     Table,
@@ -48,9 +48,9 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from airbyte._batch_handles import BatchHandle
-    from airbyte._processors.file.base import FileWriterBase
+    from airbyte._writers.file_writers import FileWriterBase
     from airbyte.secrets.base import SecretString
-    from airbyte_protocol.models import (
+    from airbyte_cdk.models import (
         AirbyteRecordMessage,
         AirbyteStateMessage,
     )
@@ -161,6 +161,12 @@ class SqlProcessorBase(RecordProcessorBase):
         state_writer = state_writer or StdOutStateWriter()
 
         self._sql_config: SqlConfig = sql_config
+        self._progress_tracker = ProgressTracker(
+            style=ProgressStyle.NONE,
+            source=None,
+            cache=None,
+            destination=None,
+        )
 
         super().__init__(
             state_writer=state_writer,
@@ -526,7 +532,7 @@ class SqlProcessorBase(RecordProcessorBase):
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
-        progress.log_stream_finalized(stream_name)
+        self._progress_tracker.log_stream_finalized(stream_name)
 
         # Return the batch handles as measure of work completed.
         return batches_to_finalize
@@ -554,10 +560,10 @@ class SqlProcessorBase(RecordProcessorBase):
         ].copy()
         self._pending_state_messages[stream_name].clear()
 
-        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
+        self._progress_tracker.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
         self._finalize_state_messages(state_messages_to_finalize)
-        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
+        self._progress_tracker.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         for batch_handle in batches_to_finalize:
             batch_handle.finalized = True

@@ -78,10 +78,10 @@ internal class JsonSchemaValidatorTest {
         Assertions.assertFalse(JsonSchemaValidator.getSchema(schemaFile)[PROPERTIES].has("field2"))
         // inner object
         Assertions.assertTrue(
-            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2")
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2"),
         )
         Assertions.assertFalse(
-            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1")
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1"),
         )
         // non-existent object
         Assertions.assertThrows(NullPointerException::class.java) {
@@ -94,49 +94,52 @@ internal class JsonSchemaValidatorTest {
     fun testResolveReferences() {
         val referencableSchemas =
             """
-                                 {
-                                   "definitions": {
-                                     "ref1": {"type": "string"},
-                                     "ref2": {"type": "boolean"}
-                                   }
-                                 }
-                                 
-                                 """.trimIndent()
+            {
+              "definitions": {
+                "ref1": {"type": "string"},
+                "ref2": {"type": "boolean"}
+              }
+            }
+
+            """
+                .trimIndent()
         val schemaFile =
             IOs.writeFile(
                     Files.createTempDirectory("test"),
                     "WellKnownTypes.json",
-                    referencableSchemas
+                    referencableSchemas,
                 )
                 .toFile()
         val jsonSchemaValidator =
             JsonSchemaValidator(
-                SchemaLocation.of("file://" + schemaFile.parentFile.absolutePath + "/foo.json")
+                SchemaLocation.of("file://" + schemaFile.parentFile.absolutePath + "/foo.json"),
             )
 
         val validationResult =
             jsonSchemaValidator.validate(
                 Jsons.deserialize(
                     """
-                          {
-                            "type": "object",
-                            "properties": {
-                              "prop1": {"${'$'}ref": "WellKnownTypes.json#/definitions/ref1"},
-                              "prop2": {"${'$'}ref": "WellKnownTypes.json#/definitions/ref2"}
-                            }
-                          }
-                          
-                          """.trimIndent()
+                    {
+                      "type": "object",
+                      "properties": {
+                        "prop1": {"${'$'}ref": "WellKnownTypes.json#/definitions/ref1"},
+                        "prop2": {"${'$'}ref": "WellKnownTypes.json#/definitions/ref2"}
+                      }
+                    }
+
+                    """
+                        .trimIndent(),
                 ),
                 Jsons.deserialize(
                     """
-                          {
-                            "prop1": "foo",
-                            "prop2": "false"
-                          }
-                          
-                          """.trimIndent()
-                )
+                    {
+                      "prop1": "foo",
+                      "prop2": "false"
+                    }
+
+                    """
+                        .trimIndent(),
+                ),
             )
 
         Assertions.assertEquals(setOf("$.prop2: string found, boolean expected"), validationResult)
@@ -192,7 +195,7 @@ internal class JsonSchemaValidatorTest {
         "minimum": 0,
         "maximum": 65536
       }    }
-  }"""
+  }""",
             )
     }
 }

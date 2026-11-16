@@ -17,8 +17,8 @@ import io.airbyte.cdk.load.message.WithStream
  *
  * - [S] is a state type that will be threaded through accumulator calls.
  * - [K] is a key type associated the input data. (NOTE: Currently, there is no support for
- * key-mapping, so the key is always [io.airbyte.cdk.load.message.StreamKey]). Specifically, state
- * will always be managed per-key.
+ *   key-mapping, so the key is always [io.airbyte.cdk.load.message.StreamKey]). Specifically, state
+ *   will always be managed per-key.
  * - [T] is the input data type
  * - [U] is the output data type
  *
@@ -39,7 +39,9 @@ import io.airbyte.cdk.load.message.WithStream
  */
 interface BatchAccumulator<S, K : WithStream, T, U> {
     suspend fun start(key: K, part: Int): S
+
     suspend fun accept(input: T, state: S): BatchAccumulatorResult<S, U>
+
     suspend fun finish(state: S): FinalOutput<S, U>
 }
 

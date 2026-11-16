@@ -68,9 +68,11 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     /** Docker image used for the Teradata destination container. */
     override val imageName: String
         get() = "airbyte/destination-teradata:dev"
+
     /** SQL generator specific to Teradata. */
     override val sqlGenerator: SqlGenerator
         get() = TeradataSqlGenerator()
+
     /** JDBC-compatible operations for Teradata source data handling. */
     override val sourceOperations: JdbcCompatibleSourceOperations<*>
         get() = TeradataSourceOperations()
@@ -92,6 +94,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             .joinToString("")
             .lowercase(Locale.getDefault())
     }
+
     /**
      * Provides a JDBC DataSource for Teradata using the test configuration.
      *
@@ -112,6 +115,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             Duration.ofSeconds(10),
         )
     }
+
     /**
      * Cleans up all resources related to a specific stream and namespace in the Teradata
      * environment.
@@ -199,8 +203,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
      * 1. User runs a normal incremental sync
      * 2. User initiates a truncate refresh, but it fails.
      * 3. User cancels the truncate refresh, and initiates a normal incremental sync.
+     *
      * @TestInstance(TestInstance.Lifecycle.PER_CLASS) * In particular, we must retain all records
-     * from both the first sync, _and_ the truncate sync's temporary raw table.
+     *   from both the first sync, _and_ the truncate sync's temporary raw table.
      */
     @Test
     @Throws(Exception::class)
@@ -447,11 +452,12 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             )
         }
     }
+
     /** Sends STREAM_STATUS trace messages to the destination for all streams in the catalog. */
     private fun pushStatusMessages(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         destination: AirbyteDestination,
-        streamStatus: AirbyteStreamStatus
+        streamStatus: AirbyteStreamStatus,
     ) {
         catalog.streams.forEach {
             destination.accept(
@@ -474,6 +480,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             )
         }
     }
+
     /** Pushes a list of Airbyte messages to the destination. */
     protected fun pushMessages(messages: List<AirbyteMessage>, destination: AirbyteDestination) {
         messages.forEach(
@@ -489,16 +496,18 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             },
         )
     }
+
     /** Converts protocol object V1 to V0 type using JSON serialization/deserialization. */
     private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0? {
         return Jsons.`object`(Jsons.jsonNode(v1), klass)
     }
+
     /** Reads a list of Airbyte messages from a JSONL file and attaches stream metadata. */
     @Throws(IOException::class)
     protected fun readMessages(
         filename: String,
         streamNamespace: String?,
-        streamName: String?
+        streamName: String?,
     ): List<AirbyteMessage> {
         return BaseTypingDedupingTest.readRecords(filename)
             .map { record: JsonNode -> Jsons.convertValue(record, AirbyteMessage::class.java) }
@@ -516,7 +525,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     // In the background, read messages from the destination until it terminates. We need to clear
     // stdout in real time, to prevent the buffer from filling up and blocking the destination.
     private fun destinationOutputFuture(
-        destination: AirbyteDestination
+        destination: AirbyteDestination,
     ): CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> {
         val outputFuture = CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>()
         Executors.newSingleThreadExecutor()
@@ -539,21 +548,23 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             )
         return outputFuture
     }
+
     /** Utility to repeat a list N times into a flat list. */
     protected fun <T> repeatList(n: Int, list: List<T>): List<T> {
         return Collections.nCopies(n, list).flatMap { obj: List<T> -> obj }
     }
+
     /** Checks whether a given table exists in the schema. */
     protected fun isTableExists(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): Boolean {
         return (database?.queryInt(
             "SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' ",
-        )
-            ?: 0) > 0
+        ) ?: 0) > 0
     }
+
     /** Checks whether a schema exists in the Teradata database. */
     protected fun isSchemaExists(database: JdbcDatabase?, schemaName: String?): Boolean {
         return (database?.queryInt(
@@ -561,8 +572,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                 "SELECT COUNT(1) FROM DBC.DatabasesV WHERE DatabaseName = '%s'",
                 schemaName,
             ),
-        )
-            ?: 0) > 0 // If the result is greater than 0, return true, else false
+        ) ?: 0) > 0 // If the result is greater than 0, return true, else false
     }
 
     /** Creates a schema/database if it does not already exist. */

@@ -11,6 +11,7 @@ abstract class BaseConnector : Integration {
     val isCloudDeployment
         get() =
             AdaptiveSourceRunner.CLOUD_MODE.equals(featureFlags.deploymentMode(), ignoreCase = true)
+
     /**
      * By convention the spec is stored as a resource for java connectors. That resource is called
      * spec.json.

@@ -1,0 +1,50 @@
+name: CI Scripts Tests
+
+# No 'paths' filter on the trigger: a workflow skipped by 'paths' never reports its
+# check, so it could not be made required. Instead, 'detect-changes' always runs, and
+# 'Test CI Helper Scripts' reports 'skipped' (which passes a required check) when
+# nothing it tests has changed.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read # Lets paths-filter list the files changed by the PR.
+
+jobs:
+  detect-changes:
+    name: Detect CI Script Changes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Detect CI Script Changes
+        id: ci-script-changes
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            ci-scripts:
+              - ".github/scripts/**"
+              - ".github/workflows/connector-ci-checks.yml"
+              - ".github/workflows/ci-scripts-tests.yml"
+              - "poe-tasks/detect-python-cdk.py"
+              - "poe-tasks/get-modified-connectors.sh"
+              - "poe-tasks/build-and-publish-java-connectors-with-tag.sh"
+              - "poe-tasks/lib/**"
+    outputs:
+      changed: ${{ steps.ci-script-changes.outputs.ci-scripts }}
+
+  test-ci-scripts:
+    name: Test CI Helper Scripts
+    runs-on: ubuntu-24.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Run CI script tests
+        run: uvx --with 'pytest==8.*' --with 'pyyaml==6.*' pytest .github/scripts/tests

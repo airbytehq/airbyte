@@ -12,8 +12,10 @@ import io.airbyte.integrations.destination.databricks.spec.DatabricksConfigurati
 import io.airbyte.integrations.destination.databricks.spec.PersonalAccessTokenConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -112,14 +114,72 @@ class DatabricksCheckerTest {
         checker.check()
         checker.cleanup()
 
+        val tableName = slot<TableName>()
+        coVerify(exactly = 1) {
+            databricksClient.createTable(any(), capture(tableName), any(), any())
+        }
+        coVerify(exactly = 1) { databricksClient.dropStagingVolume(tableName.captured) }
+        coVerify(exactly = 1) { databricksClient.dropTable(tableName.captured) }
+        coVerifyOrder {
+            databricksClient.dropStagingVolume(tableName.captured)
+            databricksClient.dropTable(tableName.captured)
+        }
+    }
+
+    @Test
+    fun `cleanup drops the table even if the staging volume drop fails`() {
+        coEvery { databricksClient.createNamespace(any()) } returns Unit
+        coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
+        coEvery { databricksClient.countTable(any()) } returns 1L
+        every { databricksClient.dropStagingVolume(any()) } throws
+            RuntimeException("Volume drop failed")
+
+        checker.check()
+
+        assertDoesNotThrow { checker.cleanup() }
+
         coVerify(exactly = 1) { databricksClient.dropTable(any<TableName>()) }
+    }
+
+    @Test
+    fun `cleanup drops the staging volume even if the table drop fails`() {
+        coEvery { databricksClient.createNamespace(any()) } returns Unit
+        coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
+        coEvery { databricksClient.countTable(any()) } returns 1L
+        coEvery { databricksClient.dropTable(any()) } throws RuntimeException("Table drop failed")
+
+        checker.check()
+
+        assertDoesNotThrow { checker.cleanup() }
+
+        coVerify(exactly = 1) { databricksClient.dropStagingVolume(any()) }
     }
 
     @Test
     fun `cleanup is safe when check was never called`() {
         assertDoesNotThrow { checker.cleanup() }
 
+        coVerify(exactly = 0) { databricksClient.dropStagingVolume(any()) }
         coVerify(exactly = 0) { databricksClient.dropTable(any<TableName>()) }
+    }
+
+    @Test
+    fun `cleanup drops the staging volume after a failed check`() {
+        coEvery { databricksClient.createNamespace(any()) } returns Unit
+        coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
+        coEvery { databricksClient.countTable(any()) } returns 0L
+
+        assertThrows<IllegalArgumentException> { checker.check() }
+        checker.cleanup()
+
+        val tableName = slot<TableName>()
+        coVerify(exactly = 1) {
+            databricksClient.createTable(any(), capture(tableName), any(), any())
+        }
+        coVerify(exactly = 1) { databricksClient.dropStagingVolume(tableName.captured) }
     }
 
     @Test

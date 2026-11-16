@@ -98,7 +98,7 @@ class SnowflakeTableSchemaEvolutionTest(
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_drop" to "TO_DROP",
-                    )
+                    ),
                 ),
             modifiedColumnNameMapping =
                 ColumnNameMapping(
@@ -108,7 +108,7 @@ class SnowflakeTableSchemaEvolutionTest(
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_add" to "TO_ADD",
-                    )
+                    ),
                 ),
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
             initialStreamImportType,

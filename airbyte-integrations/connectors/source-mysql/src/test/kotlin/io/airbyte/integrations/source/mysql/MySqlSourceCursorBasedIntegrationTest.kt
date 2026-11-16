@@ -230,13 +230,14 @@ class MySqlSourceCursorBasedIntegrationTest {
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute(
-                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))"
+                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))",
                     )
                 }
             }
         }
 
         lateinit var viewName: String
+
         fun provisionView(targetConnectionFactory: JdbcConnectionFactory) {
             viewName = "$tableName-view"
             targetConnectionFactory.get().use { connection: Connection ->
@@ -247,6 +248,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             }
         }
     }
+
     val V1_STATE: String =
         """  
       {

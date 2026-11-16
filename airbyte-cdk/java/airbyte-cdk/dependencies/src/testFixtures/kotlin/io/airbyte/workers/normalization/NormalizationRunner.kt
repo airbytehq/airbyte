@@ -41,7 +41,7 @@ interface NormalizationRunner : AutoCloseable {
         jobRoot: Path,
         config: JsonNode?,
         resourceRequirements: ResourceRequirements?,
-        dbtConfig: OperatorDbt
+        dbtConfig: OperatorDbt,
     ): Boolean
 
     /**
@@ -49,15 +49,20 @@ interface NormalizationRunner : AutoCloseable {
      *
      * @param jobId
      * - id of the job that launched normalization
+     *
      * @param attempt
      * - current attempt
+     *
      * @param jobRoot
      * - root dir available for the runner to use.
+     *
      * @param config
      * - configuration for connecting to the destination
+     *
      * @param catalog
      * - the schema of the json blob in the destination. it is used normalize the blob into typed
-     * columns.
+     *   columns.
+     *
      * @param resourceRequirements
      * @return true of normalization succeeded. otherwise false.
      * @throws Exception
@@ -70,7 +75,7 @@ interface NormalizationRunner : AutoCloseable {
         jobRoot: Path,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        resourceRequirements: ResourceRequirements?
+        resourceRequirements: ResourceRequirements?,
     ): Boolean
 
     val traceMessages: Stream<AirbyteTraceMessage>

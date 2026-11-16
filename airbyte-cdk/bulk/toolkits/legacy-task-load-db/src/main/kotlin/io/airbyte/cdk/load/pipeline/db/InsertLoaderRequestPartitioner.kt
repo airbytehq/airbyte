@@ -19,13 +19,16 @@ class InsertLoaderRequestPartitioner<Q : InsertLoaderRequest>(
     val insertLoader: InsertLoader<Q>,
 ) :
     OutputPartitioner<
-        StreamKey, DestinationRecordRaw, StreamKey, InsertLoaderRequestBuilderAccumulator.Result<Q>
+        StreamKey,
+        DestinationRecordRaw,
+        StreamKey,
+        InsertLoaderRequestBuilderAccumulator.Result<Q>,
     > {
     private val prng = Random(System.currentTimeMillis())
 
     override fun getOutputKey(
         inputKey: StreamKey,
-        output: InsertLoaderRequestBuilderAccumulator.Result<Q>
+        output: InsertLoaderRequestBuilderAccumulator.Result<Q>,
     ): StreamKey {
         return inputKey
     }

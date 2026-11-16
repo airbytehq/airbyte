@@ -102,7 +102,7 @@ class BinaryRowInsertBufferTest {
     @ParameterizedTest
     @MethodSource("multiValueMatrix")
     fun `#accumulate serializes, writes and commits multi value fields`(
-        record: Map<String, AirbyteValue>
+        record: Map<String, AirbyteValue>,
     ) {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
@@ -137,7 +137,7 @@ class BinaryRowInsertBufferTest {
             clickhouseClient.insert(
                 "`${tableName.namespace}`.`${tableName.name}`",
                 bufferedPayload,
-                ClickHouseFormat.RowBinary
+                ClickHouseFormat.RowBinary,
             )
         }
     }
@@ -158,8 +158,8 @@ class BinaryRowInsertBufferTest {
                         "field7" to Fixtures.timeWithoutTimezoneValue,
                         "field8" to Fixtures.timestampWithTimezoneValue,
                         "field9" to Fixtures.timestampWithoutTimezoneValue,
-                        "field10" to Fixtures.nullValue
-                    )
+                        "field10" to Fixtures.nullValue,
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
@@ -168,7 +168,7 @@ class BinaryRowInsertBufferTest {
                         "field3" to Fixtures.timeWithTimezoneValue,
                         "field4" to Fixtures.timestampWithTimezoneValue,
                         "field5" to Fixtures.timestampWithoutTimezoneValue,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
@@ -180,7 +180,7 @@ class BinaryRowInsertBufferTest {
                         "field6" to Fixtures.stringValue,
                         "field7" to Fixtures.dateValue,
                         "field8" to Fixtures.nullValue,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
@@ -189,7 +189,7 @@ class BinaryRowInsertBufferTest {
                         "field3" to Fixtures.stringValue,
                         "field4" to Fixtures.stringValue,
                         "field5" to Fixtures.dateValue,
-                    )
+                    ),
                 ),
             )
 
@@ -201,23 +201,23 @@ class BinaryRowInsertBufferTest {
                     mapOf(
                         "field1" to Fixtures.objectValue,
                         "field2" to Fixtures.arrayValue,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
                         "field1" to Fixtures.arrayValue,
                         "field2" to Fixtures.objectValue,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
                         "field1" to Fixtures.arrayValue,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     mapOf(
                         "field1" to Fixtures.objectValue,
-                    )
+                    ),
                 ),
             )
     }

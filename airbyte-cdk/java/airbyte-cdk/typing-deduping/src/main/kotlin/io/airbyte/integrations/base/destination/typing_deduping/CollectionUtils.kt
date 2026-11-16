@@ -34,7 +34,7 @@ object CollectionUtils {
     @JvmStatic
     fun containsAllIgnoreCase(
         searchCollection: Collection<String>,
-        searchTerms: Collection<String>
+        searchTerms: Collection<String>,
     ): Boolean {
         require(!searchTerms.isEmpty()) {
             // There isn't a good behavior for an empty collection. Without this check, an empty

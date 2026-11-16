@@ -29,7 +29,7 @@ class PostgresCloudChecker(
         postgresAirbyteClient: PostgresAirbyteClient,
     ) : this(
         postgresConfiguration,
-        PostgresOssChecker(postgresAirbyteClient, postgresConfiguration)
+        PostgresOssChecker(postgresAirbyteClient, postgresConfiguration),
     )
 
     override fun check() {
@@ -38,7 +38,7 @@ class PostgresCloudChecker(
             require(
                 sslMode is SslModeRequire ||
                     sslMode is SslModeVerifyCa ||
-                    sslMode is SslModeVerifyFull
+                    sslMode is SslModeVerifyFull,
             ) {
                 "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full"
             }
