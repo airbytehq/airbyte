@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the OpenAI Ads 
 
 The `spend_limit_windows` stream needs an ad account on postpaid invoice billing and an API key with permission to manage billing for that account (see [Account spending limits](https://developers.openai.com/ads/api-reference/ad-account)). If the API answers 403, the stream returns no records, the sync continues, and the sync log shows the API's message.
 
-The `conversion_pixels` stream requires pixel management to be enabled for the ad account. If it is not enabled, the stream returns no records and the sync continues.
+The `conversion_pixels` stream requires pixel management to be enabled for the ad account. If the API returns 404 because pixel management is not enabled, the stream returns no records and the sync continues. Contact your OpenAI partner representative to enable pixel management (see [API partner setup](https://developers.openai.com/ads/api-partner-setup)).
 
 For more information, see [OpenAI's quickstart](https://developers.openai.com/ads/api-quickstart).
 
@@ -30,8 +30,8 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 3. On the Set up the source page, select **OpenAI Ads** from the Source type dropdown.
 4. Enter a name for the OpenAI Ads connector.
 5. Enter the **API Key**.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
-7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data before this date will not be replicated. The default is 2026-02-01. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
+7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
 8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. The default of 32 covers OpenAI's 30-day click attribution window plus 2 days, because OpenAI needs at least one day to process conversions. See [Lookback window](#lookback-window).
 9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. Values below 2 run with 2 workers. The default is 3.
 10. Click **Set up source**.
@@ -60,6 +60,8 @@ The OpenAI Ads source connector supports the following [sync modes](https://docs
 ## Supported Streams
 
 ### Main Tables
+
+These streams read the current entities in full on every sync. **Start Date**, **End Date**, and **Lookback Window** apply only to report streams and do not filter these tables.
 
 | Stream                                                                                        | Primary key | Sync modes   | Notes                                                                             |
 | :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------------------------- |
@@ -117,7 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
+| 0.1.10 | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
 | 0.1.9 | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies |
 | 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
