@@ -363,6 +363,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.6.5 | 2026-11-12 | [75521](https://github.com/airbytehq/airbyte/pull/75521) | Added native Google Docs Markdown export support via new `google_doc_export_format` config option |
 | 0.6.4 | 2026-11-10 | [91555](https://github.com/airbytehq/airbyte/pull/91555) | Update dependencies |
 | 0.6.3 | 2026-11-03 | [90888](https://github.com/airbytehq/airbyte/pull/90888) | Raise minimum supported Python version to 3.11 |
 | 0.6.2 | 2026-11-03 | [90608](https://github.com/airbytehq/airbyte/pull/90608) | Update dependencies |
