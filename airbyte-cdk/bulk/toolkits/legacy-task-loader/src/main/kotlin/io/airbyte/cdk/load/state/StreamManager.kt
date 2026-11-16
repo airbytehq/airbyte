@@ -55,6 +55,7 @@ class StreamManager(
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
     private val isClosed = AtomicBoolean(false)
+    private val loaderStarted = AtomicBoolean(false)
 
     private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
         ConcurrentHashMap()
@@ -98,6 +99,23 @@ class StreamManager(
 
     fun endOfStreamRead(): Boolean {
         return markedEndOfStream.get()
+    }
+
+    /**
+     * Mark that this stream's loader has successfully started. Set once by
+     * [SyncManager.registerStartedStreamLoader]; a failed start never sets it.
+     */
+    fun markLoaderStarted() {
+        loaderStarted.set(true)
+    }
+
+    /**
+     * Whether [io.airbyte.cdk.load.write.StreamLoader.start] has completed successfully. This is a
+     * single volatile read, so it is safe to call on the per-record hot path as a guard before
+     * falling back to the suspending [SyncManager.getOrAwaitStreamLoader].
+     */
+    fun isLoaderStarted(): Boolean {
+        return loaderStarted.get()
     }
 
     /** Whether we received a stream complete message for the managed stream. */

@@ -18,6 +18,7 @@ from .request_builder import RequestBuilder
 CASES = [
     StreamCase("account_acquisitions", "acquisitions", dated_params(), {}),
     StreamCase("gift_cards", "gift_cards", {}, {}),
+    StreamCase("credit_payments", "credit_payments", dated_params(), {}),
     StreamCase("external_subscriptions", "external_subscriptions", {"sort": "updated_at"}, {}),
     StreamCase(
         "external_subscription_payment_phases",
@@ -53,6 +54,7 @@ CASES = [
     ids=[
         "account_acquisitions",
         "gift_cards",
+        "credit_payments",
         "external_subscriptions",
         "external_subscription_payment_phases",
         "usage_records",

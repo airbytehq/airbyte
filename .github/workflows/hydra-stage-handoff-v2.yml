@@ -630,11 +630,11 @@ jobs:
           if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
             PROMPT="Hands-Free triage: CI is red on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. Oncall issue: ${ISSUE_URL:-unknown}.
           Fix the failing required checks on the same branch, push, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed to fix these checks.
-          Record this request in ci_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules. If the red check is not caused by this PR's change (flaky test, credentials, infra), push nothing and record NOT_PR_CAUSED."
+          Append one entry object for this request to the ci_fix_attempts array/list following the /ai-fix playbook's \"Later Fix Requests\" rules; never replace the array with a bare object. If the red check is not caused by this PR's change (flaky test, credentials, infra), push nothing and record NOT_PR_CAUSED."
           else
             PROMPT="Hands-Free triage: hydra assessed $REASON on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing stage runs: $STAGE_FINDINGS. Findings to address: the failing gates and findings in the latest Fix Validation Evidence or AI review comment on the PR at this head. Oncall issue: ${ISSUE_URL:-unknown}.
           Check out the existing branch, make the change these findings call for, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed for these findings.
-          Record this request in review_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules."
+          Append one entry object for this request to the review_fix_attempts array/list following the /ai-fix playbook's \"Later Fix Requests\" rules; never replace the array with a bare object."
           fi
           if [[ "$DRY_RUN" == true ]]; then
             echo "::notice::WOULD message session $SESSION"
@@ -702,12 +702,12 @@ jobs:
                 APPROVAL_SUMMARY="Ask the fix session to retry CI on #$PR_NUMBER at ${HEAD_SHA:0:7}"
                 FIX_MESSAGE="Hands-Free triage: CI is red on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. Oncall issue: ${ISSUE_URL:-unknown}.
           Fix the failing required checks on the same branch, push, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed to fix these checks.
-          Record this request in ci_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules. If the red check is not caused by this PR's change (flaky test, credentials, infra), push nothing and record NOT_PR_CAUSED."
+          Append one entry object for this request to the ci_fix_attempts array/list following the /ai-fix playbook's \"Later Fix Requests\" rules; never replace the array with a bare object. If the red check is not caused by this PR's change (flaky test, credentials, infra), push nothing and record NOT_PR_CAUSED."
               else
                 APPROVAL_SUMMARY="Ask the fix session to rework #$PR_NUMBER against the latest review findings"
                 FIX_MESSAGE="Hands-Free triage: hydra assessed $REASON on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing stage runs: $STAGE_FINDINGS. Findings to address: the failing gates and findings in the latest Fix Validation Evidence or AI review comment on the PR at this head. Oncall issue: ${ISSUE_URL:-unknown}.
           Check out the existing branch, make the change these findings call for, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed for these findings.
-          Record this request in review_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules."
+          Append one entry object for this request to the review_fix_attempts array/list following the /ai-fix playbook's \"Later Fix Requests\" rules; never replace the array with a bare object."
               fi
               APPROVED_ACTION="Use the Devin session tools (for example devin_session_interact) to send exactly one message to session devin-$SESSION. Exact message text:
           $FIX_MESSAGE"

@@ -29,22 +29,22 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f2e53e88-3c6b-4e5a-b7c2-a1d9c5e8f4b6
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-pylon
   githubIssueLabel: source-pylon
   icon: icon.svg
   license: ELv2
   name: Pylon
   releaseDate: "2026-02-18"
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/pylon
   tags:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: Pylon rate limits
       url: https://docs.usepylon.com/pylon-docs/developer/api/rate-limits
