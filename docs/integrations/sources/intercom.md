@@ -140,6 +140,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0 | 2026-11-12 | [78498](https://github.com/airbytehq/airbyte/pull/78498) | Update the conversations stream to Intercom API v2.14 and add conversation handling time statistics. |
 | 1.0.0 | 2026-11-10 | [91060](https://github.com/airbytehq/airbyte/pull/91060) | Add `company_id` to `company_segments` and make `[company_id, id]` its primary key |
 | 0.13.30 | 2026-11-10 | [91585](https://github.com/airbytehq/airbyte/pull/91585) | Update dependencies |
 | 0.13.29 | 2026-11-03 | [90886](https://github.com/airbytehq/airbyte/pull/90886) | Simplify error handling configuration for the conversation_parts stream; no behavior change |
