@@ -692,8 +692,12 @@ jobs:
           echo "escalate_buttons=$APPROVE" | tee -a "$GITHUB_OUTPUT"
           case "$APPROVE" in
             ci_fix|rework)
-              PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,url)
-              BRANCH=$(jq -r '.headRefName' <<<"$PR_JSON")
+              BRANCH=unknown
+              if PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,url); then
+                BRANCH=$(jq -r '.headRefName // "unknown"' <<<"$PR_JSON")
+              else
+                echo "::warning::Couldn't look up PR #$PR_NUMBER branch; using unknown in the fix message"
+              fi
               if [[ "$APPROVE" == ci_fix ]]; then
                 APPROVAL_SUMMARY="Ask the fix session to retry CI on #$PR_NUMBER at ${HEAD_SHA:0:7}"
                 FIX_MESSAGE="Hands-Free triage: CI is red on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. Oncall issue: ${ISSUE_URL:-unknown}.
