@@ -118,7 +118,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 2.1.0 | 2026-11-16 | [93044](https://github.com/airbytehq/airbyte/pull/93044) | Declare 67 Recurly fields in 13 existing stream schemas so they can be selected as columns. Rows synced before this version have null values in the new columns until the stream is refreshed. |
+| 2.1.0 | 2026-11-16 | [93044](https://github.com/airbytehq/airbyte/pull/93044) | Declare 66 Recurly fields in 13 existing stream schemas so they can be selected as columns. Rows synced before this version have null values in the new columns until the stream is refreshed. |
 | 2.0.2 | 2026-11-16 | [93049](https://github.com/airbytehq/airbyte/pull/93049) | Skip Credit Payments when the Recurly site does not have Credit Invoices enabled. |
 | 2.0.1 | 2026-11-16 | [93042](https://github.com/airbytehq/airbyte/pull/93042) | Updated the Recurly connector icon. |
 | 2.0.0 | 2026-11-12 | [91302](https://github.com/airbytehq/airbyte/pull/91302) | Corrected `subscriptions.coupon_redemptions` to an array and added date-time format to coupon and external-account timestamps. See the [migration guide](/integrations/sources/recurly-migrations#upgrading-to-200) |

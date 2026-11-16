@@ -3972,10 +3972,6 @@ schemas:
         description: When the billing information was created.
         format: date-time
         readOnly: true
-      date_of_birth:
-        type:
-          - "null"
-          - string
       first_name:
         type:
           - "null"
