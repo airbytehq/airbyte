@@ -34,9 +34,9 @@ Insights and conversions report streams are incremental on `readable_time` and `
 
 List endpoints use `CursorPagination` with `limit` and `after` request parameters, and `has_more` and `last_id` response fields. The page size is 500 for list endpoints and 2,000 for insights, matching their OpenAPI limits ([OpenAPI spec](https://developers.openai.com/ads/openapi.json)). `/ad_account` and `/ad_account/spend_limit_windows` are unpaginated.
 
-`POST /conversions/insights` has no cursor and rejects responses over 2,000 rows, so the connector requests one entity at a time ([insights API](https://developers.openai.com/ads/api-reference/insights)).
+`POST /conversions/insights` has no cursor and rejects responses over 2,000 rows, so the connector requests up to 100 entities per 14-day slice (at most 1,400 rows, below the 2,000-row HTTP 413 limit). State migrates from per-entity cursors to one global cursor ([insights API](https://developers.openai.com/ads/api-reference/insights)).
 
-**Why this matters:** Do not add cursor pagination to the conversions endpoint or assume the same page-size ceiling applies to every stream.
+**Why this matters:** Do not add cursor pagination to the conversions endpoint or exceed the 2,000-row response limit; preserve the state migration from per-entity cursors to one global cursor.
 
 ## 6. GSM Acceptance Tests and Mocked Unit Tests
 

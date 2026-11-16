@@ -14,12 +14,14 @@ from requests_mock import ANY, Mocker
 from airbyte_cdk.models import AirbyteStateMessageSerializer, Status, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
+_OLD_MANIFEST_PATH = Path(__file__).parent / "resource" / "manifest_0_1_11.yaml"
 _URL = "https://api.ads.openai.com/v1"
 _CONFIG = {"api_key": "test-key", "start_date": "2026-09-01", "end_date": "2026-09-14"}
 _TIME_RANGE = '{"type":"date_range","since":"2026-09-01","until":"2026-09-14"}'
@@ -208,6 +210,26 @@ def test_discover_publishes_keys_schemas_and_cursors() -> None:
     assert all(cursor == (["date"] if name.endswith("_conversions") else ["readable_time"]) for name, cursor in cursors.items())
 
 
+@pytest.mark.parametrize(
+    ("saved", "migrated"),
+    [
+        ({"lookback_window": 0, "num_workers": 1}, {"lookback_window": 1, "num_workers": 2}),
+        ({"lookback_window": 1, "num_workers": 2}, {"lookback_window": 1, "num_workers": 2}),
+        ({"lookback_window": 32, "num_workers": 5}, {"lookback_window": 32, "num_workers": 5}),
+        ({}, {}),
+    ],
+)
+def test_saved_config_below_the_spec_minimums_is_raised_to_them(saved: dict, migrated: dict, tmp_path: Path) -> None:
+    config = {**_CONFIG, **saved}
+    source = _source(config)
+    spec = source.spec(logging.getLogger("airbyte")).connectionSpecification
+
+    assert spec["properties"]["lookback_window"]["minimum"] == 1
+    assert spec["properties"]["num_workers"]["minimum"] == 2
+    assert source.configure(config, str(tmp_path)) == {**_CONFIG, **migrated}
+    check_config_against_spec_or_exit(source.configure(config, str(tmp_path)), source.spec(logging.getLogger("airbyte")))
+
+
 def test_discover_declares_documented_custom_audience_and_ad_account_fields() -> None:
     streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
 
@@ -333,7 +355,7 @@ def test_ad_groups_and_ads_are_read_per_parent_and_carry_the_parent_id(requests_
         ("ad_conversions", "ad", "ad_1"),
     ],
 )
-def test_conversions_post_one_entity_and_keep_a_cursor_per_entity(
+def test_conversions_post_the_entity_group_and_save_one_cursor(
     requests_mock: Mocker, stream: str, aggregation_level: str, entity_id: str
 ) -> None:
     _mock_campaign_ad_group_ad(requests_mock)
@@ -353,9 +375,137 @@ def test_conversions_post_one_entity_and_keep_a_cursor_per_entity(
         "entity_ids": [entity_id],
         "time_ranges": [_TIME_RANGE],
     }
-    [partition_state] = output.most_recent_state.stream_state.states
-    assert partition_state["partition"]["entity_id"] == entity_id
-    assert partition_state["cursor"] == {"date": "2026-09-13"}
+    stream_state = output.most_recent_state.stream_state
+    assert stream_state.use_global_cursor is True
+    assert stream_state.state == {"date": "2026-09-13"}
+    assert "states" not in stream_state.__dict__
+
+
+@freeze_time("2026-09-30T18:00:00Z")
+def test_conversions_post_up_to_100_entities_per_request_and_date_slice(requests_mock: Mocker) -> None:
+    campaign_ids = [f"cmpn_{index:03}" for index in range(150)]
+    _mock_page(requests_mock, "/campaigns?limit=500", *campaign_ids)
+    requests_mock.post(f"{_URL}/conversions/insights", json={"object": "list", "data": [], "count": 0, "account_currency": "USD"})
+    config = {**_CONFIG, "end_date": "2026-09-20"}
+
+    _read("campaign_conversions", SyncMode.incremental, config=config)
+
+    def body(entity_ids: list[str], since: str, until: str) -> dict:
+        return {
+            "aggregation_level": "campaign",
+            "time_granularity": "daily",
+            "attribution_time_basis": "ad_event_time",
+            "attribution_window_days": 30,
+            "view_through_attribution_window_days": 1,
+            "entity_ids": entity_ids,
+            "time_ranges": [f'{{"type":"date_range","since":"{since}","until":"{until}"}}'],
+        }
+
+    actual = sorted(
+        (request.json() for request in requests_mock.request_history if request.method == "POST"),
+        key=lambda request_body: (request_body["entity_ids"][0], request_body["time_ranges"][0]),
+    )
+    assert actual == [
+        body(campaign_ids[:100], "2026-09-01", "2026-09-14"),
+        body(campaign_ids[:100], "2026-09-15", "2026-09-20"),
+        body(campaign_ids[100:], "2026-09-01", "2026-09-14"),
+        body(campaign_ids[100:], "2026-09-15", "2026-09-20"),
+    ]
+
+
+def _state_written_by_0_1_x(entity_ids: tuple[str, ...], with_global_state: bool = True) -> dict:
+    state = {
+        "use_global_cursor": False,
+        "states": [
+            {"partition": {"entity_id": entity_id, "parent_slice": {}}, "cursor": {"date": date}}
+            for entity_id, date in zip(entity_ids, ("2026-09-10", "2026-09-06"))
+        ],
+        "lookback_window": 1,
+        "parent_state": {},
+    }
+    if with_global_state:
+        state["state"] = {"date": "2026-09-10"}
+    return state
+
+
+@pytest.mark.parametrize(
+    "stream,entity_ids",
+    [
+        ("campaign_conversions", ("cmpn_1",)),
+        ("ad_group_conversions", ("adgrp_1",)),
+        ("ad_conversions", ("ad_1",)),
+    ],
+)
+@pytest.mark.parametrize("with_global_state,expected_since", [(True, "2026-09-07"), (False, "2026-09-03")])
+def test_conversions_resume_from_0_1_x_per_entity_state_with_one_cursor(
+    requests_mock: Mocker, stream: str, entity_ids: tuple[str, ...], with_global_state: bool, expected_since: str
+) -> None:
+    _mock_campaign_ad_group_ad(requests_mock)
+    row = {"entity_id": entity_ids[0], "date": "2026-09-12", "conversions": 1}
+    requests_mock.post(f"{_URL}/conversions/insights", json={"object": "list", "data": [row], "count": 1, "account_currency": "USD"})
+    state = StateBuilder().with_stream_state(stream, _state_written_by_0_1_x(entity_ids + ("stale_1",), with_global_state)).build()
+    config = {**_CONFIG, "lookback_window": 2}
+
+    output = _read(stream, SyncMode.incremental, state, config)
+
+    assert _records(output) == [row]
+    actual_bodies = [
+        (request.json()["entity_ids"], request.json()["time_ranges"])
+        for request in requests_mock.request_history
+        if request.method == "POST"
+    ]
+    assert actual_bodies == [(list(entity_ids), [f'{{"type":"date_range","since":"{expected_since}","until":"2026-09-14"}}'])]
+    stream_state = output.most_recent_state.stream_state.__dict__
+    assert stream_state["use_global_cursor"] is True
+    assert stream_state["state"] == {"date": "2026-09-12"}
+    assert "states" not in stream_state
+
+
+def test_conversions_state_migration_keeps_global_state_and_skips_new_state(components_module) -> None:
+    migration = components_module.PerEntityToGlobalCursorStateMigration()
+    new_state = {"use_global_cursor": True, "state": {"date": "2026-09-10"}, "lookback_window": 1}
+
+    assert migration.should_migrate(new_state) is False
+    assert migration.should_migrate({}) is False
+    assert migration.migrate(_state_written_by_0_1_x(("cmpn_1", "cmpn_2"))) == {
+        "use_global_cursor": True,
+        "state": {"date": "2026-09-10"},
+        "lookback_window": 1,
+        "parent_state": {},
+    }
+    assert migration.migrate(_state_written_by_0_1_x(("cmpn_1", "cmpn_2"), with_global_state=False))["state"] == {"date": "2026-09-06"}
+    assert "state" not in migration.migrate({"use_global_cursor": False, "states": []})
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+def test_0_1_11_manifest_reads_state_migrated_by_the_current_connector(requests_mock: Mocker) -> None:
+    _mock_campaign_ad_group_ad(requests_mock)
+    row = {"entity_id": "ad_1", "date": "2026-09-10", "conversions": 1}
+    response = {"object": "list", "data": [row], "count": 1, "account_currency": "USD"}
+    requests_mock.post(f"{_URL}/conversions/insights", [{"json": response}, {"json": response}])
+    config = {**_CONFIG, "lookback_window": 2}
+    old_state = StateBuilder().with_stream_state("ad_conversions", _state_written_by_0_1_x(("ad_1",))).build()
+
+    migrated_output = _read("ad_conversions", SyncMode.incremental, old_state, config)
+    migrated_stream_state = migrated_output.most_recent_state.stream_state.__dict__
+    assert migrated_stream_state["use_global_cursor"] is True
+    assert migrated_stream_state["state"] == {"date": "2026-09-10"}
+    assert "states" not in migrated_stream_state
+
+    rollback_state = StateBuilder().with_stream_state("ad_conversions", migrated_stream_state).build()
+    old_source = YamlDeclarativeSource(
+        path_to_yaml=str(_OLD_MANIFEST_PATH),
+        catalog=CatalogBuilder().build(),
+        config=config,
+        state=rollback_state,
+    )
+    rollback_output = read(old_source, config, CatalogBuilder().with_stream("ad_conversions", SyncMode.incremental).build(), rollback_state)
+
+    assert rollback_output.errors == []
+    post_requests = [request for request in requests_mock.request_history if request.method == "POST"]
+    assert len(post_requests) == 2
+    assert post_requests[1].json()["entity_ids"] == ["ad_1"]
+    assert post_requests[1].json()["time_ranges"] == ['{"type":"date_range","since":"2026-09-08","until":"2026-09-14"}']
 
 
 def test_nested_parent_streams_reuse_cached_campaigns_and_ad_groups(requests_mock: Mocker) -> None:
@@ -519,8 +669,7 @@ def test_incremental_conversions_end_date_is_clamped_and_state_stays_in_range(re
         value for request in requests_mock.request_history if request.method == "POST" for value in request.json()["time_ranges"]
     ]
     assert actual_time_ranges == ['{"type":"date_range","since":"2026-09-01","until":"2026-09-14"}']
-    [partition_state] = output.most_recent_state.stream_state.states
-    assert partition_state["cursor"]["date"] <= "2026-09-14"
+    assert output.most_recent_state.stream_state.state["date"] <= "2026-09-14"
 
 
 @freeze_time("2026-09-15T06:00:00Z")
