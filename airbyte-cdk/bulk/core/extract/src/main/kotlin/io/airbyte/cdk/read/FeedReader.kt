@@ -181,8 +181,11 @@ class FeedReader(
                 "releasing resources acquired to make partitions creator factory " +
                     "for '${feed.label}'"
             }
-            acquired.close()
-            root.notifyResourceAvailability()
+            try {
+                acquired.close()
+            } finally {
+                root.notifyResourceAvailability()
+            }
         }
     }
 
@@ -198,8 +201,11 @@ class FeedReader(
                 "releasing resources acquired to create partitions " +
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
-            partitionsCreator.releaseResources()
-            root.notifyResourceAvailability()
+            try {
+                partitionsCreator.releaseResources()
+            } finally {
+                root.notifyResourceAvailability()
+            }
         }
     }
 
@@ -299,8 +305,11 @@ class FeedReader(
                 "releasing resources acquired to read partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
-            partitionReader.releaseResources()
-            root.notifyResourceAvailability()
+            try {
+                partitionReader.releaseResources()
+            } finally {
+                root.notifyResourceAvailability()
+            }
         }
         log.info {
             "read ${checkpoint.numRecords} record(s) from partition $partitionReaderID " +

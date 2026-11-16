@@ -23,7 +23,7 @@ Revisit this if Granola publishes an OAuth application model for the public API.
 - `401` and `403` → `FAIL` with `failure_type: config_error`, with separate messages: `401` means Granola rejected the key, `403` means the key lacks access.
 - `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
 - `500`/`502`/`503`/`504` → `RETRY`, failing as `transient_error` once retries run out. The CDK applies an `HttpResponseFilter`'s `failure_type` only when the action is `FAIL`. For `RETRY` it uses its default mapping (`HttpResponseFilter.matches` in `airbyte_cdk/sources/declarative/requesters/error_handlers/http_response_filter.py`), which covers only these four codes. Any other 5xx, such as `501` or `507`, still retries but fails as `system_error`, and adding it to the filter would not change that.
-- `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
+- `413` and `404` on `detailed_notes`, and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts). Granola can list a note in `GET /v1/notes` yet answer `404 NOTE_NOT_FOUND` on `GET /v1/notes/{note_id}` for it on every sync, so failing on that 404 blocks the stream indefinitely. A skipped note's parent `updated_at` still advances incremental state, so the note is not requested again until it is edited.
 
 ## Deletions
 

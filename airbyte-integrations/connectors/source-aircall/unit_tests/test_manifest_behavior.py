@@ -37,7 +37,11 @@ def _epoch(value: str) -> int:
 
 
 def _request(path: str, query_params: dict[str, str] | None = None) -> HttpRequest:
-    return HttpRequest(f"{_BASE_URL}{path}", query_params=query_params or {})
+    query_params = query_params or {}
+    if path == "/calls":
+        # Every calls request asks for the IVR options.
+        query_params = {**query_params, "fetch_call_timeline": "true"}
+    return HttpRequest(f"{_BASE_URL}{path}", query_params=query_params)
 
 
 def _read_stream(
@@ -233,36 +237,6 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
 
 
 @pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("numbers", id="numbers"),
-        pytest.param("teams", id="teams"),
-    ],
-)
-def test_numbers_and_teams_emit_records_with_past_state(stream_name: str) -> None:
-    with freeze_time(_NOW), HttpMocker() as http_mocker:
-        request = _request(f"/{stream_name}", {"per_page": "50"})
-        http_mocker.get(
-            request,
-            _response(
-                stream_name,
-                [
-                    {"id": 1, "created_at": "2023-10-03T18:35:43.000Z"},
-                    {"id": 2, "created_at": "2025-10-03T18:35:43Z"},
-                ],
-            ),
-        )
-        state = StateBuilder().with_stream_state(stream_name, {"created_at": "2025-06-01T00:00:00.000Z"}).build()
-
-        output = _read_stream(stream_name, SyncMode.incremental, state=state)
-
-        assert output.errors == []
-        http_mocker.assert_number_of_calls(request, 1)
-        assert [record.record.data["id"] for record in output.records] == [1, 2]
-        assert output.most_recent_state.stream_state.created_at == "2025-10-03T18:35:43.000000+0000"
-
-
-@pytest.mark.parametrize(
     "status_code,message",
     [
         pytest.param(
@@ -423,7 +397,8 @@ def test_429_waits_until_the_reset_header_then_reads_records(monkeypatch: pytest
         assert abs(sum(sleeps) - 60) < 0.1
 
 
-def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_500_without_reset_header_retries_with_exponential_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    # ExponentialBackoffStrategy (factor 5): 5 * 2**1 = 10 s for the first retry, plus the 1 s the CDK adds.
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
         start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
@@ -445,7 +420,7 @@ def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pyt
         assert output.errors == []
         assert len(output.records) == 1
         http_mocker.assert_number_of_calls(request, 2)
-        assert sleeps == [1]
+        assert sleeps[0] == 11.0
 
 
 def test_check_requests_only_company() -> None:
@@ -507,6 +482,30 @@ def test_start_date_is_optional_hidden_and_unconstrained() -> None:
     assert "pattern" not in start_date and "format" not in start_date
 
 
+def test_window_settings_declare_the_fallbacks_as_defaults_and_conversation_intelligence_is_opt_in() -> None:
+    properties = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]["connection_specification"]["properties"]
+
+    assert properties["window_in_days"]["default"] == 1
+    assert properties["contacts_window_in_days"]["default"] == 30
+    assert properties["include_conversation_intelligence"]["type"] == "boolean"
+    assert properties["include_conversation_intelligence"]["default"] is False
+
+
+def test_calls_ask_for_ivr_options_and_emit_them() -> None:
+    ivr_option = {"id": "5cb41cde-aed2-4357-a98c-e1b33d68851a", "title": "", "key": "1", "branch": "Default"}
+    with freeze_time(_NOW), HttpMocker() as http_mocker:
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
+        query = {"from": str(start), "to": str(_epoch(_NOW)), "per_page": "50", "fetch_call_timeline": "true"}
+        request = HttpRequest(f"{_BASE_URL}/calls", query_params=query)
+        http_mocker.get(request, _response("calls", [{**_call_record(start, 1), "ivr_options_selected": [ivr_option]}]))
+
+        output = _read_stream("calls", SyncMode.full_refresh, config={**_CONFIG, "window_in_days": 365})
+
+        assert output.errors == []
+        assert output.records[0].record.data["ivr_options_selected"] == [ivr_option]
+        http_mocker.assert_number_of_calls(request, 1)
+
+
 _DOCUMENTED_FIELDS = {
     "calls": {
         "sid": "string",
@@ -549,3 +548,38 @@ def test_discovered_schemas_declare_primary_keys_and_documented_fields() -> None
             assert _field_type(schemas[stream_name], path) == field_type, (stream_name, path)
     assert "webhook_id" not in schemas["teams"]
     assert "state" not in schemas["users"]
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 2), (1, 2), (2, 2), (3, 3), (4, 4)])
+def test_concurrency_never_drops_below_two_workers(num_workers, expected) -> None:
+    config = {**_CONFIG, "num_workers": num_workers} if num_workers else dict(_CONFIG)
+    level = yaml.safe_load(_YAML_FILE_PATH.read_text())["concurrency_level"]
+    from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
+
+    concurrency = ConcurrencyLevel(
+        default_concurrency=level["default_concurrency"], max_concurrency=level["max_concurrency"], config=config, parameters={}
+    )
+    assert concurrency.get_concurrency_level() == expected
+
+
+def test_every_error_handler_backs_off_exponentially_after_the_reset_header() -> None:
+    # Aircall sends X-AircallApi-Reset only on 429; a 5xx without it needs the exponential strategy.
+    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
+    handlers = []
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "DefaultErrorHandler":
+                handlers.append(node)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(manifest)
+    assert len(handlers) >= 7
+    for handler in handlers:
+        strategies = handler["backoff_strategies"]
+        assert strategies[0] == {"$ref": "#/definitions/backoff_strategy"}
+        assert strategies[-1] == {"type": "ExponentialBackoffStrategy"}

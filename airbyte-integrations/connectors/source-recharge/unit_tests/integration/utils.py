@@ -4,15 +4,14 @@
 
 
 from abc import ABC
-from lib2to3.pgen2.literals import test
 from typing import Any, List, Mapping, Optional
 from unittest import TestCase
 
-from source_recharge import SourceRecharge
+from conftest import get_source
 
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 
 from .config import ConfigBuilder
 from .request_builder import RequestBuilder
@@ -26,10 +25,6 @@ def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
-def source() -> SourceRecharge:
-    return SourceRecharge()
-
-
 def read_output(
     config_builder: ConfigBuilder,
     stream_name: str,
@@ -39,7 +34,7 @@ def read_output(
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     _config = config_builder.build()
-    return read(source(), _config, _catalog, state, expected_exception)
+    return read(get_source(_config, _catalog, state), _config, _catalog, state, expected_exception)
 
 
 def read_full_refresh(
@@ -74,7 +69,7 @@ def get_cursor_value_from_state_message(
     test_output: Mapping[str, Any],
     cursor_field: Optional[str] = None,
 ) -> str:
-    return dict(test_output.most_recent_state.stream_state).get(cursor_field)
+    return vars(test_output.most_recent_state.stream_state).get(cursor_field)
 
 
 class StreamTestCase(TestCase, ABC):
