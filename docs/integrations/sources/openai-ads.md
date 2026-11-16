@@ -117,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, enable acceptance tests |
+| 0.1.10 | 2026-11-10 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
 | 0.1.9 | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies |
 | 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |

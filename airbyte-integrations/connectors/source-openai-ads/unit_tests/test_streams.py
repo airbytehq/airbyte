@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -9,7 +10,7 @@ from freezegun import freeze_time
 from jsonschema import Draft7Validator
 from requests_mock import ANY, Mocker
 
-from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.models import AirbyteStateMessageSerializer, Status, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -351,6 +352,21 @@ def test_conversions_post_one_entity_and_keep_a_cursor_per_entity(
     [partition_state] = output.most_recent_state.stream_state.states
     assert partition_state["partition"]["entity_id"] == entity_id
     assert partition_state["cursor"] == {"date": "2026-09-13"}
+
+
+_ABNORMAL_STATE = json.loads((Path(__file__).parent.parent / "integration_tests" / "abnormal_state.json").read_text())
+
+
+@pytest.mark.parametrize("stream_state", _ABNORMAL_STATE, ids=lambda message: message["stream"]["stream_descriptor"]["name"])
+def test_abnormal_state_requests_no_report_and_emits_state(requests_mock: Mocker, stream_state: dict) -> None:
+    stream = stream_state["stream"]["stream_descriptor"]["name"]
+    _mock_campaign_ad_group_ad(requests_mock)
+
+    output = _read(stream, SyncMode.incremental, [AirbyteStateMessageSerializer.load(stream_state)])
+
+    assert _records(output) == []
+    assert not [request for request in requests_mock.request_history if request.path.endswith("/insights")]
+    assert output.state_messages
 
 
 @pytest.mark.parametrize(
