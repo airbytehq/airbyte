@@ -218,6 +218,39 @@ class AirbyteValueCoercerTest {
                 "2022-01-23T01:23:45.678-11:30",
                 TimestampWithTimezoneValue(OffsetDateTime.of(2022, 1, 23, 1, 23, 45, 678000000, ZoneOffset.ofHoursMinutes(-11, -30))),
             ),
+            // 1- and 2-digit fractional seconds (both ISO fast-path and JDK fallback formats)
+            Arguments.of(
+                "2026-11-11T17:01:52.4Z",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 400000000, UTC)),
+            ),
+            Arguments.of(
+                "2026-11-11T17:01:52.65Z",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 650000000, UTC)),
+            ),
+            Arguments.of(
+                "2026-11-11T17:01:52.05+01:00",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 50000000, ZoneOffset.ofHours(1))),
+            ),
+            Arguments.of(
+                "2024/01/15 12:00:00.65",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2024, 1, 15, 12, 0, 0, 650000000, UTC)),
+            ),
+            Arguments.of(
+                "2024.01.15 12:00:00.5",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2024, 1, 15, 12, 0, 0, 500000000, UTC)),
+            ),
+            Arguments.of(
+                "2024 Jul 15 12:00:00.65 GMT+08:00",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2024, 7, 15, 12, 0, 0, 650000000, ZoneOffset.ofHours(8))),
+            ),
+            Arguments.of(
+                "2021-01-01 01:01:01.4 +0000",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 400000000, UTC)),
+            ),
+            Arguments.of(
+                "2021-01-01 01:01:01.05 +0000",
+                TimestampWithTimezoneValue(OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 50000000, UTC)),
+            ),
         )
 
         @JvmStatic
@@ -331,6 +364,35 @@ class AirbyteValueCoercerTest {
                 "2022-01-23T01:23:45.678-11:30",
                 TimestampWithoutTimezoneValue(LocalDateTime.of(2022, 1, 23, 1, 23, 45, 678000000)),
             ),
+            // 1- and 2-digit fractional seconds (both ISO fast-path and JDK fallback formats)
+            Arguments.of(
+                "2026-11-11T17:01:52.4Z",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2026, 11, 11, 17, 1, 52, 400000000)),
+            ),
+            Arguments.of(
+                "2026-11-11T17:01:52.65Z",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2026, 11, 11, 17, 1, 52, 650000000)),
+            ),
+            Arguments.of(
+                "2026-11-11T17:01:52.05",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2026, 11, 11, 17, 1, 52, 50000000)),
+            ),
+            Arguments.of(
+                "2024/01/15 12:00:00.65",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2024, 1, 15, 12, 0, 0, 650000000)),
+            ),
+            Arguments.of(
+                "2024.01.15 12:00:00.5",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2024, 1, 15, 12, 0, 0, 500000000)),
+            ),
+            Arguments.of(
+                "2024 Jul 15 12:00:00.65 GMT+08:00",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2024, 7, 15, 12, 0, 0, 650000000)),
+            ),
+            Arguments.of(
+                "2021-01-01 01:01:01.4 +0000",
+                TimestampWithoutTimezoneValue(LocalDateTime.of(2021, 1, 1, 1, 1, 1, 400000000)),
+            ),
         )
 
         @JvmStatic
@@ -365,6 +427,23 @@ class AirbyteValueCoercerTest {
                 "03:30:00.000000+04:00",
                 TimeWithTimezoneValue(OffsetTime.of(3, 30, 0, 0, ZoneOffset.ofHours(4))),
             ),
+            // 1- and 2-digit fractional seconds
+            Arguments.of(
+                "12:00:00.5Z",
+                TimeWithTimezoneValue(OffsetTime.of(12, 0, 0, 500000000, UTC)),
+            ),
+            Arguments.of(
+                "12:00:00.4",
+                TimeWithTimezoneValue(OffsetTime.of(12, 0, 0, 400000000, UTC)),
+            ),
+            Arguments.of(
+                "12:00:00.65+01:00",
+                TimeWithTimezoneValue(OffsetTime.of(12, 0, 0, 650000000, ZoneOffset.ofHours(1))),
+            ),
+            Arguments.of(
+                "12:00:00.05-01:00",
+                TimeWithTimezoneValue(OffsetTime.of(12, 0, 0, 50000000, ZoneOffset.ofHours(-1))),
+            ),
         )
 
         @JvmStatic
@@ -396,6 +475,23 @@ class AirbyteValueCoercerTest {
             Arguments.of(
                 "03:30:00.000000+04:00",
                 TimeWithoutTimezoneValue(LocalTime.of(3, 30, 0, 0)),
+            ),
+            // 1- and 2-digit fractional seconds
+            Arguments.of(
+                "12:00:00.5Z",
+                TimeWithoutTimezoneValue(LocalTime.of(12, 0, 0, 500000000)),
+            ),
+            Arguments.of(
+                "12:00:00.4",
+                TimeWithoutTimezoneValue(LocalTime.of(12, 0, 0, 400000000)),
+            ),
+            Arguments.of(
+                "12:00:00.65+01:00",
+                TimeWithoutTimezoneValue(LocalTime.of(12, 0, 0, 650000000)),
+            ),
+            Arguments.of(
+                "12:00:00.05",
+                TimeWithoutTimezoneValue(LocalTime.of(12, 0, 0, 50000000)),
             ),
         )
 
