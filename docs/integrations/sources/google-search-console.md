@@ -278,6 +278,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.22 | 2026-11-17 | [93216](https://github.com/airbytehq/airbyte/pull/93216) | Update dependencies |
 | 2.1.21 | 2026-11-10 | [89240](https://github.com/airbytehq/airbyte/pull/89240) | Update dependencies |
 | 2.1.20 | 2026-11-05 | [91063](https://github.com/airbytehq/airbyte/pull/91063) | Clarify Website URL Property formats for Domain and URL-prefix properties |
 | 2.1.19 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Emit dimension values exactly as Google returns them, including quoted and numeric-looking queries |

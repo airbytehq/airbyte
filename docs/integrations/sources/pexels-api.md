@@ -80,6 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.51 | 2026-11-17 | [93319](https://github.com/airbytehq/airbyte/pull/93319) | Update dependencies |
 | 0.2.50 | 2026-11-03 | [90920](https://github.com/airbytehq/airbyte/pull/90920) | Replace single-child `CompositeErrorHandler` wrappers with their `DefaultErrorHandler`; no behavior change. |
 | 0.2.49 | 2026-11-10 | [91655](https://github.com/airbytehq/airbyte/pull/91655) | Update dependencies |
 | 0.2.48 | 2026-11-03 | [90693](https://github.com/airbytehq/airbyte/pull/90693) | Update dependencies |
