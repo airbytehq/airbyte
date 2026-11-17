@@ -91,11 +91,15 @@ jobs:
 
       - name: Fetch connector secrets
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
-        run: airbyte-ops secrets fetch ${{ matrix.connector }}
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+        run: airbyte-ops secrets fetch ${MATRIX_CONNECTOR}
 
       - name: Run CDK upgrade
         if: matrix.connector
-        run: ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk --cdkVersion=local
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+        run: ./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk --cdkVersion=local
 
       - name: Run Unit Tests
         if: matrix.connector
