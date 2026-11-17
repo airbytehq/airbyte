@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5b86cbfa-a6aa-4f18-96bf-107789218ea7
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-perk
   githubIssueLabel: source-perk
   icon: icon.svg
