@@ -119,19 +119,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.13 | 2026-11-17 | [93041](https://github.com/airbytehq/airbyte/pull/93041) | Request conversions for up to 100 entities at a time, and raise the minimum lookback window to 1 day and the minimum number of workers to 2 |
-| 0.1.12 | 2026-11-17 | [93307](https://github.com/airbytehq/airbyte/pull/93307) | Update dependencies |
-| 0.1.11 | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
-| 0.1.10 | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
-| 0.1.9 | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies |
-| 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
-| 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
-| 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare missing documented schema fields |
-| 0.1.5 | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled |
-| 0.1.4 | 2026-10-21 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12 |
-| 0.1.3 | 2026-10-20 | [89337](https://github.com/airbytehq/airbyte/pull/89337) | Update dependencies |
-| 0.1.2 | 2026-10-13 | [88750](https://github.com/airbytehq/airbyte/pull/88750) | Update dependencies |
-| 0.1.1 | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests |
-| 0.1.0 | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
+| 0.1.13  | 2026-11-17 | [93041](https://github.com/airbytehq/airbyte/pull/93041) | Request conversions for up to 100 entities at a time, and raise the minimum lookback window to 1 day and the minimum number of workers to 2                                                   |
+| 0.1.12  | 2026-11-17 | [93307](https://github.com/airbytehq/airbyte/pull/93307) | Update dependencies                                                                                                                                                                           |
+| 0.1.11  | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
+| 0.1.10  | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests                                                                                            |
+| 0.1.9   | 2026-11-10 | [91652](https://github.com/airbytehq/airbyte/pull/91652) | Update dependencies                                                                                                                                                                           |
+| 0.1.8   | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies                                                                                                                                                                           |
+| 0.1.7   | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies                                                                                                                                                                           |
+| 0.1.6   | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare missing documented schema fields                                                                                                                                                      |
+| 0.1.5   | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled                                                                                                                                 |
+| 0.1.4   | 2026-10-21 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12                                                                                                                                          |
+| 0.1.3   | 2026-10-20 | [89337](https://github.com/airbytehq/airbyte/pull/89337) | Update dependencies                                                                                                                                                                           |
+| 0.1.2   | 2026-10-13 | [88750](https://github.com/airbytehq/airbyte/pull/88750) | Update dependencies                                                                                                                                                                           |
+| 0.1.1   | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests                                                                                                                                                                         |
+| 0.1.0   | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496)                                                                                                                           |
 
 </details>
