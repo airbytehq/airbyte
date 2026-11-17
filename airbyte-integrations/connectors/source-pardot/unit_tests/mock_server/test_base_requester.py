@@ -6,13 +6,11 @@ from datetime import timedelta
 from unittest import TestCase
 
 import requests
-import yaml
-from conftest import _YAML_FILE_PATH
+from conftest import resolved_manifest
 from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OAuthAuthenticator as OAuthAuthenticatorModel
-from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
@@ -38,10 +36,6 @@ def _page(record_id: int) -> HttpResponse:
 
 def _login_error(error: str, description: str) -> HttpResponse:
     return HttpResponse(body=json.dumps({"error": error, "error_description": description}), status_code=400)
-
-
-def _manifest() -> dict:
-    return ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
 
 
 class _LoginsInFlight:
@@ -178,7 +172,7 @@ class TestLogin(TestCase):
 
 def test_streams_read_concurrently_never_log_in_at_the_same_time() -> None:
     tracker = _LoginsInFlight(hold_seconds=0.02)
-    streams = _manifest()["streams"]
+    streams = resolved_manifest()["streams"]
     with HttpMocker() as http_mocker:
         http_mocker.post(login_request(), login_response())
         for stream in streams:
@@ -205,7 +199,7 @@ def test_streams_read_concurrently_never_log_in_at_the_same_time() -> None:
 
 
 def test_a_token_without_expires_in_is_kept_one_hour() -> None:
-    definition = _manifest()["definitions"]["base_requester"]["authenticator"]
+    definition = resolved_manifest()["definitions"]["base_requester"]["authenticator"]
     config = ConfigBuilder().build()
     with freeze_time("2026-06-01T00:00:00Z") as clock, HttpMocker() as http_mocker:
         login = login_request()

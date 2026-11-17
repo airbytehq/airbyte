@@ -12,6 +12,7 @@ import yaml
 from freezegun import freeze_time
 from pytest import MonkeyPatch, fixture
 
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -41,6 +42,11 @@ def get_source(config: Mapping[str, Any], catalog=None, state=None) -> YamlDecla
     catalog = catalog or CatalogBuilder().build()
     state = StateBuilder().build() if state is None else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
+def resolved_manifest() -> dict:
+    """The manifest with every `$ref` resolved."""
+    return ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
 
 
 @fixture(autouse=True)

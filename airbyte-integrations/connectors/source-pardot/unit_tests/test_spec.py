@@ -8,13 +8,11 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import pytest
-import yaml
-from conftest import _YAML_FILE_PATH, ALLOWED_HOSTS, get_source
+from conftest import ALLOWED_HOSTS, get_source, resolved_manifest
 from mock_server.config import ConfigBuilder
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
-from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 
 
@@ -22,10 +20,6 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 def properties() -> Mapping[str, Any]:
     spec = get_source(ConfigBuilder().build()).spec(logging.getLogger("airbyte"))
     return spec.connectionSpecification["properties"]
-
-
-def _manifest() -> dict:
-    return ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
 
 
 def test_api_host_lists_exactly_the_two_account_engagement_hosts(properties: Mapping[str, Any]) -> None:
@@ -60,13 +54,15 @@ def test_number_of_workers_follows_the_config(num_workers: int | None, expected:
     config = ConfigBuilder().build()
     if num_workers is not None:
         config["num_workers"] = num_workers
-    concurrency_level = ModelToComponentFactory().create_component(ConcurrencyLevelModel, _manifest()["concurrency_level"], config=config)
+    concurrency_level = ModelToComponentFactory().create_component(
+        ConcurrencyLevelModel, resolved_manifest()["concurrency_level"], config=config
+    )
 
     assert concurrency_level.get_concurrency_level() == expected
 
 
 def test_allowed_hosts_are_exactly_the_hosts_the_connector_can_call(properties: Mapping[str, Any]) -> None:
-    base_requester = _manifest()["definitions"]["base_requester"]
+    base_requester = resolved_manifest()["definitions"]["base_requester"]
     templates = [base_requester["url_base"], base_requester["authenticator"]["token_refresh_endpoint"]]
     hosts = set()
     for is_sandbox, api_host in product([False, True], [None, *properties["pardot_api_host"]["enum"]]):

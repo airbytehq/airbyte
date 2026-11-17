@@ -3,14 +3,12 @@
 import json
 
 import pytest
-import yaml
-from conftest import _YAML_FILE_PATH
+from conftest import resolved_manifest
 from mock_server.request_builder import PardotRequestBuilder, login_request
 from mock_server.response_builder import login_response, page_response
 from mock_server.utils import read_stream, record_ids, stream_error
 
 from airbyte_cdk.models import AirbyteStreamStatus, FailureType
-from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
@@ -48,17 +46,14 @@ def _error(status_code: int, code: int, message: str) -> HttpResponse:
     return HttpResponse(body=json.dumps({"code": code, "message": message}), status_code=status_code)
 
 
-def _version_4_error(status_code: int, code: int, message: str) -> HttpResponse:
+def _version_4_error(status_code: int, code: int | str, message: str) -> HttpResponse:
+    """An error in the body of version 4. The vendor documents only XML for it, so the JSON code may be a number or a string."""
     body = {"@attributes": {"stat": "fail", "version": 1, "err_code": code}, "err": message}
     return HttpResponse(body=json.dumps(body), status_code=status_code)
 
 
-def _resolved_manifest() -> dict:
-    return ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
-
-
 def test_manifest_has_no_composite_error_handler() -> None:
-    manifest = _resolved_manifest()
+    manifest = resolved_manifest()
     found = []
 
     def walk(node) -> None:
@@ -77,7 +72,7 @@ def test_manifest_has_no_composite_error_handler() -> None:
 
 
 def test_every_stream_uses_the_shared_error_handler() -> None:
-    manifest = _resolved_manifest()
+    manifest = resolved_manifest()
     shared_handler = manifest["definitions"]["error_handler"]
     streams = manifest["streams"]
 
@@ -88,7 +83,7 @@ def test_every_stream_uses_the_shared_error_handler() -> None:
 
 def test_every_stream_but_email_clicks_names_the_ability_it_needs() -> None:
     # The page of the version 4 endpoint behind `email_clicks` names no ability.
-    streams = _resolved_manifest()["streams"]
+    streams = resolved_manifest()["streams"]
 
     assert [stream["name"] for stream in streams if not stream.get("$parameters", {}).get("required_ability")] == ["email_clicks"]
 
@@ -99,9 +94,16 @@ def test_every_stream_but_email_clicks_names_the_ability_it_needs() -> None:
         pytest.param("campaigns", _CAMPAIGNS, _error(429, 122, _DAILY_LIMIT_TEXT), id="429-version-5"),
         pytest.param("campaigns", _CAMPAIGNS, _error(200, 122, _DAILY_LIMIT_TEXT), id="200-version-5"),
         pytest.param("campaigns", _CAMPAIGNS, _error(429, 122, "Another text"), id="code-122-with-another-text"),
+        pytest.param(
+            "campaigns",
+            _CAMPAIGNS,
+            HttpResponse(body=json.dumps({"message": _DAILY_LIMIT_TEXT}), status_code=429),
+            id="text-without-a-code",
+        ),
         pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(429, 122, _DAILY_LIMIT_TEXT), id="429-version-4"),
         pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(200, 122, _DAILY_LIMIT_TEXT), id="200-version-4"),
         pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(200, 122, "Another text"), id="code-122-version-4-with-another-text"),
+        pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(200, "122", "Another text"), id="code-122-version-4-as-a-string"),
     ],
 )
 def test_daily_limit_fails_at_once_with_its_message(stream: str, path: str, response: HttpResponse, waits: list[float]) -> None:
@@ -124,6 +126,9 @@ def test_daily_limit_fails_at_once_with_its_message(stream: str, path: str, resp
         pytest.param("campaigns", _CAMPAIGNS, _error(400, 66, _CONCURRENT_LIMIT_TEXT), _PAGE, id="400-version-5"),
         pytest.param("campaigns", _CAMPAIGNS, _error(429, 66, _CONCURRENT_LIMIT_TEXT), _PAGE, id="429-version-5"),
         pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(200, 66, _CONCURRENT_LIMIT_TEXT), _VERSION_4_PAGE, id="200-version-4"),
+        pytest.param(
+            "email_clicks", _EMAIL_CLICKS, _version_4_error(200, "66", _CONCURRENT_LIMIT_TEXT), _VERSION_4_PAGE, id="version-4-as-a-string"
+        ),
     ],
 )
 def test_concurrent_limit_is_retried_on_any_status(
@@ -149,6 +154,13 @@ def test_concurrent_limit_is_retried_on_any_status(
             "email_clicks", _EMAIL_CLICKS, _version_4_error(200, 184, _INVALID_TOKEN_TEXT), _REJECTED_TOKEN_MESSAGE, id="184-version-4"
         ),
         pytest.param(
+            "email_clicks",
+            _EMAIL_CLICKS,
+            _version_4_error(200, "184", _INVALID_TOKEN_TEXT),
+            _REJECTED_TOKEN_MESSAGE,
+            id="184-version-4-as-a-string",
+        ),
+        pytest.param(
             "campaigns",
             _CAMPAIGNS,
             _error(403, 201, _NO_BUSINESS_UNIT_TEXT),
@@ -161,6 +173,13 @@ def test_concurrent_limit_is_retried_on_any_status(
             _version_4_error(200, 201, _NO_BUSINESS_UNIT_TEXT),
             _NO_BUSINESS_UNIT_MESSAGE,
             id="201-version-4",
+        ),
+        pytest.param(
+            "email_clicks",
+            _EMAIL_CLICKS,
+            _version_4_error(200, "201", _NO_BUSINESS_UNIT_TEXT),
+            _NO_BUSINESS_UNIT_MESSAGE,
+            id="201-version-4-as-a-string",
         ),
     ],
 )
@@ -187,6 +206,9 @@ def test_known_configuration_error_fails_at_once_and_says_what_to_fix(
         pytest.param("account", "v5/objects/account", _error(403, 49, "Access Denied"), "Admin > Account > Edit Settings", id="account"),
         # The version 4 page behind `email_clicks` names no ability, so the message falls back to "View".
         pytest.param("email_clicks", _EMAIL_CLICKS, _version_4_error(200, 49, "Access Denied"), "View", id="email-clicks-version-4"),
+        pytest.param(
+            "email_clicks", _EMAIL_CLICKS, _version_4_error(200, "49", "Access Denied"), "View", id="email-clicks-version-4-as-a-string"
+        ),
     ],
 )
 def test_access_denied_fails_at_once_and_names_the_ability_of_the_stream(
@@ -229,8 +251,8 @@ def test_retryable_status_is_retried_with_growing_waits_before_it_fails(status_c
     assert error.failure_type == FailureType.transient_error
     assert error.message == message
     http_mocker.assert_number_of_calls(request, 6)
+    # Five retries end it, not the CDK's 600-second limit: 304 seconds have passed when the last wait starts.
     assert waits == [21, 41, 81, 161, 321]
-    assert max(waits) <= 600
 
 
 @pytest.mark.parametrize(
