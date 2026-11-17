@@ -486,6 +486,14 @@ definitions:
     authenticator:
       type: CustomAuthenticator
       class_name: source_declarative_manifest.components.ZendeskTalkAuthenticator
+      # Zendesk Marketplace headers that identify Airbyte's integration. In Airbyte Cloud the authenticator adds them
+      # to every request to Zendesk, including the OAuth token refresh. Self-managed deployments do not send them.
+      # https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/
+      # TODO: replace both REPLACE_WITH_* placeholders with the ids from the Zendesk developer portal before release.
+      marketplace_headers:
+        X-Zendesk-Marketplace-Name: Airbyte
+        X-Zendesk-Marketplace-Organization-Id: REPLACE_WITH_ZENDESK_MARKETPLACE_ORGANIZATION_ID
+        X-Zendesk-Marketplace-App-Id: REPLACE_WITH_ZENDESK_MARKETPLACE_APP_ID
       legacy_basic_auth:
         type: BasicHttpAuthenticator
         password: "{{ config['access_token'] }}"
