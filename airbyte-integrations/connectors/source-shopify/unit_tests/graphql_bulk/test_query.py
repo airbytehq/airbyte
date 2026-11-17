@@ -14,10 +14,24 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProductImage,
     Product,
     ProductImage,
+    ProductVariant,
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
 )
 from source_shopify.streams.streams import Customers, Products
+
+
+@pytest.mark.parametrize("include_presentment_prices", [True, False])
+def test_product_variant_query_includes_bundle_components(auth_config, include_presentment_prices: bool) -> None:
+    auth_config["job_product_variants_include_pres_prices"] = include_presentment_prices
+    query = ProductVariant(auth_config).get("updated_at", "2026-01-01", "2026-01-02")
+
+    assert "requiresComponents" in query
+    assert (
+        "productVariantComponents { edges { node { __typename id quantity "
+        "productVariant { component_variant_id: id product { component_product_id: id } } } } }"
+    ) in " ".join(query.split())
+    assert ("presentmentPrices" in query) == include_presentment_prices
 
 
 def test_product_query_includes_category(auth_config) -> None:
