@@ -130,6 +130,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.6.1 | 2026-11-17 | [93200](https://github.com/airbytehq/airbyte/pull/93200) | Update dependencies |
 | 1.6.0 | 2026-11-11 | [90976](https://github.com/airbytehq/airbyte/pull/90976) | Add `scorecards_review_method` option to fetch AI-scored (`AUTOMATIC`) answered scorecards; defaults to `MANUAL` |
 | 1.5.7 | 2026-11-10 | [91548](https://github.com/airbytehq/airbyte/pull/91548) | Update dependencies |
 | 1.5.6 | 2026-11-03 | [90575](https://github.com/airbytehq/airbyte/pull/90575) | Update dependencies |
