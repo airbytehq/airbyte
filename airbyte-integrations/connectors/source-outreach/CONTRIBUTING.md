@@ -98,8 +98,11 @@ resources: it has one entry per object type that has admin-defined custom fields
   `sort_parameter.unsupported_attribute` and `filter[updatedAt]` returns 400 `filter_parameter.unknown_filter`, so the
   streams send neither. They page with `page[size]=1000` and `links.next` like the other streams.
 - `opportunityAssociationRule` is write-only in the OpenAPI spec and is not in the schemas.
-- The CI token (`SECRET_SOURCE-OUTREACH_CREDS`) does not hold the notes scopes, so both streams are left out of
-  `integration_tests/configured_catalog.json`. Mock-server tests in `unit_tests/mock_server/test_notes.py` cover them.
+- Live responses carry an `opportunity` relationship that the OpenAPI note relationships omit. Both schemas declare it;
+  it is absent from a record when the note has no opportunity.
+- The CI token (`SECRET_SOURCE-OUTREACH_CREDS`) holds both notes scopes since 2026-11-17. The test account has one
+  prospect note and one account note ("Airbyte test account note" on account 1), and both streams are in
+  `integration_tests/configured_catalog.json`.
 
 ### Error handling
 

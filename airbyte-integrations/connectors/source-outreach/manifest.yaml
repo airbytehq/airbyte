@@ -1973,6 +1973,14 @@ schemas:
         type:
           - "null"
           - string
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       pinned:
         type:
           - "null"
@@ -2021,6 +2029,14 @@ schemas:
         type:
           - "null"
           - string
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       pinned:
         type:
           - "null"

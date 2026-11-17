@@ -50,6 +50,8 @@ class NoteCase:
             },
             {
                 "creator": {"data": {"type": "user", "id": 7}},
+                # Live responses carry `opportunity`, which the OpenAPI note relationships omit.
+                "opportunity": {"data": {"type": "opportunity", "id": 9}},
                 self.parent: {"data": {"type": self.parent, "id": 42}},
             },
         )
@@ -62,6 +64,7 @@ class NoteCase:
             "noteType": "call",
             "pinned": True,
             "creator": [7],
+            "opportunity": [9],
             self.parent: [42],
         }
 
