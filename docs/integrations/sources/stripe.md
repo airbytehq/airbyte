@@ -352,7 +352,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.1.0       | 2026-11-03 | [90436](https://github.com/airbytehq/airbyte/pull/90436)     | Read `accounts` from `/v1/accounts` by `created`: incremental syncs pick up new connected accounts, full refreshes read parallel 30-day windows                                                                               |
+| 7.1.1 | 2026-11-17 | [93421](https://github.com/airbytehq/airbyte/pull/93421) | Update dependencies |
+| 7.1.0 | 2026-11-03 | [90436](https://github.com/airbytehq/airbyte/pull/90436) | Read `accounts` from `/v1/accounts` by `created`: incremental syncs pick up new connected accounts, full refreshes read parallel 30-day windows |
 | 7.0.7 | 2026-11-10 | [91749](https://github.com/airbytehq/airbyte/pull/91749) | Update dependencies |
 | 7.0.6 | 2026-11-03 | [90261](https://github.com/airbytehq/airbyte/pull/90261) | Make interrupted `customer_balance_transactions` backfills resumable; fail on 400/403 for that stream instead of silently skipping customers |
 | 7.0.5 | 2026-11-01 | [90396](https://github.com/airbytehq/airbyte/pull/90396) | Simplify HTTP error handling configuration with no change to which errors are skipped or fail the sync |
