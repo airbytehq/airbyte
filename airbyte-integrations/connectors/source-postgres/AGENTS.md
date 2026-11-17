@@ -26,6 +26,12 @@ The custom converter keeps built-in geometric types separate from PostGIS `GEOME
 
 **Why this matters:** These encodings differ by type and, for `money`, by output encoding. Changing converters or schemas without preserving those distinctions can change field types or lose precision for existing destinations.
 
+## 5. Concurrent CTID partitions are sized from the table, not from the sample
+
+In concurrent mode `PostgresSourceJdbcConcurrentPartitionsCreator` splits a table into `ceil(pg_table_size / target partition size)` CTID page ranges, capped by the Micronaut property `airbyte.connector.extract.postgres.max-partitions` (16384 in `application.yml`). The target partition size is the Bulk CDK's `expected-throughput-bytes-per-second / max_db_connections * checkpoint_target_interval_seconds` (the `application.yml` key must use that exact name; the former `throughput-bytes-per-second` key was never bound and the CDK default of 10 MiB/s applied). The 1024-row sample (`table-sample-size`) only sizes the JDBC fetch size; its rows are not partition boundaries, unlike the generic CDK creator and the other JDBC sources. Splitting only happens on PostgreSQL 14 and later, where `ctid` range predicates use a TID Range Scan; older servers read each table as one unsplittable partition.
+
+**Why this matters:** CTID ranges are arithmetic on page numbers, so the count can follow the table size instead of the sample size. Tying it to the sample capped every table at 1024 partitions, which left a multi-terabyte table with partitions of several gigabytes and hour-long, non-resumable queries. Keep the count derived from the table size, and keep the cap: the CDK `FeedReader` re-registers a `select` clause for every unfinished partition each time one completes, so a round's bookkeeping is quadratic in the partition count.
+
 ## Reproducing bugs and testing
 
 Use the [PostgreSQL E2E skills](CONTRIBUTING.md#reproducing-bugs) for the connector's standard and CDC harnesses:

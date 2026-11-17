@@ -4,19 +4,15 @@
 
 package io.airbyte.integrations.source.postgres
 
-import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.toJson
+import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.JdbcConcurrentPartitionsCreator
 import io.airbyte.cdk.read.JdbcCursorPartition
 import io.airbyte.cdk.read.JdbcNonResumablePartitionReader
-import io.airbyte.cdk.read.JdbcPartition
-import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.JdbcPartitionsCreator
 import io.airbyte.cdk.read.JdbcPartitionsCreatorFactory
-import io.airbyte.cdk.read.JdbcSharedState
 import io.airbyte.cdk.read.JdbcSplittablePartition
-import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.MODE_PROPERTY
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreatorFactory
@@ -29,20 +25,29 @@ import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQu
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
-import kotlin.random.Random
 import kotlin.use
+
+/**
+ * Micronaut property bounding the number of CTID range partitions one table is split into. This is
+ * a Postgres-only setting: the generic Bulk CDK creator caps the count at the sample size.
+ */
+const val MAX_PARTITIONS_PROPERTY = "airbyte.connector.extract.postgres.max-partitions"
+const val DEFAULT_MAX_PARTITIONS: Int = 16_384
 
 @Singleton
 @Primary
 @Requires(property = MODE_PROPERTY, value = "concurrent")
-class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
-    A : JdbcSharedState,
-    S : JdbcStreamState<A>,
-    P : JdbcPartition<S>,
->(
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+class PostgresSourceConcurrentJdbcPartitionsCreatorFactory(
+    private val postgresPartitionFactory: PostgresSourceJdbcPartitionFactory,
+    @Value("\${$MAX_PARTITIONS_PROPERTY:$DEFAULT_MAX_PARTITIONS}") private val maxPartitions: Int,
+) :
+    JdbcPartitionsCreatorFactory<
+        DefaultJdbcSharedState,
+        PostgresSourceJdbcStreamState,
+        PostgresSourceJdbcPartition,
+    >(postgresPartitionFactory) {
 
     /**
      * Querying for a table's filenode makes it necessary to acquire a DB connection allowance
@@ -56,18 +61,37 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
         return PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun(acquired)
     }
 
-    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
-        PostgresSourceJdbcConcurrentPartitionsCreator(partition, partitionFactory)
+    override fun partitionsCreator(
+        partition: PostgresSourceJdbcPartition,
+    ): JdbcPartitionsCreator<
+        DefaultJdbcSharedState,
+        PostgresSourceJdbcStreamState,
+        PostgresSourceJdbcPartition,
+    > =
+        PostgresSourceJdbcConcurrentPartitionsCreator(
+            partition,
+            postgresPartitionFactory,
+            maxPartitions,
+        )
 }
 
-class PostgresSourceJdbcConcurrentPartitionsCreator<
-    A : JdbcSharedState,
-    S : JdbcStreamState<A>,
-    P : JdbcPartition<S>,
->(
-    partition: P,
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcConcurrentPartitionsCreator<A, S, P>(partition, partitionFactory) {
+/**
+ * Concurrent partitions creator for Postgres. Unlike the generic [JdbcConcurrentPartitionsCreator],
+ * which turns sampled rows into partition boundaries and is therefore capped at the sample size,
+ * this creator derives the partition count from the table size on disk and the target partition
+ * size, and lets [PostgresSourceJdbcPartitionFactory.split] cut the table into that many CTID page
+ * ranges. The sample is only used to estimate the row size, which sizes the JDBC fetch size.
+ */
+class PostgresSourceJdbcConcurrentPartitionsCreator(
+    partition: PostgresSourceJdbcPartition,
+    private val postgresPartitionFactory: PostgresSourceJdbcPartitionFactory,
+    private val maxPartitions: Int,
+) :
+    JdbcConcurrentPartitionsCreator<
+        DefaultJdbcSharedState,
+        PostgresSourceJdbcStreamState,
+        PostgresSourceJdbcPartition,
+    >(partition, postgresPartitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override fun <T> collectSample(
@@ -104,23 +128,16 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             // TODO: adaptive fetchSize computation?
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
-        // Sample the table for partition split boundaries and for record byte sizes.
-        val sample: Sample<Pair<OpaqueStateValue?, Long>> =
-            collectSample { record: SelectQuerier.ResultRow ->
-                val boundary: OpaqueStateValue? =
-                    (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
-                val rowByteSize: Long =
-                    sharedState.rowByteSizeEstimator().apply(record.data.toJson())
-                boundary to rowByteSize
-            }
-        if (sample.kind == Sample.Kind.EMPTY) {
+        // Sample rows only to estimate their size, which sizes the JDBC fetchSize. The sample
+        // plays no part in partitioning: CTID page ranges are computed from the table size below.
+        val rowByteSizeSample: Sample<Long> = collectSample { record: SelectQuerier.ResultRow ->
+            sharedState.rowByteSizeEstimator().apply(record.data.toJson())
+        }
+        if (rowByteSizeSample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
             return listOf(CheckpointOnlyPartitionReader())
         }
-        val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-        val expectedTableByteSize: Long = totalRelationSize(stream)
-        log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
         // Handle edge case where the table can't be split.
         if (partition !is JdbcSplittablePartition<*>) {
             log.warn {
@@ -129,41 +146,28 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Happy path.
-        log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
-        val secondarySamplingRate: Double =
-            if (expectedTableByteSize <= sharedState.targetPartitionByteSize) {
-                0.0
-            } else {
-                val expectedPartitionByteSize: Long =
-                    expectedTableByteSize / sharedState.maxSampleSize
-                if (expectedPartitionByteSize < sharedState.targetPartitionByteSize) {
-                    expectedPartitionByteSize.toDouble() / sharedState.targetPartitionByteSize
-                } else {
-                    1.0
-                }
-            }
-        val random = Random(expectedTableByteSize) // RNG output is repeatable.
-        val splitBoundaries: List<OpaqueStateValue> =
-            sample.sampledValues
-                .filter { random.nextDouble() < secondarySamplingRate }
-                .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
-                .distinct()
-
-        // Handle edge case with empty split boundaries when sampling rate is too low,
-        // causing random filtering to discard all sampled boundaries, which would
-        // lead to division by zero the in the split() function. Fall back to single partition.
-        if (splitBoundaries.isEmpty()) {
-            log.warn { "No split boundaries found, using single partition" }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+        val tableByteSize: Long = tableSize(stream)
+        val targetPartitionByteSize: Long = sharedState.targetPartitionByteSize
+        val numPartitions: Int =
+            computeNumPartitions(tableByteSize, targetPartitionByteSize, maxPartitions)
+        log.info {
+            "Table size is $tableByteSize bytes and the target partition size is " +
+                "$targetPartitionByteSize bytes: splitting '${stream.label}' into " +
+                "$numPartitions partition(s), at most $maxPartitions."
         }
-        val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
+        val partitions: List<PostgresSourceJdbcPartition> =
+            postgresPartitionFactory.split(partition, numPartitions)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
-    /** Get total relation size in bytes for a given table - this includes toast data. */
-    private fun totalRelationSize(stream: Stream): Long {
-        val sql = "SELECT pg_total_relation_size(?)"
+    /**
+     * Bytes a snapshot of the table has to read: the main table file plus its TOAST table, free
+     * space map and visibility map (`pg_table_size`). Indexes are excluded because a CTID range
+     * scan never reads them.
+     */
+    private fun tableSize(stream: Stream): Long {
+        val sql = "SELECT pg_table_size(?)"
         return querySingleValue(
             JdbcConnectionFactory(sharedState.configuration),
             sql,
@@ -172,5 +176,26 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
                 return@querySingleValue rs.getLong(1)
             },
         )
+    }
+
+    companion object {
+        /**
+         * Number of partitions needed to keep each one at or below [targetPartitionByteSize]:
+         * `ceil(tableByteSize / targetPartitionByteSize)`, clamped to `[1, maxPartitions]`. The cap
+         * bounds the per-round bookkeeping in the CDK `FeedReader`, which re-registers a `select`
+         * clause for every unfinished partition each time one completes.
+         */
+        fun computeNumPartitions(
+            tableByteSize: Long,
+            targetPartitionByteSize: Long,
+            maxPartitions: Int,
+        ): Int {
+            if (tableByteSize <= 0L || targetPartitionByteSize <= 0L || maxPartitions <= 1) {
+                return 1
+            }
+            val needed: Long =
+                (tableByteSize + targetPartitionByteSize - 1) / targetPartitionByteSize
+            return needed.coerceIn(1L, maxPartitions.toLong()).toInt()
+        }
     }
 }
