@@ -157,7 +157,7 @@ lateinit var database: String
 
 **Exceptions:** Preserve capitalization in product names and acronyms, such as “API key” and “Azure Blob Storage.”
 
-The automated check applies to field titles and `oneOf` option titles, including nested options. Findings identify each option by its `oneOf` index. Hidden fields and options are excluded.
+The automated check applies to every visible title in the form. Hidden fields are excluded.
 
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
