@@ -208,8 +208,13 @@ class PostgresSourceDebeziumOperations(
     }
 
     private fun validate(offset: DebeziumOffset) {
+        val position = position(offset)
+        // Postgres re-sends every transaction whose commit record is at or after the slot's
+        // confirmed flush LSN, so changes are lost only once the slot has passed lsn_commit.
+        // lsn can sit far below lsn_commit when the offset points inside a long transaction.
         val lsn =
-            position(offset).lsn
+            position.lsnCommit
+                ?: position.lsn
                 ?: throw IllegalArgumentException("Offset does not contain LSN: $offset")
         replicationSlotManager.validate(lsn)
     }
