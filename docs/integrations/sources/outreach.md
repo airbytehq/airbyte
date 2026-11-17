@@ -2,11 +2,7 @@
 
 ## Overview
 
-The Outreach source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
-
-### Output schema
-
-Some output streams are available from this source. A list of these streams can be found below in the [Streams](outreach.md#streams) section.
+The Outreach source reads data from the [Outreach REST API](https://developers.outreach.io/api/reference/overview). All streams support full refresh syncs. All streams except `duties`, `sequence_templates`, `recipients`, and `compliance_requests` also support incremental syncs.
 
 ### Features
 
@@ -17,76 +13,163 @@ Some output streams are available from this source. A list of these streams can 
 | SSL connection    | Yes        |
 | Namespaces        | No         |
 
-## Getting started
+## Prerequisites
 
-### Requirements
+- An Outreach account with permission to read the data you want to sync
+- An Outreach app with a client ID, client secret, and registered redirect URI
+- A refresh token issued for that app with the required read scopes
 
-- Outreach Account
-- Outreach OAuth credentials
+## Setup guide
 
-### Setup guide
+### Configure your app
 
-Getting oauth credentials require contacting Outreach to request an account. Check out [here](https://www.outreach.io/lp/watch-demo#request-demo).
-Once you have an API application, you can follow the steps [here](https://api.outreach.io/api/v2/docs#authentication) to obtain a refresh token.
-Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings. The connector fills them in and saves each new refresh token that Outreach returns.
+1. Create an app in the [Outreach Developer Portal](https://developers.outreach.io/). See [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth).
+2. On the app's **API access** tab, register a redirect URI. Use exactly the same URI when authorizing the app and configuring the Airbyte source.
+3. Select the read scopes for the resources you want to sync. Always include `accounts.read`, because the connector checks the connection by reading `accounts`. For other resources, Outreach uses scopes such as `prospects.read` and `users.read`. See [Authorization](https://developers.outreach.io/api/getting-started/#authorization).
+4. Copy the client ID and client secret. Outreach displays the secret only when it is generated.
+
+For the streams added in connector versions 1.3.0, 1.4.0, and 1.5.0, grant these scopes:
+
+| Stream | Read scope |
+| :----- | :--------- |
+| `events` | `events.read` |
+| `teams` | `teams.read` |
+| `roles` | `roles.read` |
+| `profiles` | `profiles.read` |
+| `duties` | `duties.read` |
+| `rulesets` | `rulesets.read` |
+| `favorites` | `favorites.read` |
+| `mail_aliases` | `mailAliases.read` |
+| `sequence_templates` | `sequenceTemplates.read` |
+| `content_categories` | `contentCategories.read` |
+| `content_category_memberships` | `contentCategoryMemberships.read` |
+| `content_category_ownerships` | `contentCategoryOwnerships.read` |
+| `opportunity_stages` | `opportunityStages.read` |
+| `opportunity_prospect_roles` | `opportunityProspectRoles.read` |
+| `task_priorities` | `taskPriorities.read` |
+| `email_addresses` | `emailAddresses.read` |
+| `phone_numbers` | `phoneNumbers.read` |
+| `recipients` | `recipients.read` |
+| `compliance_requests` | `complianceRequests.read` |
+| `audit_logs` | `auditLogs.read` |
+
+If you already use the connector, authorize the app again with the additional scopes before selecting these streams. Updating the app's scope settings alone does not add scopes to an existing token.
+
+OAuth scopes do not override Outreach governance permissions. The authorizing account must also have access to the records you need. The `audit_logs` stream also requires the authorizing user to be an Outreach admin.
+
+Outreach provides development credentials immediately and production credentials after publishing and review. Development credentials can require weekly reauthorization for users outside the app's organization or beyond its first 10 users. See [Limitations of development credentials](https://developers.outreach.io/api/oauth/#limitations-of-development-credentials).
+
+### Get a refresh token
+
+1. Open the following URL in a browser. Replace the placeholders with your client ID, registered redirect URI, and space-separated scopes. URL-encode the redirect URI and scopes. Replace `<state>` with a unique, unpredictable value to validate the redirect.
+
+   ```text
+   https://api.outreach.io/oauth/authorize?client_id=<client_id>&redirect_uri=<redirect_uri>&response_type=code&scope=<scopes>&state=<state>
+   ```
+
+2. Sign in to Outreach and authorize the app. Verify that the returned `state` matches your value, then copy the `code` query parameter from the redirect URL.
+3. Exchange this short-lived code for tokens using the same client credentials and redirect URI:
+
+   ```bash
+   curl https://api.outreach.io/oauth/token \
+     -X POST \
+     --data-urlencode "client_id=<client_id>" \
+     --data-urlencode "client_secret=<client_secret>" \
+     --data-urlencode "redirect_uri=<redirect_uri>" \
+     --data-urlencode "grant_type=authorization_code" \
+     --data-urlencode "code=<code>"
+   ```
+
+4. Copy the `refresh_token` from the response for use in Airbyte.
+
+See [API access (OAuth)](https://developers.outreach.io/api/oauth/) for the full authorization procedure.
+
+### Configure the Airbyte source
+
+1. Enter your **Client ID**, **Client Secret**, **Refresh Token**, and **Redirect URI**.
+2. Enter a **Start Date** in UTC using `YYYY-MM-DDTHH:MM:SSZ`, for example `2020-11-16T00:00:00Z`. Incremental syncs initially read records whose cursor is on or after this date. The cursor is `createdAt` for `events`, `timestamp` for `audit_logs`, and `updatedAt` for other incremental streams. The full-refresh-only streams `duties`, `sequence_templates`, `recipients`, and `compliance_requests` don't use this date.
+3. Optionally, set **Number of Concurrent Workers** (`num_workers`) to the number of streams to read at once. The default is 3 and the allowed range is 2 to 10. All workers share the same Outreach API budget. Increasing concurrency may improve throughput, but does not increase the rate limit.
+4. Leave **Access Token** and **Token Expiry Date** out of your configuration, including when using the API. Do not send empty strings. The connector fills in these hidden fields and saves rotated tokens.
+
+### Token expiration and rotation
+
+Outreach access tokens remain active for 2 hours, and refresh tokens remain active for 14 days. Each token refresh returns a new refresh token. The connector saves the new refresh token, access token, and expiry time to its configuration and refreshes the access token when it expires or Outreach returns a `401` response.
+
+Schedule syncs less than 14 days apart to keep the refresh token active. If the token expires or the authorization grant is revoked, obtain a new refresh token and update **Refresh Token**. Avoid reusing the source's refresh token in other tools, because Outreach recommends using each refresh token only once. See [Token availability](https://developers.outreach.io/api/getting-started/#token-availability).
 
 ## Streams
 
-List of available streams:
+Every stream uses `id` as its primary key and supports full refresh. Incremental support is listed below.
 
-- Prospects
-- Sequences
-- SequenceStates
-- SequenceSteps
-- Calls
-- Mailings
-- Accounts
-- Opportunities
-- Personas
-- Mailboxes
-- Stages
-- Users
-- Tasks
-- Templates
-- Snippets
-- Events
-- Teams
-- Roles
-- Profiles
-- Duties
-- Rulesets
-- Favorites
-- MailAliases
-- Sequence Templates
-- Content Categories
-- Content Category Memberships
-- Content Category Ownerships
-- Opportunity Stages
-- Opportunity Prospect Roles
-- Task Priorities
-- EmailAddresses
-- PhoneNumbers
-- Recipients
-- ComplianceRequests
-- AuditLogs
+| Stream | Incremental cursor |
+| :----- | :----------------- |
+| `accounts` | `updatedAt` |
+| `calls` | `updatedAt` |
+| `call_dispositions` | `updatedAt` |
+| `call_purposes` | `updatedAt` |
+| `mailboxes` | `updatedAt` |
+| `mailings` | `updatedAt` |
+| `opportunities` | `updatedAt` |
+| `personas` | `updatedAt` |
+| `prospects` | `updatedAt` |
+| `sequences` | `updatedAt` |
+| `sequence_states` | `updatedAt` |
+| `sequence_steps` | `updatedAt` |
+| `snippets` | `updatedAt` |
+| `stages` | `updatedAt` |
+| `tasks` | `updatedAt` |
+| `templates` | `updatedAt` |
+| `users` | `updatedAt` |
+| `events` | `createdAt` |
+| `teams` | `updatedAt` |
+| `roles` | `updatedAt` |
+| `profiles` | `updatedAt` |
+| `duties` | Not supported (full refresh only) |
+| `rulesets` | `updatedAt` |
+| `favorites` | `updatedAt` |
+| `mail_aliases` | `updatedAt` |
+| `sequence_templates` | Not supported (full refresh only) |
+| `content_categories` | `updatedAt` |
+| `content_category_memberships` | `updatedAt` |
+| `content_category_ownerships` | `updatedAt` |
+| `opportunity_stages` | `updatedAt` |
+| `opportunity_prospect_roles` | `updatedAt` |
+| `task_priorities` | `updatedAt` |
+| `email_addresses` | `updatedAt` |
+| `phone_numbers` | `updatedAt` |
+| `recipients` | Not supported (full refresh only) |
+| `compliance_requests` | Not supported (full refresh only) |
+| `audit_logs` | `timestamp` |
 
-:::note
-EmailAddresses, PhoneNumbers, Recipients, ComplianceRequests and AuditLogs need the `emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes. Connections authorized before version 1.5.0 must re-authenticate before selecting these streams.
+The `events` cursor tracks when Outreach recorded the event (`createdAt`), rather than when the event occurred (`eventAt`). The `duties` resource has no timestamps, so it is read in full on each sync. The API does not support filtering or sorting `sequence_templates` by `updatedAt`, so this stream also requires full refresh. The same applies to `recipients` and `compliance_requests`, even though their records include `updatedAt`.
 
-AuditLogs requires an Outreach admin user. Outreach keeps audit-log events for about 90 days, so the first sync returns at most that much history regardless of the start date.
+The `audit_logs` stream uses `timestamp` as its cursor because audit-log records have no `updatedAt`. Its `id` is a UUID string rather than an integer. Outreach keeps audit-log events for about 90 days, so the first sync returns at most that much history regardless of **Start Date**.
+
+Incremental filters include the saved cursor value, so records at that boundary can be read again on the next sync. The connector flattens attributes into top-level fields and represents relationships with embedded record identifiers as arrays of related IDs.
+
+:::warning Prospects contact histogram
+Outreach is removing `contactHistogram` from the default `/prospects` response. The connector doesn't explicitly request this attribute, so when Outreach omits it, newly synced records don't contain its value. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for the current announcement.
+
+If you need this attribute, retrieve it directly from the Outreach API using `fields[prospect]`. This parameter returns only the attributes you list, so include every attribute you need. The connector does not expose a configuration option for this parameter.
 :::
 
-:::warning Personal data in the ComplianceRequests stream
-ComplianceRequests includes a `pii` field with the personal data Outreach keeps to process each request, such as the email address of the person who asked to be deleted. Outreach keeps this data after the deletion completes, so syncing this stream copies it into your destination. If you only need to audit requests, deselect the `pii` column or the stream.
+:::warning Personal data in the compliance_requests stream
+The `compliance_requests` stream includes a `pii` field with the personal data Outreach keeps to process each request, such as the email address of the person who asked to be deleted. Outreach keeps this data after the deletion completes, so syncing this stream copies it into your destination. If you only need to audit requests, deselect the `pii` column or the stream.
 :::
 
-:::warning Upcoming change to the Prospects stream
-Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
+## Rate limits
 
-After that date, the `contactHistogram` column in the `Prospects` stream will be `null` for newly synced records. Syncs will continue to run normally, and no other fields, the primary key (`id`), or the cursor (`updatedAt`) are affected. Historical values already in your destination are unchanged.
+Outreach generally limits API requests to 10,000 per hour per user. Other integrations authorized by the same user share this quota. See [Rate limiting](https://developers.outreach.io/api/getting-started/#rate-limiting).
 
-If you rely on `contactHistogram`, retrieve it directly from the Outreach API by requesting it explicitly with the `fields[prospect]` parameter.
-:::
+The connector reads `X-RateLimit-Remaining` and `X-RateLimit-Reset`. When the quota is exhausted or Outreach returns `429`, workers pause until the reset time, which can be up to an hour. Lower **Number of Concurrent Workers** to consume the quota more slowly. The connector also retries temporary errors, including maintenance responses (`503`), with backoff.
+
+## Troubleshooting
+
+### Access denied (403)
+
+The connector reports a configuration error that includes Outreach's error detail. If the error is `unauthorizedOauthScope`, add the missing scope to the app, authorize it again, and update **Refresh Token**. Alternatively, deselect the affected stream. The `accounts.read` scope is required for the connection check even if you do not select `accounts` for syncing.
+
+If the error is `unauthorizedRequest`, check the authorizing user's Outreach governance permissions. Adding an OAuth scope does not grant access to restricted records.
 
 ## IP allow list
 
@@ -99,10 +182,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.5.0 | 2026-11-12 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` streams |
-| 1.4.0 | 2026-11-12 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add sequence_templates, content_categories, content_category_memberships, content_category_ownerships, opportunity_stages, opportunity_prospect_roles and task_priorities streams |
-| 1.3.0 | 2026-11-12 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
-| 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
+| 1.5.0 | 2026-11-16 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests`, and `audit_logs` streams |
+| 1.4.0 | 2026-11-16 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add the `sequence_templates`, `content_categories`, `content_category_memberships`, `content_category_ownerships`, `opportunity_stages`, `opportunity_prospect_roles`, and `task_priorities` streams |
+| 1.3.0 | 2026-11-13 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the `events`, `teams`, `roles`, `profiles`, `duties`, `rulesets`, `favorites`, and `mail_aliases` streams |
+| 1.2.0 | 2026-11-12 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
 | 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
