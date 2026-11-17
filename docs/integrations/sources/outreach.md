@@ -99,6 +99,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.5.1 | 2026-11-17 | [93283](https://github.com/airbytehq/airbyte/pull/93283) | Update dependencies |
 | 1.5.0 | 2026-11-12 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` streams |
 | 1.4.0 | 2026-11-12 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add sequence_templates, content_categories, content_category_memberships, content_category_ownerships, opportunity_stages, opportunity_prospect_roles and task_priorities streams |
 | 1.3.0 | 2026-11-12 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
