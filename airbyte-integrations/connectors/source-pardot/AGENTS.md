@@ -12,13 +12,17 @@ The vendor documents no HTTP status per error code and no `Retry-After` header (
 | :-- | :-- |
 | Code 122, or the text `Daily API rate limit met` | Fails at once, `transient_error`, with a message that the daily limit resets the next day. See section 2. |
 | Code 66, more than five concurrent requests | Retried, whatever the HTTP status. |
-| Code 184, invalid access token | Fails at once, `config_error`: check the `pardot_api` scope and that the user is synced to the business unit. |
-| Code 201, business unit not found | Fails at once, `config_error`: check the ID and the host. The vendor returns it for the wrong host too. |
+| Code 184, invalid or expired access token | Fails at once, `config_error`: check the `pardot_api` scope and that the user is synced to the business unit. |
+| Code 201, business unit not found | Fails at once, `config_error`: check the ID, then the host for the account type, in either direction. The vendor returns it for the wrong host too. |
 | Code 49, access denied | Fails at once, `config_error`, naming the stream's `required_ability`. |
 | 429, 408 or 5xx without a known code | CDK default: retried. |
 | 400, 401, 403 or 404 without a known code | CDK default: fails at once. |
 
-Retries wait with `ExponentialBackoffStrategy` at factor 10, five retries at most: 21, 41, 81, 161 and 321 seconds. The CDK stops retrying 600 seconds after the first attempt, which cuts the last wait short; the manifest cannot change that limit. Each stream's `$parameters.required_ability` is the *Ability Requirements* column of its object page, without the word "ability". The version 4 page behind `email_clicks` names none, so its code 49 message asks for "View".
+Retries wait with `ExponentialBackoffStrategy` at factor 10, five retries at most: 21, 41, 81, 161 and 321 seconds, so the last attempt goes out about ten and a half minutes after the first. The CDK's 600-second limit is checked only before a wait, and 304 seconds have passed before the last one, so the five retries are what end it.
+
+Code 184 also covers an expired token: "Make sure the token used is within its expiration time." Salesforce sends no `expires_in`, so the CDK keeps each token for one hour (section 4). A session timeout set on the app, the user's profile or the org ([Manage Session Policies for a Connected App](https://help.salesforce.com/s/articleView?language=en_US&id=xcloud.connected_app_manage_session_policies.htm&type=5)) could end a token sooner. The org's timeout counts inactivity ([Modify Session Security Settings](https://help.salesforce.com/s/articleView?language=en_US&id=admin_sessions.htm&type=5)) and a sync uses its token without pause, so the message names only the two causes a user can fix. Whether an app's timeout or a JWT-based token can end a token during a sync needs a live read (section 6). If it can, `REFRESH_TOKEN_THEN_RETRY` on code 184 is the fix, at the cost of the CDK's own text for the other two causes.
+
+Each stream's `$parameters.required_ability` is the *Ability Requirements* column of its object page, without the word "ability". The version 4 page behind `email_clicks` names none, so its code 49 message asks for "View".
 
 **Why this matters:** A filter on the HTTP status would miss a code the vendor sends with another status. A new stream needs a `required_ability`, or its code 49 message cannot say what to ask for.
 
@@ -36,9 +40,9 @@ The manifest declares no `api_budget`. The daily limit depends on the customer's
 
 ## 4. One Login at a Time, and the Host Follows the Account Type
 
-The login is the CDK's `OAuthAuthenticator` with a refresh-token grant at `login.salesforce.com`, or `test.salesforce.com` when `is_sandbox` is on. Each stream keeps its own token, so a sync logs in once per stream, but the CDK holds one lock for every token refresh: no two token requests are in flight at once. Salesforce rejects a parallel one with `token request is already being processed`; that answer is not retried. When the token answer carries no `expires_in`, the CDK keeps the token for one hour. `expired access/refresh token` fails as a configuration error that says to create a new refresh token.
+The login is the CDK's `OAuthAuthenticator` with a refresh-token grant at `login.salesforce.com`, or `test.salesforce.com` when `is_sandbox` is on. Each stream keeps its own token, so a sync logs in once per stream, but the CDK holds one lock for every token refresh: no two token requests are in flight at once. Salesforce rejects a parallel one with `token request is already being processed`; that answer is not retried. When the token answer carries no `expires_in`, the CDK keeps the token for one hour. Three answers of the token endpoint fail as configuration errors that say what to fix: `expired access/refresh token` (create a new refresh token), `invalid client credentials` and `client identifier invalid` (copy the app's Consumer Key and Consumer Secret, and turn on `is_sandbox` for a sandbox org). Salesforce lists the first two in [Resolve Common Authorization Errors](https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-troubleshoot-auth-errors.html); `client identifier invalid` is the text reported for an unknown client ID. Any other answer keeps the CDK's text.
 
-The API host is `pi.pardot.com` for production, `pi.demo.pardot.com` for a sandbox and for a Developer Edition org ([Authentication](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html)). A Developer Edition org signs in at `login.salesforce.com`, so it needs `pardot_api_host: pi.demo.pardot.com`. `pardot_api_host` is an `enum` of the two hosts, so `allowedHosts` stays a fixed list of four and a config cannot send the token elsewhere. A test fails when a read sends a request to a host that `allowedHosts` does not list.
+The API host is `pi.pardot.com` for production, `pi.demo.pardot.com` for a sandbox and for a Developer Edition org ([Authentication](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html)). A Developer Edition org signs in at `login.salesforce.com`, so it needs `pardot_api_host: pi.demo.pardot.com`. The vendor also hosts training environments on `pi.pardot.com` and demos on `pi.demo.pardot.com`, and gives the test: the namespace prefix of the installed `b2bmaIntegration` package is `b2bma` for `pi.pardot.com` and `pi3` for `pi.demo.pardot.com` ([Overview](https://developer.salesforce.com/docs/marketing/pardot/guide/overview.html)). `pardot_api_host` overrides the host in either direction, and the code 201 message says so. `pardot_api_host` is an `enum` of the two hosts, so `allowedHosts` stays a fixed list of four and a config cannot send the token elsewhere. A test fails when a read sends a request to a host that `allowedHosts` does not list.
 
 **Why this matters:** Before 1.1.0 two streams could log in at once and fail the sync, and sandbox accounts could not connect.
 
@@ -55,6 +59,7 @@ The new query reads the records of the boundary second again, which adds duplica
 - `visitors` filters on `updatedAtAfter`, which the vendor's filter table for that object does not list in either form ([Visitor](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-v5.html)). It is unchanged until a live request shows what the API does with it.
 - The version 5 incremental streams write their cursor with a literal `-12:00` (`datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"`), and the first sync saves the start date rather than the newest cursor. Whether the API reads that offset needs one live request; a change may need a state migration.
 - `email_clicks` filters on `created_after`, which the vendor describes as "created after the specified time". A record of the saved second can be skipped. A one-second `lookback_window` would re-read that second on every sync.
+- Whether an access token can expire within the hour the CDK keeps it, which would fail a sync with code 184 (section 1).
 
 **Why this matters:** These are known gaps, not oversights. Change them only with a live read to compare against.
 

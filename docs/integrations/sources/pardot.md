@@ -18,9 +18,9 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 - **Pardot Business Unit ID** (`pardot_business_unit_id`): The 18-character ID, starting with `0Uv`, of the Account Engagement business unit to sync. In Salesforce Setup, enter `Business Unit Setup` in the **Quick Find** box and select **Business Unit Setup**. See [Find the Account Engagement business unit ID](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html).
 
-- **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
+- **Client ID** (`client_id`): The Consumer Key of the Salesforce External Client App or Connected App used for this connection. Find it in Salesforce Setup, in the app's OAuth settings.
 
-- **Client Secret** (`client_secret`): The Consumer Secret that can be found when viewing your app in Salesforce
+- **Client Secret** (`client_secret`): The Consumer Secret of the Salesforce External Client App or Connected App used for this connection. Find it in Salesforce Setup, in the app's OAuth settings.
 
 - **Refresh Token** (`refresh_token`): Salesforce refresh token that Airbyte uses to access your Account Engagement data. To get one:
   1. In Salesforce Setup, create an [External Client App](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5) with OAuth enabled. Since Spring '26, Salesforce no longer lets you create new connected apps by default. Existing connected apps keep working.
@@ -38,7 +38,7 @@ Starting November 4, 2026, Salesforce expires production refresh tokens that hav
 
 - **Sandbox** (`is_sandbox`): Turn on for a Salesforce sandbox. The connector then signs in at `test.salesforce.com` and reads from `pi.demo.pardot.com`.
 
-- **API host** (`pardot_api_host`): Leave empty for a production account or a sandbox. Select `pi.demo.pardot.com` for a Developer Edition org, which signs in at `login.salesforce.com` but is served by the demo host. When set, it overrides the host that **Sandbox** selects.
+- **API host** (`pardot_api_host`): Leave empty to follow **Sandbox**: `pi.demo.pardot.com` for a sandbox, `pi.pardot.com` otherwise. Select `pi.demo.pardot.com` for a Developer Edition or demo org, and `pi.pardot.com` for a training account. To check, find the `b2bmaIntegration` package in Salesforce Setup under **Installed Packages**: the namespace prefix `pi3` means `pi.demo.pardot.com`, and `b2bma` means `pi.pardot.com`. When set, it overrides the host that **Sandbox** selects.
 
 - **Number of concurrent workers** (`num_workers`): How many streams are read at the same time, from 2 to 5. Defaults to 3. Account Engagement allows five concurrent requests per account, so lower it if other integrations use the same account.
 
@@ -55,7 +55,7 @@ Most incremental streams use the `updatedAt` field as the cursor. The exceptions
 
 Account Engagement limits the number of API requests your account can make each day, based on your edition.
 
-When Account Engagement returns a rate limit error (HTTP 429, or error code 66 for too many concurrent requests), a server error (5xx), or a request timeout (408), the connector retries the request with waits that grow from seconds to minutes, and stops retrying within ten minutes of the first attempt. If the last retry also fails, the sync fails.
+When Account Engagement returns a rate limit error (HTTP 429, or error code 66 for too many concurrent requests), a server error (5xx), or a request timeout (408), the connector retries the request up to five times, with waits that grow from seconds to minutes, about ten minutes in all. If the last retry also fails, the sync fails.
 
 When the daily limit is used up (error code 122, `Daily API rate limit met`), the sync fails at once with a message that says the limit resets at the start of the next day in the account's time zone. The next sync continues from the last saved position.
 
@@ -64,9 +64,10 @@ When the daily limit is used up (error code 122, `Daily API rate limit met`), th
 These errors fail the sync at once, with a message that says what to fix:
 
 - Error code 184: Account Engagement rejected the access token. Check that the Salesforce app has the **Manage Pardot services (`pardot_api`)** scope and that the user behind the refresh token is synced to this business unit.
-- Error code 201: no active business unit has this Business Unit ID on this host. Check the ID, and turn on **Sandbox** or set **API host** for a sandbox or a Developer Edition org.
+- Error code 201: no active business unit has this Business Unit ID on this host. Check the ID. Turn on **Sandbox** for a sandbox, and set **API host** to `pi.demo.pardot.com` for a Developer Edition or demo org, or to `pi.pardot.com` for a production or training account.
 - Error code 49: the user can't read this object. The message names the Account Engagement ability the stream needs. Ask an admin for it, or deselect the stream.
 - An expired or revoked refresh token: create a new refresh token and update the source.
+- A wrong client ID or client secret: copy the Consumer Key and Consumer Secret of the Salesforce app into **Client ID** and **Client Secret**, and turn on **Sandbox** for a sandbox org.
 
 ## Supported Streams
 

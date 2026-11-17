@@ -26,8 +26,9 @@ _REJECTED_TOKEN_MESSAGE = (
     "scope and that the user behind the refresh token is synced to this business unit."
 )
 _NO_BUSINESS_UNIT_MESSAGE = (
-    "Account Engagement found no active business unit for this Business Unit ID on this host. Check the ID, and select the demo "
-    "host for a sandbox or a Developer Edition org."
+    "Account Engagement found no active business unit for this Business Unit ID on this host. Check the ID. Turn on Sandbox for "
+    "a sandbox, and set API host to pi.demo.pardot.com for a Developer Edition or demo org, or to pi.pardot.com for a production "
+    "or training account."
 )
 _PAGE = {"nextPageToken": None, "nextPageUrl": None, "values": [{"id": 1, "updatedAt": "2026-03-01T09:00:00-08:00"}]}
 _ERROR_LOOKING_RECORD = {"id": 1, "name": _DAILY_LIMIT_TEXT, "code": 122, "updatedAt": "2026-03-01T09:00:00-08:00"}

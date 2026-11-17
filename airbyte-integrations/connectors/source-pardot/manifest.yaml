@@ -2024,7 +2024,7 @@ definitions:
           {{ response.get('code') == 66 or
           (response.get('@attributes') or {}).get('err_code') in [66, '66'] }}
         action: RETRY
-      # Code 184: the access token is invalid, unknown or malformed.
+      # Code 184: the access token is invalid, unknown, malformed or expired.
       - type: HttpResponseFilter
         predicate: >-
           {{ response.get('code') == 184 or
@@ -2035,7 +2035,7 @@ definitions:
           Account Engagement rejected the access token. Check that the Salesforce app has the
           "Manage Pardot services (pardot_api)" scope and that the user behind the refresh token is
           synced to this business unit.
-      # Code 201: no active business unit with this ID on this host.
+      # Code 201: no active business unit with this ID on this host, or the wrong host for the account.
       - type: HttpResponseFilter
         predicate: >-
           {{ response.get('code') == 201 or
@@ -2044,7 +2044,8 @@ definitions:
         failure_type: config_error
         error_message: >-
           Account Engagement found no active business unit for this Business Unit ID on this host.
-          Check the ID, and select the demo host for a sandbox or a Developer Edition org.
+          Check the ID. Turn on Sandbox for a sandbox, and set API host to pi.demo.pardot.com for a
+          Developer Edition or demo org, or to pi.pardot.com for a production or training account.
       # Code 49: access denied.
       - type: HttpResponseFilter
         predicate: >-
@@ -2074,10 +2075,18 @@ definitions:
       refresh_token_error_key: error_description
       refresh_token_error_values:
         - expired access/refresh token
+        - invalid client credentials
+        - client identifier invalid
       refresh_token_error_messages:
         expired access/refresh token: >-
           Salesforce rejected the refresh token: it expired, was revoked, or went unused for 30 days.
           Create a new refresh token and update the source.
+        invalid client credentials: >-
+          Salesforce rejected the client ID and secret. Copy the Consumer Key and Consumer Secret of the
+          Salesforce app into Client ID and Client Secret, and turn on Sandbox for a sandbox org.
+        client identifier invalid: >-
+          Salesforce found no app with this client ID. Copy the Consumer Key of the Salesforce app into
+          Client ID, and turn on Sandbox for a sandbox org.
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
@@ -2197,8 +2206,10 @@ spec:
         type: string
         title: API host
         description: >-
-          Leave empty for a production account or a sandbox. Select pi.demo.pardot.com for a Developer
-          Edition org, which signs in at login.salesforce.com but is served by the demo host.
+          Leave empty to follow Sandbox: pi.demo.pardot.com for a sandbox, pi.pardot.com otherwise. Select
+          pi.demo.pardot.com for a Developer Edition or demo org, and pi.pardot.com for a training account.
+          To check, find the b2bmaIntegration package in Salesforce Setup under Installed Packages: the
+          namespace prefix pi3 means pi.demo.pardot.com, and b2bma means pi.pardot.com.
         enum:
           - pi.pardot.com
           - pi.demo.pardot.com

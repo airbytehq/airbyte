@@ -5,6 +5,7 @@ import threading
 from datetime import timedelta
 from unittest import TestCase
 
+import pytest
 import requests
 from conftest import resolved_manifest
 from freezegun import freeze_time
@@ -23,6 +24,14 @@ from .utils import read_stream, read_streams, record_ids, stream_error
 _EXPIRED_TOKEN_MESSAGE = (
     "Salesforce rejected the refresh token: it expired, was revoked, or went unused for 30 days. Create a new refresh token and "
     "update the source."
+)
+_REJECTED_CLIENT_MESSAGE = (
+    "Salesforce rejected the client ID and secret. Copy the Consumer Key and Consumer Secret of the Salesforce app into Client ID "
+    "and Client Secret, and turn on Sandbox for a sandbox org."
+)
+_UNKNOWN_CLIENT_MESSAGE = (
+    "Salesforce found no app with this client ID. Copy the Consumer Key of the Salesforce app into Client ID, and turn on Sandbox "
+    "for a sandbox org."
 )
 
 
@@ -149,18 +158,9 @@ class TestLogin(TestCase):
         http_mocker.assert_number_of_calls(login, 1)
 
     @HttpMocker()
-    def test_another_400_from_the_token_endpoint_is_not_a_configuration_error(self, http_mocker: HttpMocker) -> None:
-        login = login_request()
-        http_mocker.post(login, _login_error("invalid_client", "invalid client credentials"))
-
-        error = stream_error(read_stream("campaigns", expecting_error=True))
-
-        assert error.failure_type == FailureType.system_error
-        http_mocker.assert_number_of_calls(login, 1)
-
-    @HttpMocker()
     def test_token_request_already_being_processed_is_not_retried(self, http_mocker: HttpMocker) -> None:
-        # A pin. Logins no longer overlap, which is what made Salesforce send this answer.
+        # A pin, and the case for any other 400 from the token endpoint. Logins no longer overlap within a sync, which is
+        # what made Salesforce send this answer; two connections that share a refresh token can still overlap.
         login = login_request()
         http_mocker.post(login, _login_error("invalid_grant", "token request is already being processed"))
 
@@ -168,6 +168,26 @@ class TestLogin(TestCase):
 
         assert error.failure_type == FailureType.system_error
         http_mocker.assert_number_of_calls(login, 1)
+
+
+@pytest.mark.parametrize(
+    ("error_code", "description", "message"),
+    [
+        pytest.param("invalid_client", "invalid client credentials", _REJECTED_CLIENT_MESSAGE, id="wrong-client-secret"),
+        pytest.param("invalid_client_id", "client identifier invalid", _UNKNOWN_CLIENT_MESSAGE, id="unknown-client-id"),
+    ],
+)
+def test_rejected_client_credentials_fail_as_a_configuration_error(error_code: str, description: str, message: str) -> None:
+    login = login_request()
+    with HttpMocker() as http_mocker:
+        http_mocker.post(login, _login_error(error_code, description))
+
+        error = stream_error(read_stream("campaigns", expecting_error=True))
+
+        http_mocker.assert_number_of_calls(login, 1)
+
+    assert error.failure_type == FailureType.config_error
+    assert error.message.startswith(message)
 
 
 def test_streams_read_concurrently_never_log_in_at_the_same_time() -> None:
