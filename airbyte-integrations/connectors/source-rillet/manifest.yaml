@@ -1,0 +1,4305 @@
+version: 7.45.0
+type: DeclarativeSource
+description:
+  Sync your general ledger, chart of accounts, accounts receivable, accounts payable and banking
+  data from the Rillet Accounting API. Streams with an updated_at field sync incrementally using the API's
+  updated.gt filter.
+check:
+  type: CheckStream
+  stream_names:
+    - organization
+definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - &id001
+        type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+          - 403
+        error_message:
+          Rillet rejected the API key (HTTP {{ response.status_code if response is defined
+          else '' }}). Check that the key is valid for the selected environment and that API access is enabled
+          for your organization.
+      - &id002
+        type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+    backoff_strategies: &id003
+      - type: ExponentialBackoffStrategy
+        factor: 5
+  error_handler_ignore_404:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: The organization has no book periods yet.
+      - *id001
+      - *id002
+    backoff_strategies: *id003
+  base_requester:
+    type: HttpRequester
+    url_base:
+      "{{ 'https://sandbox.api.rillet.com' if config.get('environment') == 'sandbox' else
+      'https://api.rillet.com' }}"
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    request_headers:
+      X-Rillet-API-Version: "4"
+    error_handler:
+      $ref: "#/definitions/error_handler"
+  cursor_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('pagination', {}).get('next_cursor') }}"
+      stop_condition: "{{ not response.get('pagination', {}).get('next_cursor') }}"
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: updated.gt
+streams:
+  - type: DeclarativeStream
+    name: organization
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /organizations/self
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          currency:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          trade_name:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: subsidiaries
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /subsidiaries
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - subsidiaries
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          currency:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          trade_name:
+            type:
+              - string
+              - "null"
+          legal_name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          tax_id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          parent_subsidiary_id:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: accounts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /accounts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - accounts
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          id:
+            type: string
+          code:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          subtype:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          intercompany:
+            type:
+              - boolean
+              - "null"
+          parent_grouping:
+            type:
+              - string
+              - "null"
+          prepaid_account_code:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: books
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /books
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - books
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          mode:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: book_periods
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /books/periods
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_404"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - periods
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          start:
+            type:
+              - string
+              - "null"
+            format: date
+          end:
+            type:
+              - string
+              - "null"
+            format: date
+          status:
+            type:
+              - string
+              - "null"
+          closed_on:
+            type:
+              - string
+              - "null"
+            format: date
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /customers
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - customers
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          updated_at:
+            type: string
+            format: date-time
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          family_id:
+            type:
+              - string
+              - "null"
+          parent_customer_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          name_on_invoice:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          shipping_address:
+            type:
+              - object
+              - "null"
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          billing_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                line1:
+                  type:
+                    - string
+                    - "null"
+                line2:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                zip_code:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+              additionalProperties: true
+          shipping_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                line1:
+                  type:
+                    - string
+                    - "null"
+                line2:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                zip_code:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+              additionalProperties: true
+          emails:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          payment_terms:
+            type:
+              - integer
+              - "null"
+          send_invoices_automatically:
+            type:
+              - boolean
+              - "null"
+          send_payment_reminders:
+            type:
+              - boolean
+              - "null"
+          allow_online_payments:
+            type:
+              - boolean
+              - "null"
+          fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                field_id:
+                  type:
+                    - string
+                    - "null"
+                field_value_id:
+                  type:
+                    - string
+                    - "null"
+          tax_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: customer_families
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /customer-families
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - customer_families
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          root_parent_customer_id:
+            type:
+              - string
+              - "null"
+          member_count:
+            type:
+              - integer
+              - "null"
+  - type: DeclarativeStream
+    name: products
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /products
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - products
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  amount:
+                    type:
+                      - string
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+              interval_months:
+                type:
+                  - integer
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+              billing_scheme:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      amount:
+                        type:
+                          - string
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                  units:
+                    type:
+                      - integer
+                      - "null"
+                  mode:
+                    type:
+                      - string
+                      - "null"
+                  tiers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        up_to:
+                          type:
+                            - integer
+                            - "null"
+                        flat_price:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                          properties:
+                            amount:
+                              type:
+                                - string
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                        per_unit_price:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                          properties:
+                            amount:
+                              type:
+                                - string
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                additionalProperties: true
+            additionalProperties: true
+          include_in_arr_mrr:
+            type:
+              - boolean
+              - "null"
+          include_in_ssp:
+            type:
+              - boolean
+              - "null"
+          revenue_pattern:
+            type:
+              - string
+              - "null"
+          progress_plan_template:
+            type:
+              - object
+              - "null"
+            properties:
+              measure:
+                type:
+                  - string
+                  - "null"
+              value_mode:
+                type:
+                  - string
+                  - "null"
+              milestones:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    key:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    sequence:
+                      type:
+                        - integer
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    expected_offset:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        count:
+                          type:
+                            - integer
+                            - "null"
+                        unit:
+                          type:
+                            - string
+                            - "null"
+                      additionalProperties: true
+                    id:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+            additionalProperties: true
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                field_id:
+                  type:
+                    - string
+                    - "null"
+                field_value_id:
+                  type:
+                    - string
+                    - "null"
+          status:
+            type:
+              - string
+              - "null"
+          account_code:
+            type:
+              - string
+              - "null"
+          bundle:
+            type:
+              - object
+              - "null"
+            properties:
+              invoice_display:
+                type:
+                  - string
+                  - "null"
+              components:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    product_id:
+                      type:
+                        - string
+                        - "null"
+                    quantity:
+                      type:
+                        - string
+                        - "null"
+            additionalProperties: true
+  - type: DeclarativeStream
+    name: contracts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /contracts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - contracts
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          customer_id:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                product_id:
+                  type:
+                    - string
+                    - "null"
+                product_type:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    interval_months:
+                      type:
+                        - integer
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    billing_scheme:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        amount:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                          properties:
+                            amount:
+                              type:
+                                - string
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                        units:
+                          type:
+                            - integer
+                            - "null"
+                        mode:
+                          type:
+                            - string
+                            - "null"
+                        tiers:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            additionalProperties: true
+                            properties:
+                              up_to:
+                                type:
+                                  - integer
+                                  - "null"
+                              flat_price:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                                properties:
+                                  amount:
+                                    type:
+                                      - string
+                                      - "null"
+                                  currency:
+                                    type:
+                                      - string
+                                      - "null"
+                              per_unit_price:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                                properties:
+                                  amount:
+                                    type:
+                                      - string
+                                      - "null"
+                                  currency:
+                                    type:
+                                      - string
+                                      - "null"
+                      additionalProperties: true
+                  additionalProperties: true
+                quantity:
+                  type:
+                    - string
+                    - "null"
+                total_value:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                revenue_pattern:
+                  type:
+                    - string
+                    - "null"
+                progress_plan:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    measure:
+                      type:
+                        - string
+                        - "null"
+                    value_mode:
+                      type:
+                        - string
+                        - "null"
+                    as_of_date:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                    milestones:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          key:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          sequence:
+                            type:
+                              - integer
+                              - "null"
+                          percentage:
+                            type:
+                              - string
+                              - "null"
+                          allocated_amount:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              amount:
+                                type:
+                                  - string
+                                  - "null"
+                              currency:
+                                type:
+                                  - string
+                                  - "null"
+                            additionalProperties: true
+                          amount:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              amount:
+                                type:
+                                  - string
+                                  - "null"
+                              currency:
+                                type:
+                                  - string
+                                  - "null"
+                            additionalProperties: true
+                          expected_date:
+                            type:
+                              - string
+                              - "null"
+                            format: date
+                          status:
+                            type:
+                              - string
+                              - "null"
+                          completed_date:
+                            type:
+                              - string
+                              - "null"
+                            format: date
+                          memo:
+                            type:
+                              - string
+                              - "null"
+                          external_references:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              additionalProperties: true
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                                url:
+                                  type:
+                                    - string
+                                    - "null"
+                          cancellation:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              effective_date:
+                                type:
+                                  - string
+                                  - "null"
+                                format: date
+                              credit_memo_id:
+                                type:
+                                  - string
+                                  - "null"
+                            additionalProperties: true
+                  additionalProperties: true
+                discount:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount_off:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    percentage_off:
+                      type:
+                        - number
+                        - "null"
+                  additionalProperties: true
+                tax_rate:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    percentage:
+                      type:
+                        - string
+                        - "null"
+                    tax_amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                start_date:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                end_date:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                status:
+                  type:
+                    - string
+                    - "null"
+                amending:
+                  type:
+                    - string
+                    - "null"
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+                external_references:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                usage_minimum_commitment:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    revenue_account:
+                      type:
+                        - string
+                        - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                bundle:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    invoice_display:
+                      type:
+                        - string
+                        - "null"
+                    components:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          product_id:
+                            type:
+                              - string
+                              - "null"
+                          product_name:
+                            type:
+                              - string
+                              - "null"
+                          quantity:
+                            type:
+                              - string
+                              - "null"
+                          revenue_pattern:
+                            type:
+                              - string
+                              - "null"
+                          allocated_amount:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              amount:
+                                type:
+                                  - string
+                                  - "null"
+                              currency:
+                                type:
+                                  - string
+                                  - "null"
+                            additionalProperties: true
+                  additionalProperties: true
+                declared_ssp:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+              additionalProperties: true
+          status:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+            format: date
+          end_date:
+            type:
+              - string
+              - "null"
+            format: date
+          close_date:
+            type:
+              - string
+              - "null"
+            format: date
+          invoicing:
+            type:
+              - object
+              - "null"
+            properties:
+              payment_terms:
+                type:
+                  - integer
+                  - "null"
+              interval:
+                type:
+                  - string
+                  - "null"
+              day:
+                type:
+                  - integer
+                  - "null"
+              month_day:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          usage_configuration:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              usage_invoicing:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  frequency:
+                    type:
+                      - string
+                      - "null"
+                  payment_terms:
+                    type:
+                      - integer
+                      - "null"
+                  invoice_date:
+                    type:
+                      - string
+                      - "null"
+                  cycle:
+                    type:
+                      - string
+                      - "null"
+              minimum_commitment_invoicing:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  frequency:
+                    type:
+                      - string
+                      - "null"
+                  payment_terms:
+                    type:
+                      - integer
+                      - "null"
+              minimum_commitment_cycle:
+                type:
+                  - string
+                  - "null"
+              contract_level_minimum_commitment:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      amount:
+                        type:
+                          - string
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                  revenue_account:
+                    type:
+                      - string
+                      - "null"
+          total_value:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          purchase_order_number:
+            type:
+              - string
+              - "null"
+          shipping_customer_id:
+            type:
+              - string
+              - "null"
+          billing_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          shipping_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          email_selection:
+            type:
+              - object
+              - "null"
+            properties:
+              mode:
+                type:
+                  - string
+                  - "null"
+              recipients:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    customer_email_id:
+                      type:
+                        - string
+                        - "null"
+                    recipient_type:
+                      type:
+                        - string
+                        - "null"
+            additionalProperties: true
+  - type: DeclarativeStream
+    name: invoices
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /invoices
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoices
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          invoice_number:
+            type:
+              - string
+              - "null"
+          customer_id:
+            type:
+              - string
+              - "null"
+          contract_id:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                revenue:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    period:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        start:
+                          type:
+                            - string
+                            - "null"
+                          format: date
+                        end:
+                          type:
+                            - string
+                            - "null"
+                          format: date
+                    pattern:
+                      type:
+                        - string
+                        - "null"
+                    account_code:
+                      type:
+                        - string
+                        - "null"
+                total_amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                total_discount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                taxed_amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                gross_rate:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                quantity:
+                  type:
+                    - string
+                    - "null"
+                product_id:
+                  type:
+                    - string
+                    - "null"
+                external_references:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          due_date:
+            type:
+              - string
+              - "null"
+            format: date
+          invoice_date:
+            type:
+              - string
+              - "null"
+            format: date
+          address:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          customer_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          shipping_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          shipping_customer_id:
+            type:
+              - string
+              - "null"
+          bank_account:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              ach_account:
+                type:
+                  - string
+                  - "null"
+              ach_routing:
+                type:
+                  - string
+                  - "null"
+              bank_name:
+                type:
+                  - string
+                  - "null"
+              bank_address:
+                type:
+                  - string
+                  - "null"
+              swift_code:
+                type:
+                  - string
+                  - "null"
+              payment_instructions:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - string
+              - "null"
+          net_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          amount_due:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          total:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          payment_terms:
+            type:
+              - integer
+              - "null"
+          subtotal:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          total_discount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          purchase_order_number:
+            type:
+              - string
+              - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          taxed_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          memo:
+            type:
+              - string
+              - "null"
+          overdue:
+            type:
+              - boolean
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          updated_at:
+            type: string
+            format: date-time
+          sent_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          email_selection:
+            type:
+              - object
+              - "null"
+            properties:
+              mode:
+                type:
+                  - string
+                  - "null"
+              recipients:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    customer_email_id:
+                      type:
+                        - string
+                        - "null"
+                    recipient_type:
+                      type:
+                        - string
+                        - "null"
+            additionalProperties: true
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: invoice_payments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /invoice-payments
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - payments
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          invoice_id:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
+          account_code:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: credit_memos
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /credit-memos
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - credit_memos
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          credit_memo_number:
+            type:
+              - string
+              - "null"
+          customer_id:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                revenue:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    period:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        start:
+                          type:
+                            - string
+                            - "null"
+                          format: date
+                        end:
+                          type:
+                            - string
+                            - "null"
+                          format: date
+                    pattern:
+                      type:
+                        - string
+                        - "null"
+                    account_code:
+                      type:
+                        - string
+                        - "null"
+                total_amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                taxed_amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                net_amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                quantity:
+                  type:
+                    - string
+                    - "null"
+                product_id:
+                  type:
+                    - string
+                    - "null"
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          credit_memo_date:
+            type:
+              - string
+              - "null"
+            format: date
+          address:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - string
+              - "null"
+          net_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          total:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          applied_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          remaining_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          applications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                credit_memo_id:
+                  type:
+                    - string
+                    - "null"
+                invoice_id:
+                  type:
+                    - string
+                    - "null"
+                invoice_number:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                application_date:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          taxed_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: vendors
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /vendors
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - vendors
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          account_code:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          email:
+            type:
+              - string
+              - "null"
+          payment_terms:
+            type:
+              - integer
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          ten_ninety_nine_eligible:
+            type:
+              - boolean
+              - "null"
+          tax_id:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                field_id:
+                  type:
+                    - string
+                    - "null"
+                field_value_id:
+                  type:
+                    - string
+                    - "null"
+          id:
+            type: string
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: vendor_credits
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /vendor-credits
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - vendor_credits
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          credit_number:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
+          gl_impact_date:
+            type:
+              - string
+              - "null"
+            format: date
+          memo:
+            type:
+              - string
+              - "null"
+          line_items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                account_code:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                tax_rate:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    percentage:
+                      type:
+                        - string
+                        - "null"
+                    tax_amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    tax_code:
+                      type:
+                        - string
+                        - "null"
+                    coverage:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                service_period:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    start:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                    end:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                  additionalProperties: true
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          vendor_id:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          organization_id:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          applied_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          remaining_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          applications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                vendor_credit_id:
+                  type:
+                    - string
+                    - "null"
+                bill_id:
+                  type:
+                    - string
+                    - "null"
+                bill_number:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                application_date:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: bills
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /bills
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - bills
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          vendor_id:
+            type:
+              - string
+              - "null"
+          expense_number:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                account_code:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                tax_rate:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    percentage:
+                      type:
+                        - string
+                        - "null"
+                    tax_amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    tax_code:
+                      type:
+                        - string
+                        - "null"
+                    coverage:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                service_period:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    start:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                    end:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          bill_date:
+            type:
+              - string
+              - "null"
+            format: date
+          due_date:
+            type:
+              - string
+              - "null"
+            format: date
+          impact_date:
+            type:
+              - string
+              - "null"
+            format: date
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          pending_approval_request:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              workflow_id:
+                type:
+                  - string
+                  - "null"
+              operation:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: charges
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /charges
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - charges
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          vendor_id:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                account_code:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                tax_rate:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    percentage:
+                      type:
+                        - string
+                        - "null"
+                    tax_amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    tax_code:
+                      type:
+                        - string
+                        - "null"
+                    coverage:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                service_period:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    start:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                    end:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          charge_date:
+            type:
+              - string
+              - "null"
+            format: date
+          impact_date:
+            type:
+              - string
+              - "null"
+            format: date
+          credit_card_account_code:
+            type:
+              - string
+              - "null"
+          funding_account_code:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          pending_approval_request:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              workflow_id:
+                type:
+                  - string
+                  - "null"
+              operation:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: reimbursements
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /reimbursements
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - reimbursements
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          vendor_id:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                account_code:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                tax_rate:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    percentage:
+                      type:
+                        - string
+                        - "null"
+                    tax_amount:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        amount:
+                          type:
+                            - string
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    tax_code:
+                      type:
+                        - string
+                        - "null"
+                    coverage:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                service_period:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    start:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                    end:
+                      type:
+                        - string
+                        - "null"
+                      format: date
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          reimbursement_date:
+            type:
+              - string
+              - "null"
+            format: date
+          impact_date:
+            type:
+              - string
+              - "null"
+            format: date
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          pending_approval_request:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              workflow_id:
+                type:
+                  - string
+                  - "null"
+              operation:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: journal_entries
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /journal-entries
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - journal_entries
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          book_id:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          related_entity:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                original_transaction_amount:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                account_id:
+                  type:
+                    - string
+                    - "null"
+                account_code:
+                  type:
+                    - string
+                    - "null"
+                side:
+                  type:
+                    - string
+                    - "null"
+                fields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      field_id:
+                        type:
+                          - string
+                          - "null"
+                      field_value_id:
+                        type:
+                          - string
+                          - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
+          reversal_date:
+            type:
+              - string
+              - "null"
+            format: date
+          attachmentUrl:
+            type:
+              - string
+              - "null"
+          exchange_rate:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              base:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              rate:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+                format: date
+          updated_at:
+            type: string
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: bank_accounts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /bank-accounts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - accounts
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          bank_name:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          account_code:
+            type:
+              - string
+              - "null"
+          mask:
+            type:
+              - string
+              - "null"
+          transactions_start_date:
+            type:
+              - string
+              - "null"
+            format: date
+          status:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: bank_transactions
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /bank-transactions
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - bank_transactions
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          bank_account_id:
+            type:
+              - string
+              - "null"
+          subsidiary_id:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
+          name:
+            type:
+              - string
+              - "null"
+          merchant:
+            type:
+              - string
+              - "null"
+          net_amount:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          fee:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          pending:
+            type:
+              - boolean
+              - "null"
+          excluded:
+            type:
+              - boolean
+              - "null"
+          external_references:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          reconciled_transactions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                payment_id:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                paid_transaction:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      type:
+                        - string
+                        - "null"
+  - type: DeclarativeStream
+    name: members
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /members
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - members
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          user_id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    title: Rillet Source Spec
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description:
+          Rillet API key. Ask your Rillet team to enable API access, then create a key under
+          Organization Settings > API Access (https://app.rillet.io/settings/api-access).
+        airbyte_secret: true
+        order: 0
+      environment:
+        type: string
+        title: Environment
+        description: Use sandbox for keys issued for https://sandbox.api.rillet.com.
+        enum:
+          - production
+          - sandbox
+        default: production
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description:
+          "Only used by incremental streams on the first sync: records updated after this UTC
+          timestamp are read. Leave empty to read the full history."
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2025-01-01T00:00:00Z"
+        order: 2
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
