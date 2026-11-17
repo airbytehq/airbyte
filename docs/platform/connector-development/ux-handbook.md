@@ -157,6 +157,8 @@ lateinit var database: String
 
 **Exceptions:** Preserve capitalization in product names and acronyms, such as “API key” and “Azure Blob Storage.”
 
+The automated check applies to field titles and `oneOf` option titles, including nested options. Findings identify each option by its `oneOf` index. Hidden fields and options are excluded.
+
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
@@ -560,6 +562,8 @@ lateinit var clusterName: String
 **Rule:** Mark every secret field with `airbyte_secret: true`. Do not mark public values, IDs, or other non-secret fields as secrets.
 
 **Why:** Unmarked credentials appear in a regular text control instead of a masked secret control.
+
+The automated check flags secret-looking fields without `airbyte_secret: true`. It also flags public identifiers marked as secrets, conservatively matching `client_id`, names ending in `_client_id`, `app_id`, and `application_id`. Names containing `secret`, `key`, `token`, `password`, or `passwd` are excluded from this reverse check, including access key IDs. If an API treats one of these identifiers as confidential, you can ignore that warning. Hidden fields are excluded.
 
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
