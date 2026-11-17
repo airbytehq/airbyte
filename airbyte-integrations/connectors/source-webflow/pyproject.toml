@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.46"
+version = "0.1.47"
 name = "source-webflow"
 description = "Source implementation for Webflow."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_webflow"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+python = "^3.10,<3.14"
+airbyte-cdk = "^7.0.0"
 
 [tool.poetry.scripts]
 source-webflow = "source_webflow.run:run"
