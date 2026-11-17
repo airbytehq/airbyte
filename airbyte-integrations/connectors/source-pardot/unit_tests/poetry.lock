@@ -66,15 +66,15 @@ vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)",
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.48.0"
+version = "7.49.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.15,>=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.11\""
 files = [
-    {file = "airbyte_cdk-7.48.0-py3-none-any.whl", hash = "sha256:825e5536e54b08de71c665f2985b651dae5de41a40aed2adc9ab297026ea551e"},
-    {file = "airbyte_cdk-7.48.0.tar.gz", hash = "sha256:29d1ff6afe4f1541448adac932687606c40dcd23f1a0c11ca40406de03f0c15e"},
+    {file = "airbyte_cdk-7.49.0-py3-none-any.whl", hash = "sha256:63c04bf3f9f0090d338701089a0c46e68bb79b42593417884e090db78d76b5ad"},
+    {file = "airbyte_cdk-7.49.0.tar.gz", hash = "sha256:4cec5dc160de7e8d67f4e0d67a4f9064bd347f2791fab75313dda9e4e14f3a54"},
 ]
 
 [package.dependencies]
