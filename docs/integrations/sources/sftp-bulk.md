@@ -171,6 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.9.5 | 2026-11-17 | [78970](https://github.com/airbytehq/airbyte/pull/78970) | Update dependencies |
 | 1.9.4 | 2026-11-03 | [90893](https://github.com/airbytehq/airbyte/pull/90893) | Require Python 3.11 or later |
 | 1.9.3 | 2026-10-20 | [89517](https://github.com/airbytehq/airbyte/pull/89517) | Allow Python 3.13 and upgrade base image to python-connector-base 4.1.1 |
 | 1.9.2 | 2026-04-07 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
