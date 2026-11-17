@@ -196,6 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.2 | 2026-11-17 | [93463](https://github.com/airbytehq/airbyte/pull/93463) | Update dependencies |
 | 0.4.1 | 2026-11-10 | [91774](https://github.com/airbytehq/airbyte/pull/91774) | Update dependencies |
 | 0.4.0 | 2026-11-03 | [90861](https://github.com/airbytehq/airbyte/pull/90861) | Upgrade to Python 3.13 base image and airbyte-cdk 7; stop marking Zoho mandatory fields as required in stream schemas |
 | 0.3.8 | 2026-11-03 | [90811](https://github.com/airbytehq/airbyte/pull/90811) | Update dependencies |
