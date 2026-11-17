@@ -39,26 +39,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -115,26 +95,6 @@ definitions:
             sort_order: ascending
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -211,26 +171,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -299,26 +239,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -382,26 +302,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -456,26 +356,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -544,26 +424,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -629,26 +489,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -717,26 +557,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -802,26 +622,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -886,26 +686,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -954,26 +734,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1025,26 +785,6 @@ definitions:
               if 'sentAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1113,26 +853,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1193,26 +913,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1263,26 +963,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1346,26 +1026,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1416,26 +1076,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1499,26 +1139,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1564,26 +1184,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1638,26 +1238,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1721,26 +1301,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1794,26 +1354,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1878,26 +1418,6 @@ definitions:
               if 'createdAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1966,26 +1486,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2051,26 +1551,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2135,26 +1615,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2218,26 +1678,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2289,26 +1729,6 @@ definitions:
               if 'createdAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2363,26 +1783,6 @@ definitions:
               id,company,level,website,pluginCampaignId,addressOne,addressTwo,city,state,zip,territory,country,phone,fax,adminId,maximumDailyApiCalls,apiCallsUsed,createdAt,updatedAt,createdById,updatedById
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2422,26 +1822,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2510,26 +1890,6 @@ definitions:
               if 'updatedAtAfter' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2589,26 +1949,6 @@ definitions:
               'idGreaterThan' in next_page_token.next_page_token) }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 12
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 7200
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Daily API rate limit met
-                    error_message_contains: Daily API rate limit met
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -2633,9 +1973,22 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dynamic_content_variations"
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 12
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 7200
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        error_message_contains: Daily API rate limit met
+        error_message: Reached the Pardot daily API request limit. The limit resets at the start of the next day in the Pardot account's time zone.
   base_requester:
     type: HttpRequester
     url_base: https://pi.pardot.com/api/
+    error_handler:
+      $ref: "#/definitions/error_handler"
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
