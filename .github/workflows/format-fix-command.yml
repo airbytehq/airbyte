@@ -36,9 +36,10 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_INPUTS_PR: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${EVENT_INPUTS_PR})
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
@@ -115,9 +116,12 @@ jobs:
 
       - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
         if: steps.git-diff.outputs.changes == 'true'
+        env:
+          STEP_JOB_VARS_BRANCH: ${{ steps.job-vars.outputs.branch }}
+          STEP_JOB_VARS_REPO: ${{ steps.job-vars.outputs.repo }}
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git remote add contributor https://github.com/${STEP_JOB_VARS_REPO}.git
+          git push contributor HEAD:"${STEP_JOB_VARS_BRANCH}"
 
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
