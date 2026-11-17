@@ -9,9 +9,10 @@ This is a manifest-only connector: all behavior lives in `manifest.yaml`. It rea
 
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-1. **One token request asks for every scope, and Ramp silently drops the ones the app lacks** -- A missing
-   read scope never breaks the login; it fails only the stream that needs it, with a message naming the
-   scope. Keep the single shared scope list.
+1. **Two login options, each with its own token request; only client credentials drop missing scopes** --
+   OAuth logs in with a non-rotating refresh token every 50 minutes; client credentials ask for every
+   read scope, and a missing one fails only the stream that needs it, never the login. Keep the two logins
+   separate and the OAuth consent scopes equal to the client-credentials scope list.
 2. **Ramp's own error codes drive the error mapping, including a 404 for a bad token** -- Auth and scope
    failures are config errors with actionable messages, keyed on Ramp's error codes. Ramp reports a
    rejected token as a 404, so never treat a 404 as "not found" on the shared error handler.
