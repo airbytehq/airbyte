@@ -208,6 +208,14 @@ def test_discover_publishes_keys_schemas_and_cursors() -> None:
     assert all(cursor == (["date"] if name.endswith("_conversions") else ["readable_time"]) for name, cursor in cursors.items())
 
 
+def test_spend_limit_windows_dates_are_typed_as_dates() -> None:
+    streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
+    properties = streams["spend_limit_windows"].json_schema["properties"]
+
+    assert properties["start_date"] == {"type": ["string", "null"], "format": "date"}
+    assert properties["end_date"] == {"type": ["string", "null"], "format": "date"}
+
+
 def test_discover_declares_documented_custom_audience_and_ad_account_fields() -> None:
     streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
 
