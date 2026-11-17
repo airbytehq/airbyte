@@ -1,42 +1,51 @@
 # Chargify
 
-## Overview
+This page contains the setup guide and reference information for the Chargify source connector. Chargify is now called Maxio Advanced Billing, and its API documentation is hosted on the [Maxio developer portal](https://developers.maxio.com/http/getting-started/how-to-get-started).
 
-The Chargify source supports Full Refresh syncs for Customers and Subscriptions endpoints.
+## Prerequisites
 
-### Available streams
+- A Chargify (Maxio Advanced Billing) site
+- An API key for that site. Managing API keys requires the **manages product catalog, settings, and integrations** permission, which admins have by default.
 
-Several output streams are available from this source:
+## Setup guide
 
-- [Customers](https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgyNzY-list-or-find-customers)
-- [Subscriptions](https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgzODk-list-subscriptions)
+### Step 1: Create an API key
 
-If there are more streams you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+1. In Chargify, select **Config** > **Integrations** > **API Keys**.
+2. Click **New API Key**, optionally enter a description, and click **Create**.
+3. Copy the key.
 
-### Features
+For more information, see [Manage Advanced Billing API Keys](https://docs.maxio.com/configuration/advanced-billing/advanced-billing-api-keys).
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | No         |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | Yes        |
-| Namespaces                    | No         |
+### Step 2: Set up the connector in Airbyte
 
-### Performance considerations
+1. In Airbyte, create a new source and select **Chargify**.
+2. For **API Key**, enter the API key you created.
+3. For **Domain**, enter the hostname of your Chargify site without `https://` or a trailing path, for example `acme.chargify.com`. The connector sends requests to `https://<domain>/`.
+4. For **Username**, enter any value. This field is required, but the connector doesn't use it. The connector authenticates with HTTP Basic authentication, using the API key as the username and `x` as the password.
+5. Leave **Password** empty. The connector doesn't use it.
+6. Click **Set up source**.
 
-The Chargify connector should not run into Chargify API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+## Supported sync modes
 
-## Getting started
+The Chargify source connector supports the following sync modes:
 
-### Requirements
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
-- Chargify API Key
-- Chargify domain
+The connector doesn't support incremental syncs, so each sync reads every record from every selected stream.
 
-### Setup guide
+## Supported streams
 
-Please follow the [Chargify documentation for generating an API key](https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api).
+| Stream | Primary key | API endpoint |
+| :----- | :---------- | :----------- |
+| customers | `id` | [List customers](https://developers.maxio.com/http/advanced-billing-api/api-endpoints/customers/list-customers) |
+| subscriptions | `id` | [List subscriptions](https://developers.maxio.com/http/advanced-billing-api/api-endpoints/subscriptions/list-subscriptions) |
+| invoices | `uid` | [List invoices](https://developers.maxio.com/http/advanced-billing-api/api-endpoints/invoices/list-invoices) |
+| coupons | `id` | [List coupons](https://developers.maxio.com/http/advanced-billing-api/api-endpoints/coupons/list-coupons) |
+| transactions | `id` | Transactions |
+
+All streams use page-number pagination with 200 records per page.
 
 ## IP allow list
 
@@ -49,7 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
-| 0.5.23 | 2026-11-09 | [91317](https://github.com/airbytehq/airbyte/pull/91317) | Upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.5.23 | 2026-11-10 | [91317](https://github.com/airbytehq/airbyte/pull/91317) | Upgrade base image to `source-declarative-manifest:7.47.0` |
 | 0.5.22 | 2025-05-10 | [59941](https://github.com/airbytehq/airbyte/pull/59941) | Update dependencies |
 | 0.5.21 | 2025-05-03 | [59395](https://github.com/airbytehq/airbyte/pull/59395) | Update dependencies |
 | 0.5.20 | 2025-04-26 | [58707](https://github.com/airbytehq/airbyte/pull/58707) | Update dependencies |
