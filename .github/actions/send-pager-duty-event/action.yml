@@ -32,10 +32,10 @@ runs:
           --header 'Content-Type: application/json' \
           --data '{
             "payload": {
-              "summary": "${IN_SUMMARY}",
-              "severity": "${IN_SEVERITY}",
-              "source": "${IN_SOURCE}"
+              "summary": "'"${IN_SUMMARY}"'",
+              "severity": "'"${IN_SEVERITY}"'",
+              "source": "'"${IN_SOURCE}"'"
             },
             "event_action": "trigger",
-            "routing_key": "${IN_INTEGRATION_KEY}"
+            "routing_key": "'"${IN_INTEGRATION_KEY}"'"
           }'
