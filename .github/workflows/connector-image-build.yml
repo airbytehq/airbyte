@@ -97,7 +97,7 @@ jobs:
         env:
           IN_CONNECTOR: ${{ inputs.connector }}
         run: |
-          ./gradlew :airbyte-integrations:connectors:${IN_CONNECTOR}:distTar
+          ./gradlew ":airbyte-integrations:connectors:${IN_CONNECTOR}:distTar"
 
       - name: Log in to GHCR
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
@@ -130,7 +130,7 @@ jobs:
         run: |
           docker run \
             --rm \
-            ${STEP_VARS_IMAGE_BUILD_NUM_TAG} \
+            "${STEP_VARS_IMAGE_BUILD_NUM_TAG}" \
             spec
 
       - name: Run ${{ inputs.connector }} Image Vulnerability Scan

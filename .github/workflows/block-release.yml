@@ -197,7 +197,7 @@ jobs:
         env:
           STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: |
-          echo "### Release ${{ env.ACTION }} — \`${{ env.CONNECTOR_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "### Release ${ACTION} — \`${CONNECTOR_NAME}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ -n "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" ]]; then
             echo "PR: ${{ github.server_url }}/${{ github.repository }}/pull/${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" >> $GITHUB_STEP_SUMMARY

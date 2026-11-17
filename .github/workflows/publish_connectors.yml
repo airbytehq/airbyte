@@ -327,12 +327,14 @@ jobs:
 
       - name: Resolve connector version tag
         id: resolve-version
-        run: |
-          echo "connector-version-tag=${{
+        env:
+          CONNECTOR_VERSION_TAG: ${{
             steps.resolve-ephemeral-version.outputs.connector-version-tag
             || steps.resolve-ephemeral-version-rc.outputs.connector-version-tag
             || steps.connector-metadata.outputs.connector-version
-          }}" | tee -a $GITHUB_OUTPUT
+            }}
+        run: |
+          echo "connector-version-tag=${CONNECTOR_VERSION_TAG}" | tee -a $GITHUB_OUTPUT
 
       - name: Resolve docker image tag
         id: resolve-docker-image-tag
@@ -403,7 +405,7 @@ jobs:
           needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${MATRIX_CONNECTOR} --with-semver-suffix ${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}
+          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -423,7 +425,7 @@ jobs:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
         run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${MATRIX_CONNECTOR} --with-semver-suffix ${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX} --publish
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" --publish
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
@@ -439,7 +441,7 @@ jobs:
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
         run: |
           echo "DRY-RUN: Building JVM connector without publishing..."
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${MATRIX_CONNECTOR} --with-semver-suffix ${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
@@ -450,7 +452,7 @@ jobs:
           needs.publish_options.outputs.dry-run != 'true' &&
           needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
-        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${MATRIX_CONNECTOR} --with-semver-suffix ${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -688,7 +690,7 @@ jobs:
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts/${MATRIX_CONNECTOR} \
+            --output-dir "./registry-artifacts/${MATRIX_CONNECTOR}" \
             --with-validate \
             --with-sbom \
             --with-dependency-dump \
@@ -720,7 +722,7 @@ jobs:
             registry connector-version artifacts publish \
             --name "${MATRIX_CONNECTOR}" \
             --version "${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}" \
-            --artifacts-dir ./registry-artifacts/${MATRIX_CONNECTOR} \
+            --artifacts-dir "./registry-artifacts/${MATRIX_CONNECTOR}" \
             --store "${REGISTRY_STORE}" \
             --with-validate
 
@@ -874,7 +876,7 @@ jobs:
           # Build trigger description
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
-          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          elif [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
             TRIGGER_TEXT="merged to master"
           elif [[ "${GH_EVENT_NAME}" == "workflow_dispatch" ]]; then
             TRIGGER_TEXT="triggered via workflow_dispatch"
