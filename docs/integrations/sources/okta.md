@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.4.1 | 2026-11-17 | [93305](https://github.com/airbytehq/airbyte/pull/93305) | Update dependencies |
 | 0.4.0 | 2026-11-11 | [91335](https://github.com/airbytehq/airbyte/pull/91335) | Migrate to manifest-only. Fix OAuth 2.0 (refresh token) authentication and save rotated refresh tokens. Fix private keys saved with escaped newlines. |
 | 0.3.29 | 2026-11-10 | [91662](https://github.com/airbytehq/airbyte/pull/91662) | Update dependencies |
 | 0.3.28 | 2026-11-04 | [90919](https://github.com/airbytehq/airbyte/pull/90919) | Raise minimum supported Python version to 3.11 |

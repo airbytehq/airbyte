@@ -40,6 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.1.1 | 2026-11-17 | [93091](https://github.com/airbytehq/airbyte/pull/93091) | Update dependencies |
 | 0.1.0 | 2026-11-10 | [91539](https://github.com/airbytehq/airbyte/pull/91539) | Add `publisher_performance`, `creative_performance`, `publishers` and `accounts` streams, add basket products and an `is_deleted` field to `transactions` |
 | 0.0.43 | 2026-11-10 | [91364](https://github.com/airbytehq/airbyte/pull/91364) | Update dependencies |
 | 0.0.42 | 2026-11-03 | [90448](https://github.com/airbytehq/airbyte/pull/90448) | Update dependencies |

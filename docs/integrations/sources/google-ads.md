@@ -411,6 +411,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.12 | 2026-11-17 | [93206](https://github.com/airbytehq/airbyte/pull/93206) | Update dependencies |
 | 6.1.11 | 2026-11-10 | [91581](https://github.com/airbytehq/airbyte/pull/91581) | Update dependencies |
 | 6.1.10 | 2026-11-03 | [90953](https://github.com/airbytehq/airbyte/pull/90953) | Raise the minimum supported Python version to 3.11 |
 | 6.1.9 | 2026-11-03 | [90594](https://github.com/airbytehq/airbyte/pull/90594) | Update dependencies |
