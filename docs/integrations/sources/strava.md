@@ -4,81 +4,68 @@ This page guides you through the process of setting up the Strava source connect
 
 ## Prerequisites
 
-Scopes:
-
-- `activity:read_all`
-
-The authorized athlete must grant this scope during authorization. Refreshing a token does not add missing permissions. If you receive an `activity:read_permission` error, reauthorize the application with `activity:read_all` and update the source credentials. The connection check validates access to both athlete stats and activities.
-
-Strava access tokens expire after six hours. Airbyte automatically refreshes them and saves the latest refresh token. If you exchange tokens outside Airbyte, use the latest refresh token when updating the source because Strava invalidates older refresh tokens when it rotates them.
-
-If Strava returns `Application` / `Status` / `Inactive`, the developer application is inactive. Restore its access with Strava before retrying; changing the athlete ID or start date will not resolve this error.
+- A Strava account for the athlete whose data you want to sync.
+- The athlete's numeric Athlete ID. See [Find your Athlete ID](#find-your-athlete-id).
+- The `activity:read_all` scope, granted by the athlete during authorization. Strava lets the athlete uncheck requested scopes on the authorization page, and refreshing a token doesn't add missing scopes.
+<!-- env:oss -->
+- **Airbyte Open Source only:** A Strava API application, which provides the Client ID and Client Secret, and a refresh token for the athlete. Strava requires a subscription to create an API application. New applications start in single-player mode, which means only the account that owns the application can authorize it.
+<!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up Strava
 
+#### Find your Athlete ID
+
+1. Sign in to Strava and open your athlete page. Click your name on the [Strava dashboard](https://www.strava.com/dashboard), or hover over your profile icon in the top bar and click **My Profile**.
+2. Copy the number at the end of the URL. For example, the Athlete ID for `https://www.strava.com/athletes/17831421` is `17831421`.
+
+The Athlete ID must belong to the same athlete who authorizes the connection. Strava's athlete stats endpoint only returns stats for the authenticated athlete.
+
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### Get API credentials (Airbyte Open Source)
 
-Follow these steps to get the required credentials and inputs:
+1. Follow Strava's [Getting Started guide](https://developers.strava.com/docs/getting-started/#account) to create an API application at [strava.com/settings/api](https://www.strava.com/settings/api). Set **Authorization Callback Domain** to `localhost`.
+2. Copy the **Client ID** and **Client Secret** from the **My API Application** page.
+3. Enter the following URL in your browser, replacing `[REPLACE_WITH_YOUR_CLIENT_ID]` with your Client ID:
 
-- `client_id` and `client_secret`
-  - [Create a Strava account](https://developers.strava.com/docs/getting-started/#account)
-  - Continue to follow the instructions from the doc above to obtain `client_id` and `client_secret`
-- `refresh_token`
-  - Enter this URL into your browser (make sure to add your `client_id` from previous step:
-    - `https://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=https://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
-  - Authorize through the UI
-  - Browser will redirect you to an empty page with a URL similar to `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
-  - Copy the authorization code above (in this example it would be `b55003496d87a9f0b694ca1680cd5690d27d9d28`)
-  - Make a cURL request to exchange the authorization code and scope for a refresh token:
-  - ```
-    curl -X POST https://www.strava.com/oauth/token \
-    -F client_id=YOUR_CLIENT_ID \
-    -F client_secret=YOUR_CLIENT_SECRET \
-    -F code=AUTHORIZATION_CODE \
-    -F grant_type=authorization_code
-    ```
-  - The resulting json will contain the `refresh_token`
-  - Example Result:
-  - ```
-      {
-          "token_type": "Bearer",
-          "expires_at": 1562908002,
-          "expires_in": 21600,
-          "refresh_token": "REFRESHTOKEN",
-          "access_token": "ACCESSTOKEN",
-          "athlete": {
-              "id": 123456,
-              "username": "MeowTheCat",
-              "resource_state": 2,
-              "firstname": "Meow",
-              "lastname": "TheCat",
-              "city": "",
-              "state": "",
-              "country": null,
-              ...
-          }
-      }
-    ```
-  - Refer to Strava's [Getting Started - Oauth](https://developers.strava.com/docs/getting-started/#oauth) or [Authentication](https://developers.strava.com/docs/authentication/) documents for more information
-- `athlete_id`
-  - Go to your athlete page by clicking your name on the [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down after hovering on your top bar icon
-  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the `athlete_id` for https://www.strava.com/athletes/17831421
+   ```text
+   https://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=https://localhost/exchange_token&approval_prompt=force&scope=activity:read_all
+   ```
+
+4. Sign in if prompted, keep the requested permission checked, and click **Authorize**.
+5. Your browser redirects to a page that doesn't load, with a URL similar to `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`. Confirm that the `scope` parameter includes `activity:read_all`, then copy the value of the `code` parameter. In this example, the code is `b55003496d87a9f0b694ca1680cd5690d27d9d28`. The code is short-lived and works only once.
+6. Exchange the authorization code for a refresh token:
+
+   ```bash
+   curl -X POST https://www.strava.com/oauth/token \
+     -F client_id=YOUR_CLIENT_ID \
+     -F client_secret=YOUR_CLIENT_SECRET \
+     -F code=AUTHORIZATION_CODE \
+     -F grant_type=authorization_code
+   ```
+
+7. Copy the `refresh_token` value from the JSON response. The response looks similar to this:
+
+   ```json
+   {
+     "token_type": "Bearer",
+     "expires_at": 1562908002,
+     "expires_in": 21600,
+     "refresh_token": "REFRESHTOKEN",
+     "access_token": "ACCESSTOKEN",
+     "athlete": {
+       "id": 123456,
+       "username": "MeowTheCat",
+       ...
+     }
+   }
+   ```
+
+For more information, see Strava's [Authentication](https://developers.strava.com/docs/authentication/) documentation.
 
 <!-- /env:oss -->
-
-<!-- env:cloud -->
-
-**For Airbyte Cloud:**
-
-- `athlete_id`
-  - Go to your athlete page by clicking your name on the [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down after hovering on your top bar icon
-  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the `athlete_id` for https://www.strava.com/athletes/17831421
-
-<!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -86,26 +73,32 @@ Follow these steps to get the required credentials and inputs:
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the Strava account
-6. Set required **Athlete ID** and **Start Date**
-7. click `Set up source`.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the source setup page, select **Strava** from the source type list and enter a name for this connector.
+4. Click **Authenticate your account**.
+5. Sign in to Strava and authorize access. Keep the requested activity permission checked.
+6. Enter the **Athlete ID** and **Start Date**.
+7. Click **Set up source**.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for this connector.
-4. Add **Client ID**, **Client Secret** and **Refresh Token**
-5. Set required **Athlete ID** and **Start Date**
-6. Click `Set up source`.
+1. Open your local Airbyte instance.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the source setup page, select **Strava** from the source type list and enter a name for this connector.
+4. Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+5. Enter the **Athlete ID** and **Start Date**.
+6. Click **Set up source**.
+
 <!-- /env:oss -->
+
+**Start Date** is a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. The connector only syncs activities that start after this date. It doesn't filter the Athlete Stats stream.
+
+The connection check reads both athlete stats and activities, so setup fails if the token is missing the `activity:read_all` scope.
 
 ## Supported sync modes
 
@@ -118,13 +111,26 @@ The Strava source connector supports the following [sync modes](https://docs.air
 
 ## Supported streams
 
-- [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
-- [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
+| Stream | Endpoint | Incremental | Notes |
+| :----- | :------- | :---------- | :---- |
+| Athlete Stats | [Get Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats) | No | Returns one record of cumulative ride, run, and swim totals. Strava only includes activities with **Everyone** visibility in these totals. |
+| Activities | [List Athlete Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) | Yes | Uses `start_date` as the cursor and `id` as the primary key. Includes activities with **Only You** visibility because the connector requires `activity:read_all`. |
+
+## Authentication and token refresh
+
+Strava access tokens expire after six hours. Airbyte refreshes them automatically and saves the latest refresh token in the source configuration. Strava invalidates a refresh token as soon as it issues a new one, so if you exchange tokens outside Airbyte, use the latest refresh token when you update the source.
+
+## Troubleshooting
+
+- **Token refresh fails with a configuration error:** If Strava rejects the refresh request with `Bad Request` or `Authorization Error`, the refresh token, Client ID, or Client Secret is invalid or has been revoked. Retrying the sync won't fix this. In Airbyte Cloud, re-authenticate the source. In Airbyte Open Source, generate a new refresh token or update the Client ID and Client Secret, then update the source.
+- **`activity:read_permission` error:** The token doesn't have the `activity:read_all` scope. Reauthorize with `activity:read_all`, make sure the athlete keeps the permission checked, and update the source credentials.
+- **`Application` / `Status` / `Inactive` error:** The Strava API application is inactive. Restore its access with Strava before retrying. Changing the Athlete ID or Start Date doesn't resolve this error.
 
 ## Performance considerations
 
-Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
-More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
+Strava limits API usage per application. By default, read requests are limited to 100 requests every 15 minutes and 1,000 requests per day. The 15-minute limit resets at 0, 15, 30, and 45 minutes past the hour, and the daily limit resets at midnight UTC. Requests over the limit return HTTP `429 Too Many Requests`.
+
+The Activities stream requests 30 activities per page, and each page is one request. Syncing a long activity history from an early start date uses more requests. For details and information about limit increases, see Strava's [Rate Limits](https://developers.strava.com/docs/rate-limits) documentation.
 
 ## IP allow list
 
@@ -138,7 +144,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.4.1 | 2026-10-15 | [88994](https://github.com/airbytehq/airbyte/pull/88994) | Show a re-authenticate error when Strava rejects the refresh token or app credentials, and stop sending an unused scopes parameter on token refresh. |
-| 0.4.0 | 2026-10-07 | [88212](https://github.com/airbytehq/airbyte/pull/88212) | Fix OAuth token expiry and refresh-token rotation; validate activity permissions during setup. See the [migration guide](strava-migrations.md). |
+| 0.4.0 | 2026-10-09 | [88212](https://github.com/airbytehq/airbyte/pull/88212) | Fix OAuth token expiry and refresh-token rotation; validate activity permissions during setup. See the [migration guide](strava-migrations.md). |
 | 0.3.52 | 2026-06-30 | [81265](https://github.com/airbytehq/airbyte/pull/81265) | Update dependencies |
 | 0.3.51 | 2026-06-23 | [80672](https://github.com/airbytehq/airbyte/pull/80672) | Update dependencies |
 | 0.3.50 | 2026-06-16 | [80056](https://github.com/airbytehq/airbyte/pull/80056) | Update dependencies |
