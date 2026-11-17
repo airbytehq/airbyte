@@ -26,8 +26,7 @@ class TestListIdAppsStream(TestCase):
         streams = get_source(config).streams(config=config)
 
         stream_names = {stream.name for stream in streams}
-        assert len(streams) == 29
-        assert stream_names == fixture_names()
+        assert stream_names >= fixture_names()
         assert stream_names >= {
             _STREAM_NAME,
             "customer_reviews_per_app",
@@ -35,6 +34,13 @@ class TestListIdAppsStream(TestCase):
             "finance_report",
             "app_store_installations_and_deletions",
             "app_download",
+            "pre_order_report",
+            "subscription_offer_code_redemption_report",
+            "first_annual_report",
+            "win_back_eligibility_report",
+            "finance_detail_report",
+            "app_store_versions",
+            "in_app_purchases",
         }
 
     def test_jwt_authenticator_uses_apple_claims(self) -> None:

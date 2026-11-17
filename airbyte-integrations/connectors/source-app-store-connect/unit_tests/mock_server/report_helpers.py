@@ -35,6 +35,13 @@ REPORT_SPECS = {
         "subscription_event_reports_start_date",
         3,
     ),
+    "pre_order_report": ReportSpec("PRE_ORDER", "SUMMARY", "1_0", "sales_reports_start_date", 2),
+    "subscription_offer_code_redemption_report": ReportSpec(
+        "SUBSCRIPTION_OFFER_CODE_REDEMPTION", "SUMMARY", "1_0", "sales_reports_start_date", 2
+    ),
+    "first_annual_report": ReportSpec("FIRST_ANNUAL", "DETAILED", "1_0", "sales_reports_start_date", 2),
+    "win_back_eligibility_report": ReportSpec("WIN_BACK_ELIGIBILITY", "SUMMARY", "1_0", "sales_reports_start_date", 2),
+    "finance_detail_report": ReportSpec("FINANCE_DETAIL", None, None, "finance_reports_start_date"),
     "finance_report": ReportSpec("FINANCIAL", None, None, "finance_reports_start_date"),
 }
 
@@ -42,7 +49,7 @@ REPORT_SPECS = {
 def report_period(stream_name: str) -> str:
     spec = REPORT_SPECS[stream_name]
     today = datetime.now(timezone.utc).date()
-    if stream_name == "finance_report":
+    if stream_name in ("finance_report", "finance_detail_report"):
         exclusive_end = (today - timedelta(days=35)).replace(day=1)
         return (exclusive_end - timedelta(days=1)).strftime("%Y-%m")
     return (today - timedelta(days=spec.days_before_today or 0)).isoformat()
@@ -55,7 +62,7 @@ def report_config(stream_name: str, start_period: Optional[str] = None) -> Confi
 
 def previous_report_period(stream_name: str) -> str:
     period = report_period(stream_name)
-    if stream_name == "finance_report":
+    if stream_name in ("finance_report", "finance_detail_report"):
         current = date.fromisoformat(f"{period}-01")
         return (current - timedelta(days=1)).strftime("%Y-%m")
     return (date.fromisoformat(period) - timedelta(days=1)).isoformat()
@@ -63,14 +70,14 @@ def previous_report_period(stream_name: str) -> str:
 
 def report_state(stream_name: str, period: Optional[str] = None):
     cursor = period or report_period(stream_name)
-    if stream_name == "finance_report":
+    if stream_name in ("finance_report", "finance_detail_report"):
         cursor = f"{cursor}-01"
     return StateBuilder().with_stream_state(stream_name, {"_sync_cursor": cursor}).build()
 
 
 def next_report_cursor(stream_name: str, period: Optional[str] = None) -> str:
     period = period or report_period(stream_name)
-    if stream_name == "finance_report":
+    if stream_name in ("finance_report", "finance_detail_report"):
         current = date.fromisoformat(f"{period}-01")
         return (current.replace(day=28) + timedelta(days=4)).replace(day=1).isoformat()
     return (date.fromisoformat(period) + timedelta(days=1)).isoformat()
@@ -79,10 +86,10 @@ def next_report_cursor(stream_name: str, period: Optional[str] = None) -> str:
 def report_request(stream_name: str, period: Optional[str] = None) -> RequestBuilder:
     spec = REPORT_SPECS[stream_name]
     period = period or report_period(stream_name)
-    if stream_name == "finance_report":
+    if stream_name in ("finance_report", "finance_detail_report"):
         return (
             RequestBuilder.finance_reports_endpoint()
-            .with_query_param("filter[regionCode]", "ZZ")
+            .with_query_param("filter[regionCode]", "Z1" if stream_name == "finance_detail_report" else "ZZ")
             .with_query_param("filter[reportDate]", period)
             .with_query_param("filter[reportType]", spec.report_type)
             .with_query_param("filter[vendorNumber]", "12345678")
