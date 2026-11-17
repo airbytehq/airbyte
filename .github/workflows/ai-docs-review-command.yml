@@ -130,7 +130,7 @@ jobs:
           # Use github.repository (base repo) for API calls - works for both fork and non-fork PRs
           # Note: inputs.repo is the head repo which may be a fork, but PR number exists in base repo
           # Use --paginate to handle PRs with more than 30 changed files
-          FILES=$(gh api --paginate repos/${{ github.repository }}/pulls/${IN_PR}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
+          FILES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${IN_PR}/files" --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No files changed in this PR - skipping documentation recommendations."

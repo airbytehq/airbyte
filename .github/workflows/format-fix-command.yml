@@ -39,7 +39,11 @@ jobs:
           EVENT_INPUTS_PR: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${EVENT_INPUTS_PR})
+          if [[ ! "${EVENT_INPUTS_PR}" =~ ^[0-9]+$ ]]; then
+            echo "::error::The pr input must be a number."
+            exit 1
+          fi
+          PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${EVENT_INPUTS_PR}")
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
@@ -120,7 +124,7 @@ jobs:
           STEP_JOB_VARS_BRANCH: ${{ steps.job-vars.outputs.branch }}
           STEP_JOB_VARS_REPO: ${{ steps.job-vars.outputs.repo }}
         run: |
-          git remote add contributor https://github.com/${STEP_JOB_VARS_REPO}.git
+          git remote add contributor "https://github.com/${STEP_JOB_VARS_REPO}.git"
           git push contributor HEAD:"${STEP_JOB_VARS_BRANCH}"
 
       - name: Append success comment

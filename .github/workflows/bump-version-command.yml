@@ -209,7 +209,7 @@ jobs:
           STEP_JOB_VARS_BRANCH: ${{ steps.job-vars.outputs.branch }}
           STEP_JOB_VARS_REPO: ${{ steps.job-vars.outputs.repo }}
         run: |
-          git remote add contributor https://github.com/${STEP_JOB_VARS_REPO}.git
+          git remote add contributor "https://github.com/${STEP_JOB_VARS_REPO}.git"
           git push contributor HEAD:"${STEP_JOB_VARS_BRANCH}"
 
       - name: Append success comment

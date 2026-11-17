@@ -97,10 +97,10 @@ jobs:
         run: |
           set -euo pipefail
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
-          old_cdk_version=$(./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion --quiet)
+          old_cdk_version=$(./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion" --quiet)
           echo "old_cdk_version=$old_cdk_version" | tee -a $GITHUB_OUTPUT
-          ./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk
-          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion --quiet)
+          ./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk"
+          new_cdk_version=$(./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion" --quiet)
           echo "new_cdk_version=$new_cdk_version" | tee -a $GITHUB_OUTPUT
 
       - name: Check for changes
