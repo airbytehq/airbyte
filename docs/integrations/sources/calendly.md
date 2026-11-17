@@ -184,6 +184,7 @@ Version 1.0.0 is a breaking change. Before you upgrade from 0.x, read the [1.0.0
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.2.2 | 2026-11-17 | [93100](https://github.com/airbytehq/airbyte/pull/93100) | Update dependencies |
 | 1.2.1 | 2026-11-12 | [92570](https://github.com/airbytehq/airbyte/pull/92570) | Certify the connector |
 | 1.2.0 | 2026-11-12 | [92513](https://github.com/airbytehq/airbyte/pull/92513) | Allow OAuth token refresh under egress enforcement, add event-type availability schedules, and make concurrent workers configurable. |
 | 1.1.0 | 2026-11-12 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |

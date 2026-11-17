@@ -67,6 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.74 | 2026-11-17 | [93171](https://github.com/airbytehq/airbyte/pull/93171) | Update dependencies |
 | 0.7.73 | 2026-11-10 | [90361](https://github.com/airbytehq/airbyte/pull/90361) | Simplify error handling configuration for the `customer_usage` and `customer_usage_past` streams; no behavior change |
 | 0.7.72 | 2026-11-10 | [91516](https://github.com/airbytehq/airbyte/pull/91516) | Update dependencies |
 | 0.7.71 | 2026-11-03 | [90549](https://github.com/airbytehq/airbyte/pull/90549) | Update dependencies |
