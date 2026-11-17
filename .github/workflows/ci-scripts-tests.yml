@@ -24,6 +24,7 @@ jobs:
             ci-scripts:
               - ".github/scripts/**"
               - ".github/workflows/connector-ci-checks.yml"
+              - ".github/workflows/hydra-automerge.yml"
               - ".github/workflows/ci-scripts-tests.yml"
               - "poe-tasks/detect-python-cdk.py"
               - "poe-tasks/get-modified-connectors.sh"
