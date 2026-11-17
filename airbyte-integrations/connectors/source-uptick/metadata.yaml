@@ -88,12 +88,15 @@ data:
     ql: 300
     sl: 200
   externalDocumentationUrls:
-    - title: Uptick API overview and patch notes
-      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
+    - title: Uptick API overview
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview
       type: api_reference
     - title: Uptick API patch notes
-      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
+      url: https://support.uptickhq.com/en/articles/17778650-uptick-api-patch-notes
       type: api_release_history
+    - title: Uptick API fair use policy
+      url: https://support.uptickhq.com/en/articles/17778652-uptick-api-fair-use-policy
+      type: rate_limits
     - title: Uptick API getting started
       url: https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started
       type: authentication_guide
