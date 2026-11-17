@@ -26,10 +26,10 @@ class GridlyStream(HttpStream, ABC):
     limit = 100
 
     def __init__(self, view_id: str, view_name: str, schema: Dict[str, Any], **kwargs):
-        super().__init__(**kwargs)
         self.view_id = view_id
         self.view_name = view_name
         self.schema = schema
+        super().__init__(**kwargs)
 
     @property
     def name(self):
