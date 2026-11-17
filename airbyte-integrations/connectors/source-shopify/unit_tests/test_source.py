@@ -195,6 +195,40 @@ def test_check_connection(config, mocker) -> None:
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
+def test_check_section_connection_of_the_account_section_reads_the_shop(config, mocker) -> None:
+    """The account section holds the store and the credentials, which is all the full check validates."""
+    read_records = mocker.patch("source_shopify.streams.streams.Shop.read_records", return_value=[{"id": 1}])
+    source = SourceShopify()
+    logger_mock = MagicMock()
+    section_config = {key: config[key] for key in ("shop", "credentials")}
+
+    assert source.check_section_connection(logger_mock, "account", section_config) == (True, None)
+    read_records.assert_called_once()
+
+
+def test_check_section_connection_of_the_account_section_reports_an_invalid_shop(config) -> None:
+    source = SourceShopify()
+    logger_mock = MagicMock()
+    section_config = {"shop": "https://test-store.myshopify.com/admin", "credentials": config["credentials"]}
+
+    succeeded, message = source.check_section_connection(logger_mock, "account", section_config)
+
+    assert succeeded is False
+    assert "Shopify Store" in message
+
+
+def test_check_section_connection_of_an_unknown_section_is_a_config_error(config, mocker) -> None:
+    read_records = mocker.patch("source_shopify.streams.streams.Shop.read_records", return_value=[{"id": 1}])
+    source = SourceShopify()
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        source.check_section_connection(MagicMock(), "review", config)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == "Section 'review' has no section check."
+    read_records.assert_not_called()
+
+
 def test_check_connection_invalid_shop_returns_clear_error(config) -> None:
     # A malformed `shop` must surface a clear, actionable reason at check time rather than
     # letting ShopifyWrongShopNameError escape to the generic top-level handler.
