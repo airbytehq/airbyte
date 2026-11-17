@@ -67,8 +67,8 @@ class TestAdsquads(TestCase):
         assert output.records[0].record.data["id"] == ADSQUAD_ID
 
     @HttpMocker()
-    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
+    def test_read_records_with_error_403_is_skipped(self, http_mocker: HttpMocker) -> None:
+        """A 403 means the user cannot read this partition: it is logged and skipped instead of failing the sync."""
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint().build(),
             oauth_response(),
@@ -81,26 +81,19 @@ class TestAdsquads(TestCase):
             RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
             adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
         )
-        # First request returns 403, then succeeds on retry
+        # The authenticated user cannot read this partition
         http_mocker.get(
             RequestBuilder.adsquads_endpoint(AD_ACCOUNT_ID).build(),
-            [
-                error_response(HTTPStatus.FORBIDDEN),
-                adsquads_response(adsquad_id=ADSQUAD_ID, ad_account_id=AD_ACCOUNT_ID, campaign_id=CAMPAIGN_ID),
-            ],
+            error_response(HTTPStatus.FORBIDDEN),
         )
 
         output = _read(config_builder=config())
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == ADSQUAD_ID
 
-        # Verify custom error message from manifest is logged
-        log_messages = [log.log.message for log in output.logs]
-        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert not output.records
+        assert not output.errors
         assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
+            "403 Forbidden" in log.log.message and "request_id" in log.log.message for log in output.logs
+        ), "Expected the skipped 403 request to be logged"
 
 
 class TestAdsquadsSubstreamMultipleParents(TestCase):

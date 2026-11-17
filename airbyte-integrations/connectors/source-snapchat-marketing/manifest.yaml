@@ -29,12 +29,12 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: FAIL
+                failure_type: config_error
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  {% if config.get('organization_ids') %}The authenticated user does not have permission to read one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has a role in these organizations.{% else %}The authenticated user does not have permission to list its Snapchat organizations. Verify that the authenticated user has a role in at least one Snapchat organization and that the app has access to the Snapchat Marketing API.{% endif %}
               - type: HttpResponseFilter
                 action: FAIL
                 failure_type: config_error
@@ -106,12 +106,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adaccounts request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
               - type: HttpResponseFilter
                 action: FAIL
                 failure_type: config_error
@@ -186,12 +185,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one creatives request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -254,12 +252,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one ads request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -322,12 +319,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adsquads request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -390,12 +386,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one segments request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -458,12 +453,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one media request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -526,12 +520,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one campaigns request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -602,12 +595,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adaccounts_stats_hourly request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -714,12 +706,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adaccounts_stats_daily request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -825,12 +816,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adaccounts_stats_lifetime request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -895,12 +885,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one ads_stats_hourly request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -1341,12 +1330,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one ads_stats_daily request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -1816,12 +1804,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one ads_stats_lifetime request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -2249,12 +2236,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adsquads_stats_hourly request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -2695,12 +2681,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adsquads_stats_daily request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -3170,12 +3155,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one adsquads_stats_lifetime request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -3603,12 +3587,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one campaigns_stats_hourly request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -4049,12 +4032,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one campaigns_stats_daily request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -4524,12 +4506,11 @@ definitions:
                 factor: 1
             response_filters:
               - type: HttpResponseFilter
-                action: RETRY
+                action: IGNORE
                 http_codes:
                   - 403
                 error_message: >-
-                  Got permission error when accessing URL. Skipping
-                  {{self.name}} stream.
+                  Skipping one campaigns_stats_lifetime request that Snapchat answered with 403 Forbidden: the authenticated user does not have access to this organization or ad account. Snapchat request_id: {{ response.get('request_id') }}
         record_selector:
           type: RecordSelector
           extractor:
