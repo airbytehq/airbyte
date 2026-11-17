@@ -287,7 +287,7 @@ jobs:
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${MATRIX_CONNECTOR} \
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}" \
             --print-ci-secrets-masks
 
       - name: Resolve connector test policy
@@ -421,7 +421,7 @@ jobs:
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${MATRIX_CONNECTOR} \
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}" \
             --print-ci-secrets-masks
 
       - name: Resolve connector test policy
@@ -891,7 +891,7 @@ jobs:
           STEP_CONNECTOR_METADATA_CONNECTOR_VERSION: ${{ steps.connector-metadata.outputs.connector-version }}
         run: >
           airbyte-cdk image build
-          --tag ${STEP_CONNECTOR_METADATA_CONNECTOR_VERSION}
+          --tag "${STEP_CONNECTOR_METADATA_CONNECTOR_VERSION}"
 
       - name: Generate and Validate Registry Artifacts (ops CLI)
         if: matrix.connector && steps.connector-metadata.outcome == 'success'

@@ -93,13 +93,13 @@ jobs:
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
-        run: airbyte-ops secrets fetch ${MATRIX_CONNECTOR}
+        run: airbyte-ops secrets fetch "${MATRIX_CONNECTOR}"
 
       - name: Run CDK upgrade
         if: matrix.connector
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
-        run: ./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk --cdkVersion=local
+        run: ./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk" --cdkVersion=local
 
       - name: Run Unit Tests
         id: run-unit-tests
@@ -147,6 +147,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
-          ${MATRIX_CONNECTOR} \
+          "${MATRIX_CONNECTOR}" \
           "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}" \
           ${{ github.sha }}

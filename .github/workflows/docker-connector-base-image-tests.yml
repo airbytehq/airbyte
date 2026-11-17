@@ -182,7 +182,7 @@ jobs:
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          ./gradlew :airbyte-integrations:connectors:${MATRIX_CONNECTOR}:distTar
+          ./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:distTar"
 
       - name: Log in to GHCR
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
@@ -224,7 +224,7 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }} \
+            "ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}" \
             spec
 
       - name: Setup uv
@@ -243,7 +243,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${MATRIX_CONNECTOR}
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}"
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -251,7 +251,7 @@ jobs:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }}
+          airbyte-cdk image test "--image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}"
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
@@ -322,7 +322,7 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }} \
+            "ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}" \
             spec
 
       - name: Setup uv
@@ -341,7 +341,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${MATRIX_CONNECTOR}
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}"
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -349,7 +349,7 @@ jobs:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }}
+          airbyte-cdk image test "--image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}"
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
@@ -416,7 +416,7 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }} \
+            "ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}" \
             spec
 
       - name: Setup uv
@@ -435,7 +435,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${MATRIX_CONNECTOR}
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}"
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -443,7 +443,7 @@ jobs:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${{ github.run_number }}
+          airbyte-cdk image test "--image=ghcr.io/airbytehq/${MATRIX_CONNECTOR}:draft-pr-${EVENT_PULL_REQUEST_NUMBER}-build${GITHUB_RUN_NUMBER}"
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
