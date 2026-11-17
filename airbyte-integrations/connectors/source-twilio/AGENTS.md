@@ -25,3 +25,8 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Accounts and subaccounts
+
+- `accounts` reads `GET /2010-04-01/Accounts.json`, which returns the credentials' account and all its subaccounts (a main account's `owner_account_sid` is its own `sid`). Every `api.twilio.com/2010-04-01` stream partitions over `accounts_stream`, so subaccount data is read with the main account's credentials. Streams on other hosts (Studio, Conversations, Verify, Trunking, Monitor) read only the credentials' account, because Twilio requires subaccount credentials there.
+- `subaccounts` is `accounts` with a record filter (`owner_account_sid` set and different from `sid`) and `auth_token` removed. It isn't a parent stream, so it doesn't share the `accounts` response cache: selecting it adds one `Accounts.json` request per page per sync.
