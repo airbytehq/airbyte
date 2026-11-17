@@ -261,6 +261,264 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/logs"
+    ci_pipeline_events:
+      type: DeclarativeStream
+      name: ci_pipeline_events
+      primary_key:
+        - id
+      $parameters:
+        required_permission: ci_visibility_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ci/pipelines/events
+          http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sync_date
+              value: >-
+                {%- set run = (record.get('attributes') or {}).get('attributes') or {} -%}
+                {{ format_datetime((run['start'] + (run.get('duration') or 0)) // 1000000,
+                '%Y-%m-%dT%H:%M:%S.%fZ', '%ms') if run.get('start') is number else None }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ci_pipeline_events"
+    ci_test_events:
+      type: DeclarativeStream
+      name: ci_test_events
+      primary_key:
+        - id
+      $parameters:
+        required_permission: ci_visibility_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ci/tests/events
+          http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sync_date
+              value: >-
+                {%- set run = (record.get('attributes') or {}).get('attributes') or {} -%}
+                {{ format_datetime((run['start'] + (run.get('duration') or 0)) // 1000000,
+                '%Y-%m-%dT%H:%M:%S.%fZ', '%ms') if run.get('start') is number else None }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ci_test_events"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      $parameters:
+        required_permission: events_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/events
+          http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - $ref: "#/definitions/sync_date_from_timestamp"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    rum_events:
+      type: DeclarativeStream
+      name: rum_events
+      primary_key:
+        - id
+      $parameters:
+        required_permission: rum_apps_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/rum/events
+          http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - $ref: "#/definitions/sync_date_from_timestamp"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rum_events"
+    spans:
+      type: DeclarativeStream
+      name: spans
+      primary_key:
+        - id
+      $parameters:
+        required_permission: apm_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/spans/events
+          http_method: GET
+          request_parameters:
+            filter[to]:
+              $ref: "#/definitions/window_end_bound"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
+      incremental_sync:
+        $ref: "#/definitions/timestamp_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sync_date
+              value: "{{ record['attributes']['start_timestamp'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/spans"
     metrics:
       type: DeclarativeStream
       name: metrics
@@ -578,6 +836,11 @@ streams:
   - $ref: "#/definitions/streams/incident_teams"
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/logs"
+  - $ref: "#/definitions/streams/ci_pipeline_events"
+  - $ref: "#/definitions/streams/ci_test_events"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/rum_events"
+  - $ref: "#/definitions/streams/spans"
   - $ref: "#/definitions/streams/metrics"
   - $ref: "#/definitions/streams/monitors"
   - $ref: "#/definitions/streams/service_level_objectives"
@@ -1511,6 +1774,541 @@ schemas:
           - "null"
         description: Unique ID of the Log.
         readOnly: true
+      sync_date:
+        type:
+          - "null"
+          - string
+  ci_pipeline_events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the event. Allowed enum values: cipipeline"
+        enum:
+          - cipipeline
+      attributes:
+        type:
+          - object
+          - "null"
+        description: JSON object containing all event attributes and their associated values.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: JSON object of attributes from CI Visibility pipeline events.
+            additionalProperties: true
+          ci_level:
+            type:
+              - string
+              - "null"
+            description: "Pipeline execution level. Allowed enum values: pipeline, stage, job, step, custom"
+          tags:
+            type:
+              - array
+              - "null"
+            description: Array of tags associated with your event.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique ID of the event.
+      sync_date:
+        type:
+          - "null"
+          - string
+  ci_test_events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the event. Allowed enum values: citest"
+        enum:
+          - citest
+      attributes:
+        type:
+          - object
+          - "null"
+        description: JSON object containing all event attributes and their associated values.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: JSON object of attributes from CI Visibility test events.
+            additionalProperties: true
+          tags:
+            type:
+              - array
+              - "null"
+            description: Array of tags associated with your event.
+            items:
+              type: string
+          test_level:
+            type:
+              - string
+              - "null"
+            description: "Test run level. Allowed enum values: session, module, suite, test"
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique ID of the event.
+      sync_date:
+        type:
+          - "null"
+          - string
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the event. Allowed enum values: event"
+        enum:
+          - event
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The object description of an event response attribute.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: Object description of attributes from your event.
+            additionalProperties: true
+            properties:
+              aggregation_key:
+                type:
+                  - string
+                  - "null"
+                description: Aggregation key of the event.
+              date_happened:
+                type:
+                  - integer
+                  - "null"
+                description: POSIX timestamp of the event.
+              device_name:
+                type:
+                  - string
+                  - "null"
+                description: A device name.
+              duration:
+                type:
+                  - integer
+                  - "null"
+                description: The duration between the triggering of the event and its recovery in nanoseconds.
+              event_object:
+                type:
+                  - string
+                  - "null"
+                description: The event title.
+              evt:
+                type:
+                  - object
+                  - "null"
+                description: The metadata associated with a request.
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                    description: Event ID.
+                  integration_id:
+                    type:
+                      - string
+                      - "null"
+                    description: The integration ID of the event.
+                  name:
+                    type:
+                      - string
+                      - "null"
+                    description: The event name.
+                  source_id:
+                    type:
+                      - integer
+                      - "null"
+                    description: Event source ID.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: Event type.
+                  uid:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      A unique identifier for the event. You can use this
+                      identifier to query or reference the event.
+              hostname:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Host name to associate with the event. Any tags associated
+                  with the host are also applied to this event.
+              monitor:
+                type:
+                  - object
+                  - "null"
+                description: Attributes from the monitor that triggered the event.
+                additionalProperties: true
+                properties:
+                  created_at:
+                    type:
+                      - integer
+                      - "null"
+                    description: The POSIX timestamp of the monitor's creation in nanoseconds.
+                  group_status:
+                    type:
+                      - integer
+                      - "null"
+                    description: Monitor group status used when there is no `result_groups`.
+                  groups:
+                    type:
+                      - array
+                      - "null"
+                    description: Groups to which the monitor belongs.
+                    items:
+                      type: string
+                  id:
+                    type:
+                      - integer
+                      - "null"
+                    description: The monitor ID.
+                  message:
+                    type:
+                      - string
+                      - "null"
+                    description: The monitor message.
+                  modified:
+                    type:
+                      - integer
+                      - "null"
+                    description: The monitor's last-modified timestamp.
+                  name:
+                    type:
+                      - string
+                      - "null"
+                    description: The monitor name.
+                  query:
+                    type:
+                      - string
+                      - "null"
+                    description: The query that triggers the alert.
+                  tags:
+                    type:
+                      - array
+                      - "null"
+                    description: A list of tags attached to the monitor.
+                    items:
+                      type: string
+                  templated_name:
+                    type:
+                      - string
+                      - "null"
+                    description: The templated name of the monitor before resolving any template variables.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: The monitor type.
+              monitor_groups:
+                type:
+                  - array
+                  - "null"
+                description: List of groups referred to in the event.
+                items:
+                  type: string
+              monitor_id:
+                type:
+                  - integer
+                  - "null"
+                description: >-
+                  ID of the monitor that triggered the event. When an event
+                  isn't related to a monitor, this field is empty.
+              priority:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The priority of the event alert. Legacy events use normal or
+                  low. Alert events use 1 (highest priority) through 5 (lowest
+                  priority).
+              related_event_id:
+                type:
+                  - integer
+                  - "null"
+                description: Related event ID.
+              service:
+                type:
+                  - string
+                  - "null"
+                description: Service that triggered the event.
+              source_type_name:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The type of event being posted. For example, nagios, hudson,
+                  jenkins, my_apps, chef, puppet, git or bitbucket.
+              sourcecategory:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Identifier for the source of the event, such as a monitor
+                  alert, an externally-submitted event, or an integration.
+              status:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The event status. Legacy events can use failure, error,
+                  warning, info, success, user_update, recommendation, or
+                  snapshot. Alert events can use error, warn, or ok.
+              tags:
+                type:
+                  - array
+                  - "null"
+                description: A list of tags to apply to the event.
+                items:
+                  type: string
+              timestamp:
+                type:
+                  - integer
+                  - "null"
+                description: POSIX timestamp of your event in milliseconds.
+              title:
+                type:
+                  - string
+                  - "null"
+                description: The event title.
+          message:
+            type:
+              - string
+              - "null"
+            description: The message of the event.
+          tags:
+            type:
+              - array
+              - "null"
+            description: An array of tags associated with the event.
+            items:
+              type: string
+          timestamp:
+            type:
+              - string
+              - "null"
+            description: The timestamp of the event.
+            format: date-time
+      id:
+        type:
+          - string
+          - "null"
+        description: The unique ID of the event.
+      sync_date:
+        type:
+          - "null"
+          - string
+  rum_events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the event. Allowed enum values: rum"
+        enum:
+          - rum
+      attributes:
+        type:
+          - object
+          - "null"
+        description: JSON object containing all event attributes and their associated values.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: JSON object of attributes from RUM events.
+            additionalProperties: true
+          service:
+            type:
+              - string
+              - "null"
+            description: >-
+              The name of the application or service generating RUM events. It
+              is used to switch from RUM to APM, so make sure you define the
+              same value when you use both products.
+          tags:
+            type:
+              - array
+              - "null"
+            description: Array of tags associated with your event.
+            items:
+              type: string
+          timestamp:
+            type:
+              - string
+              - "null"
+            description: Timestamp of your event.
+            format: date-time
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique ID of the event.
+      sync_date:
+        type:
+          - "null"
+          - string
+  spans:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the span. Allowed enum values: spans"
+        enum:
+          - spans
+      attributes:
+        type:
+          - object
+          - "null"
+        description: JSON object containing all span attributes and their associated values.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: JSON object of attributes from your span.
+            additionalProperties: true
+          custom:
+            type:
+              - object
+              - "null"
+            description: JSON object of custom spans data.
+            additionalProperties: true
+          end_timestamp:
+            type:
+              - string
+              - "null"
+            description: End timestamp of your span.
+            format: date-time
+          env:
+            type:
+              - string
+              - "null"
+            description: Name of the environment from where the spans are being sent.
+          host:
+            type:
+              - string
+              - "null"
+            description: Name of the machine from where the spans are being sent.
+          ingestion_reason:
+            type:
+              - string
+              - "null"
+            description: The reason why the span was ingested.
+          parent_id:
+            type:
+              - string
+              - "null"
+            description: Id of the span that's parent of this span.
+          resource_hash:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the resource.
+          resource_name:
+            type:
+              - string
+              - "null"
+            description: The name of the resource.
+          retained_by:
+            type:
+              - string
+              - "null"
+            description: The reason why the span was indexed.
+          service:
+            type:
+              - string
+              - "null"
+            description: >-
+              The name of the application or service generating the span
+              events. It is used to switch from APM to Logs, so make sure you
+              define the same value when you use both products.
+          single_span:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Whether or not the span was collected as a stand-alone span.
+              Always associated to "single_span" ingestion_reason if true.
+          span_id:
+            type:
+              - string
+              - "null"
+            description: Id of the span.
+          start_timestamp:
+            type:
+              - string
+              - "null"
+            description: Start timestamp of your span.
+            format: date-time
+          tags:
+            type:
+              - array
+              - "null"
+            description: Array of tags associated with your span.
+            items:
+              type: string
+          trace_id:
+            type:
+              - string
+              - "null"
+            description: >-
+              ID of the trace to which the span belongs: a 32-character
+              hexadecimal string for 128-bit trace IDs, or a decimal string for
+              64-bit trace IDs.
+          type:
+            type:
+              - string
+              - "null"
+            description: The type of the span.
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique ID of the Span.
       sync_date:
         type:
           - "null"
