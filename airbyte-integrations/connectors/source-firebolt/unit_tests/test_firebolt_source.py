@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
@@ -11,11 +12,14 @@ from source_firebolt.database import get_table_structure, parse_config
 from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
 from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
@@ -301,6 +305,63 @@ def test_read_special_types_no_state(mock_connection, config, stream2, logger):
         "col3": ["2019-01-01T20:12:02", "2019-02-01T20:12:02"],
         "col4": "1231232.123459999990457054844258706536",
     }
+
+
+@patch("source_firebolt.source.establish_connection")
+def test_read_records_serialize_through_cdk_entrypoint(mock_connection, config_no_engine, logger):
+    columns = {
+        "col1": {"type": "string"},
+        "col2": {"type": "integer"},
+        "col3": {"type": "string", "airbyte_type": "big_number"},
+        "col4": {"type": "string", "format": "date-time"},
+        "col5": {"type": "string", "format": "date"},
+        "col6": {"type": "array", "items": {"type": "integer"}},
+        "col7": {"type": ["null", "string"]},
+    }
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "table1",
+                        "json_schema": {"type": "object", "properties": columns},
+                        "supported_sync_modes": ["full_refresh"],
+                    },
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
+    mock_connection().__enter__().cursor().__enter__().fetchall.return_value = [
+        [
+            "value",
+            42,
+            Decimal("1231232.123459999990457054844258706536"),
+            datetime(2022, 1, 1, 10, 0, 0),
+            date(2022, 1, 2),
+            [1, 2, 3],
+            None,
+        ]
+    ]
+
+    messages = list(SourceFirebolt().read(logger, config_no_engine, catalog, {}))
+    serialized_messages = [AirbyteEntrypoint.airbyte_message_to_string(message) for message in messages]
+
+    assert len(serialized_messages) == 1
+    serialized_message = json.loads(serialized_messages[0])
+    assert serialized_message["type"] == "RECORD"
+    assert serialized_message["record"]["stream"] == "table1"
+    assert serialized_message["record"]["data"] == {
+        "col1": "value",
+        "col2": 42,
+        "col3": "1231232.123459999990457054844258706536",
+        "col4": "2022-01-01T10:00:00",
+        "col5": "2022-01-02",
+        "col6": [1, 2, 3],
+    }
+    assert isinstance(serialized_message["record"]["emitted_at"], int)
+    assert AirbyteMessageSerializer.load(serialized_message) == messages[0]
 
 
 def test_get_table_structure(table1_structure, table2_structure):
