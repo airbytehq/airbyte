@@ -1,0 +1,1215 @@
+version: 7.45.0
+type: DeclarativeSource
+description:
+  Sync orders, returns, order documents, conversations and products from Mirakl Connect, the multichannel seller
+  platform. Orders, returns, documents and conversations sync incrementally with the API's updated_from filter.
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+          - 403
+        error_message:
+          Mirakl Connect rejected the request (HTTP {{ response.status_code if response is defined else '' }}).
+          Check the client ID and client secret, and that the API client has the scope for this stream.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+  base_requester:
+    type: HttpRequester
+    http_method: GET
+    authenticator:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: https://auth.mirakl.net/oauth/token
+      grant_type: client_credentials
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_request_body: {}
+    error_handler:
+      $ref: "#/definitions/error_handler"
+  seek_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_token
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+streams:
+  - type: DeclarativeStream
+    name: orders
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: https://miraklconnect.com/api/v2/orders
+        request_parameters: "{{ {} if next_page_token else {'updated_from': stream_interval.start_time} }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/seek_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          anonymized_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          billing_info:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              address:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  additional_info:
+                    type:
+                      - string
+                      - "null"
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  company:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  country_iso_code:
+                    type:
+                      - string
+                      - "null"
+                  first_name:
+                    type:
+                      - string
+                      - "null"
+                  last_name:
+                    type:
+                      - string
+                      - "null"
+                  phone:
+                    type:
+                      - string
+                      - "null"
+                  state:
+                    type:
+                      - string
+                      - "null"
+                  street:
+                    type:
+                      - string
+                      - "null"
+                  street_additional_info:
+                    type:
+                      - string
+                      - "null"
+                  zip_code:
+                    type:
+                      - string
+                      - "null"
+          channel_order_id:
+            type:
+              - string
+              - "null"
+          channel_updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          custom_attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+          fulfillment:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              code:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          order_lines:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                adjustments:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      adjustment_id:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                        format: date-time
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      price:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      quantity:
+                        type:
+                          - integer
+                          - "null"
+                      reason:
+                        type:
+                          - string
+                          - "null"
+                      shipping_price:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      shipping_taxes:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                      taxes:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                      type:
+                        type:
+                          - string
+                          - "null"
+                can_cancel:
+                  type:
+                    - boolean
+                    - "null"
+                can_refund:
+                  type:
+                    - boolean
+                    - "null"
+                channel_order_line_id:
+                  type:
+                    - string
+                    - "null"
+                custom_attributes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                id:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                product:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                quantity:
+                  type:
+                    - integer
+                    - "null"
+                ship_from:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    warehouse:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                      properties:
+                        id:
+                          type:
+                            - string
+                            - "null"
+                shipping_taxes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      amount:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      channel_collectible:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      rate:
+                        type:
+                          - number
+                          - "null"
+                      seller_collectible:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                status_reason:
+                  type:
+                    - string
+                    - "null"
+                taxes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      amount:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      channel_collectible:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      rate:
+                        type:
+                          - number
+                          - "null"
+                      seller_collectible:
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                total_shipping_price:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+          origin:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              channel_id:
+                type:
+                  - string
+                  - "null"
+              channel_name:
+                type:
+                  - string
+                  - "null"
+              channel_store_id:
+                type:
+                  - string
+                  - "null"
+              channel_store_name:
+                type:
+                  - string
+                  - "null"
+              sub_channel_code:
+                type:
+                  - string
+                  - "null"
+              sub_channel_name:
+                type:
+                  - string
+                  - "null"
+          shipping_info:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              address:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  additional_info:
+                    type:
+                      - string
+                      - "null"
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  company:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  country_iso_code:
+                    type:
+                      - string
+                      - "null"
+                  first_name:
+                    type:
+                      - string
+                      - "null"
+                  last_name:
+                    type:
+                      - string
+                      - "null"
+                  phone:
+                    type:
+                      - string
+                      - "null"
+                  state:
+                    type:
+                      - string
+                      - "null"
+                  street:
+                    type:
+                      - string
+                      - "null"
+                  street_additional_info:
+                    type:
+                      - string
+                      - "null"
+                  zip_code:
+                    type:
+                      - string
+                      - "null"
+              carrier:
+                type:
+                  - string
+                  - "null"
+              delivery_date:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  earliest:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  latest:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+              email:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+              pudo_id:
+                type:
+                  - string
+                  - "null"
+              shipping_deadline:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          status:
+            type:
+              - string
+              - "null"
+          status_reason:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: returns
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: https://miraklconnect.com/api/v2/orders/returns
+        request_parameters: "{{ {} if next_page_token else {'updated_from': stream_interval.start_time} }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/seek_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          address:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              country_iso_code:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              street:
+                type:
+                  - string
+                  - "null"
+              street_additional_info:
+                type:
+                  - string
+                  - "null"
+              zip_code:
+                type:
+                  - string
+                  - "null"
+          channel_return_id:
+            type:
+              - string
+              - "null"
+          channel_updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          id:
+            type:
+              - string
+              - "null"
+          label_url:
+            type:
+              - string
+              - "null"
+          method:
+            type:
+              - string
+              - "null"
+          order_id:
+            type:
+              - string
+              - "null"
+          origin:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              channel_id:
+                type:
+                  - string
+                  - "null"
+              channel_name:
+                type:
+                  - string
+                  - "null"
+              channel_store_id:
+                type:
+                  - string
+                  - "null"
+              channel_store_name:
+                type:
+                  - string
+                  - "null"
+              sub_channel_code:
+                type:
+                  - string
+                  - "null"
+              sub_channel_name:
+                type:
+                  - string
+                  - "null"
+          rejection_reason:
+            type:
+              - string
+              - "null"
+          return_lines:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                order_line_id:
+                  type:
+                    - string
+                    - "null"
+                product_id:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - integer
+                    - "null"
+                reason:
+                  type:
+                    - string
+                    - "null"
+          rma_id:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tracking:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              carrier_name:
+                type:
+                  - string
+                  - "null"
+              tracking_number:
+                type:
+                  - string
+                  - "null"
+              tracking_url:
+                type:
+                  - string
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: order_documents
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: https://miraklconnect.com/api/v2/orders/documents
+        request_parameters: "{{ {} if next_page_token else {'updated_from': stream_interval.start_time} }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - documents
+      paginator:
+        $ref: "#/definitions/seek_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          channel_type:
+            type:
+              - string
+              - "null"
+          file_format:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          size_in_bytes:
+            type:
+              - integer
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          order_id:
+            type:
+              - string
+              - "null"
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: conversations
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: https://miraklconnect.com/api/conversations
+        request_parameters: "{{ {} if next_page_token else {'updated_from': stream_interval.start_time} }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/seek_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          anonymized_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          channel_conversation_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          entity:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              channel_entity_id:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          origin:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              channel_id:
+                type:
+                  - string
+                  - "null"
+              channel_name:
+                type:
+                  - string
+                  - "null"
+              channel_store_id:
+                type:
+                  - string
+                  - "null"
+              channel_store_name:
+                type:
+                  - string
+                  - "null"
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+          topic:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+    incremental_sync:
+      $ref: "#/definitions/updated_at_cursor"
+  - type: DeclarativeStream
+    name: products
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: https://miraklconnect.com/api/products
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/seek_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          attributes: {}
+          brand: {}
+          category: {}
+          descriptions: {}
+          discount_prices: {}
+          gtins:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+          id:
+            type:
+              - string
+              - "null"
+          images: {}
+          quantities:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                available_quantity:
+                  type:
+                    - integer
+                    - "null"
+                warehouse_code:
+                  type:
+                    - string
+                    - "null"
+          standard_prices:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                price:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                scope: {}
+          titles: {}
+          partner_quantities:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                available_quantity:
+                  type:
+                    - integer
+                    - "null"
+                partner_id:
+                  type:
+                    - string
+                    - "null"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - client_id
+      - client_secret
+    additionalProperties: true
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description:
+          Client ID of your Mirakl Connect API client. See the <a href="https://docs.airbyte.com/integrations/sources/mirakl-connect">setup
+          guide</a>.
+        order: 0
+      client_secret:
+        type: string
+        title: Client secret
+        description: Client secret of your Mirakl Connect API client.
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        title: Start date
+        description: Records updated before this UTC date-time are not replicated. Defaults to 2020-01-01T00:00:00Z.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2025-01-01T00:00:00Z"
+        order: 2
