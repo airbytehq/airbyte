@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 14fb7a17-a371-4ebc-a072-b339c4daa4c1
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-pingdom
   githubIssueLabel: source-pingdom
   icon: icon.svg
