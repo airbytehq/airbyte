@@ -711,7 +711,7 @@ spec:
               access_token:
                 type: string
                 title: Access token
-                description: Access Token for making authenticated requests.
+                description: Access token for making authenticated requests.
                 airbyte_secret: true
               token_expiry_date:
                 type: string

@@ -71,7 +71,7 @@ This page contains the setup guide and reference information for the [Airtable](
 
 ### OAuth integration credentials
 
-If you configure OAuth manually, open your integration in Airtable's [OAuth integrations panel](https://airtable.com/create/oauth) and copy its client ID into **Client ID**. To obtain a **Client secret**, follow Airtable's [client secret instructions](https://airtable.com/developers/web/guides/oauth-integrations#updating-your-client-secret) to generate and copy it from the integration's management page. Airtable only shows the secret when it is generated; regenerating it invalidates the previous secret, so update any other clients that use it. These values identify and authenticate your integration when the connector refreshes access tokens. In Airbyte Cloud, both values are filled in automatically when you authenticate; you do not need to provide your own integration credentials.
+For manual OAuth setup, open your integration in Airtable's [OAuth integrations panel](https://airtable.com/create/oauth) and copy its client ID into **Client ID**. Follow Airtable's [client secret instructions](https://airtable.com/developers/web/guides/oauth-integrations#updating-your-client-secret) to generate and copy a **Client secret**; Airtable states that the secret is not recoverable. In Airbyte Cloud, both values are filled in automatically when you authenticate.
 
 ### Configuration options
 
@@ -169,7 +169,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.8.3 | 2026-11-17 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Improve form labels, authentication guidance, and concurrency descriptions |
+| 4.8.3 | 2026-11-17 | [93382](https://github.com/airbytehq/airbyte/pull/93382) | Improve form labels, authentication guidance, and concurrency descriptions |
 | 4.8.2 | 2026-11-17 | [93087](https://github.com/airbytehq/airbyte/pull/93087) | Update dependencies |
 | 4.8.1 | 2026-11-10 | [89120](https://github.com/airbytehq/airbyte/pull/89120) | Update dependencies |
 | 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
