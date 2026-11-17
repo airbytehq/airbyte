@@ -43,14 +43,12 @@ definitions:
           path: /addons/{{ stream_partition.product_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,14 +94,12 @@ definitions:
           path: /coupon/{{ stream_partition.product_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -149,15 +145,13 @@ definitions:
           path: /refund/{{ stream_partition.customer_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: "{{ response.message== 'No transaction found'}}"
-                    http_codes: []
-                    error_message: No transaction found
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: "{{ response.message== 'No transaction found'}}"
+                http_codes: []
+                error_message: No transaction found
         record_selector:
           type: RecordSelector
           extractor:
@@ -239,14 +233,12 @@ definitions:
           path: /products/{{ stream_partition.product_id }}/licenses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -292,14 +284,12 @@ definitions:
           path: /products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -409,14 +399,12 @@ definitions:
           path: /transactions/{{ stream_partition.customer_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -498,14 +486,12 @@ definitions:
           path: /paymentmethods/{{ stream_partition.customer_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -587,14 +573,12 @@ definitions:
           path: /addonlistcategory/{{ stream_partition.product_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:

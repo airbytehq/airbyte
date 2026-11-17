@@ -1,0 +1,17 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-pabbly-subscriptions-billing-tests"
+version = "0.0.0"
+description = "Unit tests for source-pabbly-subscriptions-billing"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "7.45.0"
+pytest = "^8.3.5"
+PyYAML = "^6.0"
+requests = "^2.31"
