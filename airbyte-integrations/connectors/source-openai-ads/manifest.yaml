@@ -655,6 +655,7 @@ definitions:
     request_body_json:
       aggregation_level: '{{ parameters["aggregation_level"] }}'
       time_granularity: daily
+      group_by_entity: true
       attribution_time_basis: ad_event_time
       attribution_window_days: 30
       view_through_attribution_window_days: 1
@@ -851,7 +852,7 @@ spec:
     type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
-        description: Raise lookback_window to 1 and num_workers to 2, the minimums since 0.1.12. Earlier versions accepted 0 and 1.
+        description: Raise lookback_window to 1 and num_workers to 2, the minimums since 0.1.13. Earlier versions accepted 0 and 1.
         transformations:
           - type: ConfigAddFields
             fields:

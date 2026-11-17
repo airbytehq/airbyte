@@ -370,6 +370,7 @@ def test_conversions_post_the_entity_group_and_save_one_cursor(
     assert post.json() == {
         "aggregation_level": aggregation_level,
         "time_granularity": "daily",
+        "group_by_entity": True,
         "attribution_time_basis": "ad_event_time",
         "attribution_window_days": 30,
         "view_through_attribution_window_days": 1,
@@ -395,6 +396,7 @@ def test_conversions_post_up_to_100_entities_per_request_and_date_slice(requests
         return {
             "aggregation_level": "campaign",
             "time_granularity": "daily",
+            "group_by_entity": True,
             "attribution_time_basis": "ad_event_time",
             "attribution_window_days": 30,
             "view_through_attribution_window_days": 1,
@@ -501,6 +503,7 @@ def test_0_1_11_manifest_reads_state_migrated_by_the_current_connector(requests_
         stream["retriever"]["partition_router"] = stream["retriever"]["partition_router"]["underlying_partition_router"]
         del stream["state_migrations"]
     old_manifest["definitions"]["conversions_requester"]["request_body_json"]["entity_ids"] = '{{ [ stream_slice["entity_id"] ] }}'
+    del old_manifest["definitions"]["conversions_requester"]["request_body_json"]["group_by_entity"]
     old_source = ConcurrentDeclarativeSource(
         source_config=old_manifest,
         catalog=CatalogBuilder().build(),
@@ -512,6 +515,7 @@ def test_0_1_11_manifest_reads_state_migrated_by_the_current_connector(requests_
     assert rollback_output.errors == []
     post_requests = [request for request in requests_mock.request_history if request.method == "POST"]
     assert len(post_requests) == 2
+    assert "group_by_entity" not in post_requests[1].json()
     assert post_requests[1].json()["entity_ids"] == ["ad_1"]
     assert post_requests[1].json()["time_ranges"] == ['{"type":"date_range","since":"2026-09-08","until":"2026-09-14"}']
 
