@@ -71,7 +71,8 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,headRefOid,labels)
+          echo "sha=$(echo "$pr_json" | jq -r '.headRefOid')" | tee -a "$GITHUB_OUTPUT"
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
@@ -104,6 +105,18 @@ jobs:
             echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
           fi
 
+      - name: Publish pending readiness status
+        if: steps.pre-check.outputs.state == 'OPEN'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVALUATED_SHA: ${{ steps.pre-check.outputs.sha }}
+        run: >
+          gh api --method POST "repos/airbytehq/airbyte/statuses/$EVALUATED_SHA"
+          -f context='Hydra / ai-ready'
+          -f state=pending
+          -f description='Evaluating auto-merge readiness'
+          -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
       - name: Post status comment
         if: steps.pre-check.outputs.state == 'OPEN'
         id: status-comment
@@ -119,6 +132,8 @@ jobs:
         if: steps.pre-check.outputs.state == 'OPEN'
         id: validate-paths
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          EVALUATED_SHA: ${{ steps.pre-check.outputs.sha }}
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -135,6 +150,9 @@ jobs:
               repo: 'airbyte',
               pull_number: pullNumber,
             });
+            if (pull.head.sha !== process.env.EVALUATED_SHA) {
+              throw new Error('PR head moved before eligibility checks; rerun /ai-ready on the new head.');
+            }
             const files = await github.paginate(
               github.rest.pulls.listFiles,
               {
@@ -358,6 +376,7 @@ jobs:
         uses: actions/github-script@v7
         env:
           REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+          EVALUATED_SHA: ${{ steps.pre-check.outputs.sha }}
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -368,6 +387,9 @@ jobs:
               owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
             });
             const sha = pr.head.sha;
+            if (sha !== process.env.EVALUATED_SHA) {
+              throw new Error('PR head moved before required checks; rerun /ai-ready on the new head.');
+            }
             // Export the evaluated head SHA so the autopilot/merge steps can
             // pin the whole eval->merge chain to the SHA that was checked here.
             core.setOutput('sha', sha);
@@ -457,6 +479,7 @@ jobs:
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
+            Evaluate the diff at head commit ${{ steps.pre-check.outputs.sha }}, not a newer PR head.
 
       - name: Check for structured output
         if: steps.devin.outputs.session-id
@@ -623,6 +646,51 @@ jobs:
             > The Devin AI evaluation session did not produce structured output.
             >
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Publish readiness result on evaluated head
+        if: always() && steps.pre-check.outputs.state == 'OPEN' && steps.pre-check.outputs.sha != ''
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVALUATED_SHA: ${{ steps.pre-check.outputs.sha }}
+          JOB_STATUS: ${{ job.status }}
+          VALID_PATHS: ${{ steps.validate-paths.outputs.valid }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
+          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
+          NO_DATABASE_SOURCE_CHANGES: ${{ steps.validate-paths.outputs.no_database_source_changes }}
+          CHECKS_READY: ${{ steps.verify-checks.outputs.ready }}
+          EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+          jq -n '
+            def result(state; description): {state: state, description: description};
+            if env.JOB_STATUS != "success" then
+              result("error"; "ERROR: evaluation " + env.JOB_STATUS)
+            elif env.VALID_PATHS == "false" then
+              result("failure"; "NOT_ELIGIBLE: allowed_paths")
+            elif env.SUPPORT_BOT_ASSIGNED == "false" or env.NO_DESTINATION_CHANGES == "false" or env.NO_DATABASE_SOURCE_CHANGES == "false" then
+              ([
+                if env.SUPPORT_BOT_ASSIGNED == "false" then "support_bot_assigned" else empty end,
+                if env.NO_DESTINATION_CHANGES == "false" then "no_destination_changes" else empty end,
+                if env.NO_DATABASE_SOURCE_CHANGES == "false" then "no_database_source_changes" else empty end
+              ] | join(", ")) as $gates |
+              result("failure"; "NOT_ELIGIBLE: " + $gates)
+            elif env.CHECKS_READY == "false" then
+              result("failure"; "BLOCKED: required_checks")
+            elif env.EVAL_RESULT == "PASS" then
+              result("success"; "PASS" + (if env.DRY_RUN == "true" then " (dry run)" else "" end))
+            elif env.EVAL_RESULT == "FAIL" then
+              (env.STRUCTURED_OUTPUT | fromjson | .preconditions | to_entries |
+                map(select(.value.pass != true) | .key) | join(", ")) as $gates |
+              result("failure"; "FAIL: " + (if $gates == "" then "allowed_change_scope" else $gates end))
+            else
+              result("error"; "ERROR: missing evaluation result")
+            end |
+            .description = .description[:140] |
+            .context = "Hydra / ai-ready" |
+            .target_url = (env.GITHUB_SERVER_URL + "/" + env.GITHUB_REPOSITORY + "/actions/runs/" + env.GITHUB_RUN_ID)
+          ' | gh api --method POST "repos/airbytehq/airbyte/statuses/$EVALUATED_SHA" --input -
 
       # ── Merge (if evaluation passed and not dry-run) ────────────────
       - name: Mark draft PR as ready for review
