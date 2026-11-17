@@ -26,6 +26,6 @@ Every Usage Records sync pages through all subscriptions using the internal `sub
 
 `missing_feature_error_handler` first ignores responses whose `error.type` is `missing_feature`. It then reuses `#/definitions/base_requester/error_handler/response_filters/0` and `#/definitions/base_requester/error_handler/response_filters/1`, which must remain the 401 and 403 configuration-error filters, respectively. Its `max_retries` and `backoff_strategies` also reference the corresponding properties of the base handler.
 
-This handler is used by Account Acquisitions, Gift Cards, External Subscriptions, External Subscription Payment Phases, Items, Usage Records, and the internal subscription add-ons parent stream.
+This handler is used by Account Acquisitions, Credit Payments, Gift Cards, External Subscriptions, External Subscription Payment Phases, Items, Usage Records, and the internal subscription add-ons parent stream.
 
-**Why this matters:** Inserting or reordering base response filters silently changes which errors these seven streams handle. Preserve or update the positional references together with the base filters so missing features remain skippable while authentication errors still fail.
+**Why this matters:** Inserting or reordering base response filters silently changes which errors these eight streams handle. Preserve or update the positional references together with the base filters so missing features remain skippable while authentication errors still fail.
