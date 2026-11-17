@@ -210,7 +210,10 @@ class MongoDbSourceMetadataQuerier(
      *   {$group: {_id: "$fields"}} ]
      * ```
      *
-     * Each result is one distinct document shape; for a field with several types, the first wins.
+     * Each result is one distinct document shape. `$group` does not order those shapes, so which
+     * one arrives first is a race. An explicit BSON null is not a type: it is kept only when every
+     * sampled value of the field is null, and it never replaces a real type. Among real types, the
+     * first one still wins.
      */
     private fun sampleFieldTypes(
         collection: MongoCollection<Document>,
@@ -240,10 +243,12 @@ class MongoDbSourceMetadataQuerier(
         sample(collection, pipeline) { shape: Document ->
             val bsonTypeByField: Document = shape.get("_id", Document::class.java)
             for ((fieldName: String, bsonTypeName: Any?) in bsonTypeByField) {
-                fieldTypes.putIfAbsent(
-                    fieldName,
-                    MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString()),
-                )
+                val discovered: MongoDbFieldType =
+                    MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString())
+                val current: MongoDbFieldType? = fieldTypes[fieldName]
+                if (current == null || current == MongoDbFieldType.NULL) {
+                    fieldTypes[fieldName] = discovered
+                }
             }
         }
         return fieldTypes
