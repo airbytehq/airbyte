@@ -78,9 +78,16 @@ def publish(tmp_path: Path, script: str, overrides: dict[str, str]) -> tuple[lis
         ({"JOB_STATUS": "cancelled"}, "error", "ERROR: evaluation cancelled"),
         ({"EVAL_RESULT": ""}, "error", "ERROR: missing evaluation result"),
         (
+            {"EVAL_RESULT": "FAIL", "STRUCTURED_OUTPUT": "{}"},
+            "failure",
+            "FAIL: no_breaking_changes, ai_review_passed",
+        ),
+        (
             {
                 "EVAL_RESULT": "FAIL",
-                "STRUCTURED_OUTPUT": json.dumps({"preconditions": {"no_breaking_changes": {"pass": False}}}),
+                "STRUCTURED_OUTPUT": json.dumps(
+                    {"preconditions": {"no_breaking_changes": {"pass": False}, "ai_review_passed": {"pass": True}}}
+                ),
             },
             "failure",
             "FAIL: no_breaking_changes",
@@ -88,7 +95,9 @@ def publish(tmp_path: Path, script: str, overrides: dict[str, str]) -> tuple[lis
         (
             {
                 "EVAL_RESULT": "FAIL",
-                "STRUCTURED_OUTPUT": json.dumps({"preconditions": {"ai_review_passed": {"pass": False}}}),
+                "STRUCTURED_OUTPUT": json.dumps(
+                    {"preconditions": {"no_breaking_changes": {"pass": True}, "ai_review_passed": {"pass": False}}}
+                ),
             },
             "failure",
             "FAIL: ai_review_passed",
@@ -96,7 +105,9 @@ def publish(tmp_path: Path, script: str, overrides: dict[str, str]) -> tuple[lis
         (
             {
                 "EVAL_RESULT": "FAIL",
-                "STRUCTURED_OUTPUT": json.dumps({"preconditions": {"no_breaking_changes": {"pass": True}}}),
+                "STRUCTURED_OUTPUT": json.dumps(
+                    {"preconditions": {"no_breaking_changes": {"pass": True}, "ai_review_passed": {"pass": True}}}
+                ),
             },
             "failure",
             "FAIL: allowed_change_scope",

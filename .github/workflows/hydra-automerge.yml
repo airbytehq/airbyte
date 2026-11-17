@@ -681,8 +681,9 @@ jobs:
             elif env.EVAL_RESULT == "PASS" then
               result("success"; "PASS" + (if env.DRY_RUN == "true" then " (dry run)" else "" end))
             elif env.EVAL_RESULT == "FAIL" then
-              (env.STRUCTURED_OUTPUT | fromjson | .preconditions | to_entries |
-                map(select(.value.pass != true) | .key) | join(", ")) as $gates |
+              (env.STRUCTURED_OUTPUT | fromjson) as $output |
+              (["no_breaking_changes", "ai_review_passed"] |
+                map(select($output.preconditions[.].pass != true)) | join(", ")) as $gates |
               result("failure"; "FAIL: " + (if $gates == "" then "allowed_change_scope" else $gates end))
             else
               result("error"; "ERROR: missing evaluation result")
