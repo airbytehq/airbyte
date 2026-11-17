@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-rippling:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "No Rippling sandbox credentials are available to the contributor; covered by mocked unit tests"
+  discovery:
+    bypass_reason: "No Rippling sandbox credentials are available to the contributor; covered by mocked unit tests"
+  basic_read:
+    bypass_reason: "No Rippling sandbox credentials are available to the contributor; covered by mocked unit tests"
+  incremental:
+    bypass_reason: "No Rippling sandbox credentials are available to the contributor; covered by mocked unit tests"
+  full_refresh:
+    bypass_reason: "No Rippling sandbox credentials are available to the contributor; covered by mocked unit tests"
