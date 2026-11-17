@@ -1,0 +1,1051 @@
+# Ayrshare source: Airbyte low-code (declarative) manifest.
+#
+# Ayrshare (https://www.ayrshare.com) scopes most data to User Profiles, so
+# there are two kinds of stream:
+#   * Account streams use only the API key: the account itself, its User
+#     Profiles, their health, the profile create/delete log, the daily profile
+#     count, and every profile's linked social accounts (via /user/batch).
+#   * Profile streams (post_history, platform_posts, social_analytics,
+#     social_analytics_daily, post_analytics, comments, platform_comments) need
+#     each User Profile's own Profile-Key header. Ayrshare returns that key only
+#     when the profile is created, never from GET /profiles, so supply them in
+#     `profile_keys`. While it is empty these streams emit nothing (no
+#     partitions), and they don't fail.
+#
+# Error semantics:
+#   * 401/403 anywhere                     -> FAIL the sync (config_error)
+#   * 429 / 5xx                            -> retry (Retry-After, else exponential)
+#   * code 221 "History not found" (400)   -> IGNORE (a profile with no posts)
+#   * code 103/156 network not linked      -> IGNORE (platform not on this profile)
+#   * code 326 Meta identity verification  -> IGNORE (user must re-verify; see profile_health.state)
+#   * code 306 comments disabled (403)     -> IGNORE that post
+#   * per-post 400/404 (analytics, comments) -> IGNORE that post
+#   * any other 4xx                        -> FAIL
+
+version: 7.48.0
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - profiles
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 4
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['api_key'] }}"
+
+  retry_strategies:
+    - type: WaitTimeFromHeader
+      header: Retry-After
+    - type: ExponentialBackoffStrategy
+      factor: 5
+
+  auth_failure_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes: [401, 403]
+    error_message: >-
+      Ayrshare rejected the request. Check the API key (Ayrshare dashboard >
+      API Key), each Profile Key in profile_keys, and that your plan includes
+      the endpoint (User Profiles need the Business plan).
+
+  not_linked_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    # 156 = "<network> is not linked" (analytics), 103 = "Missing social
+    # account" (what /history/{platform} returns), 326 = Meta verification.
+    predicate: "{{ response.get('code') in [103, 156, 326] }}"
+    error_message: Social network not linked (or awaiting Meta identity verification) on this profile; skipped.
+
+  no_history_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    # Response shape: HTTP 400 {"history": {"code": 221, ...}, "count": 0}
+    predicate: "{{ response.get('code') == 221 or (response.get('history') is mapping and response['history'].get('code') == 221) }}"
+    error_message: No post history for this profile; skipped.
+
+  # /history/{platform} paging: Ayrshare sometimes rejects one of its own `next`
+  # cursors with 404 {"code": 1, "message": "This endpoint does not exist"}.
+  # Seen deep in large Facebook pages (2,800+ posts): every retry within about
+  # 30 minutes broke at the same cursor, and later syncs paged through.
+  # Replaying the cursor never recovers, so end that profile x network for
+  # this sync instead of failing every stream. Sync platform_posts as
+  # Full refresh | Append if a short day must not replace older posts.
+  broken_cursor_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    # Body only: http_codes would OR with the predicate and swallow every 404.
+    predicate: "{{ response.get('code') == 1 and response.get('status') == 'error' }}"
+    error_message: >-
+      Ayrshare rejected its own paging cursor (404, code 1); the rest of this
+      profile's posts on this network are skipped for this sync.
+
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    backoff_strategies:
+      $ref: "#/definitions/retry_strategies"
+    response_filters:
+      - $ref: "#/definitions/auth_failure_filter"
+      - $ref: "#/definitions/no_history_filter"
+      - $ref: "#/definitions/not_linked_filter"
+
+  requester:
+    type: HttpRequester
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Accept: application/json
+    error_handler:
+      $ref: "#/definitions/error_handler"
+
+  # Profile streams. stream_partition.profile_key comes from config, through the
+  # keyed_profiles parent; deeper streams reach it via parent_slice.
+  profile_requester:
+    $ref: "#/definitions/requester"
+    request_headers:
+      Accept: application/json
+      Profile-Key: "{{ stream_partition.parent_slice.profile_key }}"
+
+  # Per-post endpoints: a post that is gone or not readable skips that post.
+  per_post_requester:
+    $ref: "#/definitions/requester"
+    request_headers:
+      Accept: application/json
+      Profile-Key: "{{ stream_partition.parent_slice.parent_slice.profile_key }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 6
+      backoff_strategies:
+        $ref: "#/definitions/retry_strategies"
+      response_filters:
+        - $ref: "#/definitions/auth_failure_filter"
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [400, 404]
+          error_message: Post not available for analytics/comments; skipped.
+
+  # GET /history/{platform} for one profile x network (platform_posts and its
+  # hidden recent copy).
+  platform_history_requester:
+    $ref: "#/definitions/profile_requester"
+    url: "https://api.ayrshare.com/api/history/{{ stream_partition.platform }}"
+    request_parameters:
+      limit: "100"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 6
+      backoff_strategies:
+        $ref: "#/definitions/retry_strategies"
+      response_filters:
+        - $ref: "#/definitions/auth_failure_filter"
+        - $ref: "#/definitions/not_linked_filter"
+        - $ref: "#/definitions/broken_cursor_filter"
+
+  # Hidden parent of platform_comments: posts created in the last 90 days that
+  # have comments. YouTube reports no comment count, so every recent video
+  # counts. Facebook, Instagram and TikTok list newest first, so paging stops
+  # at the first page that ends before the window. YouTube's uploads playlist
+  # isn't strictly ordered (its posts carry `position`), so it pages in full.
+  recent_platform_posts:
+    type: DeclarativeStream
+    name: recent_platform_posts
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/platform_history_requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [posts]
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ (record.get('created') or '') >= day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ')
+               and (stream_slice.platform == 'youtube' or (record.get('commentsCount') or 0) > 0) }}
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('meta', {}).get('pagination', {}).get('next') }}"
+          stop_condition: >-
+            {{ not response.get('meta', {}).get('pagination', {}).get('hasMore')
+               or (response.get('posts')
+                   and 'position' not in response['posts'][-1]
+                   and (response['posts'][-1].get('created') or '9') < day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ')) }}
+      partition_router:
+        $ref: "#/definitions/profile_platform_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id: {type: string}
+          created: {type: [string, "null"]}
+
+  comment_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/recent_platform_posts"
+        parent_key: id
+        partition_field: post_id
+        extra_fields:
+          - [created]
+
+  comments_disabled_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    # HTTP 403 {"code": 306, "message": "Comments are disabled
+    # for this video..."}. Must come before auth_failure_filter (403 = FAIL).
+    predicate: "{{ response.get('code') == 306 }}"
+    error_message: Comments are disabled on this post; skipped.
+
+  whole_response_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  add_ref_id:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: [ref_id]
+        value: "{{ stream_partition.ref_id }}"
+        value_type: string
+
+  # Hidden parent: one record per configured Profile Key (GET /user with the
+  # key). Children read ref_id from it and the key from parent_slice.
+  keyed_profiles:
+    type: DeclarativeStream
+    name: keyed_profiles
+    primary_key: [refId]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        url: https://api.ayrshare.com/api/user
+        request_headers:
+          Accept: application/json
+          Profile-Key: "{{ stream_partition.profile_key }}"
+      record_selector:
+        $ref: "#/definitions/whole_response_selector"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: profile_key
+        values: "{{ (config.get('profile_keys') or '').replace(' ', '').split(',') | reject('equalto', '') | list }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          refId: {type: [string, "null"]}
+          activeSocialAccounts: {type: [array, "null"], items: {type: string}}
+
+  keyed_profile_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/keyed_profiles"
+        parent_key: refId
+        partition_field: ref_id
+
+  # profile x platform, for the per-network endpoints.
+  # A list of partition routers = their cartesian product.
+  profile_platform_router:
+    - $ref: "#/definitions/keyed_profile_router"
+    - type: ListPartitionRouter
+      cursor_field: platform
+      values: "{{ config.get('platforms') or ['facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'threads', 'bluesky', 'pinterest'] }}"
+
+  # Hidden copy of post_history used as the parent of per-post streams.
+  post_history_parent:
+    $ref: "#/definitions/streams/post_history"
+
+  post_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/post_history_parent"
+        parent_key: id
+        partition_field: post_id
+        extra_fields:
+          - [ref_id]
+
+  add_post_ids:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: [post_id]
+        value: "{{ stream_partition.post_id }}"
+        value_type: string
+      - type: AddedFieldDefinition
+        path: [ref_id]
+        value: "{{ stream_partition.extra_fields['ref_id'] }}"
+        value_type: string
+
+  # Per-network result objects (/analytics/*) and comment arrays (/comments).
+  platform_objects: &platform_objects
+    bluesky: {type: [object, "null"]}
+    facebook: {type: [object, "null"]}
+    gmb: {type: [object, "null"]}
+    instagram: {type: [object, "null"]}
+    linkedin: {type: [object, "null"]}
+    pinterest: {type: [object, "null"]}
+    reddit: {type: [object, "null"]}
+    snapchat: {type: [object, "null"]}
+    telegram: {type: [object, "null"]}
+    threads: {type: [object, "null"]}
+    tiktok: {type: [object, "null"]}
+    twitter: {type: [object, "null"]}
+    youtube: {type: [object, "null"]}
+
+  platform_arrays: &platform_arrays
+    bluesky: {type: [array, "null"], items: {type: object}}
+    facebook: {type: [array, "null"], items: {type: object}}
+    instagram: {type: [array, "null"], items: {type: object}}
+    linkedin: {type: [array, "null"], items: {type: object}}
+    reddit: {type: [array, "null"], items: {type: object}}
+    threads: {type: [array, "null"], items: {type: object}}
+    tiktok: {type: [array, "null"], items: {type: object}}
+    twitter: {type: [array, "null"], items: {type: object}}
+    youtube: {type: [array, "null"], items: {type: object}}
+
+  created_object: &created_object
+    type: [object, "null"]
+    properties:
+      _seconds: {type: [integer, "null"]}
+      _nanoseconds: {type: [integer, "null"]}
+      utc: {type: [string, "null"]}
+
+  display_names: &display_names
+    type: [array, "null"]
+    items:
+      type: object
+      properties:
+        created: {type: [string, "null"]}
+        displayName: {type: [string, "null"]}
+        id: {type: [string, "null"]}
+        pageName: {type: [string, "null"]}
+        platform: {type: [string, "null"]}
+        profileUrl: {type: [string, "null"]}
+        userId: {type: [string, "null"]}
+        userImage: {type: [string, "null"]}
+        username: {type: [string, "null"]}
+
+  streams:
+    # ---------------------------------------------------------------- account
+    account:
+      type: DeclarativeStream
+      name: account
+      primary_key: [refId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: https://api.ayrshare.com/api/user
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            refId: {type: string}
+            title: {type: [string, "null"]}
+            email: {type: [string, "null"]}
+            created: *created_object
+            activeSocialAccounts: {type: [array, "null"], items: {type: string}}
+            displayNames: *display_names
+            lastApiCall: {type: [string, "null"]}
+            monthlyApiCalls: {type: [integer, "null"]}
+            monthlyPostCount: {type: [integer, "null"]}
+            lastUpdated: {type: [string, "null"]}
+
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key: [refId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: https://api.ayrshare.com/api/profiles
+          request_parameters:
+            limit: "5000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [profiles]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextCursor') }}"
+            stop_condition: "{{ not response.get('hasMore') or not response.get('nextCursor') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            refId: {type: string}
+            title: {type: [string, "null"]}
+            displayTitle: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            activeSocialAccounts: {type: [array, "null"], items: {type: string}}
+            created: *created_object
+            createdUTC: {type: [string, "null"]}
+            tags: {type: [array, "null"], items: {type: string}}
+
+    profile_health:
+      type: DeclarativeStream
+      name: profile_health
+      primary_key: [refId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: https://api.ayrshare.com/api/profiles
+          request_parameters:
+            refId: "{{ stream_partition.ref_id }}"
+            include: suspension,socialHealth,linkingErrors,activity,quota,unlinkHistory,state
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [profiles]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/profiles"
+              parent_key: refId
+              partition_field: ref_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            refId: {type: string}
+            title: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            activeSocialAccounts: {type: [array, "null"], items: {type: string}}
+            createdUTC: {type: [string, "null"]}
+            suspension: {type: [object, "null"]}
+            socialHealth: {type: [object, "null"]}
+            linkingErrors: {type: [object, array, "null"]}
+            activity: {type: [object, "null"]}
+            quota: {type: [object, "null"]}
+            unlinkHistory: {type: [object, array, "null"]}
+            state: {type: [object, "null"]}
+
+    profile_action_log:
+      type: DeclarativeStream
+      name: profile_action_log
+      primary_key: [refId, action, created]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: https://api.ayrshare.com/api/profiles
+          request_parameters:
+            actionLog: "365"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [profiles, actionLog]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            action: {type: string}
+            refId: {type: string}
+            title: {type: [string, "null"]}
+            tags: {type: [array, "null"], items: {type: string}}
+            created: {type: string}
+
+    profile_counts_daily:
+      type: DeclarativeStream
+      name: profile_counts_daily
+      primary_key: [reported]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: https://api.ayrshare.com/api/profiles
+          request_parameters:
+            actionLog: "365"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [profiles, userProfileReport]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            reported: {type: string}
+            userProfilesCount: {type: [integer, "null"]}
+
+    # /user for every profile (and the primary) in one file, keyless. POST-ish
+    # flow: GET /user/batch returns a signed URL whose file is `{}` until it's
+    # written (about 40 s), so the download retries until `users` appears.
+    profile_users:
+      type: DeclarativeStream
+      name: profile_users
+      primary_key: [refId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          http_method: GET
+          url: "{{ stream_partition.url }}"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 12
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 20
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'users' not in response }}"
+                error_message: Ayrshare batch file not written yet; waiting.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes: [403, 404]
+                error_message: Ayrshare batch file not available yet; waiting.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [users]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                type: DeclarativeStream
+                name: user_batch
+                primary_key: []
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/requester"
+                    url: https://api.ayrshare.com/api/user/batch
+                  record_selector:
+                    $ref: "#/definitions/whole_response_selector"
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    properties:
+                      url: {type: [string, "null"]}
+              parent_key: url
+              partition_field: url
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            refId: {type: string}
+            title: {type: [string, "null"]}
+            email: {type: [string, "null"]}
+            created: *created_object
+            activeSocialAccounts: {type: [array, "null"], items: {type: string}}
+            displayNames: *display_names
+            lastApiCall: {type: [string, "null"]}
+            monthlyApiCalls: {type: [integer, "null"]}
+            monthlyPostCount: {type: [integer, "null"]}
+            lastUpdated: {type: [string, "null"]}
+
+    # ---------------------------------------------------------------- profile
+    # Posts sent through Ayrshare, all time (lastDays=0), newest first. The API
+    # has no paging here; limit 1000 is its maximum per profile.
+    post_history:
+      type: DeclarativeStream
+      name: post_history
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/profile_requester"
+          url: https://api.ayrshare.com/api/history
+          request_parameters:
+            lastDays: "0"
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [history]
+        partition_router:
+          $ref: "#/definitions/keyed_profile_router"
+      transformations:
+        - $ref: "#/definitions/add_ref_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            ref_id: {type: [string, "null"]}
+            post: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            type: {type: [string, "null"]}
+            platforms: {type: [array, "null"], items: {type: string}}
+            postIds: {type: [array, "null"], items: {type: object}}
+            errors: {type: [array, "null"], items: {type: object}}
+            mediaUrls: {type: [array, "null"], items: {type: string}}
+            urls: {type: [array, "null"], items: {type: string}}
+            notes: {type: [string, "null"]}
+            created: {type: [string, "null"]}
+            scheduleDate: *created_object
+            approved: {type: [boolean, "null"]}
+            approvedBy: {type: [string, "null"]}
+            approvedDate: {type: [string, "null"]}
+            shortenLinks: {type: [boolean, "null"]}
+            # Also returned by the API:
+            refId: {type: [string, "null"]}
+            profileTitle: {type: [string, "null"]}
+            fbId: {type: [string, "null"]}
+            socialIds: {type: [object, "null"]}
+            validateScheduled: {type: [boolean, "null"]}
+
+    # Posts on each linked network, including ones not made through Ayrshare,
+    # with the network's own metrics. id = the network's Social Post ID.
+    platform_posts:
+      type: DeclarativeStream
+      name: platform_posts
+      # Not always unique within a sync: YouTube's uploads playlist can list a
+      # video twice (at a different `position`). Dedupe downstream.
+      primary_key: [ref_id, platform, id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/platform_history_requester"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [posts]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('pagination', {}).get('next') }}"
+            stop_condition: "{{ not response.get('meta', {}).get('pagination', {}).get('hasMore') }}"
+        partition_router:
+          $ref: "#/definitions/profile_platform_router"
+      transformations:
+        # Network-specific post shapes differ; keep the whole post as JSON so
+        # nothing the schema below doesn't name is dropped by the destination.
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [raw]
+              value: "{{ record }}"
+        - $ref: "#/definitions/add_ref_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [platform]
+              value: "{{ stream_partition.platform }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            platform: {type: string}
+            ref_id: {type: [string, "null"]}
+            post: {type: [string, "null"]}
+            postUrl: {type: [string, "null"]}
+            created: {type: [string, "null"]}
+            mediaType: {type: [string, "null"]}
+            mediaUrl: {type: [string, "null"]}
+            analytics: {type: [object, "null"]}
+            # Common metrics, typed for convenience. Each
+            # network names them differently; the rest is in raw.
+            title: {type: [string, "null"]}
+            likeCount: {type: [number, "null"]}
+            commentsCount: {type: [number, "null"]}
+            sharesCount: {type: [number, "null"]}
+            shareCount: {type: [number, "null"]}
+            videoViews: {type: [number, "null"]}
+            raw: {type: [object, "null"]}
+
+    # Account-level metrics per network (followers, impressions, demographics…).
+    # Snapshot: land as Full refresh | Append to keep a history.
+    social_analytics:
+      type: DeclarativeStream
+      name: social_analytics
+      primary_key: [ref_id, platform]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/profile_requester"
+          url: https://api.ayrshare.com/api/analytics/social
+          http_method: POST
+          request_body_json:
+            platforms: "{{ [stream_partition.platform] }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          $ref: "#/definitions/profile_platform_router"
+      transformations:
+        - $ref: "#/definitions/add_ref_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [platform]
+              value: "{{ stream_partition.platform }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            ref_id: {type: [string, "null"]}
+            platform: {type: string}
+            status: {type: [string, "null"]}
+            errors: {type: [array, "null"], items: {type: object}}
+            warnings: {type: [array, "null"], items: {type: object}}
+            <<: *platform_objects
+
+    # Daily time series for the networks that support it (Facebook, GMB,
+    # Instagram, Snapchat, TikTok, YouTube), last quarter.
+    social_analytics_daily:
+      type: DeclarativeStream
+      name: social_analytics_daily
+      primary_key: [ref_id, platform]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/profile_requester"
+          url: https://api.ayrshare.com/api/analytics/social
+          http_method: POST
+          request_headers:
+            Accept: application/json
+            Accept-Encoding: gzip, deflate
+            Profile-Key: "{{ stream_partition.parent_slice.profile_key }}"
+          request_body_json:
+            platforms: "{{ [stream_partition.platform] }}"
+            daily: "{{ True }}"
+            quarters: "{{ 1 }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          - $ref: "#/definitions/keyed_profile_router"
+          - type: ListPartitionRouter
+            cursor_field: platform
+            values: "{{ (config.get('platforms') or ['facebook', 'instagram', 'tiktok', 'youtube']) | select('in', ['facebook', 'gmb', 'instagram', 'snapchat', 'tiktok', 'youtube']) | list }}"
+      transformations:
+        - $ref: "#/definitions/add_ref_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [platform]
+              value: "{{ stream_partition.platform }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            ref_id: {type: [string, "null"]}
+            platform: {type: string}
+            status: {type: [string, "null"]}
+            errors: {type: [array, "null"], items: {type: object}}
+            warnings: {type: [array, "null"], items: {type: object}}
+            <<: *platform_objects
+
+    # Per-post metrics for every post in post_history, by Ayrshare Post ID.
+    post_analytics:
+      type: DeclarativeStream
+      name: post_analytics
+      primary_key: [post_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_post_requester"
+          url: https://api.ayrshare.com/api/analytics/post
+          http_method: POST
+          request_body_json:
+            id: "{{ stream_partition.post_id }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          $ref: "#/definitions/post_router"
+      transformations:
+        - $ref: "#/definitions/add_post_ids"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            post_id: {type: string}
+            ref_id: {type: [string, "null"]}
+            id: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            errors: {type: [array, "null"], items: {type: object}}
+            <<: *platform_objects
+
+    # Comments on every post in post_history, by Ayrshare Post ID; one row per
+    # post with an array of comments per network.
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key: [post_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_post_requester"
+          url: "https://api.ayrshare.com/api/comments/{{ stream_partition.post_id }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          $ref: "#/definitions/post_router"
+      transformations:
+        - $ref: "#/definitions/add_post_ids"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            post_id: {type: string}
+            ref_id: {type: [string, "null"]}
+            id: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            errors: {type: [array, "null"], items: {type: object}}
+            lastUpdated: {type: [string, "null"]}
+            commentsCount: {type: [integer, "null"]}
+            <<: *platform_arrays
+
+    # Comments on every recent post on the linked networks (not only posts sent
+    # through Ayrshare), by Social Post ID. One row per top-level comment, with
+    # its replies nested. Land as Full refresh | Append: the window moves, so
+    # older posts keep their last fetched comments. Commenter fields are named
+    # per network, so commenter_name and commenter_id pick the right one:
+    #   facebook  from.name, from.id
+    #   instagram from.username, from.id
+    #   tiktok    username (handle), displayName, userId
+    #   youtube   userName, channelUrl (no id)
+    # TikTok's username and YouTube's userName differ only in case, which some
+    # destinations (BigQuery, Snowflake) can't hold as two columns, so neither
+    # is typed: both stay in raw.
+    platform_comments:
+      type: DeclarativeStream
+      name: platform_comments
+      primary_key: [platform, commentId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://api.ayrshare.com/api/comments/{{ stream_partition.post_id }}"
+          request_parameters:
+            searchPlatformId: "true"
+            platform: "{{ stream_partition.parent_slice.platform }}"
+          request_headers:
+            Accept: application/json
+            Profile-Key: "{{ stream_partition.parent_slice.parent_slice.profile_key }}"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 6
+            backoff_strategies:
+              $ref: "#/definitions/retry_strategies"
+            response_filters:
+              - $ref: "#/definitions/comments_disabled_filter"
+              - $ref: "#/definitions/auth_failure_filter"
+              - $ref: "#/definitions/not_linked_filter"
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes: [400, 404]
+                error_message: Post not available for comments; skipped.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            # The response is {"<platform>": [comments], "status": ..., ...}.
+            # The path can't use the partition, so take every list item at the
+            # second level and keep the ones that are comments.
+            type: DpathExtractor
+            field_path: ["*", "*"]
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record is mapping and record.get('commentId') }}"
+        partition_router:
+          $ref: "#/definitions/comment_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [raw]
+              value: "{{ record }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ stream_partition.post_id }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [post_created]
+              value: "{{ stream_partition.extra_fields['created'] }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [ref_id]
+              value: "{{ stream_partition.parent_slice.ref_id }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [platform]
+              value: "{{ stream_partition.parent_slice.platform }}"
+              value_type: string
+        - type: AddFields
+          # Leave the field out (null) when the network gave no commenter;
+          # value_type string would otherwise land the text "None".
+          condition: "{{ value }}"
+          fields:
+            - type: AddedFieldDefinition
+              path: [commenter_name]
+              value: "{{ (record.get('from') or {}).get('name') or (record.get('from') or {}).get('username') or record.get('username') or record.get('userName') or record.get('displayName') or '' }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [commenter_id]
+              value: "{{ (record.get('from') or {}).get('id') or record.get('userId') or record.get('channelUrl') or '' }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            commentId: {type: string}
+            platform: {type: string}
+            post_id: {type: [string, "null"]}
+            post_created: {type: [string, "null"]}
+            ref_id: {type: [string, "null"]}
+            comment: {type: [string, "null"]}
+            created: {type: [string, "null"]}
+            commenter_name: {type: [string, "null"]}
+            commenter_id: {type: [string, "null"]}
+            from: {type: [object, "null"]}
+            displayName: {type: [string, "null"]}
+            userId: {type: [string, "null"]}
+            channelUrl: {type: [string, "null"]}
+            commentUrl: {type: [string, "null"]}
+            likeCount: {type: [number, "null"]}
+            likes: {type: [number, "null"]}
+            commentCount: {type: [number, "null"]}
+            hidden: {type: [boolean, "null"]}
+            attachment: {type: [object, "null"]}
+            replies: {type: [array, "null"], items: {type: object}}
+            raw: {type: [object, "null"]}
+
+streams:
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/profile_health"
+  - $ref: "#/definitions/streams/profile_action_log"
+  - $ref: "#/definitions/streams/profile_counts_daily"
+  - $ref: "#/definitions/streams/profile_users"
+  - $ref: "#/definitions/streams/post_history"
+  - $ref: "#/definitions/streams/platform_posts"
+  - $ref: "#/definitions/streams/social_analytics"
+  - $ref: "#/definitions/streams/social_analytics_daily"
+  - $ref: "#/definitions/streams/post_analytics"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/platform_comments"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    title: Ayrshare
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Primary Profile API key (Ayrshare dashboard > API Key). Sent as a Bearer token.
+        airbyte_secret: true
+        order: 0
+      profile_keys:
+        type: string
+        title: Profile Keys
+        description: >-
+          Comma-separated Profile Keys of the User Profiles whose posts, analytics
+          and comments to read. Ayrshare returns a Profile Key only when the
+          profile is created. Leave empty to sync only the account streams.
+        airbyte_secret: true
+        order: 1
+      platforms:
+        type: array
+        title: Platforms
+        description: >-
+          Networks to read per profile for platform_posts and social_analytics.
+          A network a profile hasn't linked is skipped. X/Twitter is left out by
+          default because Ayrshare needs your own X API key headers for it.
+        items:
+          type: string
+          enum: [bluesky, facebook, gmb, instagram, linkedin, pinterest, reddit, snapchat, threads, tiktok, twitter, youtube]
+        default: [facebook, instagram, tiktok, youtube, linkedin, threads, bluesky, pinterest]
+        order: 2
