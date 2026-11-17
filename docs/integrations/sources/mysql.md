@@ -88,7 +88,7 @@ To fill out the required information:
 1. Enter the hostname, port number, and name for your MySQL database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#connection-via-ssh-tunnel), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
 3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling. On Airbyte Cloud, the connection must be encrypted: use one of these SSL modes, or an [SSH tunnel](#connection-via-ssh-tunnel).
-4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
+4. Select `Read Changes using Change Data Capture (CDC)` from available replication methods.
 
 <!-- env:cloud -->
 
@@ -99,11 +99,11 @@ our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
 Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `required`, `verify_ca` or `verify_identity`) or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop between Airbyte Cloud and your network. The `preferred` SSL mode falls back to plaintext when the server offers no TLS, so Airbyte Cloud accepts it only together with an SSH tunnel. A database on `localhost` or on a private network is reachable from Airbyte Cloud only through an SSH tunnel to a bastion host that can reach it. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
 
+<!-- /env:cloud -->
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
-If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows the Airbyte IP addresses listed above. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
-
-<!-- /env:cloud -->
+If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows connections from your Airbyte deployment. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
 
 </FieldAnchor>
 
@@ -128,6 +128,17 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 </FieldAnchor>
 
+## Limit which tables Airbyte discovers
+
+<FieldAnchor field="table_filters">
+
+Use **Table Filters** to include selected tables during schema discovery. Each filter has two fields:
+
+- **Database Name**: Must match the database configured in **Database**.
+- **Table Filter Patterns**: One or more table name patterns using SQL `LIKE` syntax. `%` matches any number of characters, and `_` matches exactly one character. For example, `orders_%` matches `orders_2024` and `orders_2025`.
+
+</FieldAnchor>
+
 ## Connecting with SSL or SSH Tunneling
 
 <FieldAnchor field="ssl">
@@ -140,8 +151,18 @@ Here is a breakdown of available SSL connection modes:
 
 - `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
 - `required` to always require encryption. The connection fails if the source doesn't support encryption. This is the default.
-- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate.
-- `verify_identity` to always require encryption and verify the identity of the source.
+- `verify_ca` to always require encryption and verify that the source's certificate was signed by the CA certificate you provide.
+- `verify_identity` to always require encryption, verify the source's certificate against the CA certificate you provide, and verify that the server's hostname matches the certificate.
+
+#### Certificates for `verify_ca` and `verify_identity`
+
+Provide the following certificates in PEM format:
+
+- **CA certificate** (required): The certificate of the authority that signed your MySQL server's certificate.
+- **Client certificate File** and **Client Key** (optional): Provide both if your MySQL server requires client certificates. The connector uses them only when you provide both.
+- **Client key password** (optional): The password for the keystores the connector creates from your certificates. If you leave it blank, the connector generates one.
+
+These settings apply to the JDBC connection and the binary log connection used for CDC.
 
 </FieldAnchor>
 
@@ -240,11 +261,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.53.10     | 2026-10-21 | [89636](https://github.com/airbytehq/airbyte/pull/89636)   | Upgrade to Bulk CDK 1.2.3: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; Kafka 4.1.2, Jetty 12.0.40, plexus-utils 3.6.2. |
 | 3.53.9      | 2026-10-20 | [89014](https://github.com/airbytehq/airbyte/pull/89014)   | Bump Debezium to 3.4.3 (Bulk CDK 1.2.1): CDC no longer fails with `Incumbent CDC state is invalid` when the GTID set gains a new server UUID.    |
-| 3.53.8      | 2026-10-12 | [88499](https://github.com/airbytehq/airbyte/pull/88499)       | Explain unreachable hosts and servers without TLS in connection errors, and document that Airbyte Cloud requires TLS or an SSH tunnel. Explain a connection test that finds no tables (missing SELECT grants, wrong database name, or a table filter that excludes every table), and retry a sync whose established MySQL connection is lost ("Communications link failure" after packets were received) instead of failing it as a configuration error. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
+| 3.53.8      | 2026-10-14 | [88499](https://github.com/airbytehq/airbyte/pull/88499)       | Explain unreachable hosts and servers without TLS in connection errors, and document that Airbyte Cloud requires TLS or an SSH tunnel. Explain a connection test that finds no tables (missing SELECT grants, wrong database name, or a table filter that excludes every table), and retry a sync whose established MySQL connection is lost ("Communications link failure" after packets were received) instead of failing it as a configuration error. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 3.53.7      | 2026-10-09 | [88430](https://github.com/airbytehq/airbyte/pull/88430)   | Upgrade to Bulk CDK 1.1.14.                                                                                                                      |
-| 3.53.6      | 2026-10-02 | [87650](https://github.com/airbytehq/airbyte/pull/87650)   | Classify MySQL EOF errors whose byte counts contain thousands separators, and the "Expected X bytes, received only Y bytes" format, as transient so syncs retry. |
-| 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
-| 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
+| 3.53.6      | 2026-10-05 | [87650](https://github.com/airbytehq/airbyte/pull/87650)   | Classify MySQL EOF errors whose byte counts contain thousands separators, and the "Expected X bytes, received only Y bytes" format, as transient so syncs retry. |
+| 3.53.5      | 2026-09-21 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
+| 3.53.4      | 2026-09-01 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
 | 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
 | 3.53.2      | 2026-08-06 | [83239](https://github.com/airbytehq/airbyte/pull/83239)   | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
 | 3.53.1      | 2026-07-13 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
