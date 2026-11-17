@@ -1,0 +1,259 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Pulls web pages and web search results from Firecrawl as clean Markdown.
+
+check:
+  type: CheckStream
+  stream_names:
+    - scrape
+
+definitions:
+  requester:
+    type: HttpRequester
+    url_base: https://api.firecrawl.dev
+    http_method: POST
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    request_headers:
+      Content-Type: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 401
+          error_message: Invalid Firecrawl API key
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 403
+          error_message: >-
+            Firecrawl denied the request (403). Check the API key and that your
+            plan allows this request.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 402
+          error_message: Firecrawl credits exhausted
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 400
+          error_message: >-
+            Firecrawl rejected the request (400). Check the URLs, search
+            queries and options.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 408
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
+
+streams:
+  - type: DeclarativeStream
+    name: scrape
+    primary_key:
+      - source_url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: /v2/scrape
+        request_body_json:
+          url: "{{ stream_partition.url }}"
+          formats:
+            - markdown
+          onlyMainContent: "{{ config.get('only_main_content', true) }}"
+          origin: airbyte
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: url
+        values: "{{ config['urls'] }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - source_url
+            value: "{{ stream_partition.url }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          source_url:
+            type: string
+          markdown:
+            type:
+              - string
+              - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              title:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              sourceURL:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              statusCode:
+                type:
+                  - integer
+                  - "null"
+              language:
+                type:
+                  - string
+                  - "null"
+  - type: DeclarativeStream
+    name: search
+    primary_key:
+      - - query
+      - - url
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: /v2/search
+        request_body_json:
+          query: "{{ stream_partition.query }}"
+          limit: "{{ config.get('search_limit', 5) }}"
+          scrapeOptions:
+            formats:
+              - markdown
+            onlyMainContent: true
+          origin: airbyte
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - web
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: query
+        values: "{{ config.get('search_queries', []) }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - query
+            value: "{{ stream_partition.query }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          query:
+            type: string
+          url:
+            type: string
+          title:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - integer
+              - "null"
+          markdown:
+            type:
+              - string
+              - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - urls
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Firecrawl API key. Get one at
+          https://www.firecrawl.dev/app/api-keys?utm_source=airbyte&utm_medium=integration
+        airbyte_secret: true
+        order: 0
+      urls:
+        type: array
+        title: URLs
+        description: Pages to scrape into Markdown.
+        minItems: 1
+        items:
+          type: string
+        order: 1
+      search_queries:
+        type: array
+        title: Search Queries
+        description: >-
+          Web searches to run. Each result includes the page content as
+          Markdown.
+        items:
+          type: string
+        order: 2
+      search_limit:
+        type: integer
+        title: Search Limit
+        description: Maximum number of results to return for each search query.
+        default: 5
+        minimum: 1
+        maximum: 20
+        order: 3
+      only_main_content:
+        type: boolean
+        title: Only Main Content
+        description: >-
+          Return only the main content of each scraped page, without headers,
+          navigation and footers.
+        default: true
+        order: 4
+    additionalProperties: true
