@@ -24,41 +24,30 @@ definitions:
             project: "{{ config[\"project_name\"] }}"
             namePrefix: "{{ config[\"nameprefix\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: Unauthorized
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: Forbidden
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 401
+                error_message: "Unleash rejected the API token (401 Unauthorized). Check that the API token is a valid client (backend) token for this Unleash instance, then update it in the connector settings."
+              - type: HttpResponseFilter
+                action: RETRY
+                failure_type: config_error
+                http_codes:
+                  - 403
+                error_message: "Unleash denied access to the feature toggles (403 Forbidden). Check that the API token has access to the configured project and environment, then update it in the connector settings."
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                failure_type: transient_error
+                http_codes:
+                  - 429
+                error_message: "Unleash rate limit reached (429 Too Many Requests). The connector retries with exponential backoff; if this persists, reduce sync frequency or raise the instance's rate limits."
         record_selector:
           type: RecordSelector
           extractor:
