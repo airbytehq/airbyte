@@ -110,6 +110,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.62 | 2026-11-17 | [93320](https://github.com/airbytehq/airbyte/pull/93320) | Update dependencies |
 | 2.6.61 | 2026-11-10 | [91676](https://github.com/airbytehq/airbyte/pull/91676) | Update dependencies |
 | 2.6.60 | 2026-11-03 | [90673](https://github.com/airbytehq/airbyte/pull/90673) | Update dependencies |
 | 2.6.59 | 2026-11-01 | [90328](https://github.com/airbytehq/airbyte/pull/90328) | Simplify error handling configuration with no change to retry, backoff, or window-splitting behavior |
