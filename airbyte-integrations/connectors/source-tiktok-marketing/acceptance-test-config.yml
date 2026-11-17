@@ -9,8 +9,8 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           # Maintainer-approved sandbox retirement uses the standard release flow.
-          # This exception expires once a version newer than 5.4.0 is published.
-          disable_for_version: "5.4.0"
+          # This exception expires once a version newer than 5.4.1 is published.
+          disable_for_version: "5.4.1"
   connection:
     tests:
       - config_path: "secrets/config.json"

@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.1 | 2026-11-17 | [93368](https://github.com/airbytehq/airbyte/pull/93368) | Update dependencies |
 | 0.3.0 | 2026-11-11 | [91538](https://github.com/airbytehq/airbyte/pull/91538) | Add `tags`, `carrier_packages` and `carrier_services` streams, declare additional `orders`, `products` and `fulfillments` fields, and set heartbeat and suggested-streams metadata |
 | 0.2.54 | 2026-11-10 | [91707](https://github.com/airbytehq/airbyte/pull/91707) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90360](https://github.com/airbytehq/airbyte/pull/90360) | Simplify rate-limit error handling configuration with no change in retry behavior |

@@ -31,6 +31,8 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
    - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
    - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams. Instead of `calendar.readonly`, you can authorize the five granular scopes Airbyte Cloud's OAuth flow requests (`calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, and `calendar.freebusy`).
 
+To find a calendar's ID, open its **Settings and sharing** in Google Calendar on a computer, then copy **Calendar ID** under **Integrate calendar**. See [Google's instructions for finding a Calendar ID](https://support.google.com/calendar/answer/44105).
+
 ## Set up the Google Calendar connector in Airbyte
 
 <!-- env:cloud -->
@@ -170,7 +172,9 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.2.1 | 2026-11-12 | [92532](https://github.com/airbytehq/airbyte/pull/92532) | Skip removed or unshared calendars during child reads while preserving configured-calendar validation. |
+| 1.2.3 | 2026-11-17 | [93219](https://github.com/airbytehq/airbyte/pull/93219) | Update dependencies |
+| 1.2.2 | 2026-11-16 | [93027](https://github.com/airbytehq/airbyte/pull/93027) | Promote to Certified (Generally Available). |
+| 1.2.1 | 2026-11-16 | [92532](https://github.com/airbytehq/airbyte/pull/92532) | Skip removed or unshared calendars during child reads while preserving configured-calendar validation. |
 | 1.2.0 | 2026-11-12 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
 | 1.1.0 | 2026-11-11 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth, custom-app authentication, credential migration, and missing-scope errors. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
