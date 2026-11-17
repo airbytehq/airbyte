@@ -160,6 +160,125 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/incident_teams"
+    container_images:
+      type: DeclarativeStream
+      name: container_images
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/container_images
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('pagination') or
+              {}).get('next_cursor') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not ((response.get('meta') or
+              {}).get('pagination') or {}).get('next_cursor') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/container_images"
+    containers:
+      type: DeclarativeStream
+      name: containers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/containers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('pagination') or
+              {}).get('next_cursor') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not ((response.get('meta') or
+              {}).get('pagination') or {}).get('next_cursor') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/containers"
+    hosts:
+      type: DeclarativeStream
+      name: hosts
+      primary_key:
+        - name
+      $parameters:
+        required_permission: hosts_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/hosts
+          http_method: GET
+          request_parameters:
+            include_hosts_metadata: "true"
+            include_muted_hosts_data: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - host_list
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/hosts"
     incidents:
       type: DeclarativeStream
       name: incidents
@@ -576,6 +695,9 @@ streams:
   - $ref: "#/definitions/streams/dashboards"
   - $ref: "#/definitions/streams/downtimes"
   - $ref: "#/definitions/streams/incident_teams"
+  - $ref: "#/definitions/streams/container_images"
+  - $ref: "#/definitions/streams/containers"
+  - $ref: "#/definitions/streams/hosts"
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/logs"
   - $ref: "#/definitions/streams/metrics"
@@ -1270,6 +1392,491 @@ schemas:
                     type:
                       - string
                     description: A unique identifier that represents the user.
+  container_images:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of Container Image. Allowed enum values: container_image"
+        enum:
+          - container_image
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes for a Container Image.
+        additionalProperties: true
+        properties:
+          container_count:
+            type:
+              - integer
+              - "null"
+            description: Number of containers running the image.
+          image_flavors:
+            type:
+              - array
+              - "null"
+            description: >-
+              Platform-specific image metadata, including size in bytes and
+              available build and operating system details.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                built_at:
+                  type:
+                    - string
+                    - "null"
+                  description: Time the platform-specific Container Image was built.
+                os_architecture:
+                  type:
+                    - string
+                    - "null"
+                  description: Operating System architecture supported by the Container Image.
+                os_name:
+                  type:
+                    - string
+                    - "null"
+                  description: Operating System name supported by the Container Image.
+                os_version:
+                  type:
+                    - string
+                    - "null"
+                  description: Operating System version supported by the Container Image.
+                size:
+                  type:
+                    - integer
+                    - "null"
+                  description: Size of the platform-specific Container Image in bytes.
+          image_tags:
+            type:
+              - array
+              - "null"
+            description: Image version tags, such as `latest` or `v1.2.3`.
+            items:
+              type: string
+          images_built_at:
+            type:
+              - array
+              - "null"
+            description: >-
+              List of build times associated with the Container Image. The list
+              contains more than 1 entry for multi-architecture images.
+            items:
+              type: string
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the Container Image.
+          os_architectures:
+            type:
+              - array
+              - "null"
+            description: List of Operating System architectures supported by the Container Image.
+            items:
+              type: string
+          os_names:
+            type:
+              - array
+              - "null"
+            description: List of Operating System names supported by the Container Image.
+            items:
+              type: string
+          os_versions:
+            type:
+              - array
+              - "null"
+            description: List of Operating System versions supported by the Container Image.
+            items:
+              type: string
+          published_at:
+            type:
+              - string
+              - "null"
+            description: Time the image was pushed to the container registry.
+          registry:
+            type:
+              - string
+              - "null"
+            description: Registry where the image is stored.
+          repo_digest:
+            type:
+              - string
+              - "null"
+            description: Digest of the compressed image manifest.
+          repository:
+            type:
+              - string
+              - "null"
+            description: Repository where the image is stored.
+          short_image:
+            type:
+              - string
+              - "null"
+            description: Short version of the Container Image name.
+          sizes:
+            type:
+              - array
+              - "null"
+            description: >-
+              Reported sizes in bytes of platform-specific images, with multiple
+              values possible for multi-architecture images.
+            items:
+              type: integer
+          sources:
+            type:
+              - array
+              - "null"
+            description: >-
+              Collection sources, such as `live_containers`, `image_check`,
+              `aws_ecr`, or `agentless_scanner`.
+            items:
+              type: string
+          tags:
+            type:
+              - array
+              - "null"
+            description: >-
+              Image tags in `key:value` form, such as `image_registry:docker.io`
+              or `status:running`.
+            items:
+              type: string
+          vulnerability_count:
+            type:
+              - object
+              - "null"
+            description: >-
+              Vulnerability counts by severity, when available. An absent
+              `vulnerability_count` does not mean the image has no
+              vulnerabilities.
+            additionalProperties: true
+            properties:
+              asset_id:
+                type:
+                  - string
+                  - "null"
+                description: ID of the Container Image.
+              critical:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with CVSS Critical severity.
+              high:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with CVSS High severity.
+              low:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with CVSS Low severity.
+              medium:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with CVSS Medium severity.
+              none:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with CVSS None severity.
+              unknown:
+                type:
+                  - integer
+                  - "null"
+                description: Number of vulnerabilities with an unknown CVSS severity.
+      id:
+        type:
+          - string
+          - "null"
+        description: >-
+          Opaque Container Image ID. Often contains a registry, repository, and
+          digest, but the format varies by collection source.
+  containers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of container. Allowed enum values: container"
+        enum:
+          - container
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes for a container.
+        additionalProperties: true
+        properties:
+          container_id:
+            type:
+              - string
+              - "null"
+            description: The ID of the container.
+          created_at:
+            type:
+              - string
+              - "null"
+            description: Time the container was created.
+          host:
+            type:
+              - string
+              - "null"
+            description: Hostname of the host running the container.
+          image_digest:
+            type:
+              - string
+              - "null"
+            description: Digest of the compressed image manifest.
+          image_name:
+            type:
+              - string
+              - "null"
+            description: Name of the associated container image.
+          image_tags:
+            type:
+              - array
+              - "null"
+            description: List of image tags associated with the container image.
+            items:
+              type: string
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the container.
+          started_at:
+            type:
+              - string
+              - "null"
+            description: Time the container was started.
+          state:
+            type:
+              - string
+              - "null"
+            description: State of the container. This depends on the container runtime.
+          tags:
+            type:
+              - array
+              - "null"
+            description: List of tags associated with the container.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: Container ID.
+  hosts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      aliases:
+        type:
+          - array
+          - "null"
+        description: Host aliases collected by Datadog.
+        items:
+          type: string
+      apps:
+        type:
+          - array
+          - "null"
+        description: The Datadog integrations reporting metrics for the host.
+        items:
+          type: string
+      aws_name:
+        type:
+          - string
+          - "null"
+        description: AWS name of your host.
+      host_name:
+        type:
+          - string
+          - "null"
+        description: The host name.
+      id:
+        type:
+          - integer
+          - "null"
+        description: The host ID.
+      is_muted:
+        type:
+          - boolean
+          - "null"
+        description: If a host is muted or unmuted.
+      last_reported_time:
+        type:
+          - integer
+          - "null"
+        description: Last time the host reported a metric data point.
+      meta:
+        type:
+          - object
+          - "null"
+        description: Metadata associated with your host.
+        additionalProperties: true
+        properties:
+          agent_checks:
+            type:
+              - array
+              - "null"
+            description: A list of Agent checks running on the host.
+            items:
+              type: array
+              items:
+                type: string
+          agent_version:
+            type:
+              - string
+              - "null"
+            description: The Datadog Agent version.
+          cpuCores:
+            type:
+              - integer
+              - "null"
+            description: The number of cores.
+          fbsdV:
+            type:
+              - array
+              - "null"
+            description: An array of FreeBSD versions.
+          gohai:
+            type:
+              - string
+              - "null"
+            description: JSON string containing system information.
+          install_method:
+            type:
+              - object
+              - "null"
+            description: Agent install method.
+            additionalProperties: true
+            properties:
+              installer_version:
+                type:
+                  - string
+                  - "null"
+                description: The installer version.
+              tool:
+                type:
+                  - string
+                  - "null"
+                description: Tool used to install the agent.
+              tool_version:
+                type:
+                  - string
+                  - "null"
+                description: The tool version.
+          macV:
+            type:
+              - array
+              - "null"
+            description: An array of Mac versions.
+          machine:
+            type:
+              - string
+              - "null"
+            description: The machine architecture.
+          nixV:
+            type:
+              - array
+              - "null"
+            description: Array of Unix versions.
+          platform:
+            type:
+              - string
+              - "null"
+            description: The OS platform.
+          processor:
+            type:
+              - string
+              - "null"
+            description: The processor.
+          pythonV:
+            type:
+              - string
+              - "null"
+            description: The Python version.
+          socket-fqdn:
+            type:
+              - string
+              - "null"
+            description: The socket fqdn.
+          socket-hostname:
+            type:
+              - string
+              - "null"
+            description: The socket hostname.
+          winV:
+            type:
+              - array
+              - "null"
+            description: An array of Windows versions.
+      metrics:
+        type:
+          - object
+          - "null"
+        description: Host Metrics collected.
+        additionalProperties: true
+        properties:
+          cpu:
+            type:
+              - number
+              - "null"
+            description: The percent of CPU used (everything but idle).
+          iowait:
+            type:
+              - number
+              - "null"
+            description: >-
+              The percent of CPU spent waiting on the IO (not reported for all
+              platforms).
+          load:
+            type:
+              - number
+              - "null"
+            description: The system load over the last 15 minutes.
+      mute_timeout:
+        type:
+          - integer
+          - "null"
+        description: Timeout of the mute applied to your host.
+      name:
+        type:
+          - string
+          - "null"
+        description: The host name.
+      sources:
+        type:
+          - array
+          - "null"
+        description: Source or cloud provider associated with your host.
+        items:
+          type: string
+      tags_by_source:
+        type:
+          - object
+          - "null"
+        description: List of tags for each source (AWS, Datadog Agent, Chef..).
+        additionalProperties: true
+      up:
+        type:
+          - boolean
+          - "null"
+        description: Whether the expected metrics are received from the host.
   incidents:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
