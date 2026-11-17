@@ -50,7 +50,7 @@ This page contains the setup guide and reference information for the [Airtable](
 5. You can use OAuth or a Personal Access Token to authenticate your Airtable account. We recommend using OAuth for Airbyte Cloud.
 
    - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
-   - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
+   - To authenticate using a personal access token, select **Personal access token** from the Authentication dropdown and enter the **Personal access token** for your Airtable account.
      :::info
      When using OAuth, you may see a `400` or `401` error causing a failed sync. If this occurs, re-authenticate your Airtable connector by clicking **Authenticate your Airtable account** again in the connector settings.
      :::
@@ -65,16 +65,20 @@ This page contains the setup guide and reference information for the [Airtable](
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
-4. Select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
+4. Select **Personal access token** from the Authentication dropdown and enter the **Personal access token** for your Airtable account.
 5. Click **Set up source**.
 <!-- /env:oss -->
+
+### OAuth integration credentials
+
+If you configure OAuth manually, open your integration in Airtable's [OAuth integrations panel](https://airtable.com/create/oauth) and copy its client ID into **Client ID**. To obtain a **Client secret**, follow Airtable's [client secret instructions](https://airtable.com/developers/web/guides/oauth-integrations#updating-your-client-secret) to generate and copy it from the integration's management page. Airtable only shows the secret when it is generated; regenerating it invalidates the previous secret, so update any other clients that use it. These values identify and authenticate your integration when the connector refreshes access tokens. In Airbyte Cloud, both values are filled in automatically when you authenticate; you do not need to provide your own integration credentials.
 
 ### Configuration options
 
 The Airtable connector provides the following optional configuration settings:
 
-- **Number of Concurrent Threads**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
-- **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
+- **Number of concurrent threads**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). The connector caps requests at 5 per second across all endpoints and bases. More threads only help when requests wait on slow responses; they do not increase this request limit. Airtable's separate limit of 50 requests per second per user or service account still applies across all clients using that account.
+- **Add base ID to stream name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
 
 ### Note on changed table names and deleted tables
 
@@ -165,6 +169,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.3 | 2026-11-17 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Improve form labels, authentication guidance, and concurrency descriptions |
 | 4.8.2 | 2026-11-17 | [93087](https://github.com/airbytehq/airbyte/pull/93087) | Update dependencies |
 | 4.8.1 | 2026-11-10 | [89120](https://github.com/airbytehq/airbyte/pull/89120) | Update dependencies |
 | 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
