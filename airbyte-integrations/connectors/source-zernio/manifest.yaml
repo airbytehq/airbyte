@@ -1,0 +1,1408 @@
+# Zernio source: Airbyte low-code (declarative) manifest.
+#
+# Zernio (https://zernio.com) is a social media API. One API key reads every
+# profile and connected social account on the team. Accounts that creators
+# connect to the team's creator campaigns are left out of team-wide reads
+# unless a request names their accountId, so everything account-scoped is
+# partitioned per account (from `accounts`, which asks for them with
+# includeCreatorAccounts=true).
+#
+# Error semantics:
+#   * bad/revoked API key (401 authentication_error) -> FAIL (config_error)
+#   * YouTube Analytics daily quota (429, Zernio's    -> IGNORE that request; the
+#     shared Google quota, resets midnight PT)           next sync gets it
+#   * other 429 / 5xx                                -> retry (Retry-After, else exponential)
+#   * per-account / per-post 400, 401 (social token  -> IGNORE that account/post
+#     expired), 403, 404, 409, 412, 422, 424            (wrong platform, too few
+#                                                       followers for demographics,
+#                                                       missing scope, post gone)
+#   * any other 4xx on a team-wide list              -> FAIL
+
+version: 7.48.0
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - profiles
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 4
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['api_key'] }}"
+
+  retry_strategies:
+    - type: WaitTimeFromHeader
+      header: Retry-After
+    - type: ExponentialBackoffStrategy
+      factor: 5
+
+  auth_failure_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    # A bad key returns 401 {"type": "authentication_error", "code": "invalid_credentials"}.
+    # A 401 for one social account's expired token has another code
+    # (TOKEN_EXPIRED) and is handled per account below.
+    predicate: "{{ response.get('type') == 'authentication_error' or response.get('code') == 'invalid_credentials' }}"
+    error_message: Zernio rejected the API key (invalid, revoked or expired). Check the API key in the connector configuration.
+
+  youtube_quota_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    # 429 {"code": "rate_limited", "platform": "google",
+    # "details": {"quotaExhausted": true, "quotaScope": "DEVELOPER"}}. It's
+    # Zernio's own Google project quota; retrying can't succeed before midnight PT.
+    predicate: "{{ response.get('details') is mapping and response['details'].get('quotaExhausted') }}"
+    error_message: YouTube Analytics daily quota exhausted on Zernio's side; skipped for this sync.
+
+  per_item_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes: [400, 401, 403, 404, 409, 412, 422, 424]
+    error_message: Not available for this account or post (wrong platform, missing scope, too few followers, expired social token or gone); skipped.
+
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    backoff_strategies:
+      $ref: "#/definitions/retry_strategies"
+    response_filters:
+      - $ref: "#/definitions/auth_failure_filter"
+      - $ref: "#/definitions/youtube_quota_filter"
+
+  per_item_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    backoff_strategies:
+      $ref: "#/definitions/retry_strategies"
+    response_filters:
+      - $ref: "#/definitions/auth_failure_filter"
+      - $ref: "#/definitions/youtube_quota_filter"
+      - $ref: "#/definitions/per_item_filter"
+
+  requester:
+    type: HttpRequester
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Accept: application/json
+    error_handler:
+      $ref: "#/definitions/error_handler"
+
+  per_item_requester:
+    $ref: "#/definitions/requester"
+    error_handler:
+      $ref: "#/definitions/per_item_error_handler"
+
+  whole_response_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  # pagination.nextCursor (posts, accounts, follower-stats)
+  next_cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('pagination', {}).get('nextCursor') }}"
+      stop_condition: "{{ not response.get('pagination', {}).get('nextCursor') }}"
+
+  skip_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: skip
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+
+  add_account_id:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: [account_id]
+        value: "{{ stream_partition.account_id }}"
+        value_type: string
+
+  # Date windows. Every window starts at config start_date at the earliest.
+  start_date: &start_date "{{ config.get('start_date') or '2025-01-01' }}"
+  # One partition per calendar year from start_date's year to this year, for
+  # endpoints capped at 366 days per request.
+  year_router: &year_router
+    type: ListPartitionRouter
+    cursor_field: year
+    # (Jinja's range() isn't available in the CDK sandbox; good through 2040.)
+    values: "{{ ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035', '2036', '2037', '2038', '2039', '2040'] | select('ge', (config.get('start_date') or '2025-01-01')[:4]) | select('le', now_utc().strftime('%Y')) | list }}"
+  year_from: &year_from "{{ [config.get('start_date') or '2025-01-01', stream_partition.year ~ '-01-01'] | max }}"
+  year_to: &year_to "{{ [stream_partition.year ~ '-12-31', today_utc().strftime('%Y-%m-%d')] | min }}"
+
+  # Hidden parent: every connected account. Children read the account id as
+  # stream_partition.account_id; platform-specific children filter the parent
+  # with $parameters.platforms.
+  all_accounts_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/streams/accounts"
+        parent_key: _id
+        partition_field: account_id
+        extra_fields:
+          - [platform]
+
+  platform_accounts:
+    $ref: "#/definitions/streams/accounts"
+    name: platform_accounts
+    retriever:
+      $ref: "#/definitions/streams/accounts/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [accounts]
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('platform') in parameters.platforms }}"
+
+  # Account-level insight endpoints share one shape:
+  # {accountId, platform, dateRange, metricType, metrics: {name: {total, values: [{date, value}]}}}
+  insights_schema: &insights_schema
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      account_id: {type: string}
+      accountId: {type: [string, "null"]}
+      platform: {type: [string, "null"]}
+      success: {type: [boolean, "null"]}
+      metricType: {type: [string, "null"]}
+      dateRange:
+        type: [object, "null"]
+        properties:
+          since: {type: [string, "null"]}
+          until: {type: [string, "null"]}
+      metrics: {type: [object, "null"]}
+      unavailableMetrics: {type: [object, array, "null"]}
+      dataDelay: {type: [string, "null"]}
+
+  # Daily series for the last 89 days (the endpoints' maximum). Each sync is a
+  # snapshot: sync as Full Refresh | Append to keep history past 89 days, and
+  # take the latest _airbyte_extracted_at per account, metric and date.
+  insights_stream:
+    type: DeclarativeStream
+    primary_key: [account_id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/per_item_requester"
+        url: "https://zernio.com/api/v1/analytics/{{ parameters.endpoint }}"
+        request_parameters:
+          accountId: "{{ stream_partition.account_id }}"
+          metricType: time_series
+          metrics: "{{ parameters.metrics }}"
+          fromDate: "{{ day_delta(-88, format='%Y-%m-%d') }}"
+          toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
+      record_selector:
+        $ref: "#/definitions/whole_response_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/platform_accounts"
+            parent_key: _id
+            partition_field: account_id
+    transformations:
+      - $ref: "#/definitions/add_account_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: *insights_schema
+
+  streams:
+    # ------------------------------------------------------------- team-wide
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/profiles"
+          request_parameters:
+            includeOverLimit: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [profiles]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            userId: {type: [string, "null"]}
+            name: {type: [string, "null"]}
+            description: {type: [string, "null"]}
+            isDefault: {type: [boolean, "null"]}
+            isOverLimit: {type: [boolean, "null"]}
+            color: {type: [string, "null"]}
+            timezone: {type: [string, "null"]}
+            externalId: {type: [string, "null"]}
+            accountUsernames: {type: [array, "null"], items: {type: string}}
+            accountCount: {type: [integer, "null"]}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+
+    # Every connected account, including over-limit profiles and the accounts
+    # creators connected to the team's creator campaigns.
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/accounts"
+          request_parameters:
+            includeCreatorAccounts: "true"
+            includeOverLimit: "true"
+            limit: "500"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [accounts]
+        paginator:
+          $ref: "#/definitions/next_cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            userId: {type: [string, "null"]}
+            profileId:
+              type: [object, "null"]
+              properties:
+                _id: {type: [string, "null"]}
+                name: {type: [string, "null"]}
+                externalId: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            platformUserId: {type: [string, "null"]}
+            username: {type: [string, "null"]}
+            displayName: {type: [string, "null"]}
+            profilePicture: {type: [string, "null"]}
+            profileUrl: {type: [string, "null"]}
+            isActive: {type: [boolean, "null"]}
+            enabled: {type: [boolean, "null"]}
+            needsReconnection: {type: [boolean, "null"]}
+            followersCount: {type: [number, "null"]}
+            followersLastUpdated: {type: [string, "null"]}
+            parentAccountId: {type: [string, "null"]}
+            tiktokAccountType: {type: [string, "null"]}
+            adsStatus: {type: [string, "null"]}
+            metaAdsSyncEnabled: {type: [boolean, "null"]}
+            platformStatus: {type: [string, "null"]}
+            permissions: {type: [array, "null"], items: {type: string}}
+            scopeAreas: {type: [array, object, "null"]}
+            lastSuccessfulPublishAt: {type: [string, "null"]}
+            lastRateLimitAt: {type: [string, "null"]}
+            lastRateLimitError: {type: [string, "null"]}
+            rateLimitedUntil: {type: [string, "null"]}
+            rateLimitCount: {type: [integer, "null"]}
+            tokenExpiresAt: {type: [string, "null"]}
+            gcpProjectId: {type: [string, "null"]}
+            intentionalDisconnectAt: {type: [string, "null"]}
+            messagingRestriction: {type: [object, string, "null"]}
+            inboundActivity: {type: [object, "null"]}
+            metadata: {type: [object, "null"]}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+
+    # Detailed health per account: token status, granted scopes, issues,
+    # recommendations, analytics sync state.
+    account_health:
+      type: DeclarativeStream
+      name: account_health
+      primary_key: [accountId]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/accounts/{{ stream_partition.account_id }}/health"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          $ref: "#/definitions/all_accounts_router"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            accountId: {type: string}
+            platform: {type: [string, "null"]}
+            username: {type: [string, "null"]}
+            displayName: {type: [string, "null"]}
+            ownerUserId: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            disconnectReason: {type: [string, "null"]}
+            disconnectionType: {type: [string, "null"]}
+            unhealthySince: {type: [string, "null"]}
+            tokenStatus: {type: [object, "null"]}
+            permissions: {type: [object, "null"]}
+            issues: {type: [array, "null"], items: {type: [object, string]}}
+            recommendations: {type: [array, "null"], items: {type: [object, string]}}
+            messagingRestriction: {type: [object, string, "null"]}
+            analyticsSync: {type: [object, "null"]}
+            platformConnection: {type: [object, "null"]}
+            integrationLane: {type: [string, "null"]}
+            inboundActivity: {type: [object, "null"]}
+
+    account_groups:
+      type: DeclarativeStream
+      name: account_groups
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/account-groups"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [groups]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            name: {type: [string, "null"]}
+            accountIds: {type: [array, "null"], items: {type: string}}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/users"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [users]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            name: {type: [string, "null"]}
+            role: {type: [string, "null"]}
+            isRoot: {type: [boolean, "null"]}
+            invitedBy: {type: [string, "null"]}
+            createdAt: {type: [string, "null"]}
+            lastLoginAt: {type: [string, "null"]}
+
+    # Plan and usage snapshot (one row).
+    usage:
+      type: DeclarativeStream
+      name: usage
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/usage-stats"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            billingSystem: {type: [string, "null"]}
+            planName: {type: [string, "null"]}
+            billingPeriod: {type: [string, "null"]}
+            limits: {type: [object, "null"]}
+            usage: {type: [object, "null"]}
+            spend: {type: [object, "null"]}
+            hasAccess: {type: [boolean, "null"]}
+            suspendedAt: {type: [string, "null"]}
+            suspensionReason: {type: [string, "null"]}
+            billingAddressInvalid: {type: [boolean, "null"]}
+            autoUpgradeEnabled: {type: [boolean, "null"]}
+
+    # ----------------------------------------------------------------- posts
+    # Posts created through Zernio (drafts, scheduled, published, failed),
+    # with one platforms[] entry per target account.
+    posts:
+      type: DeclarativeStream
+      name: posts
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/posts"
+          request_parameters:
+            source: zernio
+            includeHidden: "true"
+            sortBy: created-asc
+            limit: "500"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [posts]
+        paginator:
+          $ref: "#/definitions/next_cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema: &post_schema
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            account_id: {type: [string, "null"]}
+            origin: {type: [string, "null"]}
+            userId: {type: [object, "null"]}
+            profileId: {type: [string, "null"]}
+            title: {type: [string, "null"]}
+            content: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            visibility: {type: [string, "null"]}
+            timezone: {type: [string, "null"]}
+            scheduledFor: {type: [string, "null"]}
+            publishingClaimedAt: {type: [string, "null"]}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+            tags: {type: [array, "null"], items: {type: string}}
+            hashtags: {type: [array, "null"], items: {type: string}}
+            mentions: {type: [array, "null"], items: {type: string}}
+            crosspostingEnabled: {type: [boolean, "null"]}
+            mediaItems: {type: [array, "null"], items: {type: object}}
+            platforms: {type: [array, "null"], items: {type: object}}
+            metadata: {type: [object, "null"]}
+            recycling: {type: [object, "null"]}
+            mediaProductType: {type: [string, "null"]}
+            isAiGenerated: {type: [boolean, "null"]}
+            isSharedToFeed: {type: [boolean, "null"]}
+
+    # Posts Zernio synced from each platform (incl. ones not made through
+    # Zernio), per account so creator accounts are included.
+    external_posts:
+      type: DeclarativeStream
+      name: external_posts
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/posts"
+          request_parameters:
+            source: external
+            accountId: "{{ stream_partition.account_id }}"
+            sortBy: created-asc
+            limit: "500"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [posts]
+        paginator:
+          $ref: "#/definitions/next_cursor_paginator"
+        partition_router:
+          $ref: "#/definitions/all_accounts_router"
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema: *post_schema
+
+    # Lifetime metrics of every post (external and Zernio-made) per account,
+    # one request per calendar year (the API caps a range at 366 days).
+    post_analytics:
+      type: DeclarativeStream
+      name: post_analytics
+      primary_key: [_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/analytics"
+          request_parameters:
+            accountId: "{{ stream_partition.account_id }}"
+            source: all
+            fromDate: *year_from
+            toDate: *year_to
+            sortBy: date
+            order: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [posts]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        partition_router:
+          - $ref: "#/definitions/all_accounts_router"
+          - *year_router
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            _id: {type: string}
+            account_id: {type: [string, "null"]}
+            latePostId: {type: [string, "null"]}
+            profileId: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            platformPostUrl: {type: [string, "null"]}
+            content: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            publishedAt: {type: [string, "null"]}
+            scheduledFor: {type: [string, "null"]}
+            isExternal: {type: [boolean, "null"]}
+            isAd: {type: [boolean, "null"]}
+            mediaType: {type: [string, "null"]}
+            mediaProductType: {type: [string, "null"]}
+            isAiGenerated: {type: [boolean, "null"]}
+            isSharedToFeed: {type: [boolean, "null"]}
+            thumbnailUrl: {type: [string, "null"]}
+            mediaItems: {type: [array, "null"], items: {type: object}}
+            analytics:
+              type: [object, "null"]
+              properties:
+                impressions: {type: [number, "null"]}
+                reach: {type: [number, "null"]}
+                likes: {type: [number, "null"]}
+                comments: {type: [number, "null"]}
+                shares: {type: [number, "null"]}
+                saves: {type: [number, "null"]}
+                clicks: {type: [number, "null"]}
+                views: {type: [number, "null"]}
+                engagementRate: {type: [number, "null"]}
+                lastUpdated: {type: [string, "null"]}
+            platforms: {type: [array, "null"], items: {type: object}}
+
+    # Day-by-day metrics of every post in post_analytics since start_date.
+    post_timeline:
+      type: DeclarativeStream
+      name: post_timeline
+      primary_key: [post_id, platform, date]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/analytics/post-timeline"
+          request_parameters:
+            postId: "{{ stream_partition.post_id }}"
+            fromDate: *start_date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [timeline]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/post_analytics"
+              parent_key: _id
+              partition_field: post_id
+              extra_fields:
+                - [account_id]
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ stream_partition.post_id }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [account_id]
+              value: "{{ stream_partition.extra_fields['account_id'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            post_id: {type: string}
+            account_id: {type: [string, "null"]}
+            date: {type: string}
+            platform: {type: string}
+            platformPostId: {type: [string, "null"]}
+            impressions: {type: [number, "null"]}
+            reach: {type: [number, "null"]}
+            likes: {type: [number, "null"]}
+            comments: {type: [number, "null"]}
+            shares: {type: [number, "null"]}
+            saves: {type: [number, "null"]}
+            clicks: {type: [number, "null"]}
+            views: {type: [number, "null"]}
+            follows: {type: [number, "null"]}
+            replays: {type: [number, "null"]}
+            reposts: {type: [number, "null"]}
+            completionRate: {type: [number, "null"]}
+            profileViews: {type: [number, "null"]}
+            websiteClicks: {type: [number, "null"]}
+            igReelsAvgWatchTime: {type: [number, "null"]}
+            igReelsVideoViewTotalTime: {type: [number, "null"]}
+            reelsSkipRate: {type: [number, "null"]}
+            impressionSources: {type: [object, "null"]}
+            audienceTypes: {type: [object, "null"]}
+            audienceCountries: {type: [object, "null"]}
+            retentionCurve: {type: [object, "null"]}
+
+    # --------------------------------------------------------- account metrics
+    # Daily follower count per account since start_date (Zernio snapshots).
+    follower_stats:
+      type: DeclarativeStream
+      name: follower_stats
+      primary_key: [account_id, date]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/accounts/follower-stats"
+          request_parameters:
+            accountIds: "{{ stream_partition.account_id }}"
+            granularity: daily
+            fromDate: *year_from
+            toDate: *year_to
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            # stats: {<accountId>: [{date, followers}]}; one account per request.
+            field_path: [stats, "*", "*"]
+        partition_router:
+          - $ref: "#/definitions/all_accounts_router"
+          - *year_router
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            account_id: {type: string}
+            date: {type: string}
+            followers: {type: [number, "null"]}
+
+    # Daily post metrics per account. attribution=publish sums each post's
+    # lifetime metrics on its publish day; received buckets the engagement by
+    # the day it arrived.
+    daily_metrics:
+      type: DeclarativeStream
+      name: daily_metrics
+      primary_key: [account_id, attribution, date]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/analytics/daily-metrics"
+          request_parameters:
+            accountId: "{{ stream_partition.account_id }}"
+            attribution: "{{ stream_partition.attribution }}"
+            fromDate: *start_date
+            toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [dailyData]
+        partition_router:
+          - $ref: "#/definitions/all_accounts_router"
+          - type: ListPartitionRouter
+            cursor_field: attribution
+            values: [publish, received]
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [attribution]
+              value: "{{ stream_partition.attribution }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            account_id: {type: string}
+            attribution: {type: string}
+            date: {type: string}
+            postCount: {type: [integer, "null"]}
+            platforms: {type: [object, "null"]}
+            platformMetrics: {type: [object, "null"]}
+            metrics:
+              type: [object, "null"]
+              properties:
+                impressions: {type: [number, "null"]}
+                reach: {type: [number, "null"]}
+                likes: {type: [number, "null"]}
+                comments: {type: [number, "null"]}
+                shares: {type: [number, "null"]}
+                saves: {type: [number, "null"]}
+                clicks: {type: [number, "null"]}
+                views: {type: [number, "null"]}
+
+    facebook_page_insights:
+      $ref: "#/definitions/insights_stream"
+      name: facebook_page_insights
+      $parameters:
+        platforms: [facebook]
+        endpoint: facebook/page-insights
+        metrics: page_media_view,page_total_media_view_unique,page_views_total,page_post_engagements,page_video_views,page_video_view_time,page_follows,page_actions_post_reactions_like_total,page_actions_post_reactions_love_total,page_actions_post_reactions_wow_total,page_actions_post_reactions_haha_total,page_actions_post_reactions_sorry_total,page_actions_post_reactions_anger_total,followers_gained,followers_lost
+
+    # Instagram only serves `reach` as a daily series; the other account
+    # metrics are totals (instagram_daily_totals).
+    instagram_account_insights:
+      $ref: "#/definitions/insights_stream"
+      name: instagram_account_insights
+      $parameters:
+        platforms: [instagram]
+        endpoint: instagram/account-insights
+        metrics: reach
+
+    instagram_follower_history:
+      $ref: "#/definitions/insights_stream"
+      name: instagram_follower_history
+      $parameters:
+        platforms: [instagram]
+        endpoint: instagram/follower-history
+        metrics: follower_count,followers_gained,followers_lost
+
+    tiktok_account_insights:
+      $ref: "#/definitions/insights_stream"
+      name: tiktok_account_insights
+      $parameters:
+        platforms: [tiktok]
+        endpoint: tiktok/account-insights
+        metrics: follower_count,following_count,likes_count,video_count,video_views,likes,comments,shares,profile_views,followers_gained,followers_lost
+
+    # Uses Zernio's shared YouTube Analytics quota: on a day it's exhausted the
+    # request is skipped (youtube_quota_filter) and the next sync fills the gap.
+    youtube_channel_insights:
+      $ref: "#/definitions/insights_stream"
+      name: youtube_channel_insights
+      $parameters:
+        platforms: [youtube]
+        endpoint: youtube/channel-insights
+        metrics: views,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost,followers_gained,followers_lost
+
+    # Instagram account totals for single days: each sync reads the 3 days
+    # ending 2 days ago (Meta delays up to 48 h), one request per day. Sync as
+    # append and take the latest _airbyte_extracted_at per account and day.
+    instagram_daily_totals:
+      type: DeclarativeStream
+      name: instagram_daily_totals
+      primary_key: [account_id, day]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/analytics/instagram/account-insights"
+          request_parameters:
+            accountId: "{{ stream_partition.account_id }}"
+            metricType: total_value
+            metrics: reach,views,accounts_engaged,total_interactions,comments,likes,saves,shares,replies,reposts,follows_and_unfollows,profile_links_taps,profile_views,website_clicks
+            fromDate: "{{ day_delta(-(stream_partition.days_ago | int), format='%Y-%m-%d') }}"
+            toDate: "{{ day_delta(-(stream_partition.days_ago | int), format='%Y-%m-%d') }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/platform_accounts"
+                  $parameters:
+                    platforms: [instagram]
+                parent_key: _id
+                partition_field: account_id
+          - type: ListPartitionRouter
+            cursor_field: days_ago
+            values: ["2", "3", "4"]
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [day]
+              value: "{{ day_delta(-(stream_partition.days_ago | int), format='%Y-%m-%d') }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            account_id: {type: string}
+            day: {type: string}
+            accountId: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            metricType: {type: [string, "null"]}
+            dateRange: {type: [object, "null"]}
+            metrics: {type: [object, "null"]}
+            dataDelay: {type: [string, "null"]}
+
+    # Follower demographics per account (Facebook: country/city; Instagram,
+    # TikTok: age/gender/country/city; YouTube: age/gender/country). Accounts
+    # under ~100 followers get a 400 and are skipped. Append = a snapshot per sync.
+    audience_demographics:
+      type: DeclarativeStream
+      name: audience_demographics
+      primary_key: [account_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/analytics/{{ stream_partition.extra_fields['platform'] }}/demographics"
+          request_parameters:
+            accountId: "{{ stream_partition.account_id }}"
+        record_selector:
+          $ref: "#/definitions/whole_response_selector"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/platform_accounts"
+                $parameters:
+                  platforms: [facebook, instagram, tiktok, youtube]
+              parent_key: _id
+              partition_field: account_id
+              extra_fields:
+                - [platform]
+      transformations:
+        - $ref: "#/definitions/add_account_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            account_id: {type: string}
+            accountId: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            metric: {type: [string, "null"]}
+            timeframe: {type: [string, "null"]}
+            snapshotDate: {type: [string, "null"]}
+            dateRange: {type: [object, "null"]}
+            demographics: {type: [object, "null"]}
+            note: {type: [string, "null"]}
+
+    # -------------------------------------------------------------- comments
+    # Each account's posts with their comment counts (the inbox feed).
+    commented_posts:
+      type: DeclarativeStream
+      name: commented_posts
+      primary_key: [accountId, id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/inbox/comments"
+          request_parameters:
+            accountId: "{{ stream_partition.account_id }}"
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('nextCursor') }}"
+            stop_condition: "{{ not response.get('pagination', {}).get('hasMore') or not response.get('pagination', {}).get('nextCursor') }}"
+        partition_router:
+          $ref: "#/definitions/all_accounts_router"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            accountId: {type: string}
+            accountUsername: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            content: {type: [string, "null"]}
+            picture: {type: [string, "null"]}
+            permalink: {type: [string, "null"]}
+            createdTime: {type: [string, "null"]}
+            commentCount: {type: [integer, "null"]}
+            likeCount: {type: [integer, "null"]}
+            isAd: {type: [boolean, "null"]}
+            adId: {type: [string, "null"]}
+            subreddit: {type: [string, "null"]}
+
+    # Top-level comments (replies nested in `replies`) on every commented post.
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key: [account_id, post_id, id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/inbox/comments/{{ stream_partition.post_id }}"
+          request_parameters:
+            accountId: "{{ stream_partition.extra_fields['accountId'] }}"
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [comments]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ not response.get('pagination', {}).get('hasMore') or not response.get('pagination', {}).get('cursor') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/commented_posts"
+                retriever:
+                  $ref: "#/definitions/streams/commented_posts/retriever"
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: [data]
+                    record_filter:
+                      type: RecordFilter
+                      condition: "{{ (record.get('commentCount') or 0) > 0 }}"
+              parent_key: id
+              partition_field: post_id
+              extra_fields:
+                - [accountId]
+                - [platform]
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ stream_partition.post_id }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path: [account_id]
+              value: "{{ stream_partition.extra_fields['accountId'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            post_id: {type: string}
+            account_id: {type: string}
+            platform: {type: [string, "null"]}
+            message: {type: [string, "null"]}
+            createdTime: {type: [string, "null"]}
+            from: {type: [object, "null"]}
+            likeCount: {type: [integer, "null"]}
+            replyCount: {type: [integer, "null"]}
+            url: {type: [string, "null"]}
+            replies: {type: [array, "null"], items: {type: object}}
+            isHidden: {type: [boolean, "null"]}
+            isPinned: {type: [boolean, "null"]}
+            isLiked: {type: [boolean, "null"]}
+
+    # ------------------------------------------------------------------ logs
+    # Publishing, connection, token-refresh, workflow and comment-automation
+    # logs (Zernio keeps 90 days). Incremental on created_at so history
+    # outlives the 90 days. Left out: api_request (mostly this connector's own
+    # calls) and the messaging types (DM content).
+    logs:
+      type: DeclarativeStream
+      name: logs
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/logs"
+          request_parameters:
+            type: "{{ stream_partition.type }}"
+            days: "90"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [logs]
+        paginator:
+          $ref: "#/definitions/skip_paginator"
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: type
+          # The API rejects "webhooks" although the docs list it.
+          values: [publishing, connections, token_refresh, workflow_event, comment_automation]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats: ["%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"]
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(-89, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            type: {type: [string, "null"]}
+            created_at: {type: string}
+            action: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            status_code: {type: [integer, "null"]}
+            user_id: {type: [string, "null"]}
+            profile_id: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            account_id: {type: [string, "null"]}
+            account_username: {type: [string, "null"]}
+            post_id: {type: [string, "null"]}
+            platform_post_id: {type: [string, "null"]}
+            platform_post_url: {type: [string, "null"]}
+            content_preview: {type: [string, "null"]}
+            media_count: {type: [integer, "null"]}
+            attempt_number: {type: [integer, "null"]}
+            error_message: {type: [string, "null"]}
+            error_code: {type: [string, "null"]}
+            error_reason: {type: [string, "null"]}
+            is_permanent: {type: [integer, "null"]}
+            duration_ms: {type: [integer, "null"]}
+            event: {type: [string, "null"]}
+            event_type: {type: [string, "null"]}
+            event_id: {type: [string, "null"]}
+            webhook_id: {type: [string, "null"]}
+            webhook_name: {type: [string, "null"]}
+            url: {type: [string, "null"]}
+            connection_method: {type: [string, "null"]}
+            is_reconnection: {type: [integer, "null"]}
+            disconnected: {type: [integer, "null"]}
+            endpoint: {type: [string, "null"]}
+            username: {type: [string, "null"]}
+            success_username: {type: [string, "null"]}
+            success_account_type: {type: [string, "null"]}
+            is_byok: {type: [integer, "null"]}
+            expires_in_days: {type: [integer, "null"]}
+            skip_reason: {type: [string, "null"]}
+            response_time_ms: {type: [integer, "null"]}
+            metadata: {type: [string, "null"]}
+
+    # ------------------------------------------------------ creator campaigns
+    # Zernio's creator-campaign product (campaigns, participants, submitted
+    # posts with views/earnings). Empty until the team runs a campaign.
+    creator_campaigns:
+      type: DeclarativeStream
+      name: creator_campaigns
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          url: "https://zernio.com/api/v1/creator-campaigns"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [campaigns]
+        paginator:
+          $ref: "#/definitions/skip_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            userId: {type: [string, "null"]}
+            profileId: {type: [string, "null"]}
+            kind: {type: [string, "null"]}
+            name: {type: [string, "null"]}
+            brandName: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            type: {type: [string, "null"]}
+            currency: {type: [string, "null"]}
+            platforms: {type: [array, "null"], items: {type: string}}
+            contentRules: {type: [string, "null"]}
+            startsAt: {type: [string, "null"]}
+            endsAt: {type: [string, "null"]}
+            trackingDays: {type: [integer, "null"]}
+            holdDays: {type: [integer, "null"]}
+            settlement: {type: [string, "null"]}
+            economics: {type: [object, "null"]}
+            caps: {type: [object, "null"]}
+            branding: {type: [object, "null"]}
+            consumedCents: {type: [number, "null"]}
+            payableCents: {type: [number, "null"]}
+            participantCount: {type: [integer, "null"]}
+            submissionCounts: {type: [object, "null"]}
+            activatedAt: {type: [string, "null"]}
+            closedAt: {type: [string, "null"]}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+
+    creator_campaign_participants:
+      type: DeclarativeStream
+      name: creator_campaign_participants
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/creator-campaigns/{{ stream_partition.campaign_id }}/participants"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [participants]
+        paginator:
+          $ref: "#/definitions/skip_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/creator_campaigns"
+              parent_key: id
+              partition_field: campaign_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            campaignId: {type: [string, "null"]}
+            creator: {type: [object, "null"]}
+            status: {type: [string, "null"]}
+            joinedAt: {type: [string, "null"]}
+            accounts: {type: [array, "null"], items: {type: object}}
+            balances: {type: [object, "null"]}
+            flags: {type: [array, "null"], items: {type: object}}
+            submissionCounts: {type: [object, "null"]}
+            payout: {type: [object, "null"]}
+
+    creator_campaign_submissions:
+      type: DeclarativeStream
+      name: creator_campaign_submissions
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_item_requester"
+          url: "https://zernio.com/api/v1/creator-campaigns/{{ stream_partition.campaign_id }}/submissions"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [submissions]
+        paginator:
+          $ref: "#/definitions/skip_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/creator_campaigns"
+              parent_key: id
+              partition_field: campaign_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id: {type: string}
+            campaignId: {type: [string, "null"]}
+            participantId: {type: [string, "null"]}
+            creatorId: {type: [string, "null"]}
+            accountId: {type: [string, "null"]}
+            platform: {type: [string, "null"]}
+            platformPostId: {type: [string, "null"]}
+            platformPostUrl: {type: [string, "null"]}
+            externalPostId: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            rejectReason: {type: [string, "null"]}
+            submittedAt: {type: [string, "null"]}
+            postPublishedAt: {type: [string, "null"]}
+            reviewedAt: {type: [string, "null"]}
+            viewsAtSubmission: {type: [number, "null"]}
+            viewsLatest: {type: [number, "null"]}
+            viewsEligible: {type: [number, "null"]}
+            viewsPaid: {type: [number, "null"]}
+            engagementsLatest: {type: [number, "null"]}
+            accruedCents: {type: [number, "null"]}
+            approvedCents: {type: [number, "null"]}
+            earnedCents: {type: [number, "null"]}
+            releasedCents: {type: [number, "null"]}
+            paidOutCents: {type: [number, "null"]}
+            authenticityScore: {type: [number, "null"]}
+            authenticityConfidence: {type: [number, string, "null"]}
+            flags: {type: [array, "null"], items: {type: object}}
+            creator: {type: [object, "null"]}
+            authenticity: {type: [object, "null"]}
+            window: {type: [object, "null"]}
+            post: {type: [object, "null"]}
+            createdAt: {type: [string, "null"]}
+            updatedAt: {type: [string, "null"]}
+
+streams:
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/account_health"
+  - $ref: "#/definitions/streams/account_groups"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/usage"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/external_posts"
+  - $ref: "#/definitions/streams/post_analytics"
+  - $ref: "#/definitions/streams/post_timeline"
+  - $ref: "#/definitions/streams/follower_stats"
+  - $ref: "#/definitions/streams/daily_metrics"
+  - $ref: "#/definitions/streams/facebook_page_insights"
+  - $ref: "#/definitions/streams/instagram_account_insights"
+  - $ref: "#/definitions/streams/instagram_follower_history"
+  - $ref: "#/definitions/streams/instagram_daily_totals"
+  - $ref: "#/definitions/streams/tiktok_account_insights"
+  - $ref: "#/definitions/streams/youtube_channel_insights"
+  - $ref: "#/definitions/streams/audience_demographics"
+  - $ref: "#/definitions/streams/commented_posts"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/logs"
+  - $ref: "#/definitions/streams/creator_campaigns"
+  - $ref: "#/definitions/streams/creator_campaign_participants"
+  - $ref: "#/definitions/streams/creator_campaign_submissions"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    title: Zernio
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Zernio API key (dashboard > API Keys). Sent as a Bearer token; reads every profile on the team.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          Earliest date (YYYY-MM-DD) for post analytics, post timelines,
+          follower stats and daily metrics. Zernio only holds what it has synced
+          since each account was connected, so an earlier date costs a few empty
+          requests, nothing more.
+        pattern: ^\d{4}-\d{2}-\d{2}$
+        default: "2025-01-01"
+        order: 1
