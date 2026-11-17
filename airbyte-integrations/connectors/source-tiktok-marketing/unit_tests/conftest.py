@@ -1,7 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import datetime
-import os
 import sys
 from pathlib import Path
 
@@ -14,8 +13,6 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
-
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 def _get_manifest_path() -> Path:
@@ -35,6 +32,11 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
+@pytest.fixture(autouse=True)
+def request_cache_path(monkeypatch, tmp_path):
+    monkeypatch.setenv("REQUEST_CACHE_PATH", str(tmp_path / "request_cache"))
 
 
 @pytest.fixture(autouse=True)
