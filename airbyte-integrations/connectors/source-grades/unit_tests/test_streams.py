@@ -163,7 +163,20 @@ def test_reviews_without_text_when_the_flag_is_off() -> None:
                     "limit": "100",
                 },
             ),
-            _json({"data": [_review("r1", "2026-07-01T10:00:00Z")], "meta": {"next_cursor": None}}),
+            _json(
+                {
+                    "data": [
+                        _review(
+                            "r1",
+                            "2026-07-01T10:00:00Z",
+                            language="es",
+                            text_en="Great visit",
+                            translation={"status": "available", "text": "Great visit", "source_language": "es", "target_language": "en"},
+                        )
+                    ],
+                    "meta": {"next_cursor": None},
+                }
+            ),
         )
 
         output = _read("reviews", _config(start_date="2026-06-01", include_review_text=False))
@@ -171,7 +184,9 @@ def test_reviews_without_text_when_the_flag_is_off() -> None:
     assert output.records, " | ".join([str(e)[:3000] for e in output.errors] + [m.log.message for m in output.logs[-6:]])
     data = output.records[0].record.data
     assert data.get("text") is None and data.get("title") is None
-    assert data["rating"] == 5 and data["author"] == "Jane D."
+    # The machine translations of the text are the text too.
+    assert data.get("text_en") is None and data.get("translation") is None
+    assert data["rating"] == 5 and data["author"] == "Jane D." and data["language"] == "es"
 
 
 @freeze_time(_NOW)
@@ -192,6 +207,11 @@ def test_review_replies_keep_only_reply_fields() -> None:
                             response_text="Thanks!",
                             response_date="2026-07-02T09:00:00Z",
                             response_author="Alpha",
+                            language="es",
+                            site_name="Google",
+                            text_en="Great visit",
+                            translation={"status": "available", "text": "Great visit", "source_language": "es", "target_language": "en"},
+                            reply={"status": "published", "text": "Thanks!"},
                         )
                     ],
                     "meta": {"next_cursor": None},
@@ -204,6 +224,8 @@ def test_review_replies_keep_only_reply_fields() -> None:
     data = output.records[0].record.data
     assert data["review_uuid"] == "r1" and data["response_text"] == "Thanks!"
     assert "text" not in data and "uuid" not in data and "author" not in data
+    assert "text_en" not in data and "translation" not in data
+    assert data["language"] == "es" and data["site_name"] == "Google" and data["reply"]["status"] == "published"
 
 
 @freeze_time(_NOW)

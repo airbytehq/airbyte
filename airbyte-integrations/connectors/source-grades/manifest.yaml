@@ -346,7 +346,8 @@ streams:
         $ref: "#/definitions/company_partitions"
     transformations:
       - $ref: "#/definitions/add_company_uuid"
-      # include_review_text off: text and title are dropped from the record (null columns in the destination).
+      # include_review_text off: text and title, and the machine translations of the text (text_en, translation), are
+      # dropped from the record (null columns in the destination).
       - type: AddFields
         condition: "{{ not config.get('include_review_text', True) }}"
         fields:
@@ -357,6 +358,14 @@ streams:
           - type: AddedFieldDefinition
             path:
               - title
+            value: "{{ None }}"
+          - type: AddedFieldDefinition
+            path:
+              - text_en
+            value: "{{ None }}"
+          - type: AddedFieldDefinition
+            path:
+              - translation
             value: "{{ None }}"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -418,6 +427,8 @@ streams:
           - - created_at
           - - tags
           - - sentiment
+          - - text_en
+          - - translation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -541,6 +552,16 @@ streams:
             path:
               - review
               - text
+            value: "{{ None }}"
+          - type: AddedFieldDefinition
+            path:
+              - review
+              - text_en
+            value: "{{ None }}"
+          - type: AddedFieldDefinition
+            path:
+              - review
+              - translation
             value: "{{ None }}"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -883,8 +904,8 @@ spec:
         type: boolean
         title: Include Review Text
         description: >-
-          Sync the text and title of each review (on by default: it is your own data). Off removes them from reviews
-          and from the review agent's queue.
+          Sync the text and title of each review (on by default: it is your own data). Off removes them, and their
+          machine translations, from reviews and from the review agent's queue.
         default: true
         order: 4
       lookback_days:
@@ -920,10 +941,10 @@ concurrency_level:
 schemas:
   locations:
     $schema: "http://json-schema.org/draft-07/schema#"
+    description: "A company (location) in API v1."
     type: "object"
     properties:
       uuid:
-        description: "A company (location) in API v1."
         type: "string"
       name:
         type:
@@ -1064,13 +1085,13 @@ schemas:
     additionalProperties: true
   sources:
     $schema: "http://json-schema.org/draft-07/schema#"
+    description: "A connected review source in API v1, with its parse (sync) state."
     type: "object"
     properties:
       company_uuid:
         type: "string"
         description: "The business (uuid of GET /api/v1/companies) the row belongs to."
       driver:
-        description: "A connected review source in API v1, with its parse (sync) state."
         type: "string"
       display_name:
         description: "Display name of the review site. A source of Client Hub reviews (`driver` = `api`) is named after its site (`Google`), never `Api`."
@@ -1078,7 +1099,7 @@ schemas:
           - "string"
           - "null"
       site:
-        description: "The review site the source is shown under: `driver`, except for Client Hub reviews (`driver` = `api`), which name their site (`google`). Use it to pick a logo."
+        description: "The review platform of the source (`google`, `yelp`, `bbb`, ...; Client Hub sources name their site, an `api` source without one is `direct`, Grades.com reviews `grades`). `driver` is the collector, an internal id that may change; use `site` for logos and filters."
         type:
           - "string"
           - "null"
@@ -1159,16 +1180,31 @@ schemas:
           - "null"
         description: "The business (uuid of GET /api/v1/companies) the row belongs to."
       uuid:
-        description: "Review representations for API v1 (authenticated) and the public reviews API. `author`/`avatar` honour the per-review overrides set in the dashboard. The public shape carries only what the review platform itself shows publicly."
         type: "string"
       source:
-        description: "Review site (driver)."
+        description: "The collector that stored the review: an internal id (`yelp_apify`, `google_maps`, `api`, ...) that may change. Show `source_name` and filter by `site`."
+        type:
+          - "string"
+          - "null"
+      source_name:
+        description: "Display name of the review platform, e.g. `Google`, `Yelp`, `Direct` (added by the business through the API), `Grades.com`."
+        type:
+          - "string"
+          - "null"
+      site:
+        description: "The review platform: `google`, `yelp`, `facebook`, `bbb`, ..., `direct` (added by the business through the API) or `grades` (left on Grades.com). The same for every collector of one platform (Client Hub Google reviews are `google`); use it for logos and filters."
         type:
           - "string"
           - "null"
       rating:
+        description: "Stars, 1 to 5. Null for a review without stars, such as a Facebook recommendation (see `recommendation`)."
         type:
           - "integer"
+          - "null"
+      recommendation:
+        description: "A Facebook recommendation (\"recommends\" / \"doesn't recommend\"): `positive` or `negative`; null for any other review. A recommendation has no stars (`rating` is null) and is never part of a star average."
+        type:
+          - "string"
           - "null"
       text:
         type:
@@ -1203,16 +1239,6 @@ schemas:
           - "null"
         format: "date-time"
         airbyte_type: "timestamp_with_timezone"
-      source_name:
-        description: "Display name of the review site, e.g. `Google`. Reviews the Client Hub pushed (`source` = `api`) are named after their site, never `Api`; `api` reviews without a site (added by the business through the API) are `Direct`."
-        type:
-          - "string"
-          - "null"
-      site:
-        description: "The review site the review is shown under: `source`, except for Client Hub reviews (`source` = `api`), which name their site (`google`); `api` reviews without a site stay `api`. Use it to pick a logo."
-        type:
-          - "string"
-          - "null"
       title:
         type:
           - "string"
@@ -1248,12 +1274,12 @@ schemas:
         format: "date-time"
         airbyte_type: "timestamp_with_timezone"
       removal_reason:
-        description: "Why the review is removed: `removed_from_source` (no longer returned by the review site). Null while the review is live."
+        description: "Why the review is removed: `removed_from_source` (no longer returned by the review site), `deleted_by_owner` (the business deleted it from its list), `source_removed` (the business disconnected its review site; the review is kept in the archive). Null while the review is live."
         type:
           - "string"
           - "null"
       created_at:
-        description: "When Grades first collected the review."
+        description: "When the review reached Grades.com (collected from its site, pushed by the Client Hub, sent through the API or left on Grades.com: see `arrival`). A review sent through the API was not collected or verified by Grades.com."
         type:
           - "string"
           - "null"
@@ -1299,10 +1325,126 @@ schemas:
                 - "null"
           additionalProperties: true
       sentiment:
-        description: "positive, neutral, negative or mixed (null until analysed)."
+        description: "positive, neutral, negative or mixed (null until analyzed)."
         type:
           - "string"
           - "null"
+      site_name:
+        description: "The name owners read for the review platform (`site`): the brand, \"Reviews on Grades.com\" (`grades`), \"Added via API\" (`direct`) or \"Imported\" (a file import)."
+        type:
+          - "string"
+          - "null"
+      source_kind:
+        description: "Where the review is FROM: `site` (a review site, named in `origin_name`), `grades` (left on Grades.com), `own_system` (the business own system, named by the label it was created with), `unknown` (sent through the API or imported without saying where from). How it got here is `arrival`."
+        type:
+          - "string"
+          - "null"
+      source_phrase:
+        description: "Where the review is from, in words: \"on Google\", \"on Yelp\", \"on Grades.com\", \"from your WooCommerce store\", or \"source not given (added through the API)\" / \"source not given (imported from a file)\". Never \"on Added via API\"."
+        type:
+          - "string"
+          - "null"
+      origin_name:
+        description: "The name of where the review is from (\"Google\", \"Grades.com\", the own-system label), null when not given."
+        type:
+          - "string"
+          - "null"
+      arrival:
+        description: "How the review reached Grades.com: `collected` (from its site), `hub` (pushed by the Client Hub), `api` (sent through the API), `import` (a file import), `review_page` (left on the review page)."
+        type:
+          - "string"
+          - "null"
+      text_policy:
+        description: "`aggregate`: a source shown only as a rating and a link (Yelp) whose `text`, `author`, `avatar` and `response_text` are withheld (send `yelp_consent=true` after recording the Yelp consent). `yelp_consent`: that text is included after consent, for internal use only. Null for every other review."
+        type:
+          - "string"
+          - "null"
+      text_hint:
+        description: "Why the text is withheld and how to get it (with `text_policy: aggregate`), else null. Written for developers: show people `text_notice` instead."
+        type:
+          - "string"
+          - "null"
+      text_notice:
+        description: "With `text_policy: aggregate`: the plain sentence to show people where the text would be (a cell, a row, a message), else null. Never contains the review text."
+        type:
+          - "string"
+          - "null"
+      language:
+        description: "The review's language (ISO 639-1), null when it cannot be told."
+        type:
+          - "string"
+          - "null"
+      text_en:
+        description: "Machine translation of `text` into English (\"Translated by AI\", docs/review-agent.md \"Languages\"): null when the review is in English, its language cannot be told, the text is withheld, or no translation was made yet (`translation.status` `missing`: POST .../reviews/{review}/translation)."
+        type:
+          - "string"
+          - "null"
+      translation:
+        description: "A machine translation for the owner. Always show `label` (\"Translated by AI\") and keep the original visible: the original is the text of record."
+        type:
+          - "object"
+          - "null"
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+          text:
+            type:
+              - "string"
+              - "null"
+          source_language:
+            type:
+              - "string"
+              - "null"
+          target_language:
+            type:
+              - "string"
+              - "null"
+          label:
+            type:
+              - "string"
+              - "null"
+          machine_translated:
+            type:
+              - "boolean"
+              - "null"
+          model:
+            type:
+              - "string"
+              - "null"
+          created_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          reason:
+            type:
+              - "string"
+              - "null"
+        additionalProperties: true
+      reply:
+        description: "The business's reply, null when there is none. `status` `published`: the review site shows it (`response_text`); `saved`: saved in Grades.com and not posted to the site (a site without a reply API, or `publish: false`): the review counts as replied, the owner still posts it on the site. `text` is withheld with `text_policy: aggregate`. `has_company_response` filters on the same rule."
+        type:
+          - "object"
+          - "null"
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+          text:
+            type:
+              - "string"
+              - "null"
+          replied_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+        additionalProperties: true
     additionalProperties: true
   review_replies:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1317,21 +1459,52 @@ schemas:
         type: "string"
         description: "The review the reply belongs to."
       source:
-        description: "Review site (driver)."
+        description: "The collector that stored the review: an internal id (`yelp_apify`, `google_maps`, `api`, ...) that may change. Show `source_name` and filter by `site`."
         type:
           - "string"
           - "null"
       source_name:
-        description: "Display name of the review site, e.g. `Google`. Reviews the Client Hub pushed (`source` = `api`) are named after their site, never `Api`; `api` reviews without a site (added by the business through the API) are `Direct`."
+        description: "Display name of the review platform, e.g. `Google`, `Yelp`, `Direct` (added by the business through the API), `Grades.com`."
         type:
           - "string"
           - "null"
       site:
-        description: "The review site the review is shown under: `source`, except for Client Hub reviews (`source` = `api`), which name their site (`google`); `api` reviews without a site stay `api`. Use it to pick a logo."
+        description: "The review platform: `google`, `yelp`, `facebook`, `bbb`, ..., `direct` (added by the business through the API) or `grades` (left on Grades.com). The same for every collector of one platform (Client Hub Google reviews are `google`); use it for logos and filters."
+        type:
+          - "string"
+          - "null"
+      site_name:
+        description: "The name owners read for the review platform (`site`): the brand, \"Reviews on Grades.com\" (`grades`), \"Added via API\" (`direct`) or \"Imported\" (a file import)."
+        type:
+          - "string"
+          - "null"
+      source_kind:
+        description: "Where the review is FROM: `site` (a review site, named in `origin_name`), `grades` (left on Grades.com), `own_system` (the business own system, named by the label it was created with), `unknown` (sent through the API or imported without saying where from). How it got here is `arrival`."
+        type:
+          - "string"
+          - "null"
+      source_phrase:
+        description: "Where the review is from, in words: \"on Google\", \"on Yelp\", \"on Grades.com\", \"from your WooCommerce store\", or \"source not given (added through the API)\" / \"source not given (imported from a file)\". Never \"on Added via API\"."
+        type:
+          - "string"
+          - "null"
+      origin_name:
+        description: "The name of where the review is from (\"Google\", \"Grades.com\", the own-system label), null when not given."
+        type:
+          - "string"
+          - "null"
+      arrival:
+        description: "How the review reached Grades.com: `collected` (from its site), `hub` (pushed by the Client Hub), `api` (sent through the API), `import` (a file import), `review_page` (left on the review page)."
+        type:
+          - "string"
+          - "null"
+      language:
+        description: "The review's language (ISO 639-1), null when it cannot be told."
         type:
           - "string"
           - "null"
       rating:
+        description: "Stars, 1 to 5. Null for a review without stars, such as a Facebook recommendation (see `recommendation`)."
         type:
           - "integer"
           - "null"
@@ -1367,6 +1540,42 @@ schemas:
           - "null"
         format: "date-time"
         airbyte_type: "timestamp_with_timezone"
+      reply:
+        description: "The business's reply, null when there is none. `status` `published`: the review site shows it (`response_text`); `saved`: saved in Grades.com and not posted to the site (a site without a reply API, or `publish: false`): the review counts as replied, the owner still posts it on the site. `text` is withheld with `text_policy: aggregate`. `has_company_response` filters on the same rule."
+        type:
+          - "object"
+          - "null"
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+          text:
+            type:
+              - "string"
+              - "null"
+          replied_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+        additionalProperties: true
+      text_policy:
+        description: "`aggregate`: a source shown only as a rating and a link (Yelp) whose `text`, `author`, `avatar` and `response_text` are withheld (send `yelp_consent=true` after recording the Yelp consent). `yelp_consent`: that text is included after consent, for internal use only. Null for every other review."
+        type:
+          - "string"
+          - "null"
+      text_notice:
+        description: "With `text_policy: aggregate`: the plain sentence to show people where the text would be (a cell, a row, a message), else null. Never contains the review text."
+        type:
+          - "string"
+          - "null"
+      text_hint:
+        description: "Why the text is withheld and how to get it (with `text_policy: aggregate`), else null. Written for developers: show people `text_notice` instead."
+        type:
+          - "string"
+          - "null"
     additionalProperties: true
   review_stats:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1425,7 +1634,7 @@ schemas:
           - "null"
         additionalProperties: true
       by_platform:
-        description: "One row per review platform, largest first: the drivers of one platform merged (Yelp collected two ways is one Yelp row, the average weighted by count). `name` is the display name (\"Yelp\", \"BBB\", \"Direct\" for reviews added through the API); `sources` lists the drivers."
+        description: "One row per review platform, largest first: the drivers of one platform merged (Yelp collected two ways is one Yelp row, the average weighted by count). `name` is the display name (\"Yelp\", \"BBB\", \"Reviews on Grades.com\", \"Added via API\" for reviews added through the API without a site); `sources` lists the drivers."
         type:
           - "array"
           - "null"
@@ -1588,6 +1797,56 @@ schemas:
               - "integer"
               - "null"
         additionalProperties: true
+      low_ratings:
+        type:
+          - "integer"
+          - "null"
+        description: "Reviews of 1 to 3 stars published that day."
+      unanswered:
+        type:
+          - "integer"
+          - "null"
+        description: "Reviews of the last 90 days without a reply, as of the sync (the backlog, not the day)."
+      connections:
+        type:
+          - "object"
+          - "null"
+        description: "Connection health of the review sites of the location, as of the sync."
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+            description: "ok or attention."
+          google:
+            type:
+              - "string"
+              - "null"
+            description: "connected, reconnect or not_connected."
+          issues:
+            type:
+              - "array"
+              - "null"
+            items:
+              type:
+                - "object"
+                - "null"
+              properties:
+                platform:
+                  type:
+                    - "string"
+                    - "null"
+                name:
+                  type:
+                    - "string"
+                    - "null"
+                state:
+                  type:
+                    - "string"
+                    - "null"
+                  description: "reconnect, failing or not_connected."
+              additionalProperties: true
+        additionalProperties: true
     additionalProperties: true
   agent_actions:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1622,6 +1881,34 @@ schemas:
             type:
               - "string"
               - "null"
+          site:
+            type:
+              - "string"
+              - "null"
+          source_name:
+            type:
+              - "string"
+              - "null"
+          site_name:
+            type:
+              - "string"
+              - "null"
+          source_kind:
+            type:
+              - "string"
+              - "null"
+          source_phrase:
+            type:
+              - "string"
+              - "null"
+          origin_name:
+            type:
+              - "string"
+              - "null"
+          arrival:
+            type:
+              - "string"
+              - "null"
           rating:
             type:
               - "integer"
@@ -1631,6 +1918,10 @@ schemas:
               - "string"
               - "null"
           username:
+            type:
+              - "string"
+              - "null"
+          author:
             type:
               - "string"
               - "null"
@@ -1648,9 +1939,138 @@ schemas:
             type:
               - "boolean"
               - "null"
+          language:
+            type:
+              - "string"
+              - "null"
+          text_en:
+            type:
+              - "string"
+              - "null"
+          translation:
+            type:
+              - "object"
+              - "null"
+            properties:
+              status:
+                type:
+                  - "string"
+                  - "null"
+              text:
+                type:
+                  - "string"
+                  - "null"
+              source_language:
+                type:
+                  - "string"
+                  - "null"
+              target_language:
+                type:
+                  - "string"
+                  - "null"
+              label:
+                type:
+                  - "string"
+                  - "null"
+              machine_translated:
+                type:
+                  - "boolean"
+                  - "null"
+              model:
+                type:
+                  - "string"
+                  - "null"
+              created_at:
+                type:
+                  - "string"
+                  - "null"
+                format: "date-time"
+                airbyte_type: "timestamp_with_timezone"
+              reason:
+                type:
+                  - "string"
+                  - "null"
+            additionalProperties: true
+          text_policy:
+            type:
+              - "string"
+              - "null"
+          text_hint:
+            type:
+              - "string"
+              - "null"
+          text_notice:
+            type:
+              - "string"
+              - "null"
         additionalProperties: true
       draft_text:
         description: "reply: the drafted reply (null when no draft could be written, see `error`); flag: the drafted report text for the site's form."
+        type:
+          - "string"
+          - "null"
+      reply_language:
+        description: "reply: the language of the reply (the draft's, else the one the business's reply language setting asks for); null when unknown."
+        type:
+          - "string"
+          - "null"
+      draft_language:
+        description: "The language of `draft_text`, null when it cannot be told."
+        type:
+          - "string"
+          - "null"
+      draft_en:
+        description: "reply: machine translation of a non-English `draft_text` into English (\"Translated by AI\"), or the owner's own English when the text came from \"Translate my edit\"; null when not needed or not made."
+        type:
+          - "string"
+          - "null"
+      draft_translation:
+        description: "A machine translation for the owner. Always show `label` (\"Translated by AI\") and keep the original visible: the original is the text of record."
+        type:
+          - "object"
+          - "null"
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+          text:
+            type:
+              - "string"
+              - "null"
+          source_language:
+            type:
+              - "string"
+              - "null"
+          target_language:
+            type:
+              - "string"
+              - "null"
+          label:
+            type:
+              - "string"
+              - "null"
+          machine_translated:
+            type:
+              - "boolean"
+              - "null"
+          model:
+            type:
+              - "string"
+              - "null"
+          created_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          reason:
+            type:
+              - "string"
+              - "null"
+        additionalProperties: true
+      draft_withheld:
+        description: "flag: `plan` when the drafted report (`draft_text`, `result.next_steps`, `report.filed_as`) is withheld because the plan lacks drafted reports (Premium); the verdict (`flag_reason`, `policy_findings`, `report.ground` / `evidence` / `site_reason`, `rationale`) is still there and approving answers 402 `agent:flag_drafts`. Null otherwise."
         type:
           - "string"
           - "null"
@@ -1728,6 +2148,54 @@ schemas:
         type:
           - "string"
           - "null"
+      rationale_parts:
+        description: "The rationale without what other fields carry (urgency, topics, policy risk, reply API, escalation): `summary`; `needs_review` (`reason` rules|unchecked|other, `rules` of {code, detail} with the reply-rule codes breaks_rules, clinical_details, contact_details, wrong_language, staff_name, patient_relationship, review_solicitation, signature), null when the draft needs no extra read; `withheld` (auto-post refusal: draft_too_long, draft_has_email, draft_has_url, draft_has_phone, review_has_url, review_has_instructions) and `redrafted_on` (date). Null without a rationale."
+        type:
+          - "object"
+          - "null"
+        properties:
+          summary:
+            type:
+              - "string"
+              - "null"
+          needs_review:
+            type:
+              - "object"
+              - "null"
+            properties:
+              reason:
+                type:
+                  - "string"
+                  - "null"
+              rules:
+                type:
+                  - "array"
+                  - "null"
+                items:
+                  type:
+                    - "object"
+                    - "null"
+                  properties:
+                    code:
+                      type:
+                        - "string"
+                        - "null"
+                    detail:
+                      type:
+                        - "string"
+                        - "null"
+                  additionalProperties: true
+            additionalProperties: true
+          withheld:
+            type:
+              - "string"
+              - "null"
+          redrafted_on:
+            type:
+              - "string"
+              - "null"
+            format: "date"
+        additionalProperties: true
       escalation:
         description: "Reply mode `auto_all` only: why the agent did not post this reply by itself and kept it for a person (codes: low_rating, unknown_rating, negative_sentiment, urgent, legal, medical, safety, discrimination, threat, refund_billing, staff_named, not_a_customer, policy_risk, policy_unchecked, flagged, needs_review, no_draft, unsafe_content, check_failed). Null when not escalated."
         type:
@@ -1830,6 +2298,14 @@ schemas:
             type:
               - "string"
               - "null"
+          via:
+            type:
+              - "string"
+              - "null"
+          report_url:
+            type:
+              - "string"
+              - "null"
           portal_url:
             type:
               - "string"
@@ -1862,6 +2338,95 @@ schemas:
               type:
                 - "object"
                 - "null"
+              properties:
+                channel:
+                  type:
+                    - "string"
+                    - "null"
+                status:
+                  type:
+                    - "string"
+                    - "null"
+                label:
+                  type:
+                    - "string"
+                    - "null"
+                available:
+                  type:
+                    - "boolean"
+                    - "null"
+                automated:
+                  type:
+                    - "boolean"
+                    - "null"
+                connectable:
+                  type:
+                    - "boolean"
+                    - "null"
+                via:
+                  type:
+                    - "string"
+                    - "null"
+                verified:
+                  type:
+                    - "boolean"
+                    - "null"
+                form_fields:
+                  type:
+                    - "array"
+                    - "null"
+                  items:
+                    type:
+                      - "string"
+                      - "null"
+                proxy:
+                  type:
+                    - "string"
+                    - "null"
+                can:
+                  type:
+                    - "array"
+                    - "null"
+                  items:
+                    type:
+                      - "string"
+                      - "null"
+                how:
+                  type:
+                    - "string"
+                    - "null"
+                portal_url:
+                  type:
+                    - "string"
+                    - "null"
+                two_factor:
+                  type:
+                    - "string"
+                    - "null"
+                account_type:
+                  type:
+                    - "string"
+                    - "null"
+                access:
+                  type:
+                    - "string"
+                    - "null"
+                terms:
+                  type:
+                    - "string"
+                    - "null"
+                terms_url:
+                  type:
+                    - "string"
+                    - "null"
+                evidence:
+                  type:
+                    - "string"
+                    - "null"
+                lag:
+                  type:
+                    - "string"
+                    - "null"
               additionalProperties: true
         additionalProperties: true
       executed_at:
@@ -1876,7 +2441,7 @@ schemas:
           - "string"
           - "null"
       execution:
-        description: "How the action was carried out once approved: `api` (posted through the site API, Google), `manual` (stored in Grades: post it yourself at `manual_url` or follow `next_steps`), `browser` (review agent v2: carried out in your connected account; while `status` is `approved` it is queued or running). Null before approval."
+        description: "How the action was carried out once approved: `api` (posted through the site API, Google), `manual` (stored in Grades: post it yourself at `manual_url` or follow `next_steps`), `browser` (AI agent v2: carried out in your connected account; while `status` is `approved` it is queued or running). Null before approval."
         type:
           - "string"
           - "null"
@@ -1989,6 +2554,7 @@ schemas:
     additionalProperties: true
   ai_reputation_probes:
     $schema: "http://json-schema.org/draft-07/schema#"
+    description: "One AI engine's answer to one perception prompt."
     type: "object"
     properties:
       company_uuid:
@@ -1997,7 +2563,6 @@ schemas:
           - "null"
         description: "The business (uuid of GET /api/v1/companies) the row belongs to."
       id:
-        description: "One AI engine's answer to one perception prompt."
         type: "string"
       run_id:
         description: "The probe run (radar scan) uuid."
@@ -2190,6 +2755,12 @@ schemas:
           - "number"
           - "null"
       error:
+        description: "Why the assistant gave no answer, as a plain sentence (never the provider's own message); null when it answered."
+        type:
+          - "string"
+          - "null"
+      error_code:
+        description: "The reason as a code; null when it answered."
         type:
           - "string"
           - "null"
@@ -2202,6 +2773,7 @@ schemas:
     additionalProperties: true
   radar_mentions:
     $schema: "http://json-schema.org/draft-07/schema#"
+    description: "A page about a company found by the review radar."
     type: "object"
     properties:
       company_uuid:
@@ -2210,7 +2782,6 @@ schemas:
           - "null"
         description: "The business (uuid of GET /api/v1/companies) the row belongs to."
       id:
-        description: "A page about a company found by the review radar."
         type: "integer"
       engine:
         type:
@@ -2347,7 +2918,17 @@ schemas:
           - "string"
           - "null"
       source:
-        description: "Review site (driver)."
+        description: "The collector that stored the review: an internal id (`yelp_apify`, `google_maps`, `api`, ...) that may change. Show and filter by `site`."
+        type:
+          - "string"
+          - "null"
+      site:
+        description: "The review platform (`google`, `yelp`, `direct`, ...), as on V1Review."
+        type:
+          - "string"
+          - "null"
+      source_name:
+        description: "Display name of the platform."
         type:
           - "string"
           - "null"
@@ -2509,6 +3090,14 @@ schemas:
             type:
               - "string"
               - "null"
+          via:
+            type:
+              - "string"
+              - "null"
+          report_url:
+            type:
+              - "string"
+              - "null"
           portal_url:
             type:
               - "string"
@@ -2541,6 +3130,95 @@ schemas:
               type:
                 - "object"
                 - "null"
+              properties:
+                channel:
+                  type:
+                    - "string"
+                    - "null"
+                status:
+                  type:
+                    - "string"
+                    - "null"
+                label:
+                  type:
+                    - "string"
+                    - "null"
+                available:
+                  type:
+                    - "boolean"
+                    - "null"
+                automated:
+                  type:
+                    - "boolean"
+                    - "null"
+                connectable:
+                  type:
+                    - "boolean"
+                    - "null"
+                via:
+                  type:
+                    - "string"
+                    - "null"
+                verified:
+                  type:
+                    - "boolean"
+                    - "null"
+                form_fields:
+                  type:
+                    - "array"
+                    - "null"
+                  items:
+                    type:
+                      - "string"
+                      - "null"
+                proxy:
+                  type:
+                    - "string"
+                    - "null"
+                can:
+                  type:
+                    - "array"
+                    - "null"
+                  items:
+                    type:
+                      - "string"
+                      - "null"
+                how:
+                  type:
+                    - "string"
+                    - "null"
+                portal_url:
+                  type:
+                    - "string"
+                    - "null"
+                two_factor:
+                  type:
+                    - "string"
+                    - "null"
+                account_type:
+                  type:
+                    - "string"
+                    - "null"
+                access:
+                  type:
+                    - "string"
+                    - "null"
+                terms:
+                  type:
+                    - "string"
+                    - "null"
+                terms_url:
+                  type:
+                    - "string"
+                    - "null"
+                evidence:
+                  type:
+                    - "string"
+                    - "null"
+                lag:
+                  type:
+                    - "string"
+                    - "null"
               additionalProperties: true
         additionalProperties: true
       report:
@@ -3111,6 +3789,58 @@ schemas:
         type:
           - "boolean"
           - "null"
+      email_branding:
+        type:
+          - "boolean"
+          - "null"
+        description: "Whether the emails carry the business logo and accent color."
+      email_look:
+        type:
+          - "object"
+          - "null"
+        description: "What the emails show now."
+        properties:
+          accent:
+            type:
+              - "string"
+              - "null"
+          on_accent:
+            type:
+              - "string"
+              - "null"
+          accent_source:
+            type:
+              - "string"
+              - "null"
+            description: "campaign, review_page, default or off."
+          logo_url:
+            type:
+              - "string"
+              - "null"
+          logo_width:
+            type:
+              - "integer"
+              - "null"
+          logo_height:
+            type:
+              - "integer"
+              - "null"
+        additionalProperties: true
+      sms_text:
+        type:
+          - "object"
+          - "null"
+        description: "Whether the text message wording can be edited, and who sends it."
+        properties:
+          editable:
+            type:
+              - "boolean"
+              - "null"
+          sender:
+            type:
+              - "string"
+              - "null"
+        additionalProperties: true
       steps:
         type:
           - "array"

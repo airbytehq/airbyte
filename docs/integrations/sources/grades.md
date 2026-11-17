@@ -24,7 +24,7 @@ mentions and review requests.
    business the key reaches.
 5. Optional: **Start Date** (reviews published on or after it; default: all reviews), **Daily Stats Start Date**
    (default: 90 days ago), **Include Review Text** (default on: the text and title of each review are your own data;
-   off drops them from `reviews` and `agent_actions`), **Lookback Window (Days)** (default 30).
+   off drops them and their machine translations, `text_en` and `translation`, from `reviews` and `agent_actions`), **Lookback Window (Days)** (default 30).
 6. Click **Set up source**. The connection check reads `GET /api/v1/companies` (needs `companies:read`) and the stats
    of the first business, `GET /api/v1/companies/{uuid}/stats` (needs `reviews:read`), so a key without either scope
    fails the check with the scope to add.
