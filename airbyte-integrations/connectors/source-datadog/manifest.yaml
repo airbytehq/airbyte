@@ -110,6 +110,259 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboards"
+    apm_retention_filters:
+      type: DeclarativeStream
+      name: apm_retention_filters
+      primary_key:
+        - id
+      $parameters:
+        required_permission: apm_retention_filter_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/apm/config/retention-filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apm_retention_filters"
+    log_archives:
+      type: DeclarativeStream
+      name: log_archives
+      primary_key:
+        - id
+      $parameters:
+        required_permission: logs_read_archives
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/logs/config/archives
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - destination
+              - integration
+              - access_key_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/log_archives"
+    log_indexes:
+      type: DeclarativeStream
+      name: log_indexes
+      primary_key:
+        - name
+      $parameters:
+        required_permission: logs_read_config
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/logs/config/indexes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - indexes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/log_indexes"
+    log_metrics:
+      type: DeclarativeStream
+      name: log_metrics
+      primary_key:
+        - id
+      $parameters:
+        required_permission: logs_read_config
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/logs/config/metrics
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/log_metrics"
+    log_pipelines:
+      type: DeclarativeStream
+      name: log_pipelines
+      primary_key:
+        - id
+      $parameters:
+        required_permission: logs_read_config
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/logs/config/pipelines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/log_pipelines"
+    security_filters:
+      type: DeclarativeStream
+      name: security_filters
+      primary_key:
+        - id
+      $parameters:
+        required_permission: security_monitoring_filters_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/security_monitoring/configuration/security_filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/security_filters"
+    security_monitoring_rules:
+      type: DeclarativeStream
+      name: security_monitoring_rules
+      primary_key:
+        - id
+      $parameters:
+        required_permission: security_monitoring_rules_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/security_monitoring/rules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/security_monitoring_rules"
+    sensitive_data_scanner_config:
+      type: DeclarativeStream
+      name: sensitive_data_scanner_config
+      primary_key:
+        - id
+      $parameters:
+        required_permission: data_scanner_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/sensitive-data-scanner/config
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      transformations:
+        - type: DpathFlattenFields
+          field_path:
+            - data
+          delete_origin_value: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sensitive_data_scanner_config"
+    sensitive_data_scanner_standard_patterns:
+      type: DeclarativeStream
+      name: sensitive_data_scanner_standard_patterns
+      primary_key:
+        - id
+      $parameters:
+        required_permission: data_scanner_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/sensitive-data-scanner/config/standard-patterns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sensitive_data_scanner_standard_patterns"
+    span_metrics:
+      type: DeclarativeStream
+      name: span_metrics
+      primary_key:
+        - id
+      $parameters:
+        required_permission: apm_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/apm/config/metrics
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/span_metrics"
     downtimes:
       type: DeclarativeStream
       name: downtimes
@@ -574,6 +827,16 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/audit_logs"
   - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/apm_retention_filters"
+  - $ref: "#/definitions/streams/log_archives"
+  - $ref: "#/definitions/streams/log_indexes"
+  - $ref: "#/definitions/streams/log_metrics"
+  - $ref: "#/definitions/streams/log_pipelines"
+  - $ref: "#/definitions/streams/security_filters"
+  - $ref: "#/definitions/streams/security_monitoring_rules"
+  - $ref: "#/definitions/streams/sensitive_data_scanner_config"
+  - $ref: "#/definitions/streams/sensitive_data_scanner_standard_patterns"
+  - $ref: "#/definitions/streams/span_metrics"
   - $ref: "#/definitions/streams/downtimes"
   - $ref: "#/definitions/streams/incident_teams"
   - $ref: "#/definitions/streams/incidents"
@@ -1008,6 +1271,1100 @@ schemas:
           - "null"
         description: URL of the dashboard.
         readOnly: true
+  apm_retention_filters:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of the resource.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The attributes of the retention filter.
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - integer
+              - "null"
+            description: The creation timestamp of the retention filter.
+          created_by:
+            type:
+              - string
+              - "null"
+            description: The creator of the retention filter.
+          editable:
+            type:
+              - boolean
+              - "null"
+            description: Shows whether the filter can be edited.
+          enabled:
+            type:
+              - boolean
+              - "null"
+            description: The status of the retention filter (Enabled/Disabled).
+          execution_order:
+            type:
+              - integer
+              - "null"
+            description: The execution order of the retention filter.
+          filter:
+            type:
+              - object
+              - "null"
+            description: The spans filter used to index spans.
+            additionalProperties: true
+            properties:
+              query:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The search query - following the span search syntax.
+          filter_type:
+            type:
+              - string
+              - "null"
+            description: The type of retention filter.
+          modified_at:
+            type:
+              - integer
+              - "null"
+            description: The modification timestamp of the retention filter.
+          modified_by:
+            type:
+              - string
+              - "null"
+            description: The modifier of the retention filter.
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the retention filter.
+          rate:
+            type:
+              - number
+              - "null"
+            description: >-
+              Sample rate to apply to spans going through this retention filter.
+          trace_rate:
+            type:
+              - number
+              - "null"
+            description: >-
+              Sample rate to apply to traces containing spans going through this
+              retention filter.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the retention filter.
+  log_archives:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of the resource.
+        readOnly: true
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The attributes associated with the archive.
+        additionalProperties: true
+        properties:
+          compression_method:
+            type:
+              - string
+              - "null"
+            description: The type of compression for the archive.
+          destination:
+            type:
+              - object
+              - "null"
+            description: An archive's destination.
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+                description: Type of the archive destination.
+              bucket:
+                type:
+                  - string
+                  - "null"
+                description: The bucket where the archive will be stored.
+              container:
+                type:
+                  - string
+                  - "null"
+                description: The container where the archive will be stored.
+              encryption:
+                type:
+                  - object
+                  - "null"
+                description: The S3 encryption settings.
+                additionalProperties: true
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: Type of S3 encryption for a destination.
+                  key:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      An Amazon Resource Name (ARN) used to identify an AWS KMS
+                      key.
+              integration:
+                type:
+                  - object
+                  - "null"
+                description: The archive's integration destination.
+                additionalProperties: true
+                properties:
+                  account_id:
+                    type:
+                      - string
+                      - "null"
+                    description: The account ID for the integration.
+                  client_email:
+                    type:
+                      - string
+                      - "null"
+                    description: A client email.
+                  client_id:
+                    type:
+                      - string
+                      - "null"
+                    description: A client ID.
+                  project_id:
+                    type:
+                      - string
+                      - "null"
+                    description: A project ID.
+                  role_name:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      The name of the role to assume for the integration.
+                  tenant_id:
+                    type:
+                      - string
+                      - "null"
+                    description: A tenant ID.
+              path:
+                type:
+                  - string
+                  - "null"
+                description: The archive path.
+              region:
+                type:
+                  - string
+                  - "null"
+                description: The region where the archive will be stored.
+              storage_account:
+                type:
+                  - string
+                  - "null"
+                description: The associated storage account.
+              storage_class:
+                type:
+                  - string
+                  - "null"
+                description: The storage class where the archive will be stored.
+          include_tags:
+            type:
+              - boolean
+              - "null"
+            description: To store the tags in the archive, set the value "true".
+          lookup_attributes:
+            type:
+              - array
+              - "null"
+            description: >-
+              An array of attributes to use as lookup keys for the archive.
+            items:
+              type: string
+          name:
+            type:
+              - string
+              - "null"
+            description: The archive name.
+          partitioning_attributes:
+            type:
+              - array
+              - "null"
+            description: >-
+              An array of attributes to use as partition keys for the archive.
+            items:
+              type: string
+          query:
+            type:
+              - string
+              - "null"
+            description: The archive query/filter.
+          rehydration_max_scan_size_in_gb:
+            type:
+              - integer
+              - "null"
+            description: Maximum scan size for rehydration from this archive.
+          rehydration_tags:
+            type:
+              - array
+              - "null"
+            description: >-
+              An array of tags to add to rehydrated logs from an archive.
+            items:
+              type: string
+          state:
+            type:
+              - string
+              - "null"
+            description: The state of the archive.
+      id:
+        type:
+          - string
+          - "null"
+        description: The archive ID.
+        readOnly: true
+  log_indexes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      daily_limit:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The number of log events you can send in this index per day before you
+          are rate-limited.
+      daily_limit_reset:
+        type:
+          - object
+          - "null"
+        description: >-
+          Object containing options to override the default daily limit reset
+          time.
+        additionalProperties: true
+        properties:
+          reset_time:
+            type:
+              - string
+              - "null"
+            description: >-
+              String in `HH:00` format representing the time of day the daily
+              limit should be reset.
+          reset_utc_offset:
+            type:
+              - string
+              - "null"
+            description: >-
+              String in `(-|+)HH:00` format representing the UTC offset to apply
+              to the given reset time.
+      daily_limit_warning_threshold_percentage:
+        type:
+          - number
+          - "null"
+        description: >-
+          A percentage threshold of the daily quota at which a Datadog warning
+          event is generated.
+      exclusion_filters:
+        type:
+          - array
+          - "null"
+        description: An array of exclusion objects.
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            filter:
+              type:
+                - object
+                - "null"
+              description: >-
+                Exclusion filter is defined by a query, a sampling rule, and a
+                active/inactive toggle.
+              additionalProperties: true
+              properties:
+                query:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    Default query is `*`, meaning all logs flowing in the index
+                    would be excluded.
+                sample_attribute:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    Sample attribute to use for the sampling of logs going
+                    through this exclusion filter.
+                sample_rate:
+                  type:
+                    - number
+                    - "null"
+                  description: >-
+                    Sample rate to apply to logs going through this exclusion
+                    filter, a value of 1.0 excludes all logs matching the query.
+            is_enabled:
+              type:
+                - boolean
+                - "null"
+              description: Whether or not the exclusion filter is active.
+            name:
+              type:
+                - string
+                - "null"
+              description: Name of the index exclusion filter.
+      filter:
+        type:
+          - object
+          - "null"
+        description: Filter for logs.
+        additionalProperties: true
+        properties:
+          query:
+            type:
+              - string
+              - "null"
+            description: The filter query.
+      is_rate_limited:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          A boolean stating if the index is rate limited, meaning more logs than
+          the daily limit have been sent.
+        readOnly: true
+      name:
+        type:
+          - string
+          - "null"
+        description: The name of the index.
+      num_flex_logs_retention_days:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The total number of days logs are stored in Standard and Flex Tier
+          before being deleted from the index.
+      num_retention_days:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The number of days logs are stored in Standard Tier before aging into
+          the Flex Tier or being deleted from the index.
+      tags:
+        type:
+          - array
+          - "null"
+        description: A list of tags associated with the index.
+        items:
+          type: string
+  log_metrics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of the resource.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The object describing a Datadog log-based metric.
+        additionalProperties: true
+        properties:
+          compute:
+            type:
+              - object
+              - "null"
+            description: The compute rule to compute the log-based metric.
+            additionalProperties: true
+            properties:
+              aggregation_type:
+                type:
+                  - string
+                  - "null"
+                description: The type of aggregation to use.
+              include_percentiles:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Toggle to include or exclude percentile aggregations for
+                  distribution metrics.
+              path:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The path to the value the log-based metric will aggregate on
+                  (only used if the aggregation type is a "distribution").
+          filter:
+            type:
+              - object
+              - "null"
+            description: The log-based metric filter.
+            additionalProperties: true
+            properties:
+              query:
+                type:
+                  - string
+                  - "null"
+                description: The search query - following the log search syntax.
+          group_by:
+            type:
+              - array
+              - "null"
+            description: The rules for the group by.
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                path:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The path to the value the log-based metric will be
+                    aggregated over.
+                tag_name:
+                  type:
+                    - string
+                    - "null"
+                  description: Eventual name of the tag that gets created.
+      id:
+        type:
+          - string
+          - "null"
+        description: The name of the log-based metric.
+  log_pipelines:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Type of pipeline.
+        readOnly: true
+      description:
+        type:
+          - string
+          - "null"
+        description: A description of the pipeline.
+      filter:
+        type:
+          - object
+          - "null"
+        description: Filter for logs.
+        additionalProperties: true
+        properties:
+          query:
+            type:
+              - string
+              - "null"
+            description: The filter query.
+      id:
+        type:
+          - string
+          - "null"
+        description: ID of the pipeline.
+        readOnly: true
+      is_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Whether or not the pipeline is enabled.
+      is_read_only:
+        type:
+          - boolean
+          - "null"
+        description: Whether or not the pipeline can be edited.
+        readOnly: true
+      name:
+        type:
+          - string
+          - "null"
+        description: Name of the pipeline.
+      processors:
+        type:
+          - array
+          - "null"
+        description: Ordered list of processors in this pipeline.
+        items:
+          type: object
+          additionalProperties: true
+      tags:
+        type:
+          - array
+          - "null"
+        description: A list of tags associated with the pipeline.
+        items:
+          type: string
+  security_filters:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of the resource.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The object describing a security filter.
+        additionalProperties: true
+        properties:
+          exclusion_filters:
+            type:
+              - array
+              - "null"
+            description: >-
+              The list of exclusion filters applied in this security filter.
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                  description: The exclusion filter name.
+                query:
+                  type:
+                    - string
+                    - "null"
+                  description: The exclusion filter query.
+          filtered_data_type:
+            type:
+              - string
+              - "null"
+            description: The filtered data type.
+          is_builtin:
+            type:
+              - boolean
+              - "null"
+            description: Whether the security filter is the built-in filter.
+          is_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether the security filter is enabled.
+          name:
+            type:
+              - string
+              - "null"
+            description: The security filter name.
+          query:
+            type:
+              - string
+              - "null"
+            description: The security filter query.
+          version:
+            type:
+              - integer
+              - "null"
+            description: The version of the security filter.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the security filter.
+  security_monitoring_rules:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The rule type.
+      calculatedFields:
+        type:
+          - array
+          - "null"
+        description: Calculated fields.
+        items:
+          type: object
+          additionalProperties: true
+      cases:
+        type:
+          - array
+          - "null"
+        description: Cases for generating signals.
+        items:
+          type: object
+          additionalProperties: true
+      compatibleVersion:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The version of the rule at which its detection logic last changed.
+      complianceSignalOptions:
+        type:
+          - object
+          - "null"
+        description: How to generate compliance signals.
+        additionalProperties: true
+      createdAt:
+        type:
+          - integer
+          - "null"
+        description: When the rule was created, timestamp in milliseconds.
+      creationAuthorId:
+        type:
+          - integer
+          - "null"
+        description: User ID of the user who created the rule.
+      customMessage:
+        type:
+          - string
+          - "null"
+        description: >-
+          Custom/Overridden message for generated signals (used in case of
+          Default rule update).
+      customName:
+        type:
+          - string
+          - "null"
+        description: >-
+          Custom/Overridden name of the rule (used in case of Default rule
+          update).
+      defaultTags:
+        type:
+          - array
+          - "null"
+        description: Default Tags for default rules (included in tags)
+        items:
+          type: string
+      deprecationDate:
+        type:
+          - integer
+          - "null"
+        description: >-
+          When the rule will be deprecated, timestamp in milliseconds.
+      filters:
+        type:
+          - array
+          - "null"
+        description: >-
+          Additional queries to filter matched events before they are processed.
+        items:
+          type: object
+          additionalProperties: true
+      groupSignalsBy:
+        type:
+          - array
+          - "null"
+        description: >-
+          Additional grouping to perform on top of the existing groups in the
+          query section.
+        items:
+          type: string
+      hasExtendedTitle:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Whether the notifications include the triggering group-by values in
+          their title.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the rule.
+      isDefault:
+        type:
+          - boolean
+          - "null"
+        description: Whether the rule is included by default.
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+        description: Whether the rule has been deleted.
+      isEnabled:
+        type:
+          - boolean
+          - "null"
+        description: Whether the rule is enabled.
+      message:
+        type:
+          - string
+          - "null"
+        description: Message for generated signals.
+      name:
+        type:
+          - string
+          - "null"
+        description: The name of the rule.
+      options:
+        type:
+          - object
+          - "null"
+        description: Options.
+        additionalProperties: true
+      queries:
+        type:
+          - array
+          - "null"
+        description: Queries for selecting logs which are part of the rule.
+        items:
+          type: object
+          additionalProperties: true
+      referenceTables:
+        type:
+          - array
+          - "null"
+        description: Reference tables for the rule.
+        items:
+          type: object
+          additionalProperties: true
+      schedulingOptions:
+        type:
+          - object
+          - "null"
+        description: Options for scheduled rules.
+        additionalProperties: true
+      tags:
+        type:
+          - array
+          - "null"
+        description: Tags for generated signals.
+        items:
+          type: string
+      thirdPartyCases:
+        type:
+          - array
+          - "null"
+        description: Cases for generating signals from third-party rules.
+        items:
+          type: object
+          additionalProperties: true
+      updateAuthorId:
+        type:
+          - integer
+          - "null"
+        description: User ID of the user who updated the rule.
+      updatedAt:
+        type:
+          - integer
+          - "null"
+        description: The date the rule was last updated, in milliseconds.
+      version:
+        type:
+          - integer
+          - "null"
+        description: The version of the rule.
+  sensitive_data_scanner_config:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Sensitive Data Scanner configuration type.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of the Sensitive Data configuration.
+        additionalProperties: true
+      id:
+        type:
+          - string
+          - "null"
+        description: ID of the configuration.
+      included:
+        type:
+          - array
+          - "null"
+        description: >-
+          The scanning groups and the scanning rules of the configuration.
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+              description: >-
+                The type of the included object: a scanning group or a scanning
+                rule.
+            attributes:
+              type:
+                - object
+                - "null"
+              description: >-
+                Attributes of the scanning group or of the scanning rule.
+              additionalProperties: true
+            id:
+              type:
+                - string
+                - "null"
+              description: ID of the scanning group or of the scanning rule.
+            relationships:
+              type:
+                - object
+                - "null"
+              description: >-
+                Relationships of the scanning group or of the scanning rule.
+              additionalProperties: true
+      meta:
+        type:
+          - object
+          - "null"
+        description: Meta response. Always an empty object.
+        additionalProperties: true
+      relationships:
+        type:
+          - object
+          - "null"
+        description: Relationships of the configuration.
+        additionalProperties: true
+        properties:
+          groups:
+            type:
+              - object
+              - "null"
+            description: List of groups, ordered.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                description: List of groups.
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: Sensitive Data Scanner group type.
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: ID of the group.
+  sensitive_data_scanner_standard_patterns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Sensitive Data Scanner standard pattern type.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of the Sensitive Data Scanner standard pattern.
+        additionalProperties: true
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+            description: Description of the standard pattern.
+          included_keywords:
+            type:
+              - array
+              - "null"
+            description: List of included keywords.
+            items:
+              type: string
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the standard pattern.
+          pattern:
+            type:
+              - string
+              - "null"
+            description: >-
+              (Deprecated) Regex to match, optionally documented for older
+              standard rules.
+          priority:
+            type:
+              - integer
+              - "null"
+            description: >-
+              Integer from 1 (high) to 5 (low) indicating standard pattern issue
+              severity.
+          suppressions:
+            type:
+              - object
+              - "null"
+            description: >-
+              Object describing suppressions for a rule, or the recommended
+              suppression lists published by a standard pattern.
+            additionalProperties: true
+            properties:
+              ends_with:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  List of strings to use for suppression of matches ending with
+                  these strings.
+                items:
+                  type: string
+              exact_match:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  List of strings to use for suppression of matches exactly
+                  matching these strings.
+                items:
+                  type: string
+              starts_with:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  List of strings to use for suppression of matches starting
+                  with these strings.
+                items:
+                  type: string
+              use_recommended_suppressions:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Should the rule use the underlying standard pattern
+                  suppression configuration.
+          tags:
+            type:
+              - array
+              - "null"
+            description: List of tags.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: ID of the standard pattern.
+  span_metrics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of resource.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The object describing a Datadog span-based metric.
+        additionalProperties: true
+        properties:
+          compute:
+            type:
+              - object
+              - "null"
+            description: The compute rule to compute the span-based metric.
+            additionalProperties: true
+            properties:
+              aggregation_type:
+                type:
+                  - string
+                  - "null"
+                description: The type of aggregation to use.
+              include_percentiles:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Toggle to include or exclude percentile aggregations for
+                  distribution metrics.
+              path:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The path to the value the span-based metric will aggregate on
+                  (only used if the aggregation type is a "distribution").
+          filter:
+            type:
+              - object
+              - "null"
+            description: The span-based metric filter.
+            additionalProperties: true
+            properties:
+              query:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  The search query - following the span search syntax.
+          group_by:
+            type:
+              - array
+              - "null"
+            description: The rules for the group by.
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                path:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The path to the value the span-based metric will be
+                    aggregated over.
+                tag_name:
+                  type:
+                    - string
+                    - "null"
+                  description: Eventual name of the tag that gets created.
+      id:
+        type:
+          - string
+          - "null"
+        description: The name of the span-based metric.
   downtimes:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
