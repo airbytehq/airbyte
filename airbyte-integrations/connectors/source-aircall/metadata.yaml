@@ -80,7 +80,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.49.0@sha256:349bbed19f7f62315db4f04d87e2b0b52f9fd4b1131d78d6a981db1681d627ad
   allowedHosts:
     hosts:
       - api.aircall.io

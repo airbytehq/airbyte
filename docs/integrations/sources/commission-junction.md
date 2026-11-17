@@ -37,6 +37,7 @@ CJ documents limits of 200 calls per 5 minutes, 120 concurrent connections, 10,0
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2026-11-17 | [93111](https://github.com/airbytehq/airbyte/pull/93111) | Update dependencies |
 | 0.0.15 | 2026-11-10 | [91477](https://github.com/airbytehq/airbyte/pull/91477) | Update dependencies |
 | 0.0.14 | 2026-11-03 | [90515](https://github.com/airbytehq/airbyte/pull/90515) | Update dependencies |
 | 0.0.13 | 2026-10-27 | [89858](https://github.com/airbytehq/airbyte/pull/89858) | Update dependencies |

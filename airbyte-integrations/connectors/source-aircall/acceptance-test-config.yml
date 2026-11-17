@@ -5,11 +5,11 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
-        # 1.3.0 moves api_id and api_token into credentials; the config migration rewrites configs saved by 1.2.1 and earlier.
+        # 1.3.0 moves api_id and api_token into credentials; the config migration rewrites configs saved by 1.2.2 and earlier.
         backward_compatibility_tests_config:
-          disable_for_version: "1.2.1"
+          disable_for_version: "1.2.2"
       - spec_path: "manifest.yaml"
-        # Registry latest stays 1.0.0 until the 1.2.1 rollout is promoted (2026-11-17); drop this entry then.
+        # Registry latest stays 1.0.0 until the 1.2.2 rollout is promoted; drop this entry then.
         backward_compatibility_tests_config:
           disable_for_version: "1.0.0"
   connection:
