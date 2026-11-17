@@ -464,42 +464,56 @@ open class PostgresSourceJdbcPartitionFactory(
         )
     }
 
+    /**
+     * [JdbcPartitionFactory] entry point for the generic CDK creator, which hands over one sampled
+     * boundary per partition. CTID page ranges do not depend on sampled values, so only the count
+     * is used. The Postgres creator computes that count from the table size and calls [split] with
+     * it directly.
+     */
     override fun split(
         unsplitPartition: PostgresSourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>,
-    ): List<PostgresSourceJdbcPartition> {
-        val splitPartitionBoundaries: List<PostgresSourceJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map {
-                Jsons.treeToValue(it, PostgresSourceJdbcStreamStateValue::class.java)
-            }
-        }
+    ): List<PostgresSourceJdbcPartition> = split(unsplitPartition, opaqueStateValues.size)
 
+    /**
+     * Splits [unsplitPartition] into [numPartitions] CTID page ranges with the same number of
+     * pages, computed from the table size on disk. Every resulting partition keeps the filenode of
+     * the unsplit partition; only the first one includes its lower bound. A count of at most one,
+     * or a partition kind that is not split by CTID, returns the unsplit partition unchanged.
+     */
+    fun split(
+        unsplitPartition: PostgresSourceJdbcPartition,
+        numPartitions: Int,
+    ): List<PostgresSourceJdbcPartition> {
+        if (numPartitions <= 1) {
+            return listOf(unsplitPartition)
+        }
         // pg_relation_size returns the size of the table on disk, only the data in the main table
-        // file not including indexes or toast data
-        val relationSize = relationSize(unsplitPartition.stream)
-        return when (unsplitPartition) {
+        // file not including indexes or toast data. CTID pages belong to that main file.
+        return split(
+            unsplitPartition,
+            numPartitions,
+            relationSize(unsplitPartition.stream),
+            blockSize(config),
+        )
+    }
+
+    internal fun split(
+        unsplitPartition: PostgresSourceJdbcPartition,
+        numPartitions: Int,
+        relationSize: Long,
+        blockSize: Long,
+    ): List<PostgresSourceJdbcPartition> =
+        when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(
-                    splitPartitionBoundaries.size,
-                    splitPartitionBoundaries.first().filenode,
-                    relationSize,
-                )
+                unsplitPartition.split(numPartitions, relationSize, blockSize)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(
-                    splitPartitionBoundaries.size,
-                    splitPartitionBoundaries.first().filenode,
-                    relationSize,
-                )
+                unsplitPartition.split(numPartitions, relationSize, blockSize)
             is PostgresSourceJdbcSplittableSnapshotWithXminPartition ->
-                unsplitPartition.split(
-                    splitPartitionBoundaries.size,
-                    splitPartitionBoundaries.first().filenode,
-                    relationSize,
-                )
+                unsplitPartition.split(numPartitions, relationSize, blockSize)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
-    }
 
     /**
      * Given table size and a starting point lower bound, the function will return a list of
@@ -533,13 +547,12 @@ open class PostgresSourceJdbcPartitionFactory(
 
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
         numPartitions: Int,
-        filenode: Filenode?,
         relationSize: Long,
-    ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val bounds =
-            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
-
-        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
+        blockSize: Long,
+    ): List<PostgresSourceJdbcSplittableSnapshotPartition> =
+        computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize).mapIndexed {
+            index,
+            (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
@@ -550,17 +563,15 @@ open class PostgresSourceJdbcPartitionFactory(
                 index == 0,
             )
         }
-    }
 
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
         numPartitions: Int,
-        filenode: Filenode?,
         relationSize: Long,
-    ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val bounds =
-            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
-
-        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
+        blockSize: Long,
+    ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> =
+        computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize).mapIndexed {
+            index,
+            (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
@@ -573,16 +584,15 @@ open class PostgresSourceJdbcPartitionFactory(
                 index == 0,
             )
         }
-    }
 
     private fun PostgresSourceJdbcSplittableSnapshotWithXminPartition.split(
         numPartitions: Int,
-        filenode: Filenode?,
         relationSize: Long,
-    ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> {
-        val bounds =
-            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
-        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
+        blockSize: Long,
+    ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> =
+        computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize).mapIndexed {
+            index,
+            (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithXminPartition(
                 selectQueryGenerator,
                 streamState,
@@ -593,5 +603,4 @@ open class PostgresSourceJdbcPartitionFactory(
                 index == 0,
             )
         }
-    }
 }

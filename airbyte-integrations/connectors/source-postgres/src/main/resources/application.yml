@@ -12,7 +12,9 @@ airbyte:
         mode: concurrent
         with-sampling: true
         table-sample-size: 1024
-        throughput-bytes-per-second: 10000000
+        # Binds DefaultJdbcConstants.expectedThroughputBytesPerSecond. It only feeds the target
+        # partition size (expected throughput / max_db_connections * checkpoint interval).
+        expected-throughput-bytes-per-second: 10000000
         min-fetch-size: 10
         default-fetch-size: 1024
         max-fetch-size: 1000000000
@@ -30,6 +32,13 @@ airbyte:
           - pg_stat_statements
           - pg_stat_statements_info
           - pg_buffercache
+      postgres:
+        # Upper bound on the number of CTID range partitions one table is split into in concurrent
+        # mode. The count is ceil(pg_table_size / target partition size), where the target is
+        # expected-throughput-bytes-per-second / max_db_connections
+        # * checkpoint_target_interval_seconds.
+        # Postgres-only: the generic Bulk CDK creator caps the count at table-sample-size instead.
+        max-partitions: 16384
     check:
       jdbc:
         queries:
