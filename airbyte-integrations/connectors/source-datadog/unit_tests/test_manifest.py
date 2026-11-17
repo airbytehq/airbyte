@@ -14,6 +14,18 @@ from unit_tests.conftest import CONFIG, get_source
 
 STREAMS = [
     "audit_logs",
+    "authn_mappings",
+    "dashboard_lists",
+    "ip_allowlist",
+    "organization",
+    "permissions",
+    "roles",
+    "rum_applications",
+    "service_definitions",
+    "slo_corrections",
+    "synthetics_global_variables",
+    "synthetics_locations",
+    "teams",
     "dashboards",
     "downtimes",
     "incident_teams",

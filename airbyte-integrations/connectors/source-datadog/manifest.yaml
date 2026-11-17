@@ -57,6 +57,357 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/audit_logs"
+    authn_mappings:
+      type: DeclarativeStream
+      name: authn_mappings
+      primary_key:
+        - id
+      $parameters:
+        required_permission: user_access_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/authn_mappings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/authn_mappings"
+    dashboard_lists:
+      type: DeclarativeStream
+      name: dashboard_lists
+      primary_key:
+        - id
+      $parameters:
+        required_permission: dashboards_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/dashboard/lists/manual
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - dashboard_lists
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboard_lists"
+    ip_allowlist:
+      type: DeclarativeStream
+      name: ip_allowlist
+      primary_key:
+        - id
+      $parameters:
+        required_permission: org_management
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ip_allowlist
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ip_allowlist"
+    organization:
+      type: DeclarativeStream
+      name: organization
+      primary_key:
+        - public_id
+      $parameters:
+        required_permission: org_management
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/org
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orgs
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization"
+    permissions:
+      type: DeclarativeStream
+      name: permissions
+      primary_key:
+        - id
+      $parameters:
+        required_permission: user_access_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/permissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/permissions"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      $parameters:
+        required_permission: user_access_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    rum_applications:
+      type: DeclarativeStream
+      name: rum_applications
+      primary_key:
+        - id
+      $parameters:
+        required_permission: rum_apps_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/rum/applications
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - client_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rum_applications"
+    service_definitions:
+      type: DeclarativeStream
+      name: service_definitions
+      primary_key:
+        - id
+      $parameters:
+        required_permission: apm_service_catalog_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/services/definitions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/service_definitions"
+    slo_corrections:
+      type: DeclarativeStream
+      name: slo_corrections
+      primary_key:
+        - id
+      $parameters:
+        required_permission: slos_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/slo/correction
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/slo_corrections"
+    synthetics_global_variables:
+      type: DeclarativeStream
+      name: synthetics_global_variables
+      primary_key:
+        - id
+      $parameters:
+        required_permission: synthetics_global_variable_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/synthetics/variables
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - variables
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - value
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/synthetics_global_variables"
+    synthetics_locations:
+      type: DeclarativeStream
+      name: synthetics_locations
+      primary_key:
+        - id
+      $parameters:
+        required_permission: synthetics_private_location_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/synthetics/locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/synthetics_locations"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      $parameters:
+        required_permission: teams_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/team
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
     dashboards:
       type: DeclarativeStream
       name: dashboards
@@ -573,6 +924,18 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/audit_logs"
+  - $ref: "#/definitions/streams/authn_mappings"
+  - $ref: "#/definitions/streams/dashboard_lists"
+  - $ref: "#/definitions/streams/ip_allowlist"
+  - $ref: "#/definitions/streams/organization"
+  - $ref: "#/definitions/streams/permissions"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/rum_applications"
+  - $ref: "#/definitions/streams/service_definitions"
+  - $ref: "#/definitions/streams/slo_corrections"
+  - $ref: "#/definitions/streams/synthetics_global_variables"
+  - $ref: "#/definitions/streams/synthetics_locations"
+  - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/dashboards"
   - $ref: "#/definitions/streams/downtimes"
   - $ref: "#/definitions/streams/incident_teams"
@@ -935,6 +1298,1574 @@ schemas:
         type:
           - "null"
           - string
+  authn_mappings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "AuthN Mappings resource type. Allowed enum values: authn_mappings"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of AuthN Mapping.
+        additionalProperties: true
+        properties:
+          attribute_key:
+            type:
+              - string
+              - "null"
+            description: >-
+              Key portion of a key/value pair of the attribute sent from the
+              Identity Provider.
+          attribute_value:
+            type:
+              - string
+              - "null"
+            description: >-
+              Value portion of a key/value pair of the attribute sent from the
+              Identity Provider.
+          created_at:
+            type:
+              - string
+              - "null"
+            description: Creation time of the AuthN Mapping.
+            format: date-time
+          modified_at:
+            type:
+              - string
+              - "null"
+            description: Time of last AuthN Mapping modification.
+            format: date-time
+          saml_assertion_attribute_id:
+            type:
+              - string
+              - "null"
+            description: The ID of the SAML assertion attribute.
+      id:
+        type:
+          - string
+          - "null"
+        description: ID of the AuthN Mapping.
+      relationships:
+        type:
+          - object
+          - "null"
+        description: All relationships associated with AuthN Mapping.
+        additionalProperties: true
+        properties:
+          role:
+            type:
+              - object
+              - "null"
+            description: Relationship to role.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to role object.
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                    description: The unique identifier of the role.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: "Roles type. Allowed enum values: roles"
+          saml_assertion_attribute:
+            type:
+              - object
+              - "null"
+            description: AuthN Mapping relationship to SAML Assertion Attribute.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                description: >-
+                  Data of AuthN Mapping relationship to SAML Assertion
+                  Attribute.
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                    description: The ID of the SAML assertion attribute.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      SAML assertion attributes resource type. Allowed enum
+                      values: saml_assertion_attributes
+          team:
+            type:
+              - object
+              - "null"
+            description: Relationship to team.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to Team object.
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                    description: The unique identifier of the team.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: "Team type. Allowed enum values: team"
+  dashboard_lists:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        description: Object describing the creator of the shared element.
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+            description: Email of the creator.
+          handle:
+            type:
+              - string
+              - "null"
+            description: Handle of the creator.
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the creator.
+      created:
+        type:
+          - string
+          - "null"
+        description: Date of creation of the dashboard list.
+        format: date-time
+      dashboard_count:
+        type:
+          - integer
+          - "null"
+        description: The number of dashboards in the list.
+      id:
+        type:
+          - integer
+          - "null"
+        description: The ID of the dashboard list.
+      is_favorite:
+        type:
+          - boolean
+          - "null"
+        description: Whether or not the list is in the favorites.
+      modified:
+        type:
+          - string
+          - "null"
+        description: Date of last edition of the dashboard list.
+        format: date-time
+      name:
+        type:
+          - string
+          - "null"
+        description: The name of the dashboard list.
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of dashboard list.
+  ip_allowlist:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "IP allowlist type. Allowed enum values: ip_allowlist"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of the IP allowlist.
+        additionalProperties: true
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether the IP allowlist logic is enabled or not.
+          entries:
+            type:
+              - array
+              - "null"
+            description: Array of entries in the IP allowlist.
+            items:
+              type:
+                - object
+                - "null"
+              description: IP allowlist entry object.
+              additionalProperties: true
+              properties:
+                data:
+                  type:
+                    - object
+                    - "null"
+                  description: Data of the IP allowlist entry object.
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        IP allowlist Entry type. Allowed enum values:
+                        ip_allowlist_entry
+                    attributes:
+                      type:
+                        - object
+                        - "null"
+                      description: Attributes of the IP allowlist entry.
+                      additionalProperties: true
+                      properties:
+                        cidr_block:
+                          type:
+                            - string
+                            - "null"
+                          description: >-
+                            The CIDR block describing the IP range of the entry.
+                        created_at:
+                          type:
+                            - string
+                            - "null"
+                          description: Creation time of the entry.
+                          format: date-time
+                        modified_at:
+                          type:
+                            - string
+                            - "null"
+                          description: Time of last entry modification.
+                          format: date-time
+                        note:
+                          type:
+                            - string
+                            - "null"
+                          description: A note describing the IP allowlist entry.
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: The unique identifier of the IP allowlist entry.
+      id:
+        type:
+          - string
+          - "null"
+        description: The unique identifier of the org.
+  organization:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+        description: Date of the organization creation.
+      description:
+        type:
+          - string
+          - "null"
+        description: Description of the organization.
+      name:
+        type:
+          - string
+          - "null"
+        description: The name of the organization.
+      public_id:
+        type:
+          - string
+          - "null"
+        description: The public ID of the organization.
+      settings:
+        type:
+          - object
+          - "null"
+        description: Settings of the organization.
+        additionalProperties: true
+        properties:
+          private_widget_share:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Whether or not the organization users can share widgets outside of
+              Datadog.
+          saml:
+            type:
+              - object
+              - "null"
+            description: Whether single sign on with SAML is enabled.
+            additionalProperties: true
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: Whether or not SAML is enabled for this organization.
+          saml_autocreate_access_role:
+            type:
+              - string
+              - "null"
+            description: >-
+              The access role of the user. Options are st (standard user), adm
+              (admin user), or ro (read-only user).
+          saml_autocreate_users_domains:
+            type:
+              - object
+              - "null"
+            description: >-
+              The domains where the automated user creation based on SAML is
+              enabled.
+            additionalProperties: true
+            properties:
+              domains:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  List of domains where the SAML automated user creation is
+                  enabled.
+                items:
+                  type: string
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Whether or not the automated user creation based on SAML
+                  domain is enabled.
+          saml_can_be_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether or not SAML can be enabled for this organization.
+          saml_idp_endpoint:
+            type:
+              - string
+              - "null"
+            description: Identity provider endpoint for SAML authentication.
+          saml_idp_initiated_login:
+            type:
+              - object
+              - "null"
+            description: Whether SAML IdP initiated login is enabled.
+            additionalProperties: true
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: Whether SAML IdP initiated login is enabled.
+          saml_idp_metadata_uploaded:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Whether or not a SAML identity provider metadata file was provided
+              to the Datadog organization.
+          saml_login_url:
+            type:
+              - string
+              - "null"
+            description: URL for SAML logging.
+          saml_strict_mode:
+            type:
+              - object
+              - "null"
+            description: Whether SAML strict mode is enabled.
+            additionalProperties: true
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Whether or not the SAML strict mode is enabled. If true, all
+                  users must log in with SAML.
+      trial:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Only available for MSP customers. Allows child organizations to be
+          created on a trial plan.
+  permissions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Permissions resource type. Allowed enum values: permissions"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of a permission.
+        additionalProperties: true
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+            description: Creation time of the permission.
+            format: date-time
+          description:
+            type:
+              - string
+              - "null"
+            description: Description of the permission.
+          display_name:
+            type:
+              - string
+              - "null"
+            description: Displayed name for the permission.
+          display_type:
+            type:
+              - string
+              - "null"
+            description: Display type.
+          group_name:
+            type:
+              - string
+              - "null"
+            description: Name of the permission group.
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the permission.
+          name_aliases:
+            type:
+              - array
+              - "null"
+            description: List of alias names for the permission.
+            items:
+              type: string
+          restricted:
+            type:
+              - boolean
+              - "null"
+            description: Whether or not the permission is restricted.
+      id:
+        type:
+          - string
+          - "null"
+        description: ID of the permission.
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Roles type. Allowed enum values: roles"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of the role.
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+            description: Creation time of the role.
+            format: date-time
+          modified_at:
+            type:
+              - string
+              - "null"
+            description: Time of last role modification.
+            format: date-time
+          name:
+            type:
+              - string
+              - "null"
+            description: >-
+              The name of the role. The name is neither unique nor a stable
+              identifier of the role.
+          receives_permissions_from:
+            type:
+              - array
+              - "null"
+            description: >-
+              The managed roles from which this role automatically inherits new
+              permissions.
+            items:
+              type: string
+          user_count:
+            type:
+              - integer
+              - "null"
+            description: Number of users with that role.
+      id:
+        type:
+          - string
+          - "null"
+        description: The unique identifier of the role.
+      relationships:
+        type:
+          - object
+          - "null"
+        description: Relationships of the role object returned by the API.
+        additionalProperties: true
+        properties:
+          permissions:
+            type:
+              - object
+              - "null"
+            description: Relationship to multiple permissions objects.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                description: Relationships to permission objects.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Relationship to permission object.
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: ID of the permission.
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        Permissions resource type. Allowed enum values:
+                        permissions
+  rum_applications:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "RUM application list type. Allowed enum values: rum_application"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: RUM application list attributes.
+        additionalProperties: true
+        properties:
+          api_key_id:
+            type:
+              - integer
+              - "null"
+            description: ID of the API key associated with the application.
+          apm_rum_flat_sampling_replay_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Indicates if flat sampling of Session Replay for APM-correlated
+              RUM sessions is enabled.
+          apm_rum_flat_sampling_replay_sample_rate:
+            type:
+              - number
+              - "null"
+            description: >-
+              Sample rate (0-100) of Session Replay for APM-correlated RUM
+              sessions when flat sampling is enabled.
+          application_id:
+            type:
+              - string
+              - "null"
+            description: ID of the RUM application.
+          created_at:
+            type:
+              - integer
+              - "null"
+            description: Timestamp in ms of the creation date.
+          created_by_handle:
+            type:
+              - string
+              - "null"
+            description: Handle of the creator user.
+          disabled_at:
+            type:
+              - integer
+              - "null"
+            description: >-
+              Timestamp in ms of the date the RUM application was disabled. Only
+              present if the application was disabled.
+          disabled_by_handle:
+            type:
+              - string
+              - "null"
+            description: >-
+              Handle of the user who disabled the RUM application. Only present
+              if the application was disabled.
+          error_tracking_exclusion_filter_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Indicates if Error Tracking exclusion filters are enabled for the
+              application.
+          external_feeds:
+            type:
+              - array
+              - "null"
+            description: >-
+              Non-native ingestion paths the RUM application sends its data
+              through, such as otel.
+            items:
+              type: string
+          hash:
+            type:
+              - string
+              - "null"
+            description: Hash of the RUM application. Optional.
+          is_active:
+            type:
+              - boolean
+              - "null"
+            description: Indicates if the RUM application is active.
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the RUM application.
+          ootb_metrics_installed:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Indicates if the out-of-the-box RUM metrics are installed for the
+              application.
+          org_id:
+            type:
+              - integer
+              - "null"
+            description: Org ID of the RUM application.
+          product_analytics_preview_disabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Indicates that the Product Analytics preview is disabled for the
+              application.
+          product_analytics_replay_sample_rate:
+            type:
+              - integer
+              - "null"
+            description: >-
+              Sample rate (0-100) of Session Replay for Product Analytics
+              sessions.
+          product_scales:
+            type:
+              - object
+              - "null"
+            description: Product Scales configuration for the RUM application.
+            additionalProperties: true
+            properties:
+              product_analytics_retention_scale:
+                type:
+                  - object
+                  - "null"
+                description: Product Analytics retention scale configuration.
+                additionalProperties: true
+                properties:
+                  last_modified_at:
+                    type:
+                      - integer
+                      - "null"
+                    description: >-
+                      Timestamp in milliseconds when this scale was last
+                      modified.
+                  state:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      Retention policy for Product Analytics data derived from
+                      RUM events: MAX or NONE.
+              rum_event_processing_scale:
+                type:
+                  - object
+                  - "null"
+                description: RUM event processing scale configuration.
+                additionalProperties: true
+                properties:
+                  last_modified_at:
+                    type:
+                      - integer
+                      - "null"
+                    description: >-
+                      Timestamp in milliseconds when this scale was last
+                      modified.
+                  state:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      Which RUM events are processed and stored for the
+                      application: ALL, ERROR_FOCUSED_MODE or NONE.
+          remote_config_id:
+            type:
+              - string
+              - "null"
+            description: >-
+              ID of the RUM SDK remote configuration for the application, if one
+              exists.
+          short_name:
+            type:
+              - string
+              - "null"
+            description: Short name of the RUM application.
+          tags:
+            type:
+              - array
+              - "null"
+            description: List of tags associated with the RUM application.
+            items:
+              type: string
+          type:
+            type:
+              - string
+              - "null"
+            description: >-
+              Type of the RUM application, such as browser, ios, android or
+              react-native.
+          updated_at:
+            type:
+              - integer
+              - "null"
+            description: Timestamp in ms of the last update date.
+          updated_by_handle:
+            type:
+              - string
+              - "null"
+            description: Handle of the updater user.
+      id:
+        type:
+          - string
+          - "null"
+        description: RUM application ID.
+  service_definitions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Service definition type.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Service definition attributes.
+        additionalProperties: true
+        properties:
+          meta:
+            type:
+              - object
+              - "null"
+            description: Metadata about a service definition.
+            additionalProperties: true
+            properties:
+              github-html-url:
+                type:
+                  - string
+                  - "null"
+                description: GitHub HTML URL.
+              ingested-schema-version:
+                type:
+                  - string
+                  - "null"
+                description: Ingestion schema version.
+              ingestion-source:
+                type:
+                  - string
+                  - "null"
+                description: Ingestion source of the service definition.
+              last-modified-time:
+                type:
+                  - string
+                  - "null"
+                description: Last modified time of the service definition.
+              origin:
+                type:
+                  - string
+                  - "null"
+                description: User defined origin of the service definition.
+              origin-detail:
+                type:
+                  - string
+                  - "null"
+                description: User defined origin's detail of the service definition.
+              warnings:
+                type:
+                  - array
+                  - "null"
+                description: A list of schema validation warnings.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Schema validation warnings.
+                  additionalProperties: true
+                  properties:
+                    instance-location:
+                      type:
+                        - string
+                        - "null"
+                      description: The warning instance location.
+                    keyword-location:
+                      type:
+                        - string
+                        - "null"
+                      description: The warning keyword location.
+                    message:
+                      type:
+                        - string
+                        - "null"
+                      description: The warning message.
+          schema:
+            type:
+              - object
+              - "null"
+            description: >-
+              Service definition, in the schema version it was ingested with
+              (v2, v2.1 or v2.2, or the deprecated v1).
+            additionalProperties: true
+            properties:
+              application:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Identifier for a group of related services serving a product
+                  feature, which the service is a part of.
+              ci-pipeline-fingerprints:
+                type:
+                  - array
+                  - "null"
+                description: A set of CI pipeline fingerprints.
+                items:
+                  type: string
+              contacts:
+                type:
+                  - array
+                  - "null"
+                description: A list of contacts related to the services.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Service owner's contacts information.
+                  additionalProperties: true
+                  properties:
+                    contact:
+                      type:
+                        - string
+                        - "null"
+                      description: Contact value.
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: Contact name.
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: Contact type, such as email, slack or microsoft-teams.
+              dd-service:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Unique identifier of the service. Must be unique across all
+                  services and is used to match with a service in Datadog.
+              dd-team:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  A Team handle that matches a Team in the Datadog Teams
+                  product.
+              description:
+                type:
+                  - string
+                  - "null"
+                description: A short description of the service.
+              docs:
+                type:
+                  - array
+                  - "null"
+                description: A list of documentation related to the services.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Service documents.
+                  additionalProperties: true
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: Document name.
+                    provider:
+                      type:
+                        - string
+                        - "null"
+                      description: Document provider.
+                    url:
+                      type:
+                        - string
+                        - "null"
+                      description: Document URL.
+              extensions:
+                type:
+                  - object
+                  - "null"
+                description: Extensions to the schema.
+                additionalProperties: true
+              integrations:
+                type:
+                  - object
+                  - "null"
+                description: Third party integrations that Datadog supports.
+                additionalProperties: true
+              languages:
+                type:
+                  - array
+                  - "null"
+                description: The service's programming languages.
+                items:
+                  type: string
+              lifecycle:
+                type:
+                  - string
+                  - "null"
+                description: The current life cycle phase of the service.
+              links:
+                type:
+                  - array
+                  - "null"
+                description: A list of links related to the services.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Service's external links.
+                  additionalProperties: true
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: Link name.
+                    provider:
+                      type:
+                        - string
+                        - "null"
+                      description: Link provider.
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: Link type.
+                    url:
+                      type:
+                        - string
+                        - "null"
+                      description: Link URL.
+              repos:
+                type:
+                  - array
+                  - "null"
+                description: A list of code repositories related to the services.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Service code repositories.
+                  additionalProperties: true
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: Repository name.
+                    provider:
+                      type:
+                        - string
+                        - "null"
+                      description: Repository provider.
+                    url:
+                      type:
+                        - string
+                        - "null"
+                      description: Repository URL.
+              schema-version:
+                type:
+                  - string
+                  - "null"
+                description: Schema version being used.
+              tags:
+                type:
+                  - array
+                  - "null"
+                description: A set of custom tags.
+                items:
+                  type: string
+              team:
+                type:
+                  - string
+                  - "null"
+                description: Team that owns the service.
+              tier:
+                type:
+                  - string
+                  - "null"
+                description: Importance of the service.
+              type:
+                type:
+                  - string
+                  - "null"
+                description: The type of service.
+      id:
+        type:
+          - string
+          - "null"
+        description: Service definition id.
+  slo_corrections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "SLO correction resource type. Allowed enum values: correction"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The attribute object associated with the SLO correction.
+        additionalProperties: true
+        properties:
+          category:
+            type:
+              - string
+              - "null"
+            description: >-
+              Category the SLO correction belongs to: Scheduled Maintenance,
+              Outside Business Hours, Deployment or Other.
+          created_at:
+            type:
+              - integer
+              - "null"
+            description: The epoch timestamp of when the correction was created at.
+          creator:
+            type:
+              - object
+              - "null"
+            description: Object describing the creator of the shared element.
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+                description: Email of the creator.
+              handle:
+                type:
+                  - string
+                  - "null"
+                description: Handle of the creator.
+              name:
+                type:
+                  - string
+                  - "null"
+                description: Name of the creator.
+          description:
+            type:
+              - string
+              - "null"
+            description: Description of the correction being made.
+          duration:
+            type:
+              - integer
+              - "null"
+            description: >-
+              Length of time (in seconds) for a specified rrule recurring SLO
+              correction.
+          end:
+            type:
+              - integer
+              - "null"
+            description: Ending time of the correction in epoch seconds.
+          modified_at:
+            type:
+              - integer
+              - "null"
+            description: The epoch timestamp of when the correction was modified at.
+          modifier:
+            type:
+              - object
+              - "null"
+            description: Modifier of the object.
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+                description: Email of the modifier.
+              handle:
+                type:
+                  - string
+                  - "null"
+                description: Handle of the modifier.
+              name:
+                type:
+                  - string
+                  - "null"
+                description: Name of the modifier.
+          rrule:
+            type:
+              - string
+              - "null"
+            description: The recurrence rules as defined in the iCalendar RFC 5545.
+          slo_id:
+            type:
+              - string
+              - "null"
+            description: ID of the single SLO that this correction applies to.
+          slo_query:
+            type:
+              - string
+              - "null"
+            description: Query that matches the SLOs this correction applies to.
+          start:
+            type:
+              - integer
+              - "null"
+            description: Starting time of the correction in epoch seconds.
+          timezone:
+            type:
+              - string
+              - "null"
+            description: >-
+              The timezone to display in the UI for the correction times
+              (defaults to UTC).
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the SLO correction.
+  synthetics_global_variables:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of the global variable.
+        additionalProperties: true
+      description:
+        type:
+          - string
+          - "null"
+        description: Description of the global variable.
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique identifier of the global variable.
+      is_fido:
+        type:
+          - boolean
+          - "null"
+        description: Determines if the global variable is a FIDO variable.
+      is_totp:
+        type:
+          - boolean
+          - "null"
+        description: Determines if the global variable is a TOTP/MFA variable.
+      name:
+        type:
+          - string
+          - "null"
+        description: >-
+          Name of the global variable. Unique across Synthetic global variables.
+      parse_test_options:
+        type:
+          - object
+          - "null"
+        description: >-
+          Parser options to use for retrieving a Synthetic global variable from
+          a Synthetic test.
+        additionalProperties: true
+        properties:
+          field:
+            type:
+              - string
+              - "null"
+            description: >-
+              When type is http_header, name of the header to use to extract the
+              value.
+          localVariableName:
+            type:
+              - string
+              - "null"
+            description: >-
+              When type is local_variable, name of the local variable to use to
+              extract the value.
+          parser:
+            type:
+              - object
+              - "null"
+            description: Details of the parser to use for the global variable.
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Type of parser for a Synthetic global variable from a
+                  synthetics test.
+              value:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  Regex or JSON path used for the parser. Not used with type
+                  raw.
+          type:
+            type:
+              - string
+              - "null"
+            description: >-
+              Type of value to extract from a test for a Synthetic global
+              variable.
+      parse_test_public_id:
+        type:
+          - string
+          - "null"
+        description: A Synthetic test ID to use as a test to generate the variable value.
+      tags:
+        type:
+          - array
+          - "null"
+        description: Tags of the global variable.
+        items:
+          type: string
+      value:
+        type:
+          - object
+          - "null"
+        description: >-
+          Options of the value of the global variable. The connector removes the
+          value itself from every record.
+        additionalProperties: true
+        properties:
+          options:
+            type:
+              - object
+              - "null"
+            description: Options for the Global Variable for MFA.
+            additionalProperties: true
+            properties:
+              totp_parameters:
+                type:
+                  - object
+                  - "null"
+                description: Parameters for the TOTP/MFA variable.
+                additionalProperties: true
+                properties:
+                  digits:
+                    type:
+                      - integer
+                      - "null"
+                    description: Number of digits for the OTP code.
+                  refresh_interval:
+                    type:
+                      - integer
+                      - "null"
+                    description: Interval for which to refresh the token (in seconds).
+          secure:
+            type:
+              - boolean
+              - "null"
+            description: Determines if the value of the variable is hidden.
+  synthetics_locations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique identifier of the location.
+      name:
+        type:
+          - string
+          - "null"
+        description: Name of the location.
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Team type. Allowed enum values: team"
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Team attributes.
+        additionalProperties: true
+        properties:
+          avatar:
+            type:
+              - string
+              - "null"
+            description: >-
+              Unicode representation of the avatar for the team, limited to a
+              single grapheme.
+          banner:
+            type:
+              - integer
+              - "null"
+            description: Banner selection for the team.
+          created_at:
+            type:
+              - string
+              - "null"
+            description: Creation date of the team.
+            format: date-time
+          description:
+            type:
+              - string
+              - "null"
+            description: Free-form markdown description/content for the team's homepage.
+          handle:
+            type:
+              - string
+              - "null"
+            description: The team's identifier.
+          handles:
+            type:
+              - array
+              - "null"
+            description: Collection of handles associated with the team.
+            items:
+              type: string
+          hidden_modules:
+            type:
+              - array
+              - "null"
+            description: Collection of hidden modules for the team.
+            items:
+              type: string
+          is_managed:
+            type:
+              - boolean
+              - "null"
+            description: Whether the team is managed from an external source.
+          is_open_membership:
+            type:
+              - boolean
+              - "null"
+            description: Whether any user can join the team without an invitation.
+          link_count:
+            type:
+              - integer
+              - "null"
+            description: The number of links belonging to the team.
+          modified_at:
+            type:
+              - string
+              - "null"
+            description: Modification date of the team.
+            format: date-time
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the team.
+          provisioned_by:
+            type:
+              - string
+              - "null"
+            description: >-
+              The mechanism that created the team, such as teams_api,
+              teams_terraform, or teams_ui. Omitted when unknown.
+          summary:
+            type:
+              - string
+              - "null"
+            description: A brief summary of the team, derived from the description.
+          user_count:
+            type:
+              - integer
+              - "null"
+            description: The number of users belonging to the team.
+          visible_modules:
+            type:
+              - array
+              - "null"
+            description: Collection of visible modules for the team.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: The team's identifier.
+      relationships:
+        type:
+          - object
+          - "null"
+        description: Resources related to a team.
+        additionalProperties: true
+        properties:
+          team_links:
+            type:
+              - object
+              - "null"
+            description: Relationship between a team and a team link.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                description: Related team links.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  description: Relationship between a link and a team.
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: The team link's identifier.
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: "Team link type. Allowed enum values: team_links"
+              links:
+                type:
+                  - object
+                  - "null"
+                description: Links attributes.
+                additionalProperties: true
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                    description: Related link.
+          user_team_permissions:
+            type:
+              - object
+              - "null"
+            description: Relationship between a user team permission and a team.
+            additionalProperties: true
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                description: Related user team permission data.
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                    description: The ID of the user team permission.
+                  type:
+                    type:
+                      - string
+                      - "null"
+                    description: >-
+                      User team permission type. Allowed enum values:
+                      user_team_permissions
+              links:
+                type:
+                  - object
+                  - "null"
+                description: Links attributes.
+                additionalProperties: true
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                    description: Related link.
   dashboards:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
