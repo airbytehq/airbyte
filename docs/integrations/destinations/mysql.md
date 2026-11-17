@@ -1,9 +1,13 @@
 # MySQL
 
-There are two flavors of connectors for this destination:
+This page guides you through setting up the MySQL destination connector. You can also use this connector with MariaDB.
 
-1. destination-mysql connector. Supports both SSL and non SSL connections.
-2. destination-mysql-strict-encrypt connector. Pretty same as connector above, but supports SSL connections only.
+There are two variants of this connector:
+
+- `destination-mysql` supports both encrypted and unencrypted connections, and has an **SSL Connection** option. Airbyte Open Source uses this variant.
+- `destination-mysql-strict-encrypt` only supports encrypted connections, and has no **SSL Connection** option. Airbyte Cloud uses this variant.
+
+Apart from SSL, both variants behave the same way.
 
 ## Supported sync modes
 
@@ -15,100 +19,109 @@ There are two flavors of connectors for this destination:
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Getting Started \(Airbyte Cloud\)
+## Prerequisites
 
-Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+- A supported MySQL server version:
+  - MySQL 8.0 or later to write final tables with [typing and deduping](https://docs.airbyte.com/platform/using-airbyte/core-concepts/typing-deduping). Typing and deduping uses SQL features, such as `JSON_VALUE`, that MySQL 5.7 doesn't support.
+  - MySQL 5.7 or later if you turn on **Disable Final Tables** and only write raw tables. The connection check fails on versions earlier than 5.7. The bundled MySQL Connector/J 9.x driver officially supports MySQL 8.0 and later. MySQL 5.7 is no longer supported upstream, but still works with this connector.
+- If SSL is enabled (the default, and the only option on Airbyte Cloud), the server must accept TLS 1.2 or TLS 1.3. The driver no longer negotiates TLS 1.0 or TLS 1.1.
+- The `local_infile` system variable turned on. See [Enable local_infile](#enable-local_infile).
+- A database user with the privileges listed in [Create a database user](#create-a-database-user).
+- Network access from Airbyte to your MySQL server. If you use Airbyte Cloud, allow inbound connections from [Airbyte's IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist). If the server is in a private network, you can [connect through an SSH tunnel](#connect-through-an-ssh-tunnel).
 
-## Getting Started \(Airbyte Open Source\)
+### Enable local_infile
 
-### Requirements
+The connector loads data with `LOAD DATA LOCAL INFILE`, which requires the server's [`local_infile`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile) system variable to be `ON`.
 
-To use the MySQL destination, you'll need:
+When the connector checks the connection, and before it loads data, it reads this variable. If `local_infile` is off, the connector tries to turn it on by running `SET GLOBAL local_infile = true`. This only succeeds if the connector's user has the [`SYSTEM_VARIABLES_ADMIN`](https://dev.mysql.com/doc/refman/8.0/en/privileges-provided.html#priv_system-variables-admin) or `SUPER` privilege. Otherwise, the connection check fails.
 
-- To sync data to MySQL **with** typing and deduping: MySQL database 8.0.0 or above
-- To sync data to MySQL **without** typing and deduping: MySQL 5.7 or above. The bundled MySQL Connector/J 9.x driver officially supports MySQL 8.0 and later; MySQL 5.7 is no longer supported upstream but still works with this connector.
-- When SSL is enabled (the default, and the only option on Airbyte Cloud), the server must accept TLS 1.2 or TLS 1.3. The driver no longer negotiates TLS 1.0 or TLS 1.1.
+If you don't want to give the connector's user that privilege, have an administrator turn the variable on before you set up the destination:
 
-#### Troubleshooting
-
-If the connection fails with `Cannot create a PoolableConnectionFactory` or an SSL handshake error, check that the server (for example an older Amazon RDS MySQL instance) offers TLS 1.2 or later. Enable a supported TLS version on the server; the driver cannot be configured to fall back to TLS 1.0 or 1.1.
-
-#### Network Access
-
-Make sure your MySQL database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
-
-#### **Permissions**
-
-You need a MySQL user with `CREATE, INSERT, SELECT, DROP` permissions. We highly recommend creating an Airbyte-specific user for this purpose.
-
-#### Target Database
-
-MySQL doesn't differentiate between a database and schema. A database is essentially a schema where all the tables live in. You will need to choose an existing database or create a new database. This will act as a default database/schema where the tables will be created if the source doesn't provide a namespace.
-
-### Setup the MySQL destination in Airbyte
-
-Before setting up MySQL destination in Airbyte, you need to set the [local_infile](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile) system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` with a user with [SYSTEM_VARIABLES_ADMIN](https://dev.mysql.com/doc/refman/8.0/en/privileges-provided.html#priv_system-variables-admin) permission. This is required cause Airbyte uses `LOAD DATA LOCAL INFILE` to load data into table.
-
-You should now have all the requirements needed to configure MySQL as a destination in the UI. You'll need the following information to configure the MySQL destination:
-
-- **Host**
-- **Port**
-- **Username**
-- **Password**
-- **Database**
-- **jdbc_url_params** (Optional)
-
-### Default JDBC URL Parameters
-
-The following JDBC URL parameters are set by Airbyte and cannot be overridden by the `jdbc_url_params` field:
-
-- `useSSL=true` (unless `ssl` is set to false)
-- `requireSSL=true` (unless `ssl` is set to false)
-- `verifyServerCertificate=false` (unless `ssl` is set to false)
-- `zeroDateTimeBehavior=convertToNull`
-- `allowLoadLocalInfile=true`
-- `connectionTimeZone=LOCAL` (the connector writes and reads `_airbyte_extracted_at` in the connector's own time zone; do not set `connectionTimeZone` or its alias `serverTimezone` in `jdbc_url_params`)
-
-## Known Limitations
-
-Note that MySQL documentation discusses identifiers case sensitivity using the `lower_case_table_names` system variable. One of their recommendations is:
-
-```text
-"It is best to adopt a consistent convention, such as always creating and referring to databases and tables using lowercase names.
- This convention is recommended for maximum portability and ease of use."
+```sql
+SET GLOBAL local_infile = true;
 ```
 
-[Source: MySQL docs](https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html)
+`SET GLOBAL` doesn't survive a server restart. To keep the setting, also set `local_infile=1` in the server's option file, or use `SET PERSIST` on MySQL 8.0.
 
-As a result, Airbyte MySQL destination forces all identifier \(table, schema and columns\) names to be lowercase.
+### Create a database user
 
-## Connection via SSH Tunnel
+Create a dedicated user for Airbyte. The connector needs these privileges:
 
-Airbyte has the ability to connect to a MySQl instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
+- `CREATE` to create databases and tables. The connector runs `CREATE DATABASE IF NOT EXISTS` for the target database, the raw table database, and any namespace a source sends.
+- `INSERT` and `SELECT` to load and read data.
+- `UPDATE` to mark raw records as loaded after typing and deduping.
+- `DELETE` to remove older versions of records in deduplicated streams.
+- `INDEX` to create indexes on raw and final tables.
+- `ALTER` and `DROP` to swap and drop tables during overwrite syncs and table rebuilds.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+The connector writes raw tables to a separate database, `airbyte_internal` by default. Grant the privileges on that database as well as on your target database:
 
-Using this feature requires additional configuration, when creating the destination. We will talk through what each piece of configuration means.
+```sql
+CREATE USER 'airbyte'@'%' IDENTIFIED BY '<password>';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, INDEX ON <database>.* TO 'airbyte'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, INDEX ON airbyte_internal.* TO 'airbyte'@'%';
+```
 
-1. Configure all fields for the destination as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+Replace `<database>` with your target database. If you set **Raw table database** to a different name, grant the privileges on that database instead of `airbyte_internal`. If your sources write to other namespaces, grant the same privileges on those databases, or grant them on `*.*`.
 
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
-   2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
+### Choose a target database
 
-   :::warning
-   Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **preferred** as the **SSL Mode**; otherwise, the connection will fail.
-   :::
+MySQL doesn't differentiate between a database and a schema. Choose an existing database or create a new one. The connector writes final tables to this database when the source doesn't provide a namespace. See [Namespace support](#namespace-support).
 
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the MySQl username.
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the MySQl password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+## Set up the MySQL destination
+
+Provide the following information:
+
+- **Host**: The hostname or IP address of your MySQL server.
+- **Port**: The port of your MySQL server. The default is `3306`.
+- **DB Name**: The target database.
+- **User** and **Password**: The credentials of the user you created.
+- **SSL Connection** (`destination-mysql` only): Encrypts the connection with TLS. On by default. When on, the connector requires TLS but doesn't verify the server certificate (`verifyServerCertificate=false`). The strict-encrypt variant always behaves as if this option is on.
+- **JDBC URL Params** (optional): Extra JDBC URL parameters, formatted as `key=value` pairs separated by `&`. For example, `key1=value1&key2=value2`.
+- **SSH Tunnel Method** (optional): See [Connect through an SSH tunnel](#connect-through-an-ssh-tunnel).
+- **Raw table database** (optional): The database for raw tables. Defaults to `airbyte_internal`.
+- **Disable Final Tables** (optional): Writes only raw tables and skips typing and deduping. The connector doesn't guarantee that raw table columns stay the same between versions.
+
+### Default JDBC URL parameters
+
+The connector sets the following JDBC URL parameters. You can't override them with **JDBC URL Params**:
+
+- `useSSL=true` (unless SSL is turned off)
+- `requireSSL=true` (unless SSL is turned off)
+- `verifyServerCertificate=false` (unless SSL is turned off)
+- `zeroDateTimeBehavior=convertToNull`
+- `allowLoadLocalInfile=true`
+- `connectionTimeZone=LOCAL`. The connector writes and reads `_airbyte_extracted_at` in the connector's own time zone. Don't set `connectionTimeZone` or its alias `serverTimezone` in **JDBC URL Params**.
+
+## Connect through an SSH tunnel
+
+If you can't connect to the database directly, for example because it has no public IP address, the connector can connect through an SSH tunnel. Airbyte connects to an intermediate (bastion) server that has direct access to the database, and the bastion server forwards the connection to MySQL.
+
+1. Configure all other fields as you normally would.
+2. Set **SSH Tunnel Method**. The default is **No Tunnel**, which connects directly. To use a tunnel, choose one of these:
+   - **SSH Key Authentication** to authenticate to the bastion server with an RSA private key.
+   - **Password Authentication** to authenticate to the bastion server with a password.
+3. **SSH Tunnel Jump Server Host**: The hostname or IP address of the bastion server.
+4. **SSH Connection Port**: The SSH port on the bastion server. The default is `22`.
+5. **SSH Login Username**: The operating system user on the bastion server. This isn't the MySQL user.
+6. If you chose **Password Authentication**, set **Password** to that operating system user's password. This isn't the MySQL password.
+7. If you chose **SSH Key Authentication**, set **SSH Private Key** to the full contents of the RSA private key file, starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). MySQL doesn't differentiate between a database and schema. The configured database acts as the default namespace.
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). Because MySQL doesn't differentiate between a database and a schema, each namespace maps to a MySQL database. The configured database acts as the default namespace.
+
+## Limitations
+
+- The connector converts all identifiers (database, table, and column names) to lowercase. The MySQL documentation recommends [using lowercase names](https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html) for portability, because case sensitivity depends on the `lower_case_table_names` system variable and the operating system.
+- The connector shortens database and table names longer than 44 characters. It keeps the beginning and end of the name and joins them with `__`.
+
+## Troubleshooting
+
+- **`Cannot create a PoolableConnectionFactory` or an SSL handshake error**: Check that the server, for example an older Amazon RDS MySQL instance, offers TLS 1.2 or later. Turn on a supported TLS version on the server. You can't configure the driver to fall back to TLS 1.0 or 1.1.
+- **`The DB user provided to airbyte was unable to switch on the local_infile attribute`**: `local_infile` is off and the connector's user can't turn it on. See [Enable local_infile](#enable-local_infile).
+- **`Your MySQL version ... is not compatible with Airbyte`**: The server runs a version earlier than MySQL 5.7. Upgrade the server.
+- **`Access denied. Please check your configuration`**: The user is missing a privilege, or can't access the target or raw table database. See [Create a database user](#create-a-database-user).
 
 ## Changelog
 
@@ -117,7 +130,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 1.1.2 | 2026-10-26 | [89768](https://github.com/airbytehq/airbyte/pull/89768) | Upgrade MySQL Connector/J 8.0.22 to 9.6.0 and pin `connectionTimeZone=LOCAL` so typing no longer skips records on servers west of UTC (MySQL and MySQL Strict Encrypt destinations). |
+| 1.1.2 | 2026-10-27 | [89768](https://github.com/airbytehq/airbyte/pull/89768) | Upgrade MySQL Connector/J 8.0.22 to 9.6.0 and pin `connectionTimeZone=LOCAL` so typing no longer skips records on servers west of UTC (MySQL and MySQL Strict Encrypt destinations). |
 | 1.1.1 | 2025-08-04 | [63736](https://github.com/airbytehq/airbyte/pull/63736) | Use MySQL/MariaDB compatible timestamp format |
 | 1.1.0 | 2025-03-25 | [50861](https://github.com/airbytehq/airbyte/pull/50861) | add support for mariadb |
 | 1.0.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
