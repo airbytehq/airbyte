@@ -1102,11 +1102,13 @@ jobs:
 
       - name: Dry-run notice (variable)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN (ENABLE_CONNECTOR_AUTO_MERGE not set) -- would merge PR #${PR_NUMBER}"
+        run: >
+          echo "::notice::DRY RUN (ENABLE_CONNECTOR_AUTO_MERGE not set) -- would merge PR #${PR_NUMBER}"
 
       - name: Dry-run notice (flag)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run == 'true'
-        run: echo "::notice::DRY RUN (dry-run flag) -- would merge PR #${PR_NUMBER}"
+        run: >
+          echo "::notice::DRY RUN (dry-run flag) -- would merge PR #${PR_NUMBER}"
 
       # If anything in the post-eval autopilot/merge phase fails (head moved,
       # push rejected, CLI flake, check wait timeout, merge failure), the eval
