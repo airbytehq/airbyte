@@ -16,6 +16,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -115,7 +116,7 @@ class BigqueryBatchStandardInsertsLoader(
             if (!this::writer.isInitialized) {
                 switchToWriteChannel()
             }
-            writer.close()
+            withUploadErrorHandling { writer.close() }
             val loadJob = checkNotNull(writer.job) { "BigQuery load job is missing" }
             BigQueryUtils.waitForJobFinish(loadJob)
             val completedJob = checkNotNull(loadJob.reload()) { "BigQuery load job disappeared" }
@@ -181,7 +182,7 @@ class BigqueryBatchStandardInsertsLoader(
         var stalledWrites = 0
         while (source.hasRemaining()) {
             val position = source.position()
-            writer.write(source)
+            withUploadErrorHandling { writer.write(source) }
             if (source.position() <= position) {
                 if (++stalledWrites >= 3) {
                     throw IOException("BigQuery write channel made no progress after 3 attempts")
@@ -197,7 +198,7 @@ class BigqueryBatchStandardInsertsLoader(
     private fun switchToWriteChannel() {
         writer =
             try {
-                bigquery.writer(job, writeChannelConfiguration)
+                withUploadErrorHandling { bigquery.writer(job, writeChannelConfiguration) }
             } catch (e: BigQueryException) {
                 if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
                     throw ConfigErrorException(CONFIG_ERROR_MSG + e)
@@ -210,6 +211,19 @@ class BigqueryBatchStandardInsertsLoader(
         buffer = null
         writeFully(byteArray)
     }
+
+    private inline fun <T> withUploadErrorHandling(block: () -> T): T =
+        try {
+            block()
+        } catch (e: BigQueryException) {
+            if (e.code == 400 && e.message?.contains("Request had invalid euc header.") == true) {
+                throw TransientErrorException(
+                    "BigQuery rejected a data upload with a temporary credential-header error.",
+                    e,
+                )
+            }
+            throw e
+        }
 }
 
 class BigqueryConfiguredForBatchStandardInserts : Condition {
