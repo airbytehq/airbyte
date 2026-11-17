@@ -132,6 +132,281 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/downtimes"
+    aws_cur_configs:
+      type: DeclarativeStream
+      name: aws_cur_configs
+      primary_key:
+        - id
+      $parameters:
+        required_permission: cloud_cost_management_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/cost/aws_cur_config
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/aws_cur_configs"
+    aws_integrations:
+      type: DeclarativeStream
+      name: aws_integrations
+      primary_key:
+        - id
+      $parameters:
+        required_permission: aws_configuration_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integration/aws/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - auth_config
+              - access_key_id
+            - - attributes
+              - auth_config
+              - secret_access_key
+            - - attributes
+              - auth_config
+              - external_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/aws_integrations"
+    azure_integrations:
+      type: DeclarativeStream
+      name: azure_integrations
+      primary_key:
+        - tenant_name
+        - client_id
+      $parameters:
+        required_permission: azure_configuration_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/integration/azure
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - client_secret
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/azure_integrations"
+    azure_uc_configs:
+      type: DeclarativeStream
+      name: azure_uc_configs
+      primary_key:
+        - id
+      $parameters:
+        required_permission: cloud_cost_management_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/cost/azure_uc_config
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/azure_uc_configs"
+    cloudflare_accounts:
+      type: DeclarativeStream
+      name: cloudflare_accounts
+      primary_key:
+        - id
+      $parameters:
+        required_permission: integrations_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integrations/cloudflare/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - api_key
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cloudflare_accounts"
+    confluent_accounts:
+      type: DeclarativeStream
+      name: confluent_accounts
+      primary_key:
+        - id
+      $parameters:
+        required_permission: integrations_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integrations/confluent-cloud/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - api_key
+            - - attributes
+              - api_secret
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/confluent_accounts"
+    fastly_accounts:
+      type: DeclarativeStream
+      name: fastly_accounts
+      primary_key:
+        - id
+      $parameters:
+        required_permission: integrations_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integrations/fastly/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - api_key
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fastly_accounts"
+    gcp_integrations:
+      type: DeclarativeStream
+      name: gcp_integrations
+      primary_key:
+        - id
+      $parameters:
+        required_permission: gcp_configuration_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integration/gcp/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/gcp_integrations"
+    okta_accounts:
+      type: DeclarativeStream
+      name: okta_accounts
+      primary_key:
+        - id
+      $parameters:
+        required_permission: integrations_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integrations/okta/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - api_key
+            - - attributes
+              - client_secret
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/okta_accounts"
+    opsgenie_accounts:
+      type: DeclarativeStream
+      name: opsgenie_accounts
+      primary_key:
+        - id
+      $parameters:
+        required_permission: integrations_read
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/integration/opsgenie/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - api_key
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opsgenie_accounts"
     incident_teams:
       type: DeclarativeStream
       name: incident_teams
@@ -575,6 +850,16 @@ streams:
   - $ref: "#/definitions/streams/audit_logs"
   - $ref: "#/definitions/streams/dashboards"
   - $ref: "#/definitions/streams/downtimes"
+  - $ref: "#/definitions/streams/aws_cur_configs"
+  - $ref: "#/definitions/streams/aws_integrations"
+  - $ref: "#/definitions/streams/azure_integrations"
+  - $ref: "#/definitions/streams/azure_uc_configs"
+  - $ref: "#/definitions/streams/cloudflare_accounts"
+  - $ref: "#/definitions/streams/confluent_accounts"
+  - $ref: "#/definitions/streams/fastly_accounts"
+  - $ref: "#/definitions/streams/gcp_integrations"
+  - $ref: "#/definitions/streams/okta_accounts"
+  - $ref: "#/definitions/streams/opsgenie_accounts"
   - $ref: "#/definitions/streams/incident_teams"
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/logs"
@@ -1174,6 +1459,1154 @@ schemas:
         type:
           - string
           - "null"
+  aws_cur_configs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Type of AWS CUR config.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes for an AWS CUR config.
+        additionalProperties: true
+        properties:
+          account_filters:
+            type:
+              - object
+              - "null"
+            description: The account filtering configuration.
+            additionalProperties: true
+            properties:
+              excluded_accounts:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  The AWS account IDs to be excluded from your billing dataset.
+                  This field is used when `include_new_accounts` is `true`.
+                items:
+                  type: string
+              include_new_accounts:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Whether or not to automatically include new member accounts by
+                  default in your billing dataset.
+              included_accounts:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  The AWS account IDs to be included in your billing dataset. This
+                  field is used when `include_new_accounts` is `false`.
+                items:
+                  type: string
+          account_id:
+            type:
+              - string
+              - "null"
+            description: The AWS account ID.
+          bucket_name:
+            type:
+              - string
+              - "null"
+            description: The AWS bucket name used to store the Cost and Usage Report.
+          bucket_region:
+            type:
+              - string
+              - "null"
+            description: The region the bucket is located in.
+          created_at:
+            type:
+              - string
+              - "null"
+            description: The timestamp when the AWS CUR config was created.
+          error_messages:
+            type:
+              - array
+              - "null"
+            description: The error messages for the AWS CUR config.
+            items:
+              type: string
+          months:
+            type:
+              - integer
+              - "null"
+            description: >-
+              The number of months the report has been backfilled. Deprecated by
+              Datadog.
+          report_name:
+            type:
+              - string
+              - "null"
+            description: The name of the Cost and Usage Report.
+          report_prefix:
+            type:
+              - string
+              - "null"
+            description: The report prefix used for the Cost and Usage Report.
+          status:
+            type:
+              - string
+              - "null"
+            description: The status of the AWS CUR.
+          status_updated_at:
+            type:
+              - string
+              - "null"
+            description: The timestamp when the AWS CUR config status was updated.
+          updated_at:
+            type:
+              - string
+              - "null"
+            description: The timestamp when the AWS CUR config was last updated.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the AWS CUR config.
+  aws_integrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: AWS Account resource type.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: AWS Account response attributes.
+        additionalProperties: true
+        properties:
+          account_tags:
+            type:
+              - array
+              - "null"
+            description: >-
+              Tags to apply to all hosts and metrics reporting for this account.
+            items:
+              type: string
+          auth_config:
+            type:
+              - object
+              - "null"
+            description: >-
+              AWS Authentication config. The connector removes `access_key_id`,
+              `secret_access_key` and `external_id` from it.
+            additionalProperties: true
+            properties:
+              role_name:
+                type:
+                  - string
+                  - "null"
+                description: AWS IAM Role name.
+          aws_account_id:
+            type:
+              - string
+              - "null"
+            description: AWS Account ID.
+          aws_partition:
+            type:
+              - string
+              - "null"
+            description: >-
+              AWS partition your AWS account is scoped to: `aws`, `aws-cn` or
+              `aws-us-gov`.
+          aws_regions:
+            type:
+              - object
+              - "null"
+            description: AWS Regions to collect data from.
+            additionalProperties: true
+            properties:
+              include_all:
+                type:
+                  - boolean
+                  - "null"
+                description: Include all regions.
+              include_only:
+                type:
+                  - array
+                  - "null"
+                description: Include only these regions.
+                items:
+                  type: string
+          created_at:
+            type:
+              - string
+              - "null"
+            description: Timestamp of when the account integration was created.
+            format: date-time
+          logs_config:
+            type:
+              - object
+              - "null"
+            description: AWS Logs Collection config.
+            additionalProperties: true
+            properties:
+              lambda_forwarder:
+                type:
+                  - object
+                  - "null"
+                description: >-
+                  Log autosubscription configuration for Datadog Forwarder Lambda
+                  functions.
+                additionalProperties: true
+                properties:
+                  lambdas:
+                    type:
+                      - array
+                      - "null"
+                    description: >-
+                      List of Datadog Lambda Log Forwarder ARNs in your AWS
+                      account.
+                    items:
+                      type: string
+                  log_source_config:
+                    type:
+                      - object
+                      - "null"
+                    description: Log source configuration.
+                    additionalProperties: true
+                    properties:
+                      tag_filters:
+                        type:
+                          - array
+                          - "null"
+                        description: List of AWS log source tag filters.
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                          properties:
+                            source:
+                              type:
+                                - string
+                                - "null"
+                              description: >-
+                                The AWS log source to which the tag filters
+                                defined in `tags` are applied.
+                            tags:
+                              type:
+                                - array
+                                - "null"
+                              description: >-
+                                The AWS resource tags to filter on for the log
+                                source specified by `source`.
+                              items:
+                                type: string
+                  sources:
+                    type:
+                      - array
+                      - "null"
+                    description: >-
+                      List of service IDs set to enable automatic log collection.
+                    items:
+                      type: string
+          metrics_config:
+            type:
+              - object
+              - "null"
+            description: AWS Metrics Collection config.
+            additionalProperties: true
+            properties:
+              automute_enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: Enable EC2 automute for AWS metrics.
+              collect_cloudwatch_alarms:
+                type:
+                  - boolean
+                  - "null"
+                description: Enable CloudWatch alarms collection.
+              collect_custom_metrics:
+                type:
+                  - boolean
+                  - "null"
+                description: Enable custom metrics collection.
+              collect_service_quotas:
+                type:
+                  - boolean
+                  - "null"
+                description: Enable Service Quotas collection.
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+                description: Enable AWS metrics collection.
+              metric_name_filters:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  AWS CloudWatch metric name filters. Each filter applies to a
+                  single namespace.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    exclude_only:
+                      type:
+                        - array
+                        - "null"
+                      description: Exclude metric names matching one of these patterns.
+                      items:
+                        type: string
+                    include_only:
+                      type:
+                        - array
+                        - "null"
+                      description: >-
+                        Include only metric names matching one of these patterns.
+                      items:
+                        type: string
+                    namespace:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        The AWS CloudWatch namespace to which this metric name
+                        filter applies.
+              namespace_filters:
+                type:
+                  - object
+                  - "null"
+                description: AWS Metrics namespace filters.
+                additionalProperties: true
+                properties:
+                  exclude_only:
+                    type:
+                      - array
+                      - "null"
+                    description: Exclude only these namespaces from metrics collection.
+                    items:
+                      type: string
+                  include_only:
+                    type:
+                      - array
+                      - "null"
+                    description: Include only these namespaces.
+                    items:
+                      type: string
+              resource_type_tag_filters:
+                type:
+                  - array
+                  - "null"
+                description: AWS Metrics collection resource type tag filters list.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    custom:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the tag filter applies to custom metrics.
+                    expression:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        The tag filter expression to apply when collecting metrics
+                        for the matching resource types.
+                    resource_types:
+                      type:
+                        - array
+                        - "null"
+                      description: >-
+                        The AWS resource types of the service to which the tag
+                        filter applies.
+                      items:
+                        type: string
+                    service:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        The AWS service for which the tag filter defined in
+                        `expression` will be applied.
+              tag_filters:
+                type:
+                  - array
+                  - "null"
+                description: >-
+                  AWS Metrics collection tag filters list. Deprecated in favor of
+                  `resource_type_tag_filters`.
+                items:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    namespace:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        The AWS service for which the tag filters defined in
+                        `tags` will be applied.
+                    tags:
+                      type:
+                        - array
+                        - "null"
+                      description: >-
+                        The AWS resource tags to filter on for the service
+                        specified by `namespace`.
+                      items:
+                        type: string
+          modified_at:
+            type:
+              - string
+              - "null"
+            description: Timestamp of when the account integration was updated.
+            format: date-time
+          resources_config:
+            type:
+              - object
+              - "null"
+            description: AWS Resources Collection config.
+            additionalProperties: true
+            properties:
+              cloud_security_posture_management_collection:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Enable Cloud Security Management to scan AWS resources for
+                  vulnerabilities, misconfigurations, identity risks, and
+                  compliance violations.
+              extended_collection:
+                type:
+                  - boolean
+                  - "null"
+                description: >-
+                  Whether Datadog collects additional attributes and configuration
+                  information about the resources in your AWS account.
+          traces_config:
+            type:
+              - object
+              - "null"
+            description: AWS Traces Collection config.
+            additionalProperties: true
+            properties:
+              xray_services:
+                type:
+                  - object
+                  - "null"
+                description: AWS X-Ray services to collect traces from.
+                additionalProperties: true
+                properties:
+                  include_all:
+                    type:
+                      - boolean
+                      - "null"
+                    description: Include all services.
+                  include_only:
+                    type:
+                      - array
+                      - "null"
+                    description: Include only these services.
+                    items:
+                      type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique Datadog ID of the AWS Account Integration Config.
+  azure_integrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      app_service_plan_filters:
+        type:
+          - string
+          - "null"
+        description: >-
+          Limit the Azure app service plans that are pulled into Datadog using
+          tags.
+      automute:
+        type:
+          - boolean
+          - "null"
+        description: Silence monitors for expected Azure VM shutdowns.
+      client_id:
+        type:
+          - string
+          - "null"
+        description: Your Azure web application ID.
+      container_app_filters:
+        type:
+          - string
+          - "null"
+        description: >-
+          Limit the Azure container apps that are pulled into Datadog using tags.
+      cspm_enabled:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          When enabled, Datadog's Cloud Security Management product scans resource
+          configurations monitored by this app registration.
+      custom_metrics_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Enable custom metrics for your organization.
+      errors:
+        type:
+          - array
+          - "null"
+        description: Errors in your configuration.
+        items:
+          type: string
+      host_filters:
+        type:
+          - string
+          - "null"
+        description: >-
+          Limit the Azure instances that are pulled into Datadog by using tags.
+      metrics_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Enable Azure metrics for your organization.
+      metrics_enabled_default:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Enable Azure metrics for your organization for resource providers where
+          no resource provider config is specified.
+      new_client_id:
+        type:
+          - string
+          - "null"
+        description: Your new Azure web application ID.
+      new_tenant_name:
+        type:
+          - string
+          - "null"
+        description: Your new Azure Active Directory ID.
+      resource_collection_enabled:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          When enabled, Datadog collects metadata and configuration info from
+          cloud resources monitored by this app registration.
+      resource_provider_configs:
+        type:
+          - array
+          - "null"
+        description: >-
+          Configuration settings applied to resources from the specified Azure
+          resource providers.
+        items:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+          properties:
+            metrics_enabled:
+              type:
+                - boolean
+                - "null"
+              description: Collect metrics for resources from this provider.
+            namespace:
+              type:
+                - string
+                - "null"
+              description: The provider namespace to apply this configuration to.
+      secretless_auth_enabled:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          When enabled, Datadog authenticates with this app registration using
+          federated workload identity credentials instead of a client secret.
+      tenant_name:
+        type:
+          - string
+          - "null"
+        description: Your Azure Active Directory ID.
+      usage_metrics_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Enable azure.usage metrics for your organization.
+  azure_uc_configs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Type of Azure config pair.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes for an Azure config pair.
+        additionalProperties: true
+        properties:
+          configs:
+            type:
+              - array
+              - "null"
+            description: The Azure configs of the account.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                account_id:
+                  type:
+                    - string
+                    - "null"
+                  description: The tenant ID of the Azure account.
+                client_id:
+                  type:
+                    - string
+                    - "null"
+                  description: The client ID of the Azure account.
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                  description: The timestamp when the Azure config was created.
+                dataset_type:
+                  type:
+                    - string
+                    - "null"
+                  description: The dataset type of the Azure config.
+                error_messages:
+                  type:
+                    - array
+                    - "null"
+                  description: The error messages for the Azure config.
+                  items:
+                    type: string
+                export_name:
+                  type:
+                    - string
+                    - "null"
+                  description: The name of the configured Azure Export.
+                export_path:
+                  type:
+                    - string
+                    - "null"
+                  description: The path where the Azure Export is saved.
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The ID of the Azure config.
+                months:
+                  type:
+                    - integer
+                    - "null"
+                  description: >-
+                    The number of months the report has been backfilled.
+                    Deprecated by Datadog.
+                scope:
+                  type:
+                    - string
+                    - "null"
+                  description: The scope of your observed subscription.
+                status:
+                  type:
+                    - string
+                    - "null"
+                  description: The status of the Azure config.
+                status_updated_at:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The timestamp when the Azure config status was last updated.
+                storage_account:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The name of the storage account where the Azure Export is
+                    saved.
+                storage_container:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The name of the storage container where the Azure Export is
+                    saved.
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                  description: The timestamp when the Azure config was last updated.
+          id:
+            type:
+              - string
+              - "null"
+            description: The ID of the Azure config pair.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the Cloud Cost Management account.
+  cloudflare_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The JSON:API type of the record, `cloudflare-accounts`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of a Cloudflare account.
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+            description: The email associated with the Cloudflare account.
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the Cloudflare account.
+          resources:
+            type:
+              - array
+              - "null"
+            description: >-
+              An allowlist of resources, such as `web`, `dns`, `lb` (load
+              balancer), `worker`, that restricts pulling metrics from those
+              resources.
+            items:
+              type: string
+          zones:
+            type:
+              - array
+              - "null"
+            description: An allowlist of zones to restrict pulling metrics for.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the Cloudflare account, a hash of the account name.
+  confluent_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The JSON:API type of the record, `confluent-cloud-accounts`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of a Confluent account.
+        additionalProperties: true
+        properties:
+          resources:
+            type:
+              - array
+              - "null"
+            description: >-
+              A list of Confluent resources associated with the Confluent account.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                enable_custom_metrics:
+                  type:
+                    - boolean
+                    - "null"
+                  description: >-
+                    Enable the `custom.consumer_lag_offset` metric, which contains
+                    extra metric tags.
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The ID associated with the Confluent resource.
+                resource_type:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The resource type of the resource: `kafka`, `connector`,
+                    `ksql`, `schema_registry` or `flink`.
+                tags:
+                  type:
+                    - array
+                    - "null"
+                  description: >-
+                    A list of tags. A tag is a single key or a key-value pair
+                    separated by a colon.
+                  items:
+                    type: string
+          tags:
+            type:
+              - array
+              - "null"
+            description: >-
+              A list of tags. A tag is a single key or a key-value pair separated
+              by a colon.
+            items:
+              type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: A randomly generated ID associated with a Confluent account.
+  fastly_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The JSON:API type of the record, `fastly-accounts`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of a Fastly account.
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the Fastly account.
+          services:
+            type:
+              - array
+              - "null"
+            description: A list of services belonging to the parent account.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The ID of the Fastly service.
+                tags:
+                  type:
+                    - array
+                    - "null"
+                  description: A list of tags for the Fastly service.
+                  items:
+                    type: string
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the Fastly account, a hash of the account name.
+  gcp_integrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: The type of account, `gcp_service_account`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes associated with your service account.
+        additionalProperties: true
+        properties:
+          account_tags:
+            type:
+              - array
+              - "null"
+            description: >-
+              Tags to be associated with GCP metrics and service checks from your
+              account.
+            items:
+              type: string
+          automute:
+            type:
+              - boolean
+              - "null"
+            description: Silence monitors for expected GCE instance shutdowns.
+          client_email:
+            type:
+              - string
+              - "null"
+            description: Your service account email address.
+          cloud_run_revision_filters:
+            type:
+              - array
+              - "null"
+            description: >-
+              Filters that limit the Cloud Run revisions pulled into Datadog by
+              tag. Deprecated in favor of `monitored_resource_configs`.
+            items:
+              type: string
+          host_filters:
+            type:
+              - array
+              - "null"
+            description: >-
+              Filters that limit the VM instances pulled into Datadog by tag.
+              Deprecated in favor of `monitored_resource_configs`.
+            items:
+              type: string
+          is_cspm_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog activates the Cloud Security Monitoring
+              product for this service account.
+          is_global_location_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog collects metrics where location is explicitly
+              stated as global or where location information cannot be deduced
+              from GCP labels.
+          is_org_folder_resource_collection_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog scans for organization and folder-level
+              resources under the organization the service account belongs to.
+          is_per_project_quota_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog attributes Google Cloud billing and quota
+              usage to the project being monitored rather than the default service
+              account project.
+          is_resource_change_collection_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog scans for all resource change data in your
+              Google Cloud environment.
+          is_security_command_center_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog attempts to collect Security Command Center
+              Findings.
+          metric_namespace_configs:
+            type:
+              - array
+              - "null"
+            description: Configurations for GCP metric namespaces.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                disabled:
+                  type:
+                    - boolean
+                    - "null"
+                  description: >-
+                    When disabled, Datadog does not collect metrics that are
+                    related to this GCP metric namespace.
+                filters:
+                  type:
+                    - array
+                    - "null"
+                  description: >-
+                    Additional filters that limit metric collection for this
+                    namespace.
+                  items:
+                    type: string
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The id of the GCP metric namespace.
+          monitored_resource_configs:
+            type:
+              - array
+              - "null"
+            description: Configurations for GCP monitored resources.
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                filters:
+                  type:
+                    - array
+                    - "null"
+                  description: >-
+                    Filters that limit the monitored resources pulled into Datadog
+                    by tag.
+                  items:
+                    type: string
+                type:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The GCP monitored resource type: `cloud_function`,
+                    `cloud_run_revision` or `gce_instance`.
+          region_filter_configs:
+            type:
+              - array
+              - "null"
+            description: >-
+              Configurations for GCP location filtering, such as region, multi-
+              region, or zone.
+            items:
+              type: string
+          resource_collection_enabled:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              When enabled, Datadog scans for all project-level resources in your
+              GCP environment.
+      id:
+        type:
+          - string
+          - "null"
+        description: Your service account's unique ID.
+      meta:
+        type:
+          - object
+          - "null"
+        description: Additional information related to your service account.
+        additionalProperties: true
+        properties:
+          accessible_projects:
+            type:
+              - array
+              - "null"
+            description: >-
+              The current list of projects accessible from your service account.
+            items:
+              type: string
+  okta_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Account type for an Okta account, `okta-accounts`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: Attributes of an Okta account.
+        additionalProperties: true
+        properties:
+          auth_method:
+            type:
+              - string
+              - "null"
+            description: The authorization method for an Okta account.
+          client_id:
+            type:
+              - string
+              - "null"
+            description: The Client ID of an Okta app integration.
+          domain:
+            type:
+              - string
+              - "null"
+            description: The domain of the Okta account.
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the Okta account.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the Okta account, a UUID hash of the account name.
+  opsgenie_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Opsgenie account resource type, `opsgenie-account`.
+      attributes:
+        type:
+          - object
+          - "null"
+        description: The attributes of an Opsgenie account.
+        additionalProperties: true
+        properties:
+          region:
+            type:
+              - string
+              - "null"
+            description: >-
+              The region for the Opsgenie service: `us`, `eu` or `custom`.
+      id:
+        type:
+          - string
+          - "null"
+        description: The ID of the Opsgenie account.
   incident_teams:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
