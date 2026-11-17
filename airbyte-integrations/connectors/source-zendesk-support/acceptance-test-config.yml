@@ -34,6 +34,8 @@ acceptance_tests:
             bypass_reason: "API issue" # TODO: remove this after all changes being merged
           - name: "side_conversations"
             bypass_reason: "Side conversations are disabled on the test account (all side conversation channels are off), so no records can be seeded"
+          - name: "deleted_tickets"
+            bypass_reason: "Zendesk purges soft-deleted tickets 30 days after deletion, so the stream is empty unless a ticket was deleted on the test account within the last 30 days"
   incremental:
     tests:
       - config_path: "secrets/config.json"

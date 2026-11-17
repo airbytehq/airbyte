@@ -8,10 +8,11 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 from .config import ConfigBuilder
-from .helpers import given_tickets
+from .helpers import given_tickets, given_tickets_with_state
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import (
     ErrorResponseBuilder,
@@ -145,6 +146,82 @@ class TestSideConversationsStreamIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "new-record"
+
+    @HttpMocker()
+    def test_given_6_0_state_newer_than_the_records_when_read_incremental_then_the_changed_ticket_re_emits_them(self, http_mocker):
+        """A ticket updated while the parent walk runs is first listed by the next sync, whose cursor is already past the
+        side conversations the ticket gained in between. The filter is bounded by `start_date` only, so they are emitted."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        previous = int(_NOW.subtract(timedelta(hours=2)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "side_conversations",
+                {
+                    "use_global_cursor": True,
+                    "state": {"updated_at": datetime_to_string(_NOW.subtract(timedelta(hours=2)))},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"updated_at": str(previous)}},
+                },
+            )
+            .build()
+        )
+        ticket_updated_at = ab_datetime_parse(previous + 600)
+        ticket = given_tickets_with_state(http_mocker, ticket_updated_at, ticket_updated_at, api_token_authenticator).build()
+        record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("older-than-the-cursor")
+            .with_field(FieldPath("updated_at"), datetime_to_string(_NOW.subtract(timedelta(hours=12))))
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(record).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.incremental, self._config, state)
+
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == ["older-than-the-cursor"]
+
+    @HttpMocker()
+    def test_given_5_x_parent_state_when_read_incremental_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker):
+        """`parent_state` written by 5.x carries the parent's old `generated_timestamp` cursor. The tickets
+        state migration also runs on it: rewound by one hour onto `updated_at`, so a ticket updated shortly
+        before the saved cursor is read again."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "side_conversations",
+                {
+                    "use_global_cursor": True,
+                    "state": {"updated_at": datetime_to_string(_NOW.subtract(timedelta(days=3)))},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                },
+            )
+            .build()
+        )
+        ticket_updated_at = ab_datetime_parse(previous - 1800)
+        ticket = given_tickets_with_state(http_mocker, ticket_updated_at, ticket_updated_at, api_token_authenticator).build()
+        record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("recent-record")
+            .with_field(FieldPath("updated_at"), datetime_to_string(_NOW.subtract(timedelta(days=1))))
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(record).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.incremental, self._config, state)
+
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == ["recent-record"]
+        state_dict = output.most_recent_state.stream_state.__dict__
+        # The parent cursor moves on to the re-read ticket, which is newer than the migrated value.
+        assert state_dict["parent_state"]["tickets"] == {"updated_at": str(previous - 1800)}
 
     @HttpMocker()
     def test_given_millisecond_timestamps_when_read_incremental_then_cursor_is_parsed_correctly(self, http_mocker):
@@ -289,14 +366,10 @@ class TestSideConversationsErrorHandling(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
         start_date = string_to_datetime(self._config["start_date"])
 
-        denied_ticket = (
-            TicketsRecordBuilder.tickets_record().with_id(1).with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
-        )
-        readable_ticket = (
-            TicketsRecordBuilder.tickets_record().with_id(2).with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
-        )
+        denied_ticket = TicketsRecordBuilder.tickets_record().with_id(1).with_cursor(int(start_date.timestamp()))
+        readable_ticket = TicketsRecordBuilder.tickets_record().with_id(2).with_cursor(int(start_date.timestamp()))
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(int(start_date.timestamp())).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).build(),
             TicketsResponseBuilder.tickets_response().with_record(denied_ticket).with_record(readable_ticket).build(),
         )
 

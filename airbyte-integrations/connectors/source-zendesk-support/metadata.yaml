@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.7.0
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -61,6 +61,49 @@ data:
       5.0.0:
         message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
         upgradeDeadline: "2026-01-30"
+      6.0.0:
+        message: >-
+          Zendesk stops serving its Incremental Export APIs to third-party integrations such as Airbyte
+          between 2026-12-02 and 2027-01-19, and versions before 6.0.0 stop syncing the affected streams once
+          Zendesk blocks these calls for your account (Zendesk identifies integrations by their OAuth
+          application, so connections that authenticate with an API token may be blocked later or not at all). This version reads `tickets`, `users`, `user_identities`,
+          `organizations` and `articles` from Zendesk's list endpoints and `ticket_comments`,
+          `ticket_events` and `ticket_metric_events` ticket by ticket, as `ticket_metrics`,
+          `side_conversations` and `ticket_audits_per_ticket` already did. The `tickets` cursor changes
+          from `generated_timestamp` to `updated_at` and the `ticket_metric_events` cursor from `time`
+          to `_ab_updated_at`; saved state is migrated automatically and no reset is required. Deleted tickets, deleted users (`active: false`) and deleted organizations
+          are no longer replicated by these streams; use `deleted_tickets` for deleted tickets. `tickets`,
+          `side_conversations` and incremental syncs of `ticket_metrics` no longer reach archived tickets (use
+          `tickets_search` for archived ticket records), while `ticket_comments`, `ticket_events`,
+          `ticket_metric_events` and `ticket_audits_per_ticket` find them through Zendesk's search index. Incremental syncs no longer pick up ticket updates that
+          change only `generated_timestamp`, and a ticket's metric events are read only when the ticket
+          itself changes. Incremental sync modes keep the rows already in your destination; a sync mode
+          that replaces the table, or a cleared stream, rebuilds it without those records, so back up
+          such tables before upgrading if you need them. Connections still on an older version after 2026-12-02
+          are upgraded automatically, so make that backup before then. Connections that sync only other streams are
+          not affected. `ticket_events` records now carry the Ticket Audits
+          API shape (`via` holds the channel name such as `web` instead of a label such as `Web form`,
+          `child_events` keep the audit event fields, `updater_id` is the audit author, which is `-1` for
+          changes Zendesk made itself and the API user instead of the requester for tickets created through
+          the API). Syncs of the per-ticket streams make one request
+          per created or updated ticket, and a changed ticket re-emits all of its comments, events,
+          metric events and side conversations (deduplicate on `id`). See the migration guide: https://docs.airbyte.com/integrations/sources/zendesk-support-migrations#upgrading-to-600
+        upgradeDeadline: "2026-12-02"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "tickets"
+              - "users"
+              - "user_identities"
+              - "organizations"
+              - "articles"
+              - "ticket_comments"
+              - "ticket_events"
+              - "ticket_metric_events"
+              - "ticket_metrics"
+              - "side_conversations"
+              - "ticket_audits_per_ticket"
   suggestedStreams:
     streams:
       - brands
