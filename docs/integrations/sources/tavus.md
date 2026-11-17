@@ -29,6 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-11-17 | [93397](https://github.com/airbytehq/airbyte/pull/93397) | Update dependencies |
 | 0.0.55 | 2026-11-10 | [91724](https://github.com/airbytehq/airbyte/pull/91724) | Update dependencies |
 | 0.0.54 | 2026-11-03 | [90391](https://github.com/airbytehq/airbyte/pull/90391) | Simplify the `speeches` stream error handler configuration; no behavior change |
 | 0.0.53 | 2026-11-03 | [90756](https://github.com/airbytehq/airbyte/pull/90756) | Update dependencies |
