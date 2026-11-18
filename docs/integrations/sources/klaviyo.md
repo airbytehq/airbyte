@@ -53,7 +53,8 @@ The two report streams also need `metrics:read`, because the connector lists you
 10. (Optional) For **Reporting Lookback Window (Days)**, enter the number of days of Flow Series Reports data to re-sync on every incremental run. Klaviyo revises conversion attribution after a send, so set this to at least your attribution window to pick up those revisions. Re-synced days replace the rows already written for them. Defaults to 0. See [Analytics streams](#analytics-streams) for details.
 11. (Optional) For **Report Stream Conversion Metric IDs**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 12. (Optional) For **Event Stream Metric IDs**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. See [Event stream filtering](#event-stream-filtering) below.
-13. Click **Set up source**.
+13. (Optional) For **Report Streams End Date**, enter the last day, inclusive, that the Campaign Values Reports and Flow Series Reports streams read, in `YYYY-MM-DD` format. Use it to backfill a long history in bounded runs under the reporting rate limit; leave it empty for normal incremental syncs. See [Backfilling the analytics streams in bounded runs](#backfilling-the-analytics-streams-in-bounded-runs).
+14. Click **Set up source**.
 
 ### For Airbyte Open Source
 
@@ -69,7 +70,8 @@ The two report streams also need `metrics:read`, because the connector lists you
 10. (Optional) For **Reporting Lookback Window (Days)**, enter the number of days of Flow Series Reports data to re-sync on every incremental run. Klaviyo revises conversion attribution after a send, so set this to at least your attribution window to pick up those revisions. Re-synced days replace the rows already written for them. Defaults to 0. See [Analytics streams](#analytics-streams) for details.
 11. (Optional) For **Report Stream Conversion Metric IDs**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 12. (Optional) For **Event Stream Metric IDs**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. See [Event stream filtering](#event-stream-filtering) below.
-13. Click **Set up source**.
+13. (Optional) For **Report Streams End Date**, enter the last day, inclusive, that the Campaign Values Reports and Flow Series Reports streams read, in `YYYY-MM-DD` format. Use it to backfill a long history in bounded runs under the reporting rate limit; leave it empty for normal incremental syncs. See [Backfilling the analytics streams in bounded runs](#backfilling-the-analytics-streams-in-bounded-runs).
+14. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -135,6 +137,12 @@ Both streams partition data by conversion metric. By default, the connector fetc
 These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exhaust the daily quota, which fails the sync with a rate limit error. See [Performance considerations](#performance-considerations). Specify only the conversion metrics you need using the **Report Stream Conversion Metric IDs** field.
 :::
 
+#### Backfilling the analytics streams in bounded runs
+
+Because the analytics endpoints allow only 225 requests per day, a long history can exhaust the quota in a single sync. Set **Report Streams End Date** to bound a sync: it reads up to the end of that day instead of the end of yesterday, and the next sync resumes from the stored cursor. Raise the date between syncs (for example, one year per run, which costs 13 requests per conversion metric for each stream), then remove it to return to normal incremental syncs. A date later than yesterday has no effect.
+
+The cursor advances only to the latest record a sync emits. A bounded sync over a period with no report data, such as before your account's first sends, emits nothing and leaves the cursor where it was, so the next sync requests the same windows again. Set **Start Date** to when your sends begin, rather than bounding an empty period.
+
 Not all Klaviyo metrics support conversion value queries. For example, metrics without a `$value` property cannot be queried for values data. The connector automatically skips these unsupported metrics and continues syncing the remaining ones. If you see fewer results than expected, verify that your selected metrics support values data in Klaviyo.
 
 To find your conversion metric IDs:
@@ -199,6 +207,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0 | 2026-11-17 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add an optional `end_date` that bounds the Campaign Values Reports and Flow Series Reports streams, for backfilling history in bounded runs |
 | 4.0.6 | 2026-11-17 | [93259](https://github.com/airbytehq/airbyte/pull/93259) | Update dependencies |
 | 4.0.5 | 2026-11-10 | [91622](https://github.com/airbytehq/airbyte/pull/91622) | Update dependencies |
 | 4.0.4 | 2026-11-03 | [90629](https://github.com/airbytehq/airbyte/pull/90629) | Update dependencies |
