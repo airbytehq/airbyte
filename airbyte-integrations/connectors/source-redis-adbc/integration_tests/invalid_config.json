@@ -1,0 +1,3 @@
+{
+  "uri": "redis://127.0.0.1:1/0?dial_timeout=1s&read_timeout=1s"
+}
