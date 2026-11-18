@@ -196,6 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.6.1 | 2026-11-17 | [91520](https://github.com/airbytehq/airbyte/pull/91520) | Update dependencies |
 | 4.6.0 | 2026-11-11 | [89052](https://github.com/airbytehq/airbyte/pull/89052) | Add incremental sync support to the `deployments`, `group_milestones`, `project_milestones`, and `merge_request_commits` streams |
 | 4.5.7 | 2026-11-03 | [90577](https://github.com/airbytehq/airbyte/pull/90577) | Update dependencies |
 | 4.5.6 | 2026-10-27 | [89911](https://github.com/airbytehq/airbyte/pull/89911) | Update dependencies |
