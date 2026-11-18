@@ -60,12 +60,16 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Get GitHub App User ID
         id: get-user-id
-        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        run: echo "user-id=$(gh api "/users/${STEP_APP_TOKEN_APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
         env:
+          STEP_APP_TOKEN_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-      - run: |
-          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
-          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+      - env:
+          STEP_APP_TOKEN_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          STEP_GET_USER_ID_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
+        run: |
+          git config --global user.name "${STEP_APP_TOKEN_APP_SLUG}[bot]"
+          git config --global user.email "${STEP_GET_USER_ID_USER_ID}+${STEP_APP_TOKEN_APP_SLUG}[bot]@users.noreply.github.com"
 
       - name: Checkout Airbyte
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -88,33 +92,39 @@ jobs:
 
       - name: Run upgradeCdk for ${{ matrix.connector }}
         id: upgrade-cdk
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           set -euo pipefail
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
-          old_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          old_cdk_version=$(./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion" --quiet)
           echo "old_cdk_version=$old_cdk_version" | tee -a $GITHUB_OUTPUT
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
-          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          ./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk"
+          new_cdk_version=$(./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:getCdkVersion" --quiet)
           echo "new_cdk_version=$new_cdk_version" | tee -a $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check-changes
         if: steps.upgrade-cdk.outputs.exit_code == '0'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           if git diff --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected for ${{ matrix.connector }}"
+            echo "No changes detected for ${MATRIX_CONNECTOR}"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected for ${{ matrix.connector }}"
+            echo "Changes detected for ${MATRIX_CONNECTOR}"
           fi
 
       - name: Bump connector version
         id: bump-version
         if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           set -euo pipefail
-          new_version=$(tools/bin/bulk-cdk/auto-upgrade/bump-connector-metadata.sh "${{ matrix.connector }}")
+          new_version=$(tools/bin/bulk-cdk/auto-upgrade/bump-connector-metadata.sh "${MATRIX_CONNECTOR}")
           echo "Updated dockerImageTag to $new_version"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
@@ -147,27 +157,34 @@ jobs:
       - name: Update connector changelog
         # airbyte-enterprise doesn't have changelogs, so only do this in the OSS repo.
         if: steps.check-changes.outputs.has_changes == 'true' && inputs.repositories != 'airbyte-enterprise'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_BUMP_VERSION_NEW_VERSION: ${{ steps.bump-version.outputs.new_version }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+          STEP_UPGRADE_CDK_NEW_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.new_cdk_version }}
+          STEP_CREATE_PR_PULL_REQUEST_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
         run: |
           set -euo pipefail
           tools/bin/bulk-cdk/auto-upgrade/populate-connector-changelog.sh \
-            "${{ matrix.connector }}" \
-            "${{ steps.bump-version.outputs.new_version }}" \
-            "${{ steps.create-pr.outputs.pull-request-number }}" \
-            "Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}."
+            "${MATRIX_CONNECTOR}" \
+            "${STEP_BUMP_VERSION_NEW_VERSION}" \
+            "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" \
+            "Upgrade to Bulk CDK ${STEP_UPGRADE_CDK_NEW_CDK_VERSION}."
 
           # Commit and push the changelog changes
-          branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
+          branch_name="${STEP_CREATE_PR_PULL_REQUEST_BRANCH}"
           git fetch --depth=1 origin "$branch_name"
           git checkout "$branch_name"
           git add docs
-          git commit -m "update changelog for ${{ matrix.connector }}"
+          git commit -m "update changelog for ${MATRIX_CONNECTOR}"
           git push origin "$branch_name"
 
       # We've pushed all the changes to the PR. Mark it ready for review.
       - name: Ready for review
         if: steps.check-changes.outputs.has_changes == 'true'
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+        run: gh pr ready "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
         env:
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Enable auto-merge on PR

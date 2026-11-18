@@ -199,6 +199,7 @@ How the connector treats Customer.io HTTP errors:
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 1.1.9 | 2026-11-17 | [93146](https://github.com/airbytehq/airbyte/pull/93146) | Update dependencies |
 | 1.1.8 | 2026-11-13 | [92562](https://github.com/airbytehq/airbyte/pull/92562) | Clarify private API key setup and authentication error messages |
 | 1.1.7 | 2026-11-10 | [91486](https://github.com/airbytehq/airbyte/pull/91486) | Update dependencies |
 | 1.1.6 | 2026-11-03 | [90493](https://github.com/airbytehq/airbyte/pull/90493) | Update dependencies |

@@ -928,10 +928,11 @@ jobs:
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
           GH_TOKEN: ${{ steps.get-hoard-token-merge.outputs.token }}
+          STEP_PRE_CHECK_TITLE: ${{ steps.pre-check.outputs.title }}
         run: |
           for attempt in 1 2 3; do
             if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
-              echo "::notice::Merged PR #${PR_NUMBER}: ${{ steps.pre-check.outputs.title }}"
+              echo "::notice::Merged PR #${PR_NUMBER}: ${STEP_PRE_CHECK_TITLE}"
               exit 0
             fi
             echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."

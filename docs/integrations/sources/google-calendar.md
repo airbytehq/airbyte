@@ -172,6 +172,8 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.2.3 | 2026-11-17 | [93219](https://github.com/airbytehq/airbyte/pull/93219) | Update dependencies |
+| 1.2.2 | 2026-11-16 | [93027](https://github.com/airbytehq/airbyte/pull/93027) | Promote to Certified (Generally Available). |
 | 1.2.1 | 2026-11-16 | [92532](https://github.com/airbytehq/airbyte/pull/92532) | Skip removed or unshared calendars during child reads while preserving configured-calendar validation. |
 | 1.2.0 | 2026-11-12 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
 | 1.1.0 | 2026-11-11 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth, custom-app authentication, credential migration, and missing-scope errors. |

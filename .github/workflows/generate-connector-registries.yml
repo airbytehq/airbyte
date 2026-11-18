@@ -109,12 +109,17 @@ jobs:
       - name: Build notification context
         id: notification-context
         if: always()
+        env:
+          IN_PR: ${{ inputs.pr }}
+          IN_CONNECTOR_NAME: ${{ inputs.connector-name }}
+          EXPR_1: ${{ inputs.store || 'coral:prod' }}
+          IN_FORCE: ${{ inputs.force }}
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          PR_NUMBER="${{ inputs.pr }}"
-          CONNECTOR_NAME="${{ inputs.connector-name }}"
-          REGISTRY_STORE="${{ inputs.store || 'coral:prod' }}"
-          FORCE="${{ inputs.force }}"
+          PR_NUMBER="${IN_PR}"
+          CONNECTOR_NAME="${IN_CONNECTOR_NAME}"
+          REGISTRY_STORE="${EXPR_1}"
+          FORCE="${IN_FORCE}"
 
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
