@@ -1,10 +1,14 @@
 # source-openai-ads: Unique Connector Behaviors
 
-## 1. API-Key Authentication and OAuth Roadmap
+## 1. OAuth 2.0 and API-Key Authentication
 
-The connector currently authenticates with an API key, and each OpenAI Ads API key is scoped to one ad account ([authentication](https://developers.openai.com/ads/api-reference/authentication)). The [OpenAPI security scheme](https://developers.openai.com/ads/openapi.json#/components/securitySchemes/AdsOAuth) declares an OAuth authorization-code flow, but the connector does not implement OAuth yet. OAuth support is tracked as step 1b on the [certification epic](https://github.com/airbytehq/airbyte-internal-issues/issues/18388).
+`credentials` is a `oneOf` of OAuth 2.0 (listed first, the default) and API key, selected by `credentials.auth_type` through a `SelectiveAuthenticator`. The OAuth option follows the [OpenAPI security scheme](https://developers.openai.com/ads/openapi.json#/components/securitySchemes/AdsOAuth): an authorization-code flow at `https://auth.openai.com/api/accounts/authorize` and `https://auth.openai.com/api/accounts/oauth/token`, with the `ads.admin.all.read` scope for reads and `offline_access` for a refresh token. Every endpoint the connector reads accepts `AdsOAuth` with `ads.admin.all.read`. The refresh-token updater writes a rotated refresh token back to the config; OpenAI does not document whether it rotates refresh tokens, and the CDK keeps the old one when the response has none.
 
-**Why this matters:** Do not describe the API as inherently API-key-only or add an OAuth configuration without completing the tracked OAuth work.
+Each Advertiser API key is scoped to one ad account ([authentication](https://developers.openai.com/ads/api-reference/authentication)). A user-scoped OAuth token reaches every account its user can access and must select one with the `OpenAI-Ad-Account` header, or the API answers `403` ([bidding & budgets](https://developers.openai.com/ads/bidding-and-budgets)). The OAuth option therefore requires `ad_account_id`, and both requesters send it in that header for OAuth configs only; for API keys the header evaluates to `None` and the CDK drops it.
+
+The flat `api_key` of 0.1.x configs is moved into `credentials` (`auth_type: API Key`) by a `ConfigMigration` in `config_normalization_rules`, so the change is not breaking.
+
+**Why this matters:** Keep `OpenAI-Ad-Account` out of API-key requests and in every OAuth request, including the conversions requester, which overrides the shared request headers.
 
 ## 2. Vendor Error Mapping
 

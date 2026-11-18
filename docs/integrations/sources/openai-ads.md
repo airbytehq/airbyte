@@ -5,11 +5,15 @@ This page contains the setup guide and reference information for the OpenAI Ads 
 ## Prerequisites
 
 - An [OpenAI Ads](https://ads.openai.com/) advertiser account
-- An Advertiser API key for that account
+- One of these:
+  - **Airbyte Cloud:** an OpenAI account that can access the ad account, to sign in with OAuth
+  - An Advertiser API key for the ad account
 
 ## Setup guide
 
 ### Step 1: Create an API key
+
+If you use Airbyte Cloud and sign in with OAuth, skip this step and continue with Step 2.
 
 1. Log in to [Ads Manager](https://ads.openai.com/) with a user that has access to the ad account.
 2. Open the [**Settings**](https://ads.openai.com/settings) page and create a new Advertiser API key.
@@ -29,7 +33,9 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **OpenAI Ads** from the Source type dropdown.
 4. Enter a name for the OpenAI Ads connector.
-5. Enter the **API Key**.
+5. Under **Authentication**, choose one:
+   - **OAuth2.0**: click **Authenticate your OpenAI Ads account** and sign in with an OpenAI account that can access the ad account. Then enter the **Ad Account ID** of the account to replicate, for example `adacct_123`. An OAuth sign-in can reach every ad account its user has access to, so the connector sends this ID in the `OpenAI-Ad-Account` header to select one (see [Authentication](https://developers.openai.com/ads/api-reference/authentication)).
+   - **API Key**: enter the Advertiser API key from Step 1.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data before this date will not be replicated. The default is 2026-02-01. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
 7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Report data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
 8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. Conversions are requested with a 30-day click window and OpenAI needs at least one day to process conversions, so keep the default of 32 or more when you sync conversions streams. See [Lookback window](#lookback-window).
@@ -42,8 +48,9 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **OpenAI Ads** from the Source type dropdown.
 4. Enter a name for the OpenAI Ads connector.
-5. Fill in the fields as described for Airbyte Cloud above.
-6. Click **Set up source**.
+5. Under **Authentication**, select **API Key** and enter the Advertiser API key from Step 1. OAuth needs an OpenAI OAuth client, and OpenAI does not document a way to register one yourself.
+6. Fill in the other fields as described for Airbyte Cloud above.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -119,6 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0 | 2026-11-18 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add OAuth 2.0 authentication; existing API key configs move into the new `credentials` object automatically |
 | 0.1.12 | 2026-11-17 | [93307](https://github.com/airbytehq/airbyte/pull/93307) | Update dependencies |
 | 0.1.11 | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
 | 0.1.10 | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
