@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 internal class PostgresDirectLoadSqlGeneratorTest {
 
@@ -266,6 +268,40 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         """
 
         assertEqualsWithTrimIndent(expected, sql)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun testDropViewAlwaysCascades(dropCascade: Boolean) {
+        every { postgresConfiguration.dropCascade } returns dropCascade
+        val sqlGenerator = PostgresDirectLoadSqlGenerator(columnManager, postgresConfiguration)
+        val tableName = TableName(namespace = "namespace", name = "target")
+
+        assertEquals(
+            "DROP VIEW IF EXISTS \"namespace\".\"target\" CASCADE;",
+            sqlGenerator.dropView(tableName),
+        )
+    }
+
+    @Test
+    fun testOverwriteViewIsAtomic() {
+        val sourceTableName = TableName(namespace = "source_namespace", name = "source")
+        val targetTableName = TableName(namespace = "target_namespace", name = "target")
+
+        assertEqualsWithTrimIndent(
+            """
+            BEGIN TRANSACTION;
+            DROP VIEW IF EXISTS "target_namespace"."target" CASCADE;
+            ALTER TABLE "source_namespace"."source" RENAME TO "target";
+            ALTER TABLE "source_namespace"."target" SET SCHEMA "target_namespace";
+            COMMIT;
+            """,
+            postgresDirectLoadSqlGenerator.overwriteTable(
+                sourceTableName,
+                targetTableName,
+                replaceView = true,
+            ),
+        )
     }
 
     private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
