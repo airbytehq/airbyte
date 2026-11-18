@@ -8,9 +8,11 @@ import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
+import com.google.cloud.bigquery.TableResult
 import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -288,6 +290,55 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .build(),
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    @Test
+    fun testGetGenerationIdReturnZeroOnEmptyResult() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        val tableResult = Mockito.mock(TableResult::class.java)
+        Mockito.`when`(bigquery.query(Mockito.any(QueryJobConfiguration::class.java)))
+            .thenReturn(tableResult)
+        Mockito.`when`(tableResult.iterateAll()).thenReturn(emptyList())
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        val result = runBlocking {
+            operations.getGenerationId(TableName("test_namespace", "test_table"))
+        }
+        Assertions.assertEquals(0L, result)
+    }
+
+    @Test
+    fun testGetGenerationIdReturnsValue() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        val tableResult = Mockito.mock(TableResult::class.java)
+        val row = Mockito.mock(FieldValueList::class.java, RETURNS_DEEP_STUBS)
+        Mockito.`when`(bigquery.query(Mockito.any(QueryJobConfiguration::class.java)))
+            .thenReturn(tableResult)
+        Mockito.`when`(tableResult.iterateAll()).thenReturn(listOf(row))
+        Mockito.`when`(row.get("_airbyte_generation_id").isNull).thenReturn(false)
+        Mockito.`when`(row.get("_airbyte_generation_id").longValue).thenReturn(5L)
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        val result = runBlocking {
+            operations.getGenerationId(TableName("test_namespace", "test_table"))
+        }
+        Assertions.assertEquals(5L, result)
     }
 
     @Test
