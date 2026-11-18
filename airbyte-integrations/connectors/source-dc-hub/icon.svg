@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
+     width="512" height="512" role="img" aria-label="DC Hub">
+  <rect width="512" height="512" fill="#1a1a2e"/>
+  <path d="M282.45 97.28 L143.57 282.45 L236.16 282.45 L209.71 414.72 L368.43 229.55 L269.23 229.55 Z" fill="url(#dchub-bolt-sq)" stroke="#a78bfa"
+        stroke-width="6.61" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="dchub-bolt-sq" x1="0" y1="97.28"
+                    x2="0" y2="414.72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+</svg>
