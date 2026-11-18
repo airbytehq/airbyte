@@ -21,6 +21,53 @@ definitions:
           path: /campaigns/list
           http_method: GET
           request_parameters:
+            include_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_edited
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        start_datetime: "{{ config['start_date'] }}T00:00:00"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_edit.time[gt]
+    campaigns_parent:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns/list
+          http_method: GET
+          request_parameters:
+            include_archived: "true"
             last_edit.time[gt]: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
@@ -36,7 +83,8 @@ definitions:
             field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 2
+            page_size: 100
+            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -50,6 +98,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /campaigns/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -67,11 +117,9 @@ definitions:
                 inject_into: request_parameter
               partition_field: campaign_id
               stream:
-                $ref: "#/definitions/streams/campaigns"
+                $ref: "#/definitions/streams/campaigns_parent"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -84,9 +132,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -126,7 +171,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: campaign_id
               stream:
-                $ref: "#/definitions/streams/campaigns"
+                $ref: "#/definitions/streams/campaigns_parent"
       transformations:
         - type: AddFields
           fields:
@@ -149,6 +194,53 @@ definitions:
           path: /canvas/list
           http_method: GET
           request_parameters:
+            include_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - canvases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/canvases"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_edited
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        start_datetime: "{{ config['start_date'] }}T00:00:00"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_edit.time[gt]
+    canvases_parent:
+      type: DeclarativeStream
+      name: canvases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /canvas/list
+          http_method: GET
+          request_parameters:
+            include_archived: "true"
             last_edit.time[gt]: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
@@ -164,7 +256,8 @@ definitions:
             field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 2
+            page_size: 100
+            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -179,6 +272,7 @@ definitions:
           path: /canvas/data_series
           http_method: GET
           request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
             include_variant_breakdown: "true"
             include_step_breakdown: "true"
         record_selector:
@@ -199,11 +293,9 @@ definitions:
                 inject_into: request_parameter
               partition_field: canvas_id
               stream:
-                $ref: "#/definitions/streams/canvases"
+                $ref: "#/definitions/streams/canvases_parent"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -216,9 +308,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P14D
@@ -258,7 +347,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: canvas_id
               stream:
-                $ref: "#/definitions/streams/canvases"
+                $ref: "#/definitions/streams/canvases_parent"
       transformations:
         - type: AddFields
           fields:
@@ -293,7 +382,8 @@ definitions:
             field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 2
+            page_size: 250
+            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -308,6 +398,7 @@ definitions:
           path: /events/data_series
           http_method: GET
           request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
             unit: day
         record_selector:
           type: RecordSelector
@@ -328,9 +419,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/events"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -343,9 +432,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -369,6 +455,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/new_users/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -376,9 +464,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -391,9 +477,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -411,6 +494,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/dau/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -418,9 +503,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -433,9 +516,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -453,6 +533,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/uninstalls/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -460,9 +542,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -475,9 +555,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -497,6 +574,12 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /feed/list
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
+                error_message: "Braze News Feed has been retired; /feed endpoints return 404."
           request_parameters:
             last_edit.time[gt]: "{{ config['start_date'] }}"
         record_selector:
@@ -513,7 +596,8 @@ definitions:
             field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 2
+            page_size: 100
+            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -527,6 +611,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /feed/data_series
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
+                error_message: "Braze News Feed has been retired; /feed endpoints return 404."
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -546,9 +638,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/cards"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -561,9 +651,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -605,7 +692,8 @@ definitions:
             field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 2
+            page_size: 100
+            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -615,9 +703,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         incremental_sync:
-          type: CustomIncrementalSync
-          class_name: >-
-            source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+          type: DatetimeBasedCursor
           cursor_field: time
           start_datetime:
             type: MinMaxDatetime
@@ -631,9 +717,6 @@ definitions:
             type: RequestOption
             field_name: ending_at
             inject_into: request_parameter
-          step_option:
-            field_name: length
-            inject_into: request_parameter
           datetime_format: "%Y-%m-%d"
           step: P100D
           cursor_granularity: P1D
@@ -641,6 +724,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /segments/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -661,9 +746,7 @@ definitions:
                 $ref: "#/definitions/streams/segments"
       name: segments_analytics
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -676,9 +759,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -830,6 +910,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archived:
+        type:
+          - "null"
+          - boolean
       id:
         type:
           - "null"
@@ -903,6 +987,26 @@ schemas:
           - "null"
           - object
         properties:
+          kindle_push:
+            type:
+              - "null"
+              - array
+          web_push:
+            type:
+              - "null"
+              - array
+          whats_app:
+            type:
+              - "null"
+              - array
+          content_cards:
+            type:
+              - "null"
+              - array
+          trigger_in_app_message:
+            type:
+              - "null"
+              - array
           android_push:
             type:
               - "null"
@@ -940,6 +1044,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      id:
+        type:
+          - "null"
+          - string
       description:
         type:
           - "null"
@@ -1047,6 +1155,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archived:
+        type:
+          - "null"
+          - boolean
+      status:
+        type:
+          - "null"
+          - string
       id:
         type:
           - "null"
@@ -1113,6 +1229,16 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      has_post_launch_draft:
+        type:
+          - "null"
+          - boolean
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
       description:
         type:
           - "null"
@@ -1213,6 +1339,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      event_id:
+        type:
+          - "null"
+          - string
       count:
         type:
           - "null"
@@ -1357,6 +1487,29 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      id:
+        type:
+          - "null"
+          - string
+      estimated_size:
+        type:
+          - "null"
+          - integer
+      estimated_size_updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      filters:
+        type:
+          - "null"
+          - object
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
       description:
         type:
           - "null"
