@@ -78,20 +78,20 @@ How it is built, and why:
 
 **Why this matters:** do not add the stream to `suggestedStreams`. That would select it on every new connection, exposing users who never asked for archived-ticket audits to a request per updated ticket, and a single bulk update can mean six-figure request counts on the next sync. The first sync after the stream is selected reads every ticket since `start_date`, which is also how a user backfills archived-ticket audits.
 
-## 8. The Cloud Spec Hides `API Token` and `OAuth2.0 (Legacy)`, and Nothing Rejects Them
+## 8. The Spec Hides `API Token` and `OAuth2.0 (Legacy)` From the Setup Form, and Nothing Rejects Them
 
-Zendesk deactivates all API tokens on April 30, 2027, and new Cloud sources must use the OAuth refresh-token flow. So the Cloud spec marks the `api_token` and `oauth2.0` branches of `credentials` as `airbyte_hidden: true`. The self-managed spec is the manifest spec, unchanged.
+Zendesk deactivates all API tokens on April 30, 2027, and the legacy OAuth option stores an access token that cannot be refreshed. So the `api_token` and `oauth2.0` options of `credentials` carry `airbyte_hidden: true` in `manifest.yaml`, and the setup form offers only `OAuth2.0 with Refresh Token`.
 
 How it is built, and why:
 
-1. **A manifest cannot vary its spec by edition**, so `components.py` wraps `Spec.generate_spec` at import time and applies `hide_auth_options_for_cloud` when `AIRBYTE_EDITION` is `CLOUD`. The registry generates `cloud.json` with `AIRBYTE_EDITION=CLOUD` and `oss.json` with `AIRBYTE_EDITION=COMMUNITY`, and Cloud reads the spec from `cloud.json`.
-2. **The no-op `CloudSpecHook` under `spec.config_normalization_rules.transformations` is load-bearing.** The CDK imports `components.py` only when it builds a custom component, and `spec` builds nothing but the spec block. Without that reference the wrapper is never installed during `spec` and the Cloud spec shows every option again. `test_spec_command_loads_the_components_module` covers this in a new process, because every other test has the module imported already.
-3. **The gate reads `AIRBYTE_EDITION`, not the CDK's `is_cloud_environment()`**, which reads `DEPLOYMENT_MODE`.
-4. **`airbyte_hidden` is a form hint only.** The branches stay in the schema, so stored configs on a hidden option still validate and keep passing check, discover and read. Do not add a validator that rejects them: that breaks existing sources.
+1. **The flag is plain YAML and applies in every edition.** Cloud and self-managed Airbyte get the same spec. There is no edition check and no code in `components.py` for this. source-zendesk-talk hides the same two options the same way.
+2. **`airbyte_hidden` is a form hint only.** The options stay in the schema, so stored configs on a hidden option still validate and keep passing check, discover and read. The Airbyte API and Terraform are not affected. Do not add a validator that rejects the hidden options, and do not delete them from `oneOf`: either breaks existing sources.
+3. **`OAuth2.0 with Refresh Token` stays first in `oneOf`.** The form preselects the first option for a new source, so a hidden option in first place would be selected without being shown.
+4. **`advanced_auth.predicate_value` is `oauth2_refresh`**, the visible option, so the OAuth button stays tied to the only option the form shows.
 
-In the Cloud web form (the platform webapp's `ConditionSection.tsx`, read at its 2026-11-16 master, not exercised in a browser), a source whose stored option is hidden renders the `Authentication` field with no option selected and without the stored option's fields. Saving other settings keeps the stored credentials, because the form's validation schema is built from every `oneOf` branch, hidden or not.
+In the web form (the platform webapp's `ConditionSection.tsx`, read at its 2026-11-17 master, not exercised in a browser), a source whose stored option is hidden renders the `Authentication` field with no option selected and without the stored option's fields. Saving other settings keeps the stored credentials, because the form's validation schema is built from every `oneOf` option, hidden or not.
 
-**Why this matters:** removing the hook from the spec block, switching the gate to `is_cloud_environment()`, or deleting the hidden branches from the Cloud spec each fail silently or break existing sources. Keep `OAuth2.0 with Refresh Token` first in `oneOf`: the form preselects the first option.
+**Why this matters:** `unit_tests/test_spec.py` pins the option order, the hidden set and that stored configs on each option still validate and read. When Zendesk has deactivated the tokens and no source uses these options, removing them from the schema is a breaking change and needs its own release.
 
 ## Incremental Stream Considerations
 

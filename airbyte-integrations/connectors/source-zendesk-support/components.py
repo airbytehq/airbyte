@@ -1,79 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import copy
-import os
-from typing import Any, Callable, List, Mapping, MutableMapping
+from typing import Any, List, Mapping
 
 import requests
 
-from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.spec.spec import Spec
-from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import (
-    ConfigTransformation,
-)
-
-
-# Values of `credentials.credentials` whose oneOf branch a new Airbyte Cloud source must not offer.
-CLOUD_HIDDEN_AUTH_OPTIONS = frozenset({"api_token", "oauth2.0"})
-
-CLOUD_CREDENTIALS_DESCRIPTION = (
-    "Authenticate with `OAuth2.0 with Refresh Token`. Sources that already use an API token or legacy OAuth keep "
-    "working, but Zendesk deactivates all API tokens on April 30, 2027, so re-authenticate them with OAuth before then."
-)
-
-
-def is_cloud_edition() -> bool:
-    """
-    The platform sets `AIRBYTE_EDITION` on every connector operation, and the registry generates the Cloud spec with
-    `AIRBYTE_EDITION=CLOUD`. `DEPLOYMENT_MODE` (what the CDK's `is_cloud_environment()` reads) is not set for check
-    and discover in Cloud, so it is not used here.
-    """
-    return os.environ.get("AIRBYTE_EDITION", "").casefold() == "cloud"
-
-
-def hide_auth_options_for_cloud(spec: ConnectorSpecification) -> ConnectorSpecification:
-    """
-    Mark the `API Token` and `OAuth2.0 (Legacy)` branches of `credentials` as `airbyte_hidden`, so the Cloud setup
-    form only offers `OAuth2.0 with Refresh Token`. `airbyte_hidden` is a form hint only: the branches stay in the
-    schema, so a stored config that uses one of them still validates and keeps passing check, discover and read.
-    """
-    connection_specification = copy.deepcopy(dict(spec.connectionSpecification))
-    credentials = connection_specification["properties"]["credentials"]
-    for option in credentials["oneOf"]:
-        if option["properties"]["credentials"]["const"] in CLOUD_HIDDEN_AUTH_OPTIONS:
-            option["airbyte_hidden"] = True
-    credentials["description"] = CLOUD_CREDENTIALS_DESCRIPTION
-    spec.connectionSpecification = connection_specification
-    return spec
-
-
-def _edition_aware(generate_spec: Callable[[Spec], ConnectorSpecification]) -> Callable[[Spec], ConnectorSpecification]:
-    def generate_spec_for_edition(self: Spec) -> ConnectorSpecification:
-        spec = generate_spec(self)
-        return hide_auth_options_for_cloud(spec) if is_cloud_edition() else spec
-
-    generate_spec_for_edition._zendesk_support_edition_aware = True  # type: ignore[attr-defined]
-    return generate_spec_for_edition
-
-
-# A manifest cannot vary its spec by edition, so the CDK's spec generation is wrapped here. The wrapper only takes
-# effect once this module is imported, which during `spec` happens only because the manifest's spec block references
-# `CloudSpecHook` below. The guard keeps a second import of this module from wrapping the wrapper.
-if not getattr(Spec.generate_spec, "_zendesk_support_edition_aware", False):
-    Spec.generate_spec = _edition_aware(Spec.generate_spec)  # type: ignore[method-assign]
-
-
-class CloudSpecHook(ConfigTransformation):
-    """
-    Changes no config. It is listed under `spec.config_normalization_rules.transformations` because the CDK imports
-    this module only when it builds a custom component, and `spec` builds nothing but the spec block. Removing it
-    from the manifest makes the Cloud spec show every authentication option again.
-    """
-
-    def transform(self, config: MutableMapping[str, Any]) -> None:
-        return None
 
 
 class ZendeskSupportExtractorEvents(RecordExtractor):
