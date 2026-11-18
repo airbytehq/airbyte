@@ -513,6 +513,13 @@
               }
             ]
           },
+          "batch_mode": {
+            "title": "Batch Mode",
+            "description": "How objects are sent to Weaviate. `server_side` streams them and lets the cluster control the ingestion rate (requires Weaviate 1.36 or later). `fixed_size` sends batches of Batch Size objects. `auto` uses server-side batching and falls back to fixed size batches when it is not available or fails.",
+            "default": "auto",
+            "enum": ["auto", "server_side", "fixed_size"],
+            "type": "string"
+          },
           "batch_size": {
             "title": "Batch Size",
             "description": "The number of records to send to Weaviate in each batch",
@@ -521,7 +528,7 @@
           },
           "concurrent_requests": {
             "title": "Concurrent Batch Requests",
-            "description": "Number of batches sent to Weaviate in parallel",
+            "description": "Number of batches sent to Weaviate in parallel when using fixed size batches",
             "default": 1,
             "minimum": 1,
             "type": "integer"

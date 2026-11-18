@@ -172,9 +172,19 @@ class WeaviateIndexingConfigModel(BaseModel):
     auth: Union[TokenAuth, UsernamePasswordAuth, ClientCredentialsAuth, BearerTokenAuth, NoAuth] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2
     )
+    batch_mode: Literal["auto", "server_side", "fixed_size"] = Field(
+        title="Batch Mode",
+        description="How objects are sent to Weaviate. `server_side` streams them and lets the cluster control the ingestion rate "
+        "(requires Weaviate 1.36 or later). `fixed_size` sends batches of Batch Size objects. "
+        "`auto` uses server-side batching and falls back to fixed size batches when it is not available or fails.",
+        default="auto",
+    )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     concurrent_requests: int = Field(
-        title="Concurrent Batch Requests", description="Number of batches sent to Weaviate in parallel", default=1, ge=1
+        title="Concurrent Batch Requests",
+        description="Number of batches sent to Weaviate in parallel when using fixed size batches",
+        default=1,
+        ge=1,
     )
     consistency_level: Literal["default", "ONE", "QUORUM", "ALL"] = Field(
         title="Consistency Level",

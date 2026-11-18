@@ -99,8 +99,9 @@ The indexing section has the following options:
 
 | Option | Default | Description |
 | :--- | :--- | :--- |
+| **Batch Mode** | `auto` | How objects are sent to Weaviate. `server_side` streams them and lets the cluster control the ingestion rate, which requires Weaviate 1.36 or later. `fixed_size` sends batches of **Batch Size** objects. `auto` uses server-side batching and switches to fixed size batches for the rest of the sync when it is not available or fails. |
 | **Batch Size** | 128 | Number of objects sent to Weaviate per batch. Lower it if the cluster rejects large batches or runs out of memory. |
-| **Concurrent Batch Requests** | 1 | Number of batches sent to Weaviate in parallel. |
+| **Concurrent Batch Requests** | 1 | Number of batches sent to Weaviate in parallel when using fixed size batches. |
 | **Consistency Level** | `default` | Replication [consistency level](https://docs.weaviate.io/weaviate/concepts/replication-architecture/consistency) for writes and deletes: `ONE`, `QUORUM` or `ALL`. `default` uses the server default (`QUORUM`). |
 | **Text Field** | `text` | Property that receives the embedded text chunk. It must match the `text_key` your query code and any vectorizer expect. |
 | **Tenant ID** | empty | Enables multi-tenancy for this connection. Leave empty to disable multi-tenancy. |
@@ -151,7 +152,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 |:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.3.0 | 2026-10-20 | [89504](https://github.com/airbytehq/airbyte/pull/89504) | 🚨 Breaking change: migrate to the Weaviate Python client v4 (HTTP + gRPC), expose all client connection options (gRPC endpoint and TLS, timeouts, proxies, connection pool, OIDC client credentials and bearer token, batch concurrency, consistency level), accept bare Weaviate Cloud hostnames, send the `X-Weaviate-Client-Integration` header, keep the tenant on overwrite, stop adding tenants to unrelated classes, bump the CDK and vulnerable dependencies |
+| 0.3.0 | 2026-10-20 | [89504](https://github.com/airbytehq/airbyte/pull/89504) | 🚨 Breaking change: migrate to the Weaviate Python client v4 (HTTP + gRPC), expose all client connection options (gRPC endpoint and TLS, timeouts, proxies, connection pool, OIDC client credentials and bearer token, batch mode with server-side batching, batch concurrency, consistency level), accept bare Weaviate Cloud hostnames, send the `X-Weaviate-Client-Integration` header, keep the tenant on overwrite, stop adding tenants to unrelated classes, bump the CDK and vulnerable dependencies |
 | 0.2.64 | 2026-08-13 | [84358](https://github.com/airbytehq/airbyte/pull/84358) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.2.63 | 2026-07-02 | [81386](https://github.com/airbytehq/airbyte/pull/81386) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.2.62 | 2026-07-01 | [81364](https://github.com/airbytehq/airbyte/pull/81364) | Bump authlib 1.6.3 to 1.6.12 to resolve security vulnerabilities |

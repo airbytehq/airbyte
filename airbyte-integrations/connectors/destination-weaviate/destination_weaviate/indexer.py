@@ -59,6 +59,8 @@ class WeaviateIndexer(Indexer):
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
+        # Set once server-side batching failed in auto mode, so the rest of the sync uses fixed size batches
+        self._server_side_batching_failed = False
 
     def _http_url(self):
         host = self.config.host.strip()
@@ -273,23 +275,49 @@ class WeaviateIndexer(Indexer):
             return
 
         tenant = self.config.tenant_id if self.config.tenant_id.strip() else None
+        objects = []
+        for chunk in document_chunks:
+            weaviate_object = {**self._normalize(chunk.metadata)}
+            if chunk.page_content is not None:
+                weaviate_object[self.config.text_field] = chunk.page_content
+            objects.append(
+                {
+                    "collection": self._stream_to_class_name(chunk.record.stream),
+                    "properties": weaviate_object,
+                    # The id is assigned here so that sending an object again after a failed attempt overwrites it instead of duplicating it
+                    "uuid": str(uuid.uuid4()),
+                    "vector": chunk.embedding,
+                    "tenant": tenant,
+                }
+            )
+
+        if self.config.batch_mode != "fixed_size" and not self._server_side_batching_failed:
+            try:
+                self._send(self.client.batch.stream(consistency_level=self._consistency_level()), objects)
+                return
+            except WeaviatePartialBatchError:
+                # The cluster rejected objects, which fixed size batches would not change
+                raise
+            except Exception as e:
+                if self.config.batch_mode == "server_side":
+                    raise
+                logging.warning(f"Server-side batching is not available, using fixed size batches for the rest of the sync: {e}")
+                self._server_side_batching_failed = True
+
         # As a single record can be split into lots of documents, send them in batches as configured to not overwhelm the cluster
-        with self.client.batch.fixed_size(
-            batch_size=self.config.batch_size,
-            concurrent_requests=self.config.concurrent_requests,
-            consistency_level=self._consistency_level(),
-        ) as weaviate_batch:
-            for chunk in document_chunks:
-                weaviate_object = {**self._normalize(chunk.metadata)}
-                if chunk.page_content is not None:
-                    weaviate_object[self.config.text_field] = chunk.page_content
-                weaviate_batch.add_object(
-                    collection=self._stream_to_class_name(chunk.record.stream),
-                    properties=weaviate_object,
-                    uuid=str(uuid.uuid4()),
-                    vector=chunk.embedding,
-                    tenant=tenant,
-                )
+        self._send(
+            self.client.batch.fixed_size(
+                batch_size=self.config.batch_size,
+                concurrent_requests=self.config.concurrent_requests,
+                consistency_level=self._consistency_level(),
+            ),
+            objects,
+        )
+
+    def _send(self, batch_context, objects: List[dict]) -> None:
+        with batch_context as weaviate_batch:
+            for weaviate_object in objects:
+                weaviate_batch.add_object(**weaviate_object)
         self._raise_on_failed_objects()
 
     def _stream_to_class_name(self, stream_name: str) -> str:

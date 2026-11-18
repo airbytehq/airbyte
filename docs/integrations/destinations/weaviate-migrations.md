@@ -10,6 +10,7 @@ This version moves the connector from version 3 to version 4 of the Weaviate Pyt
 - The **Public Endpoint** can no longer contain a path, such as `https://gateway.example.com/weaviate`, because the client only connects to a host and port. The connection check now reports this instead of ignoring the path.
 - Properties named `vector` (in any capitalization) are stored as `raw_vector`, and names such as `Id` that normalize to `id` are stored as `raw_id`, because the client reserves both names.
 - On Airbyte Cloud, the gRPC connection must use TLS.
+- Clusters running Weaviate 1.36 or later are loaded with server-side batching by default. Set **Batch Mode** to `fixed_size` to keep sending fixed size batches.
 
 ## Upgrading to 0.2.0
 

@@ -51,7 +51,7 @@ def _chunk(content, embedding, metadata):
 class TestWeaviateIndexer(unittest.TestCase):
     def setUp(self):
         self.config = WeaviateIndexingConfigModel(
-            host="https://test-host:12345", auth=TokenAuth(mode="token", token="abc")
+            host="https://test-host:12345", auth=TokenAuth(mode="token", token="abc"), batch_mode="fixed_size"
         )  # Setup your config here
         self.indexer = WeaviateIndexer(self.config)
         mock_catalog = Mock()
@@ -512,6 +512,53 @@ class TestWeaviateIndexer(unittest.TestCase):
         kwargs = mock_client.batch.fixed_size.call_args.kwargs
         self.assertEqual((kwargs["batch_size"], kwargs["concurrent_requests"], kwargs["consistency_level"].value), (2, 4, "ONE"))
         self.assertEqual(batch.add_object.call_count, 3)
+
+    def test_index_uses_server_side_batching_in_auto_mode(self):
+        mock_client = self._mock_client()
+        self.config.batch_mode = "auto"
+        self.config.consistency_level = "ONE"
+        batch = mock_client.batch.stream.return_value.__enter__.return_value
+        self.indexer.index([_chunk("some_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        self.assertEqual(mock_client.batch.stream.call_args.kwargs["consistency_level"].value, "ONE")
+        batch.add_object.assert_called_once()
+        mock_client.batch.fixed_size.assert_not_called()
+
+    def test_index_falls_back_to_fixed_size_in_auto_mode(self):
+        mock_client = self._mock_client()
+        self.config.batch_mode = "auto"
+        mock_client.batch.stream.return_value.__exit__.side_effect = Exception("stream broke")
+        stream_batch = mock_client.batch.stream.return_value.__enter__.return_value
+        fixed_batch = mock_client.batch.fixed_size.return_value.__enter__.return_value
+        self.indexer.index([_chunk("some_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        # The object is sent again with the same id, so it cannot be duplicated
+        self.assertEqual(stream_batch.add_object.call_args, fixed_batch.add_object.call_args)
+
+        self.indexer.index([_chunk("more_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        mock_client.batch.stream.assert_called_once()
+        self.assertEqual(mock_client.batch.fixed_size.call_count, 2)
+
+    def test_index_falls_back_when_server_side_batching_is_unsupported(self):
+        mock_client = self._mock_client()
+        self.config.batch_mode = "auto"
+        mock_client.batch.stream.side_effect = Exception("requires at least version 1.36.0")
+        self.indexer.index([_chunk("some_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        mock_client.batch.fixed_size.return_value.__enter__.return_value.add_object.assert_called_once()
+
+    def test_index_does_not_fall_back_in_server_side_mode(self):
+        mock_client = self._mock_client()
+        self.config.batch_mode = "server_side"
+        mock_client.batch.stream.side_effect = Exception("requires at least version 1.36.0")
+        with self.assertRaises(Exception):
+            self.indexer.index([_chunk("some_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        mock_client.batch.fixed_size.assert_not_called()
+
+    def test_index_does_not_fall_back_on_rejected_objects(self):
+        mock_client = self._mock_client()
+        self.config.batch_mode = "auto"
+        mock_client.batch.failed_objects = [Mock(message="some_error")]
+        with self.assertRaises(WeaviatePartialBatchError):
+            self.indexer.index([_chunk("some_content", [1, 2, 3], {"someField": "some_value"})], None, "test")
+        mock_client.batch.fixed_size.assert_not_called()
 
     def test_index_on_empty_batch(self):
         mock_client = self._mock_client()
