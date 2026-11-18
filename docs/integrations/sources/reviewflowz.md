@@ -61,6 +61,6 @@ The Reviewflowz API answers `429` with a `Retry-After` header when a key goes ov
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0 | 2026-11-18 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Initial release |
+| 0.1.0 | 2026-11-18 | [93971](https://github.com/airbytehq/airbyte/pull/93971) | Initial release |
 
 </details>
