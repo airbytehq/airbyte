@@ -1,0 +1,45 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.reviewflowz.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-reviewflowz
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.49.0@sha256:349bbed19f7f62315db4f04d87e2b0b52f9fd4b1131d78d6a981db1681d627ad
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2b96da03-9438-4b99-85dc-28c0ccc21ddc
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-reviewflowz
+  githubIssueLabel: source-reviewflowz
+  icon: icon.svg
+  license: ELv2
+  name: Reviewflowz
+  releaseDate: 2026-11-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/reviewflowz
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Reviewflowz API reference
+      url: https://api.reviewflowz.com/v3/docs
+      type: api_reference
+    - title: Reviewflowz API authentication
+      url: https://api.reviewflowz.com/v3/docs/guides/authentication
+      type: authentication_guide
+    - title: Reviewflowz OpenAPI spec
+      url: https://api.reviewflowz.com/v3/openapi.json
+      type: openapi_spec
