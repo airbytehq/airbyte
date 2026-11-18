@@ -46,11 +46,14 @@ jobs:
 
       - name: Determine PyAirbyte Version
         id: version
+        env:
+          EVENT_INPUTS_PYAIRBYTE_VERSION: ${{ github.event.inputs.pyairbyte_version }}
+          EVENT_CLIENT_PAYLOAD_VERSION: ${{ github.event.client_payload.version }}
         run: |
-          if [ -n "${{ github.event.inputs.pyairbyte_version }}" ]; then
-            echo "version=${{ github.event.inputs.pyairbyte_version }}" >> $GITHUB_OUTPUT
-          elif [ -n "${{ github.event.client_payload.version }}" ]; then
-            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          if [ -n "${EVENT_INPUTS_PYAIRBYTE_VERSION}" ]; then
+            echo "version=${EVENT_INPUTS_PYAIRBYTE_VERSION}" >> $GITHUB_OUTPUT
+          elif [ -n "${EVENT_CLIENT_PAYLOAD_VERSION}" ]; then
+            echo "version=${EVENT_CLIENT_PAYLOAD_VERSION}" >> $GITHUB_OUTPUT
           else
             # Get latest version from PyPI
             LATEST_VERSION=$(pip index versions airbyte 2>/dev/null | grep -oP 'airbyte \(\K[^)]+' | head -1)
@@ -58,11 +61,13 @@ jobs:
           fi
 
       - name: Clone PyAirbyte Repository
+        env:
+          STEP_VERSION_VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Clone PyAirbyte at the specific version tag
-          git clone --depth 1 --branch "v${{ steps.version.outputs.version }}" \
+          git clone --depth 1 --branch "v${STEP_VERSION_VERSION}" \
             https://github.com/airbytehq/PyAirbyte.git pyairbyte-source
-          echo "Cloned PyAirbyte v${{ steps.version.outputs.version }}"
+          echo "Cloned PyAirbyte v${STEP_VERSION_VERSION}"
           ls -la pyairbyte-source/
 
       - name: Install PyAirbyte and pdoc3

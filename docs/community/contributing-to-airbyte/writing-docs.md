@@ -224,6 +224,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - `oss-community`: Core only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-no-flex`: Standard, Plus, and Pro, without Enterprise Flex
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
 - `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
@@ -505,5 +506,3 @@ Before Airbyte accepts your contribution, you need to sign the Contributor Licen
 ## Deploy the documentation site
 
 When someone merges documentation changes into the `master` branch, Vercel deploys updated docs automatically. This takes 5-10 minutes and needs no human intervention.
-
-

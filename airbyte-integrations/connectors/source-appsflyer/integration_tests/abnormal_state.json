@@ -1,35 +1,134 @@
-{
-  "in_app_events": {
-    "event_time": "2050-01-01T00:00:00+00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "in_app_events"
+      },
+      "stream_state": {
+        "event_time": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "installs": {
-    "install_time": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "installs"
+      },
+      "stream_state": {
+        "install_time": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "uninstall_events": {
-    "event_time": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "uninstall_events"
+      },
+      "stream_state": {
+        "event_time": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "retargeting_in_app_events": {
-    "event_time": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "retargeting_in_app_events"
+      },
+      "stream_state": {
+        "event_time": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "retargeting_installs": {
-    "install_time": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "retargeting_installs"
+      },
+      "stream_state": {
+        "install_time": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "partners_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "partners_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "daily_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "daily_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "geo_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "geo_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "retargeting_partners_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "retargeting_partners_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "retargeting_daily_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "retargeting_daily_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   },
-  "retargeting_geo_report": {
-    "date": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "retargeting_geo_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "geo_events_report"
+      },
+      "stream_state": {
+        "date": "2050-01-01T00:00:00+00:00"
+      }
+    }
   }
-}
+]

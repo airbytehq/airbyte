@@ -1,5 +1,13 @@
-{
-  "conversation_export": {
-    "updated_at": 4778168400000
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "conversation_export"
+      },
+      "stream_state": {
+        "updated_at": "4765132800000"
+      }
+    }
   }
-}
+]

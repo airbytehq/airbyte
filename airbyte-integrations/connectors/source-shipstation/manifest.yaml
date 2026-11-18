@@ -44,12 +44,10 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             showInactive: "true"
         record_selector:
@@ -88,12 +86,10 @@ definitions:
           path: orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: ModifyDate
             sortDir: ASC
@@ -134,12 +130,10 @@ definitions:
           path: stores
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             showInactive: "true"
         record_selector:
@@ -163,12 +157,10 @@ definitions:
           path: carriers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -205,12 +197,10 @@ definitions:
           path: products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -236,12 +226,10 @@ definitions:
           path: webhooks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -279,12 +267,10 @@ definitions:
           path: customers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -325,12 +311,10 @@ definitions:
           path: shipments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -372,12 +356,10 @@ definitions:
           path: warehouses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -414,12 +396,10 @@ definitions:
           path: fulfillments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -460,12 +440,10 @@ definitions:
           path: stores/marketplaces
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -478,6 +456,125 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/marketplaces"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/listtags
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - tagId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    carrier_packages:
+      type: DeclarativeStream
+      name: carrier_packages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: carriers/listpackages
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
+          request_parameters:
+            carrierCode: "{{ stream_partition.carrier_code[0] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: code
+                partition_field: carrier_code
+                stream:
+                  $ref: "#/definitions/streams/carriers"
+      primary_key:
+        - carrierCode
+        - code
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - carrierCode
+              value: "{{ record.get('carrierCode') or stream_partition.carrier_code[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carrier_packages"
+    carrier_services:
+      type: DeclarativeStream
+      name: carrier_services
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: carriers/listservices
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
+          request_parameters:
+            carrierCode: "{{ stream_partition.carrier_code[0] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: code
+                partition_field: carrier_code
+                stream:
+                  $ref: "#/definitions/streams/carriers"
+      primary_key:
+        - carrierCode
+        - code
+        - domestic
+        - international
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - carrierCode
+              value: "{{ record.get('carrierCode') or stream_partition.carrier_code[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carrier_services"
   base_requester:
     type: HttpRequester
     url_base: https://ssapi.shipstation.com/
@@ -488,6 +585,8 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/carriers"
+  - $ref: "#/definitions/streams/carrier_packages"
+  - $ref: "#/definitions/streams/carrier_services"
   - $ref: "#/definitions/streams/customers"
   - $ref: "#/definitions/streams/fulfillments"
   - $ref: "#/definitions/streams/orders"
@@ -495,6 +594,7 @@ streams:
   - $ref: "#/definitions/streams/shipments"
   - $ref: "#/definitions/streams/marketplaces"
   - $ref: "#/definitions/streams/stores"
+  - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/warehouses"
   - $ref: "#/definitions/streams/webhooks"
@@ -1062,6 +1162,18 @@ schemas:
         type:
           - string
           - "null"
+      paymentMethod:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      shipByDate:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   stores:
     type: object
@@ -1213,6 +1325,110 @@ schemas:
       createDate:
         type:
           - string
+          - "null"
+      customsValue:
+        type:
+          - number
+          - "null"
+      noCustoms:
+        type:
+          - boolean
+          - "null"
+      internalNotes:
+        type:
+          - string
+          - "null"
+      upc:
+        type:
+          - string
+          - "null"
+      defaultCost:
+        type:
+          - number
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      width:
+        type:
+          - number
+          - "null"
+      height:
+        type:
+          - number
+          - "null"
+      weightOz:
+        type:
+          - number
+          - "null"
+      fulfillmentSku:
+        type:
+          - string
+          - "null"
+      productType:
+        type:
+          - string
+          - "null"
+      warehouseLocation:
+        type:
+          - string
+          - "null"
+      defaultCarrierCode:
+        type:
+          - string
+          - "null"
+      defaultServiceCode:
+        type:
+          - string
+          - "null"
+      defaultPackageCode:
+        type:
+          - string
+          - "null"
+      defaultIntlCarrierCode:
+        type:
+          - string
+          - "null"
+      defaultIntlServiceCode:
+        type:
+          - string
+          - "null"
+      defaultIntlPackageCode:
+        type:
+          - string
+          - "null"
+      defaultConfirmation:
+        type:
+          - string
+          - "null"
+      defaultIntlConfirmation:
+        type:
+          - string
+          - "null"
+      customsDescription:
+        type:
+          - string
+          - "null"
+      customsTariffNo:
+        type:
+          - string
+          - "null"
+      customsCountryCode:
+        type:
+          - string
+          - "null"
+      modifyDate:
+        type:
+          - string
+          - "null"
+      productCategory:
+        type:
+          - object
+          - "null"
+      tags:
+        type:
+          - array
           - "null"
     additionalProperties: true
   webhooks:
@@ -1881,6 +2097,10 @@ schemas:
         type:
           - string
           - "null"
+      notifyErrorMessage:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   marketplaces:
     type: object
@@ -1906,6 +2126,71 @@ schemas:
           - boolean
           - "null"
       supportsCustomStatuses:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - tagId
+    properties:
+      tagId:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  carrier_packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - carrierCode
+      - code
+    properties:
+      carrierCode:
+        type: string
+      code:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      domestic:
+        type:
+          - boolean
+          - "null"
+      international:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  carrier_services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - carrierCode
+      - code
+    properties:
+      carrierCode:
+        type: string
+      code:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      domestic:
+        type:
+          - boolean
+          - "null"
+      international:
         type:
           - boolean
           - "null"

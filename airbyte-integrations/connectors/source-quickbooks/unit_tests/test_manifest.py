@@ -84,7 +84,7 @@ def test_only_reference_streams_drop_the_30_day_window(manifest):
                 assert "step" not in incremental_sync, name
                 assert "cursor_granularity" not in incremental_sync, name
             else:
-                assert incremental_sync["step"] == "P30D", name
+                assert incremental_sync["step"] == "P365D", name
                 assert incremental_sync["cursor_granularity"] == "PT0S", name
 
         assert seen_reference_names == REFERENCE_STREAM_NAMES

@@ -74,16 +74,22 @@ jobs:
 
       - name: Set and debug variables
         id: vars
+        env:
+          EVENT_INPUTS_CONNECTOR_TYPE: ${{ github.event.inputs.connector-type }}
+          EVENT_INPUTS_REPOSITORY_ROOT: ${{ github.event.inputs.repository-root }}
+          EVENT_INPUTS_TAG_OR_VERSION_NUMBER: ${{ github.event.inputs.tag-or-version-number }}
+          EVENT_INPUTS_DRY_RUN: ${{ github.event.inputs.dry-run }}
+          EVENT_INPUTS_REQUIRE_SECURITY_CHECK: ${{ github.event.inputs.require-security-check }}
         run: |
-          DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
-          IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
-          FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}/${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
+          DOCKERFILE=docker-images/Dockerfile.${EVENT_INPUTS_CONNECTOR_TYPE}-connector-base
+          IMAGE_NAME=${EVENT_INPUTS_CONNECTOR_TYPE}-connector-base
+          FULL_IMAGE_REF=${EVENT_INPUTS_REPOSITORY_ROOT}/${IMAGE_NAME}:${EVENT_INPUTS_TAG_OR_VERSION_NUMBER}
           echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "FULL_IMAGE_REF=${FULL_IMAGE_REF}" | tee -a "$GITHUB_OUTPUT"
           # Echo other input variables for debugging and logging purposes
-          echo "dry-run=${{ github.event.inputs.dry-run }}"
-          echo "require-security-check=${{ github.event.inputs.require-security-check }}"
+          echo "dry-run=${EVENT_INPUTS_DRY_RUN}"
+          echo "require-security-check=${EVENT_INPUTS_REQUIRE_SECURITY_CHECK}"
 
       - name: Build Base Image
         id: docker-build-base
