@@ -15,6 +15,8 @@ This page contains the setup guide and reference information for the OpenAI Ads 
 2. Open the [**Settings**](https://ads.openai.com/settings) page and create a new Advertiser API key.
 3. Copy the key. Each key is scoped to one ad account. To replicate several ad accounts, create one key per account and set up one source per account.
 
+The connector does not support OpenAI partner keys or partner OAuth tokens. These select an ad account with the `OpenAI-Ad-Account` request header, which the connector does not send (see [Bidding & Budgets](https://developers.openai.com/ads/bidding-and-budgets)). Use the Advertiser API key of the ad account you want to replicate.
+
 The `spend_limit_windows` stream needs an ad account on postpaid invoice billing and an API key with permission to manage billing for that account (see [Account spending limits](https://developers.openai.com/ads/api-reference/ad-account)). If the API answers 403, the stream returns no records, the sync continues, and the sync log shows the API's message.
 
 The `conversion_pixels` stream requires pixel management to be enabled for the ad account. If the API returns 404 because pixel management is not enabled, the stream returns no records and the sync continues. Contact your OpenAI partner representative to enable pixel management (see [API partner setup](https://developers.openai.com/ads/api-partner-setup)).
@@ -119,6 +121,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.13 | 2026-11-18 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Document that partner keys are not supported and remove an unsourced claim from the Start Date description |
 | 0.1.12 | 2026-11-17 | [93307](https://github.com/airbytehq/airbyte/pull/93307) | Update dependencies |
 | 0.1.11 | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
 | 0.1.10 | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
