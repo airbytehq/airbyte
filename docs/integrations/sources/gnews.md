@@ -44,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.27 | 2026-11-17 | [93203](https://github.com/airbytehq/airbyte/pull/93203) | Update dependencies |
 | 0.2.26 | 2026-11-09 | [91393](https://github.com/airbytehq/airbyte/pull/91393) | Upgrade to source-declarative-manifest 7.47.0 (Airbyte CDK 7) |
 | 0.2.25 | 2026-10-13 | [78726](https://github.com/airbytehq/airbyte/pull/78726) | Update dependencies |
 | 0.2.24 | 2026-10-07 | [88210](https://github.com/airbytehq/airbyte/pull/88210) | Replace the broken custom 403 backoff strategy (`components.py`) with declarative error handling and clearer 400/401/403 error messages |

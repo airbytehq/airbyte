@@ -123,6 +123,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.2.4 | 2026-11-17 | [93255](https://github.com/airbytehq/airbyte/pull/93255) | Update dependencies |
 | 1.2.3 | 2026-11-10 | [91631](https://github.com/airbytehq/airbyte/pull/91631) | Update dependencies |
 | 1.2.2 | 2026-11-03 | [78804](https://github.com/airbytehq/airbyte/pull/78804) | Update dependencies |
 | 1.2.1 | 2026-10-30 | [90259](https://github.com/airbytehq/airbyte/pull/90259) | Explain missing LinkedIn scopes and organization access failures in connection checks without echoing raw API errors |

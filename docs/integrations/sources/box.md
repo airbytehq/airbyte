@@ -52,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2026-11-17 | [93081](https://github.com/airbytehq/airbyte/pull/93081) | Update dependencies |
 | 0.0.23 | 2026-11-09 | [91333](https://github.com/airbytehq/airbyte/pull/91333) | Update to CDK v7 (source-declarative-manifest 7.47.0) |
 | 0.0.22 | 2026-10-07 | [88216](https://github.com/airbytehq/airbyte/pull/88216) | Add optional `box_subject_type` (user/enterprise) so the CCG token request can authenticate as the app Service Account; document Box app setup |
 | 0.0.21 | 2026-04-21 | [76536](https://github.com/airbytehq/airbyte/pull/76536) | Update dependencies |
