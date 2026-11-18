@@ -4,7 +4,7 @@
 
 - A Zendesk account on a plan that includes the [Zendesk Talk](https://www.zendesk.com/service/voice/) add-on
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
-- OAuth 2.0 credentials. In Airbyte Cloud, you authenticate from the Airbyte UI. In self-managed Airbyte, you need a Zendesk OAuth client with a client ID and client secret, and a refresh token.
+- OAuth 2.0 credentials. In Airbyte Cloud, you authenticate from the Airbyte UI. In self-managed Airbyte, you need a Zendesk OAuth client with a client ID and client secret.
 
 The setup form offers only **OAuth2.0**. Sources that already use an API token or legacy OAuth keep working. See [Existing sources that use an API token or legacy OAuth](#existing-sources-that-use-an-api-token-or-legacy-oauth).
 
@@ -14,12 +14,7 @@ The setup form offers only **OAuth2.0**. Sources that already use an API token o
 
 <!-- env:oss -->
 
-Register an OAuth client in your Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**, and note the client's unique identifier and secret. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) in the Zendesk documentation.
-
-Then get a refresh token:
-
-1. Complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires.
-2. Save the `refresh_token` from the response.
+Register an OAuth client in your Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**, and note the client's unique identifier and secret. In the client's **Redirect URLs**, add the redirect URL that the Airbyte setup form shows under **Authentication**. It's your Airbyte URL followed by `/auth_flow`. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) in the Zendesk documentation.
 
 :::caution
 Zendesk refresh tokens are single-use. Every refresh returns a new refresh token and invalidates the previous one, so only one source can use a refresh token. Don't copy the same value into a second source or a second Airbyte deployment.
@@ -63,9 +58,19 @@ Each refresh invalidates the previous access token and refresh token. If your re
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
-5. Under **Authentication**, enter the **Client ID**, **Client Secret** and **Refresh Token** from step 1. Leave **Access Token** and **Token Expiry Date** empty. The connector exchanges the refresh token for an access token on its first request.
+5. Under **Authentication**, enter the **Client ID** and **Client Secret** from step 1. Click **Authenticate your Zendesk Talk account** and approve access in Zendesk.
 6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
 7. Click **Set up source**.
+
+Zendesk accepts only `https` redirect URLs, except for `localhost` and `127.0.0.1`. If your Airbyte URL doesn't meet that rule, click **Set up manually** in step 5 and enter the tokens yourself:
+
+1. Complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires.
+2. Enter the **Refresh Token** and the **Access Token** from the token response.
+3. Set **Token Expiry Date** to the time of the token response plus `expires_in` seconds, for example `2027-01-15T10:00:00Z`.
+
+:::caution
+Enter all three values. If you leave **Access Token** or **Token Expiry Date** empty, the connection test exchanges the refresh token for a new one. Airbyte versions that test the connection before they create the source don't save the new refresh token, and the source then fails on its first sync because Zendesk has already invalidated the one you entered.
+:::
 
 <!-- /env:oss -->
 
