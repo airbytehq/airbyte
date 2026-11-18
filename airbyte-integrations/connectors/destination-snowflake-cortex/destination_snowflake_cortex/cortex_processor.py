@@ -25,6 +25,7 @@ from overrides import overrides
 from pydantic.v1 import Field
 from snowflake import connector
 from snowflake.sqlalchemy import URL, VARIANT
+from sqlalchemy import text
 from sqlalchemy.engine import Connection
 from typing_extensions import Protocol
 
@@ -252,11 +253,13 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         This also sets MULTI_STATEMENT_COUNT to 0, which allows multi-statement commands.
         """
         connection.execute(
-            """
+            text(
+                """
             ALTER SESSION SET
             QUOTED_IDENTIFIERS_IGNORE_CASE = TRUE
             MULTI_STATEMENT_COUNT = 0
             """
+            )
         )
 
     def _emulated_merge_temp_table_to_final_table(
@@ -298,8 +301,8 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         with self.get_sql_connection() as conn:
             # This is a transactional operation to avoid outages, in case
             # a user queries the data during the operation.
-            conn.execute(delete_statement)
-            conn.execute(append_statement)
+            conn.execute(text(delete_statement))
+            conn.execute(text(append_statement))
 
     def process_record_message(
         self,
