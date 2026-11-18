@@ -364,8 +364,7 @@
             "order": 1,
             "examples": [
               "https://my-cluster.weaviate.cloud",
-              "my-cluster.c0.europe-west3.gcp.weaviate.cloud",
-              "http://my-weaviate-host:8080"
+              "my-cluster.c0.europe-west3.gcp.weaviate.cloud"
             ],
             "type": "string"
           },

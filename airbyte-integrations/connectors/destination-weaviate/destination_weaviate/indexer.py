@@ -63,7 +63,7 @@ class WeaviateIndexer(Indexer):
         # The Weaviate Cloud console shows the REST endpoint without a scheme
         url = urlparse(host if "://" in host else f"https://{host}")
         if url.scheme not in ("http", "https") or not url.hostname:
-            raise ValueError(f"Public Endpoint must be a hostname or a URL starting with http:// or https://, got {self.config.host!r}")
+            raise ValueError(f"Public Endpoint must be a hostname or a URL with an http or https scheme, got {self.config.host!r}")
         return url
 
     def _grpc_endpoint(self, http_host: str, http_secure: bool) -> Tuple[str, int, bool]:

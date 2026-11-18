@@ -33,6 +33,7 @@ data:
     breakingChanges:
       0.3.0:
         upgradeDeadline: "2026-12-01"
+        deadlineAction: auto_upgrade
         message: >-
           This version moves the connector to version 4 of the Weaviate Python client, which writes and deletes objects over gRPC.
           Airbyte now needs to reach the cluster's gRPC port in addition to its HTTP endpoint, and the minimum supported Weaviate version is 1.27.0.

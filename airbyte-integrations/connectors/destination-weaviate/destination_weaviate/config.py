@@ -168,7 +168,7 @@ class WeaviateIndexingConfigModel(BaseModel):
         order=1,
         description="The REST endpoint of the Weaviate cluster. For Weaviate Cloud, paste the REST Endpoint shown in the console; "
         "https is assumed when no scheme is given.",
-        examples=["https://my-cluster.weaviate.cloud", "my-cluster.c0.europe-west3.gcp.weaviate.cloud", "http://my-weaviate-host:8080"],
+        examples=["https://my-cluster.weaviate.cloud", "my-cluster.c0.europe-west3.gcp.weaviate.cloud"],
     )
     auth: Union[TokenAuth, UsernamePasswordAuth, ClientCredentialsAuth, BearerTokenAuth, NoAuth] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2

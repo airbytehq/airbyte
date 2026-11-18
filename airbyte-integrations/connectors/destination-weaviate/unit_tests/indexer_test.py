@@ -162,7 +162,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
     def test_failed_check_due_to_invalid_host(self, MockConnect):
         self.indexer.config.host = "ftp://my-cluster.weaviate.network"
-        self.assertIn("must be a hostname or a URL starting with http:// or https://", self.indexer.check())
+        self.assertIn("must be a hostname or a URL with an http or https scheme", self.indexer.check())
         MockConnect.assert_not_called()
 
     @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
