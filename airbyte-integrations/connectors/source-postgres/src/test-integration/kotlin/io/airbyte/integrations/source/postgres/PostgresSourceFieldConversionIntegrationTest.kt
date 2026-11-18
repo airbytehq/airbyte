@@ -30,9 +30,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.PostgreSQLContainer
 
+// TK-TODO: NEVER MERGE THIS FILE. Local-only test of the Bulk CDK; delete it before merging.
 /**
- * TEMPORARY, DO NOT MERGE: exercises the Bulk CDK's `airbyte_source_type` support end to end from
- * inside a connector, against a source-postgres built on the local CDK (`cdkVersion=local`).
+ * Exercises the Bulk CDK's `airbyte_source_type` support end to end from inside a connector,
+ * against a source-postgres built on the local CDK (`cdkVersion=local`).
  *
  * Reads columns whose configured type is wider than their type in the database, with the database
  * type in `airbyte_source_type`, as the platform configures them after a narrowing type change in
