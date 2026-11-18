@@ -13,7 +13,7 @@ package-mode = false
 python = "^3.11,<3.13"
 # Keep in step with the base image in ../metadata.yaml.
 airbyte-cdk = "7.48.0"
-pytest = "^8"
+pytest = ">=8,<10"
 pytest-timeout = "^2"
 requests-mock = "^1"
 
