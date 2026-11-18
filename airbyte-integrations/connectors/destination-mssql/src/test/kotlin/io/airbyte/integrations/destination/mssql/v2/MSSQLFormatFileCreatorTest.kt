@@ -199,7 +199,7 @@ class MSSQLFormatFileCreatorTest {
                     "\"$delimiter\"",
                     1,
                     "id",
-                    "SQL_Latin1_General_CP1_CI_AS",
+                    "Latin1_General_100_CI_AS_SC_UTF8",
                 )
         assertEquals(expectedLine1, lines[2])
 
@@ -215,7 +215,7 @@ class MSSQLFormatFileCreatorTest {
                     "\"$rowDelimiter\"",
                     2,
                     "name",
-                    "SQL_Latin1_General_CP1_CI_AS",
+                    "Latin1_General_100_CI_AS_SC_UTF8",
                 )
         assertEquals(expectedLine2, lines[3])
     }

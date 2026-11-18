@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 
-private const val COLLATION = "SQL_Latin1_General_CP1_CI_AS"
+private const val COLLATION = "Latin1_General_100_CI_AS_SC_UTF8"
 
 internal class MSSQLFormatFileCreator(
     private val dataSource: DataSource,
