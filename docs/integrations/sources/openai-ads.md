@@ -126,7 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.0 | 2026-11-18 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add OAuth 2.0 authentication; existing API key configs move into the new `credentials` object automatically |
+| 0.2.0 | 2026-11-18 | [93979](https://github.com/airbytehq/airbyte/pull/93979) | Add OAuth 2.0 authentication; existing API key configs move into the new `credentials` object automatically |
 | 0.1.12 | 2026-11-17 | [93307](https://github.com/airbytehq/airbyte/pull/93307) | Update dependencies |
 | 0.1.11 | 2026-11-16 | [89598](https://github.com/airbytehq/airbyte/pull/89598) | Request conversions with explicit attribution settings (30-day click, 1-day view, ad-event time), reuse cached campaigns and ad groups in dependent streams, and correct the conversions docs |
 | 0.1.10 | 2026-11-16 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare for certification: declare missing fields, run at least 2 workers, enable acceptance tests |
