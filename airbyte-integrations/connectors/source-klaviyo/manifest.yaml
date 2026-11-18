@@ -1198,9 +1198,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # An optional end_date bounds the last window, so a long history can be read in bounded
+        # runs (for example a year per run under the reporting rate limit); the cursor then
+        # resumes from it on the next run. Without it, the last window ends yesterday as before.
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
+          datetime: "{{ [config['end_date'][:10] ~ 'T23:59:59Z', (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z')] | min if config.get('end_date') else (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1366,9 +1369,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # An optional end_date bounds the last window, so a long history can be read in bounded
+        # runs (for example a year per run under the reporting rate limit); the cursor then
+        # resumes from it on the next run. Without it, the last window ends yesterday as before.
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
+          datetime: "{{ [config['end_date'][:10] ~ 'T23:59:59Z', (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z')] | min if config.get('end_date') else (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1558,6 +1564,22 @@ spec:
         examples:
           - "RESQ6t"
           - "RESQ6t,ABC123,XYZ789"
+      end_date:
+        type: string
+        title: Report Streams End Date
+        description: >-
+          OPTIONAL: The last day, inclusive, that the flow_series_reports and
+          campaign_values_reports streams read, as YYYY-MM-DD. When set, a sync
+          stops at the end of that day instead of the end of yesterday, so a long
+          history can be backfilled in bounded runs - for example one year per run
+          under Klaviyo's daily reporting rate limit. The next sync resumes from
+          where the bounded one stopped, so raise or remove it to continue. Leave
+          it empty for normal incremental syncs.
+        pattern: ^\d{4}-\d{2}-\d{2}$
+        format: date
+        examples:
+          - "2023-12-31"
+        order: 8
     additionalProperties: true
 
 metadata:
