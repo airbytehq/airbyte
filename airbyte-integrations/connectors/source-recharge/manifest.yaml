@@ -366,6 +366,21 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: '#/definitions/requester_deprecated_api'
+        error_handler:
+          $ref: '#/definitions/requester_base/error_handler'
+          response_filters:
+          - http_codes:
+            - 429
+            action: RETRY
+          - http_codes:
+            - 422
+            action: FAIL
+            failure_type: system_error
+            error_message: >-
+              {{ 'The Recharge orders stream exceeds the Recharge 2021-01 API limit of 100 pages per query.'
+                 if response is mapping and response.get('errors') is mapping
+                    and 'Value may not exceed 100. Please use cursor pagination.' in (response['errors'].get('page') | string)
+                 else 'The Recharge 2021-01 API rejects the orders stream request as invalid.' }}
         request_parameters:
           sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
     incremental_sync:
