@@ -32,6 +32,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final String topicPattern;
   private final Map<AirbyteStreamNameNamespacePair, String> topicMap;
   private final KafkaProducer<String, JsonNode> producer;
+  private final KafkaDestinationConfig config;
   private final boolean sync;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -44,6 +45,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
+    this.config = kafkaDestinationConfig;
     this.sync = kafkaDestinationConfig.isSync();
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -101,8 +103,11 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(final boolean hasFailed) {
-    producer.flush();
-    producer.close();
+    try {
+      producer.flush();
+    } finally {
+      config.close();
+    }
   }
 
 }
