@@ -1,0 +1,633 @@
+version: 7.49.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - sources
+definitions:
+  requester:
+    type: HttpRequester
+    url_base: https://api.reviewflowz.com/v3
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+    request_headers:
+      Accept: application/json
+      User-Agent: airbyte-source-reviewflowz
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+      response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+        - 401
+        failure_type: config_error
+        error_message: 'Reviewflowz refused the API key: {{ response.get("detail") or response.get("title") }} Create a Read only key in Settings → API in Reviewflowz and paste it again.'
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+        - 403
+        failure_type: config_error
+        error_message: 'This API key may not read this data: {{ response.get("detail") or response.get("title") }}'
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+        - 429
+        - 500
+        - 502
+        - 503
+        - 504
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - data
+  paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 500
+      cursor_value: '{{ response.get("next_cursor") }}'
+      stop_condition: '{{ not response.get("has_more") }}'
+streams:
+- type: DeclarativeStream
+  name: sources
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/requester'
+      path: /sources
+    record_selector:
+      $ref: '#/definitions/record_selector'
+    paginator:
+      $ref: '#/definitions/paginator'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        platform:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        location:
+          type:
+          - string
+          - 'null'
+        domain:
+          type:
+          - string
+          - 'null'
+        external_id:
+          type:
+          - string
+          - 'null'
+          description: The page's id on the platform.
+        product:
+          type:
+          - object
+          - 'null'
+          description: On accounts that group sources into products (a tour operator's tours). The name is null for a member who may not see the product.
+          properties:
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        address:
+          type:
+          - object
+          - 'null'
+          description: Google listings only.
+          properties:
+            line1:
+              type:
+              - string
+              - 'null'
+            line2:
+              type:
+              - string
+              - 'null'
+            city:
+              type:
+              - string
+              - 'null'
+            postal_code:
+              type:
+              - string
+              - 'null'
+            country:
+              type:
+              - string
+              - 'null'
+              description: ISO 3166 code.
+        status:
+          type:
+          - string
+          - 'null'
+          description: 'syncing: the first import or a refresh is running. failed: the platform no longer serves the page. paused: paused in the app (not fetched, not billed).'
+        rating:
+          type:
+          - object
+          - 'null'
+          description: The current worldwide rating as the platform shows it.
+          properties:
+            score:
+              type:
+              - number
+              - 'null'
+            count:
+              type:
+              - integer
+              - 'null'
+            stars:
+              type:
+              - object
+              - 'null'
+              description: The platform's own star split, where it publishes one ("5" to "1").
+              additionalProperties:
+                type:
+                - integer
+                - 'null'
+        last_synced_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        dimensions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+- type: DeclarativeStream
+  name: reviews
+  primary_key:
+  - root_review
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/requester'
+      path: /reviews
+      request_parameters:
+        include: reply
+        updated_after: '{{ stream_interval.start_time if stream_interval.start_time != "1970-01-01T00:00:00Z" else "" }}'
+    record_selector:
+      $ref: '#/definitions/record_selector'
+    paginator:
+      $ref: '#/definitions/paginator'
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '1970-01-01T00:00:00Z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    lookback_window: P{{ config.get("lookback_window_days", 1) }}D
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        platform:
+          type:
+          - string
+          - 'null'
+        location:
+          type:
+          - string
+          - 'null'
+        rating:
+          type:
+          - number
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+        pros:
+          type:
+          - string
+          - 'null'
+        cons:
+          type:
+          - string
+          - 'null'
+        language:
+          type:
+          - string
+          - 'null'
+          description: ISO 639-1.
+        reviewer:
+          type:
+          - object
+          - 'null'
+          properties:
+            name:
+              type:
+              - string
+              - 'null'
+            company:
+              type:
+              - string
+              - 'null'
+            avatar_url:
+              type:
+              - string
+              - 'null'
+        url:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Posted on the platform.
+        removed:
+          type:
+          - boolean
+          - 'null'
+        removed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        previous_version:
+          type:
+          - string
+          - 'null'
+          description: The version this edit replaced.
+        root_review:
+          type:
+          - string
+          - 'null'
+          description: The first version of this review.
+        latest_version:
+          type:
+          - boolean
+          - 'null'
+        tags:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        owners:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        owner_suggestions:
+          type:
+          - array
+          - 'null'
+          description: Owners we think the review mentions, waiting to be accepted or rejected (POST /owner-suggestions/{id}/accept or reject).
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              owner:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+              certainty:
+                type:
+                - integer
+                - 'null'
+        topics:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            properties:
+              topic:
+                type: string
+              subtopic:
+                type: string
+              sentiment:
+                type:
+                - string
+                - 'null'
+              sentiment_score:
+                type:
+                - number
+                - 'null'
+              excerpt:
+                type:
+                - string
+                - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Found by Reviewflowz.
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: 'The latest change: found, edited, removed, reinstated, replied to, tagged or given an owner. updated_after= returns the reviews whose updated_at is after its time, so the largest
+            updated_at you''ve stored is where your next sync starts.'
+        reply:
+          type:
+          - object
+          - 'null'
+          properties:
+            id:
+              type:
+              - string
+              - 'null'
+              description: Null for a reply written directly on the platform.
+            review:
+              type: string
+            origin:
+              type: string
+            status:
+              type: string
+            text:
+              type:
+              - string
+              - 'null'
+            author:
+              description: 'Who wrote it (ReplySerializer#author): a team member, or the AI agent, for a reply written in Reviewflowz; the name the platform shows, or null, for one written on the platform.'
+              oneOf:
+              - type: object
+                description: A team member.
+                properties:
+                  type:
+                    type: string
+                  name:
+                    type: string
+              - type: object
+                description: The AI reply agent.
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+                    description: The reply agent's id (GET /v3/reply-agents).
+                  name:
+                    type: string
+              - type: string
+                description: The replier's name as the platform shows it (origin platform).
+              - type: 'null'
+            via:
+              type: string
+              description: Where it was written (reviewflowz, reply_rule, slack...).
+            published_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+              description: When it went live. Null until it does.
+            editable:
+              type: boolean
+            deletable:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+          description: include=reply. The current reply, or null.
+- type: DeclarativeStream
+  name: ratings_history
+  primary_key:
+  - source
+  - country
+  - period
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/requester'
+      path: /ratings/history
+      request_parameters:
+        interval: day
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+        record_expander:
+          type: RecordExpander
+          expand_records_from_field:
+          - points
+          merge_parent: true
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: limit
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 50
+        cursor_value: '{{ response.get("next_cursor") }}'
+        stop_condition: '{{ not response.get("has_more") }}'
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: as_of
+    datetime_format: '%Y-%m-%d'
+    cursor_datetime_formats:
+    - '%Y-%m-%d'
+    cursor_granularity: P1D
+    step: P365D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config.get("ratings_start_date") or (today_utc() - duration("P730D")).strftime("%Y-%m-%d") }}'
+      datetime_format: '%Y-%m-%d'
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ today_utc().strftime("%Y-%m-%d") }}'
+      datetime_format: '%Y-%m-%d'
+    lookback_window: P3D
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: from
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: to
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+        platform:
+          type:
+          - string
+          - 'null'
+        country:
+          type:
+          - string
+          - 'null'
+        local:
+          type:
+          - boolean
+          - 'null'
+        period:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Start of the day, week or month.
+        as_of:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The snapshot used.
+        score:
+          type:
+          - number
+          - 'null'
+        count:
+          type:
+          - integer
+          - 'null'
+        stars:
+          type:
+          - object
+          - 'null'
+          description: Keyed "5" to "1".
+          additionalProperties:
+            type: number
+        stars_share:
+          type:
+          - object
+          - 'null'
+          description: Keyed "5" to "1".
+          additionalProperties:
+            type: number
+        new_ratings:
+          type:
+          - integer
+          - 'null'
+        new_by_star:
+          type:
+          - object
+          - 'null'
+          description: Keyed "5" to "1".
+          additionalProperties:
+            type: number
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/reviewflowz
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Reviewflowz Spec
+    type: object
+    additionalProperties: true
+    required:
+    - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+        description: A Read only key from Settings → API in Reviewflowz (it starts with rfz_live_). It sees what the person who created it sees. See <a href="https://api.reviewflowz.com/v3/docs/guides/authentication">Authentication</a>.
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (days)
+        default: 1
+        minimum: 0
+        maximum: 30
+        order: 1
+        description: Each incremental sync of reviews starts this many days before the last change it saw, so a change committed while the previous sync ran still arrives.
+      ratings_start_date:
+        type: string
+        title: Ratings Start Date
+        format: date
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        pattern_descriptor: YYYY-MM-DD
+        order: 2
+        description: First day of rating history to copy. Defaults to two years ago.
