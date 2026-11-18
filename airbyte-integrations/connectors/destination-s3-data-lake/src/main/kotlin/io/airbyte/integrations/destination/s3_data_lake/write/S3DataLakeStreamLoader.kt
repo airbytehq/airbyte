@@ -148,11 +148,6 @@ class S3DataLakeStreamLoader(
             return
         }
 
-        // Doing it first to make sure that data coming in the current batch is written to
-        // the main branch
-        logger.info {
-            "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
-        }
         // We've modified the table over the sync (i.e. adding new snapshots)
         // so we need to refresh here to get the latest table metadata.
         // In principle, this doesn't matter, but the iceberg SDK throws an error about
@@ -160,7 +155,6 @@ class S3DataLakeStreamLoader(
         table.refresh()
         // Commit all pending schema updates in order (important for two-phase commits)
         computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
-        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
         if (stream.isSingleGenerationTruncate()) {
             logger.info {
@@ -168,14 +162,14 @@ class S3DataLakeStreamLoader(
             }
             val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
             icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
-            //  Doing it again to push the deletes from the staging to main branch
-            logger.info {
-                "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
-                    "Pushing these updates to the '$mainBranchName' branch."
-            }
-            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
         }
 
+        // Staging inherits the old files. Publish only after cleanup so readers never see both
+        // generations, and a failed cleanup leaves the previous generation available for queries.
+        logger.info {
+            "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
+        }
+        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
         removeStagingBranch()
     }
 

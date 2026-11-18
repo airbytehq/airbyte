@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
@@ -44,6 +45,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
+import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -51,18 +53,31 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
+import org.apache.iceberg.DataFiles
+import org.apache.iceberg.FileFormat
 import org.apache.iceberg.ManageSnapshots
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableMetadata
+import org.apache.iceberg.TableOperations
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.avro.Avro
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.catalog.Namespace
+import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.IcebergGenerics
+import org.apache.iceberg.data.avro.DataWriter
+import org.apache.iceberg.inmemory.InMemoryCatalog
 import org.apache.iceberg.io.CloseableIterable
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 internal class S3DataLakeStreamLoaderTest {
     @MockK(relaxed = true)
@@ -97,6 +112,144 @@ internal class S3DataLakeStreamLoaderTest {
     @BeforeEach
     fun setup() {
         every { streamStateStore.put(any(), any()) } returns Unit
+    }
+
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false", "true,true")
+    fun testOverwritePublishesOnlyCompleteGenerations(
+        emptyReplacement: Boolean,
+        interruptCleanup: Boolean,
+    ) {
+        val schema =
+            Schema(
+                Types.NestedField.optional(1, "id", Types.LongType.get()),
+                Types.NestedField.optional(2, "generation", Types.LongType.get()),
+            )
+        // Observe every real catalog commit, including intermediate promotions and file deletes.
+        val catalog =
+            object : InMemoryCatalog() {
+                var beforeCommit: (TableMetadata) -> Unit = {}
+                var afterCommit: () -> Unit = {}
+
+                override fun newTableOps(identifier: TableIdentifier): TableOperations {
+                    val operations = super.newTableOps(identifier)
+                    return object : TableOperations by operations {
+                        override fun commit(base: TableMetadata?, metadata: TableMetadata) {
+                            beforeCommit(metadata)
+                            operations.commit(base, metadata)
+                            afterCommit()
+                        }
+                    }
+                }
+            }
+        catalog.use {
+            catalog.initialize("visibility", mapOf("warehouse" to "memory://visibility"))
+            val identifier = TableIdentifier.of("namespace", "test")
+            catalog.createNamespace(Namespace.of("namespace"))
+            val table = catalog.createTable(identifier, schema)
+            val stagingBranchName = "airbyte_staging_test"
+
+            fun append(branch: String, generation: Long, vararg ids: Long) {
+                val path =
+                    "${table.location()}/${UUID.randomUUID()}-ab-generation-id-$generation-e.avro"
+                val output = table.io().newOutputFile(path)
+                val appender =
+                    Avro.write(output)
+                        .schema(schema)
+                        .createWriterFunc { DataWriter.create<GenericRecord>(it) }
+                        .build<GenericRecord>()
+                appender.use {
+                    ids.forEach { id ->
+                        val record = GenericRecord.create(schema)
+                        record.setField("id", id)
+                        record.setField("generation", generation)
+                        appender.add(record)
+                    }
+                }
+                val file =
+                    DataFiles.builder(table.spec())
+                        .withPath(path)
+                        .withFormat(FileFormat.AVRO)
+                        .withFileSizeInBytes(table.io().newInputFile(path).length)
+                        .withMetrics(appender.metrics())
+                        .build()
+                table.newAppend().toBranch(branch).appendFile(file).commit()
+            }
+
+            fun readMain(): List<Pair<Long, Long>> {
+                val reader = catalog.loadTable(identifier)
+                return IcebergGenerics.read(reader).build().use { records ->
+                    records
+                        .map { it.getField("id") as Long to it.getField("generation") as Long }
+                        .sortedWith(compareBy({ it.first }, { it.second }))
+                }
+            }
+
+            append("main", 1, 1, 2)
+            append("main", 1, 4)
+            val previous = listOf(1L to 1L, 2L to 1L, 4L to 1L)
+            val replacement = if (emptyReplacement) emptyList() else listOf(1L to 2L, 3L to 2L)
+            catalog.afterCommit = {
+                val visible = readMain()
+                assertTrue(
+                    visible == previous || visible == replacement,
+                    "Reader saw an incomplete or mixed generation: $visible",
+                )
+            }
+            val objectSchema =
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "generation" to FieldType(IntegerType, nullable = true),
+                    ),
+                )
+            val stream =
+                makeNormalizedStream(
+                    objectSchema,
+                    mapOf("id" to "id", "generation" to "generation"),
+                    Overwrite,
+                    generationId = 2,
+                    minimumGenerationId = 2,
+                )
+            val icebergUtil: IcebergUtil = mockk {
+                every { createCatalog(any(), any()) } returns catalog
+                every { createTable(any(), any(), any()) } returns table
+                every { toIcebergSchema(any()) } returns schema
+                every { constructGenerationIdSuffix(stream) } returns "ab-generation-id-2-e"
+            }
+            fun loader() = makeStreamLoader(stream, makeIcebergConfiguration(), icebergUtil)
+
+            runBlocking {
+                val firstAttempt = loader()
+                firstAttempt.start()
+                if (!emptyReplacement) {
+                    append(stagingBranchName, 2, 1)
+                    append(stagingBranchName, 2, 3)
+                }
+                assertEquals(previous, readMain())
+
+                if (interruptCleanup) {
+                    var deletes = 0
+                    catalog.beforeCommit = { metadata ->
+                        if (metadata.snapshots().last().operation() == "delete" && ++deletes == 2) {
+                            throw IllegalStateException("cleanup interrupted")
+                        }
+                    }
+                    val failure =
+                        assertFailsWith<IllegalStateException> { firstAttempt.teardown(true) }
+                    assertEquals("cleanup interrupted", failure.message)
+                    assertEquals(previous, readMain())
+                    catalog.beforeCommit = {}
+                    // Reuse the checkpointed branch without replaying the already-written records.
+                    val retry = loader()
+                    retry.start()
+                    retry.teardown(true)
+                } else {
+                    firstAttempt.teardown(true)
+                }
+            }
+            assertEquals(replacement, readMain())
+        }
     }
 
     @Test
