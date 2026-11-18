@@ -57,6 +57,12 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
 
+## 8. The Spec Hides `API Token` and `OAuth2.0 (Legacy)` From the Setup Form
+
+The `api_token` and `oauth2.0` options of `credentials` carry `airbyte_hidden: true` in `manifest.yaml`, so the setup form offers only `OAuth2.0 with Refresh Token`. This applies in every edition; there is no edition check and no code in `components.py` for it.
+
+**Why this matters:** hiding is a form hint. Do not delete the hidden options from `oneOf` and do not add a validator that rejects them: existing sources on a hidden option must keep passing check, discover and read. Keep `OAuth2.0 with Refresh Token` first in `oneOf`, because the form preselects the first option.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
