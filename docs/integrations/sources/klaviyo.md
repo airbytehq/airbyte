@@ -207,7 +207,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0 | 2026-11-17 | [93978](https://github.com/airbytehq/airbyte/pull/93978) | Add an optional `end_date` that bounds the Campaign Values Reports and Flow Series Reports streams, for backfilling history in bounded runs |
+| 4.1.0 | 2026-11-18 | [93978](https://github.com/airbytehq/airbyte/pull/93978) | Add an optional `end_date` that bounds the Campaign Values Reports and Flow Series Reports streams, for backfilling history in bounded runs |
 | 4.0.6 | 2026-11-17 | [93259](https://github.com/airbytehq/airbyte/pull/93259) | Update dependencies |
 | 4.0.5 | 2026-11-10 | [91622](https://github.com/airbytehq/airbyte/pull/91622) | Update dependencies |
 | 4.0.4 | 2026-11-03 | [90629](https://github.com/airbytehq/airbyte/pull/90629) | Update dependencies |
