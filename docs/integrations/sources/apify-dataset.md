@@ -12,7 +12,7 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 - An Apify account
 - Your Apify personal API token
-- The ID of the dataset you want to sync
+- The ID or name of the dataset you want to sync
 
 ## Set up the connector
 
@@ -24,7 +24,11 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 <FieldAnchor field="dataset_id">
 
-**Dataset ID**: In Apify Console, find the dataset ID under [**Storage** > **Datasets**](https://console.apify.com/storage/datasets).
+**Dataset ID or name**: In Apify Console, find the dataset ID under [**Storage** > **Datasets**](https://console.apify.com/storage/datasets).
+
+To use a [named dataset](https://docs.apify.com/storage#named-and-unnamed-storages) instead, enter its name with a `~` prefix, for example `~my-dataset`. The connector looks up the name in the account that owns your API token. For a dataset owned by another user or organization, enter `username~my-dataset`. The owner must [share](https://docs.apify.com/storage#share) the dataset with you first, or the connection check fails. Each Actor run writes to a new dataset with a new ID by default. If your Actor writes to a named dataset, the name stays the same across runs, so you don't need to update the connector after each run.
+
+A named dataset keeps the items of every run that writes to it, and the connector reads the whole dataset on every sync. To sync only the items of the latest run, make your Actor delete the named dataset at the start of each run and create it again.
 
 </FieldAnchor>
 
@@ -96,6 +100,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.69 | 2026-11-18 | [93973](https://github.com/airbytehq/airbyte/pull/93973) | Document dataset names for the `dataset_id` field |
 | 2.2.68 | 2026-11-17 | [93075](https://github.com/airbytehq/airbyte/pull/93075) | Update dependencies |
 | 2.2.67 | 2026-11-10 | [91349](https://github.com/airbytehq/airbyte/pull/91349) | Update dependencies |
 | 2.2.66 | 2026-11-03 | [90475](https://github.com/airbytehq/airbyte/pull/90475) | Update dependencies |
