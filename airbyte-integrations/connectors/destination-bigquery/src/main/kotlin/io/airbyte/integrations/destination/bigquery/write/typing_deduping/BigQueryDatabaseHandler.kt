@@ -79,7 +79,6 @@ class BigQueryDatabaseHandler(
         }
     }
 
-    @Throws(InterruptedException::class)
     override fun execute(sql: Sql) {
         val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION")
         if (transactions.isEmpty()) {
@@ -94,21 +93,34 @@ class BigQueryDatabaseHandler(
          * doesn't do a good job of inferring the query location. Pass it in explicitly.
          */
         var job =
-            bq.create(
-                JobInfo.of(
-                    JobId.newBuilder()
-                        .setProject(jobProjectId)
-                        .setLocation(datasetLocation)
-                        .setJob(queryId.toString())
-                        .build(),
-                    QueryJobConfiguration.of(statement),
-                ),
-            )
+            try {
+                bq.create(
+                    JobInfo.of(
+                        JobId.newBuilder()
+                            .setProject(jobProjectId)
+                            .setLocation(datasetLocation)
+                            .setJob(queryId.toString())
+                            .build(),
+                        QueryJobConfiguration.of(statement),
+                    ),
+                )
+            } catch (e: BigQueryException) {
+                if (e.cause is InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw RuntimeException(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, e)
+                }
+                throw e
+            }
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
         // After a retried insert hits 409 Already Exists, the SDK returns the job without status.
-        while (job.status?.state != JobStatus.State.DONE) {
-            Thread.sleep(1000L)
-            job = job.reload()
+        try {
+            while (job.status?.state != JobStatus.State.DONE) {
+                Thread.sleep(1000L)
+                job = job.reload()
+            }
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw RuntimeException(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, e)
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
