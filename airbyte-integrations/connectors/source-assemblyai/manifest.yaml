@@ -235,17 +235,28 @@ spec:
           at https://www.assemblyai.com/app/api-keys.
         name: api_key
         order: 0
-        title: API Key
+        title: API key
         airbyte_secret: true
       start_date:
         type: string
         order: 1
         title: Start date
+        description: >-
+          Earliest transcript creation date to sync, in UTC (for example,
+          2026-01-01T00:00:00Z). AssemblyAI only lists transcripts from the
+          last 30 days of usage, so transcripts older than 30 days cannot be
+          replicated even if start_date is set earlier.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: "YYYY-MM-DDTHH:MM:SSZ (for example, 2026-01-01T00:00:00Z)"
+        examples:
+          - "2026-01-01T00:00:00Z"
       subtitle_format:
         type: string
-        description: The subtitle format for transcript_subtitle stream
+        description: >-
+          Legacy setting retained for backwards compatibility. The
+          transcript_subtitle stream returns redacted audio metadata rather
+          than subtitle files, so this setting does not affect sync output.
         enum:
           - vtt
           - srt
