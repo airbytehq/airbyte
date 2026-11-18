@@ -37,3 +37,15 @@ data:
     - title: Squarespace API documentation
       url: https://developers.squarespace.com/
       type: api_reference
+    - title: Squarespace Commerce APIs changelog
+      url: https://developers.squarespace.com/commerce-apis/changelog
+      type: api_release_history
+    - title: Squarespace Commerce APIs versioning and deprecation policy
+      url: https://developers.squarespace.com/commerce-apis/versioning
+      type: api_deprecations
+    - title: Squarespace Profiles API overview (maintenance mode)
+      url: https://developers.squarespace.com/commerce-apis/profiles-overview
+      type: api_deprecations
+    - title: Squarespace Commerce APIs authentication and permissions
+      url: https://developers.squarespace.com/commerce-apis/authentication-and-permissions
+      type: authentication_guide
