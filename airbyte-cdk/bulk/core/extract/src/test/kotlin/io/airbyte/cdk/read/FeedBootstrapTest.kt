@@ -8,6 +8,7 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
@@ -379,6 +380,85 @@ class FeedBootstrapTest {
         Assertions.assertFalse(records[1].hasMeta())
         Assertions.assertEquals(0, records[1].meta.changesCount)
         Assertions.assertEquals("bar", records[1].getData(1).string)
+    }
+
+    /** [streamWithoutNamespace] with k, an integer column, synced as [to]. */
+    private fun convertedStream(to: LeafAirbyteSchemaType): Stream =
+        streamWithoutNamespace.copy(
+            fieldConversions =
+                mapOf("k" to FieldConversion.of(LeafAirbyteSchemaType.INTEGER, to)!!),
+        )
+
+    private fun Stream.jsonConsumer(): StreamRecordConsumer =
+        bootstrap(StateManager(initialStreamStates = mapOf(this to null)))
+            .streamRecordConsumers()
+            .getValue(id)
+
+    @Test
+    fun testJsonFieldConversion() {
+        val consumer: StreamRecordConsumer =
+            convertedStream(LeafAirbyteSchemaType.STRING).jsonConsumer()
+        val payload: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec),
+            )
+        consumer.accept(payload, changes = null)
+        Assertions.assertEquals(
+            Jsons.readTree("""{"k":"2","v":"bar"}"""),
+            outputConsumer.records().single().data,
+        )
+        // The caller's payload is left as is.
+        Assertions.assertEquals(2, payload.getValue("k").fieldValue)
+    }
+
+    @Test
+    fun testJsonFieldConversionFailure() {
+        val consumer: StreamRecordConsumer =
+            convertedStream(LeafAirbyteSchemaType.NUMBER).jsonConsumer()
+        consumer.accept(
+            mutableMapOf(
+                "k" to FieldValueEncoder("not a number", TextCodec),
+                "v" to FieldValueEncoder("bar", TextCodec),
+            ),
+            changes = mapOf(v to FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION),
+        )
+        val record = outputConsumer.records().single()
+        Assertions.assertEquals(Jsons.readTree("""{"k":null,"v":"bar"}"""), record.data)
+        Assertions.assertEquals(
+            setOf(
+                "v" to "TRUNCATED",
+                "k" to "NULLED",
+            ),
+            record.meta.changes.map { it.field to it.change.name }.toSet(),
+        )
+    }
+
+    @Test
+    fun testProtobufFieldConversion() {
+        val stream: Stream = convertedStream(LeafAirbyteSchemaType.STRING)
+        val channel = InMemorySocketDataChannel()
+        val bootstrap: FeedBootstrap<*> =
+            FeedBootstrap.create(
+                outputConsumer,
+                metaFieldDecorator,
+                StateManager(initialStreamStates = mapOf(stream to null)),
+                stream,
+                DataChannelFormat.PROTOBUF,
+                DataChannelMedium.SOCKET,
+                bufferSize,
+                clock,
+            )
+        val socketConsumer =
+            SocketProtobufOutputConsumer(channel, clock, bufferSize, mapOf("partition_id" to "p1"))
+        val consumer: StreamRecordConsumer =
+            bootstrap.streamProtoRecordConsumers(socketConsumer).getValue(stream.id)
+        consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
+        socketConsumer.close()
+        val record: AirbyteRecordMessageProtobuf = protobufRecords(channel).single()
+        // Fields are laid out in sorted order: k, then v.
+        Assertions.assertEquals("2", record.getData(0).string)
+        Assertions.assertEquals("bar", record.getData(1).string)
     }
 
     companion object {

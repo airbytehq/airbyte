@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.3.0 — 2026-11-12
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Support the `airbyte_source_type` key in configured catalog column schemas. When the platform keeps a column at a wider type after its type changed in the source, the column's schema carries the source's type in `airbyte_source_type`: the catalog validation checks the source column against that type instead of `type`, and the records emit each value converted to `type` (for example integer to string, date to timestamp, any type to JSON), in JSONL and protobuf output and for CDC reads. A value which can't be converted is nulled and reported in the record's meta changes. A primary key the destination dedupes on, or an incremental cursor, is never converted: the stream fails validation instead.
+
 ### 1.2.4 — 2026-11-10
 
 [#91499](https://github.com/airbytehq/airbyte/pull/91499) — Release resources and exit when the output channel fails during partition cleanup.

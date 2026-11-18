@@ -34,7 +34,21 @@ data class Stream(
     val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<EmittedField>?,
     val configuredCursor: DataOrMetaField?,
+    val fieldConversions: Map<String, FieldConversion> = emptyMap(),
 ) : Feed {
+    val outputSchema: Set<DataOrMetaField> by lazy {
+        if (fieldConversions.isEmpty()) {
+            schema
+        } else {
+            schema
+                .map { field ->
+                    fieldConversions[field.id]?.let { EmittedField(field.id, it.outputType) }
+                        ?: field
+                }
+                .toSet()
+        }
+    }
+
     val name: String
         get() = id.name
 
