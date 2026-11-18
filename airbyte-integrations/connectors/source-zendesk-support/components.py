@@ -1,11 +1,40 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, List, Mapping
+import os
+from typing import Any, List, Mapping, MutableMapping
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import (
+    ConfigTransformation,
+)
+
+
+# Zendesk Marketplace identification headers, see
+# https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/
+#
+# BLOCKER: the Organization-Id and the App-Id below are placeholders. Zendesk assigns the real values in the
+# Marketplace portal, and they do not exist yet. Do not release this connector version until both are replaced;
+# `test_marketplace_ids_are_not_placeholders` fails until then.
+MARKETPLACE_ID_PLACEHOLDER_PREFIX = "PLACEHOLDER_"
+MARKETPLACE_HEADERS: Mapping[str, str] = {
+    "X-Zendesk-Marketplace-Name": "Airbyte",
+    "X-Zendesk-Marketplace-Organization-Id": "PLACEHOLDER_MARKETPLACE_ORGANIZATION_ID",
+    "X-Zendesk-Marketplace-App-Id": "PLACEHOLDER_MARKETPLACE_APP_ID",
+}
+
+# Config key the manifest reads the headers from. It is derived on every run and is not part of the spec.
+MARKETPLACE_HEADERS_CONFIG_KEY = "__marketplace_headers"
+
+
+def is_cloud_edition() -> bool:
+    """
+    The platform sets `AIRBYTE_EDITION` on every connector operation. `DEPLOYMENT_MODE` (what the CDK's
+    `is_cloud_environment()` reads) is not set for check and discover in Cloud, so it is not used here.
+    """
+    return os.environ.get("AIRBYTE_EDITION", "").casefold() == "cloud"
 
 
 class ZendeskSupportExtractorEvents(RecordExtractor):
@@ -81,3 +110,20 @@ class TicketsStateMigration(StateMigration):
         except (KeyError, TypeError, ValueError):
             cursor_value = self.BACKFILL_FLOOR
         return {"generated_timestamp": min(cursor_value, self.BACKFILL_FLOOR)}
+
+
+class MarketplaceHeaders(ConfigTransformation):
+    """
+    Puts the Zendesk Marketplace headers into the config in Airbyte Cloud, where the requesters and the OAuth token
+    refresh in the manifest read them. Interpolation in the manifest cannot see the environment, so the edition has
+    to reach it through the config.
+
+    Outside Cloud the key is removed, so a config that carries it (copied from a Cloud source, for example) sends no
+    Marketplace headers from a self-managed deployment.
+    """
+
+    def transform(self, config: MutableMapping[str, Any]) -> None:
+        if is_cloud_edition():
+            config[MARKETPLACE_HEADERS_CONFIG_KEY] = dict(MARKETPLACE_HEADERS)
+        else:
+            config.pop(MARKETPLACE_HEADERS_CONFIG_KEY, None)

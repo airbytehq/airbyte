@@ -53,6 +53,12 @@ definitions:
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
+    # Zendesk Marketplace headers on the token refresh. The values are set in Airbyte Cloud only (see
+    # MarketplaceHeaders in components.py); a header that evaluates to None is not sent.
+    refresh_request_headers:
+      X-Zendesk-Marketplace-Name: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-Name') }}"
+      X-Zendesk-Marketplace-Organization-Id: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-Organization-Id') }}"
+      X-Zendesk-Marketplace-App-Id: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-App-Id') }}"
     refresh_token_updater:
       refresh_token_name: refresh_token
       access_token_config_path:
@@ -80,6 +86,10 @@ definitions:
       type: HttpRequester
       url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
       http_method: GET
+      # Zendesk Marketplace headers on every data request. The mapping is set in Airbyte Cloud only (see
+      # MarketplaceHeaders in components.py) and is empty elsewhere. A requester that does not `$ref` this one
+      # (the article attachments `file_uploader` below) has to repeat the line.
+      request_headers: "{{ config.get('__marketplace_headers', {}) }}"
       authenticator:
         type: SelectiveAuthenticator
         authenticator_selection_path: ["credentials", "credentials"]
@@ -415,6 +425,8 @@ definitions:
         type: HttpRequester
         url_base: "{{download_target}}"
         http_method: GET
+        # This requester does not inherit from `#/definitions/retriever/requester`, so it repeats the headers.
+        request_headers: "{{ config.get('__marketplace_headers', {}) }}"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path: ["credentials", "credentials"]
@@ -1895,6 +1907,11 @@ spec:
                 value: "2"
                 value_type: integer
             condition: "{{ config.get('num_workers', 4) < 2 }}"
+    transformations:
+      # Not a migration: the result is derived on every run. It sets `__marketplace_headers` in Airbyte Cloud,
+      # which the requesters and the OAuth token refresh read, and removes it elsewhere.
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.MarketplaceHeaders
 
 schemas:
   article_attachments:
