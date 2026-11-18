@@ -185,6 +185,26 @@ class TestItemCollectionKnownLimitations(TestCase):
         assert "'int' object does not support item assignment" in output.errors[-1].trace.error.message
 
 
+def test_dataset_name_is_used_as_the_dataset_path_segment() -> None:
+    """A `~name` value in `dataset_id` is sent in the items request path as typed."""
+    config = {**_CONFIG, "dataset_id": "~my-dataset"}
+    catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest(
+                "https://api.apify.com/v2/datasets/~my-dataset/items",
+                query_params={"limit": str(_PAGE_SIZE)},
+                headers={"Authorization": "Bearer apify_api_token"},
+            ),
+            _response([_item(0)]),
+        )
+        output = read(get_source(config=config), config, catalog)
+
+    assert not output.errors
+    assert [record.record.data for record in output.records] == [{"data": _item(0)}]
+
+
 def test_manifest_does_not_reference_custom_components() -> None:
     manifest_text = Path(_YAML_FILE_PATH).read_text()
     assert "source_declarative_manifest.components" not in manifest_text
