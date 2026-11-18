@@ -34,6 +34,8 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 WEAVIATE_CLOUD_DOMAINS = (".weaviate.cloud", ".weaviate.network")
 INTEGRATION_HEADER = "X-Weaviate-Client-Integration"
+# The Weaviate client refuses objects with these top level properties
+RESERVED_PROPERTY_NAMES = ("id", "vector")
 
 
 def _channel_option_value(value: str) -> Union[int, str]:
@@ -64,6 +66,9 @@ class WeaviateIndexer(Indexer):
         url = urlparse(host if "://" in host else f"https://{host}")
         if url.scheme not in ("http", "https") or not url.hostname:
             raise ValueError(f"Public Endpoint must be a hostname or a URL with an http or https scheme, got {self.config.host!r}")
+        if url.path.strip("/") or url.query or url.fragment:
+            # The Weaviate client only takes a host and a port, so anything after them would be silently dropped
+            raise ValueError(f"Public Endpoint must not contain a path, query or fragment, got {self.config.host!r}")
         return url
 
     def _grpc_endpoint(self, http_host: str, http_secure: bool) -> Tuple[str, int, bool]:
@@ -142,9 +147,13 @@ class WeaviateIndexer(Indexer):
             self.client.close()
             del self.client
 
+    def close(self) -> None:
+        """Release the connections to Weaviate. Safe to call more than once."""
+        self._close_client()
+
     def _add_tenant_to_class_if_missing(self, class_name: str):
         tenants = self.client.collections.use(class_name).tenants
-        if self.config.tenant_id not in tenants.get():
+        if not tenants.exists(self.config.tenant_id):
             tenants.create([Tenant(name=self.config.tenant_id)])
             logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
         else:
@@ -153,9 +162,11 @@ class WeaviateIndexer(Indexer):
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
         if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
-            return "Host must start with https:// and authentication must be enabled on cloud deployment."
+            return "Host must start with https://, gRPC must use TLS and authentication must be enabled on cloud deployment."
         try:
             self._create_client()
+            # Connecting does not send a request when the init checks are skipped, so verify the endpoint and credentials here
+            self.client.collections.list_all(simple=True)
         except Exception as e:
             return format_exception(e)
         finally:
@@ -164,13 +175,23 @@ class WeaviateIndexer(Indexer):
 
     def _uses_safe_config(self) -> bool:
         try:
-            https = self._http_url().scheme == "https"
+            url = self._http_url()
         except ValueError:
             return False
-        return https and not self.config.auth.mode == "no_auth"
+        https = url.scheme == "https"
+        # Objects are written and deleted over gRPC, so it has to be encrypted as well
+        _, _, grpc_secure = self._grpc_endpoint(url.hostname, https)
+        return https and grpc_secure and not self.config.auth.mode == "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
+        try:
+            self._prepare_classes(catalog)
+        except Exception:
+            self._close_client()
+            raise
+
+    def _prepare_classes(self, catalog: ConfiguredAirbyteCatalog) -> None:
         classes = self.client.collections.list_all(simple=False)
         self.has_record_id_metadata = defaultdict(lambda: False)
         use_tenant = bool(self.config.tenant_id.strip())
@@ -233,7 +254,19 @@ class WeaviateIndexer(Indexer):
         if len(delete_ids) > 0:
             class_name = self._stream_to_class_name(stream)
             if self.has_record_id_metadata[class_name]:
-                self._collection(class_name).data.delete_many(where=Filter.by_property(METADATA_RECORD_ID_FIELD).contains_any(delete_ids))
+                collection = self._collection(class_name)
+                where = Filter.by_property(METADATA_RECORD_ID_FIELD).contains_any(delete_ids)
+                # A single call deletes at most the server's QUERY_MAXIMUM_RESULTS objects, so repeat until nothing is left
+                while True:
+                    result = collection.data.delete_many(where=where)
+                    if result.failed > 0:
+                        raise WeaviatePartialBatchError(
+                            f"Failed to delete {result.failed} of {result.matches} outdated objects from class {class_name}"
+                        )
+                    if result.matches <= result.successful:
+                        break
+                    if result.successful == 0:
+                        raise WeaviatePartialBatchError(f"Could not delete {result.matches} outdated objects from class {class_name}")
 
     def index(self, document_chunks, namespace, stream):
         if len(document_chunks) == 0:
@@ -281,9 +314,12 @@ class WeaviateIndexer(Indexer):
         for key, value in metadata.items():
             # Property names in Weaviate have to start with lowercase letter
             normalized_key = self._normalize_property_name(key)
-            # "id" and "additional" are reserved properties in Weaviate, prefix to disambiguate
+            # "id", "vector" and "additional" are reserved properties in Weaviate, prefix to disambiguate
             if key == "id" or key == "_id" or key == "_additional":
                 normalized_key = f"raw_{key}"
+            elif normalized_key in RESERVED_PROPERTY_NAMES:
+                # Names like "Id" or "Vector" only become reserved once normalized
+                normalized_key = f"raw_{normalized_key}"
             if isinstance(value, list) and len(value) == 0:
                 # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
                 continue

@@ -110,11 +110,10 @@ class WeaviateConnectionConfigModel(BaseModel):
         examples=["my-weaviate-host:50051", "grpc.my-weaviate-host.com:443"],
         order=1,
     )
-    grpc_secure: str = Field(
+    grpc_secure: Literal["auto", "enabled", "disabled"] = Field(
         "auto",
         title="gRPC TLS",
         description="Whether the gRPC connection uses TLS. `auto` uses TLS when the public endpoint uses https.",
-        enum=["auto", "enabled", "disabled"],
         order=2,
     )
     timeout_init: float = Field(2, title="Init Timeout", description="Timeout in seconds for the initial connection checks", ge=0, order=3)
@@ -177,11 +176,10 @@ class WeaviateIndexingConfigModel(BaseModel):
     concurrent_requests: int = Field(
         title="Concurrent Batch Requests", description="Number of batches sent to Weaviate in parallel", default=1, ge=1
     )
-    consistency_level: str = Field(
+    consistency_level: Literal["default", "ONE", "QUORUM", "ALL"] = Field(
         title="Consistency Level",
         description="Replication consistency level for writes and deletes. `default` uses the server default (QUORUM).",
         default="default",
-        enum=["default", "ONE", "QUORUM", "ALL"],
     )
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
     tenant_id: str = Field(title="Tenant ID", description="The tenant ID to use for multi tenancy", airbyte_secret=True, default="")

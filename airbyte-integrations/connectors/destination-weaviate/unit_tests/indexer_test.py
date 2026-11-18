@@ -35,6 +35,10 @@ def _schema(property_names, multi_tenancy=False):
     return schema
 
 
+def _delete_result(matches=0, successful=0, failed=0):
+    return Mock(matches=matches, successful=successful, failed=failed)
+
+
 def _chunk(content, embedding, metadata):
     return Chunk(
         page_content=content,
@@ -62,12 +66,56 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_client = MagicMock()
         mock_client.collections.list_all.return_value = classes or {}
         mock_client.batch.failed_objects = []
+        collection = mock_client.collections.use.return_value
+        for target in (collection, collection.with_tenant.return_value, collection.with_consistency_level.return_value):
+            target.data.delete_many.return_value = _delete_result()
         self.indexer.client = mock_client
         return mock_client
 
     @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
     def test_successful_check(self, MockConnect):
         self.assertIsNone(self.indexer.check())
+        MockConnect.return_value.close.assert_called_once()
+        self.assertFalse(hasattr(self.indexer, "client"))
+
+    @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
+    def test_check_verifies_endpoint_and_credentials(self, MockConnect):
+        self.indexer.config.connection.skip_init_checks = True
+        MockConnect.return_value.collections.list_all.side_effect = Exception("401 Unauthorized")
+        self.assertIn("401 Unauthorized", self.indexer.check())
+        MockConnect.return_value.close.assert_called_once()
+
+    @patch("destination_weaviate.indexer.os.environ")
+    def test_failed_check_due_to_cloud_env_and_plaintext_grpc(self, mock_os_environ):
+        mock_os_environ.get.return_value = "cloud"
+        self.indexer.config.connection.grpc_secure = "disabled"
+        self.assertEqual(
+            self.indexer.check(), "Host must start with https://, gRPC must use TLS and authentication must be enabled on cloud deployment."
+        )
+
+    @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
+    def test_failed_check_due_to_path_in_host(self, MockConnect):
+        for host in ["https://gateway.example.com/weaviate", "gateway.example.com/weaviate", "https://test-host?a=b"]:
+            self.indexer.config.host = host
+            self.assertIn("must not contain a path", self.indexer.check())
+        MockConnect.assert_not_called()
+
+    @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
+    def test_accepts_trailing_slash_in_host(self, MockConnect):
+        self.indexer.config.host = "https://test-host:12345/"
+        self.assertIsNone(self.indexer.check())
+
+    def test_rejects_unknown_enum_values(self):
+        with self.assertRaises(ValueError):
+            WeaviateIndexingConfigModel(host="https://test-host", auth=NoAuth(mode="no_auth"), consistency_level="quorum")
+        with self.assertRaises(ValueError):
+            WeaviateIndexingConfigModel(host="https://test-host", auth=NoAuth(mode="no_auth"), connection={"grpc_secure": "true"})
+
+    @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
+    def test_pre_sync_closes_client_on_failure(self, MockConnect):
+        MockConnect.return_value.collections.list_all.side_effect = Exception("boom")
+        with self.assertRaises(Exception):
+            self.indexer.pre_sync(self.mock_catalog)
         MockConnect.return_value.close.assert_called_once()
         self.assertFalse(hasattr(self.indexer, "client"))
 
@@ -80,14 +128,18 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_failed_check_due_to_cloud_env_and_no_https_host(self, mock_os_environ):
         mock_os_environ.get.return_value = "cloud"
         self.indexer.config.host = "http://example.com"
-        self.assertEqual(self.indexer.check(), "Host must start with https:// and authentication must be enabled on cloud deployment.")
+        self.assertEqual(
+            self.indexer.check(), "Host must start with https://, gRPC must use TLS and authentication must be enabled on cloud deployment."
+        )
 
     @patch("destination_weaviate.indexer.os.environ")
     def test_failed_check_due_to_cloud_env_and_no_auth(self, mock_os_environ):
         mock_os_environ.get.return_value = "cloud"
         self.indexer.config.host = "http://example.com"
         self.indexer.config.auth = NoAuth(mode="no_auth")
-        self.assertEqual(self.indexer.check(), "Host must start with https:// and authentication must be enabled on cloud deployment.")
+        self.assertEqual(
+            self.indexer.check(), "Host must start with https://, gRPC must use TLS and authentication must be enabled on cloud deployment."
+        )
 
     @patch("destination_weaviate.indexer.weaviate.connect_to_custom")
     def test_connects_with_explicit_ports(self, MockConnect):
@@ -275,7 +327,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_pre_sync_that_creates_class_with_multi_tenancy_enabled(self, MockConnect):
         mock_client = self._mock_client()
         MockConnect.return_value = mock_client
-        mock_client.collections.use.return_value.tenants.get.return_value = {}
+        mock_client.collections.use.return_value.tenants.exists.return_value = False
         self.config.tenant_id = "test_tenant"
         self.indexer.pre_sync(self.mock_catalog)
         mock_client.collections.create_from_dict.assert_called_with(
@@ -303,7 +355,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_pre_sync_keeps_existing_tenant(self, MockConnect):
         mock_client = self._mock_client({"Test": _schema(["_ab_record_id"], multi_tenancy=True)})
         MockConnect.return_value = mock_client
-        mock_client.collections.use.return_value.tenants.get.return_value = {"test_tenant": Mock()}
+        mock_client.collections.use.return_value.tenants.exists.return_value = True
         self.config.tenant_id = "test_tenant"
         self.indexer.pre_sync(self.mock_catalog)
         mock_client.collections.use.return_value.tenants.create.assert_not_called()
@@ -335,7 +387,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_pre_sync_overwrite_recreates_tenant(self, MockConnect):
         mock_client = self._mock_client({"Test": _schema(["_ab_record_id"], multi_tenancy=True)})
         MockConnect.return_value = mock_client
-        mock_client.collections.use.return_value.tenants.get.return_value = {}
+        mock_client.collections.use.return_value.tenants.exists.return_value = False
         self.config.tenant_id = "test_tenant"
         self.mock_stream.destination_sync_mode = DestinationSyncMode.overwrite
         self.indexer.pre_sync(self.mock_catalog)
@@ -388,6 +440,31 @@ class TestWeaviateIndexer(unittest.TestCase):
         with_consistency_level = mock_client.collections.use.return_value.with_consistency_level
         self.assertEqual(with_consistency_level.call_args.args[0].value, "ALL")
         with_consistency_level.return_value.data.delete_many.assert_called_once()
+
+    def test_delete_repeats_until_all_matches_are_deleted(self):
+        mock_client = self._mock_client()
+        delete_many = mock_client.collections.use.return_value.data.delete_many
+        delete_many.side_effect = [_delete_result(matches=15000, successful=10000), _delete_result(matches=5000, successful=5000)]
+        self.indexer.has_record_id_metadata = defaultdict(None)
+        self.indexer.has_record_id_metadata["Test"] = True
+        self.indexer.delete(["some_id"], None, "test")
+        self.assertEqual(delete_many.call_count, 2)
+
+    def test_delete_raises_on_failed_objects(self):
+        mock_client = self._mock_client()
+        mock_client.collections.use.return_value.data.delete_many.return_value = _delete_result(matches=3, successful=2, failed=1)
+        self.indexer.has_record_id_metadata = defaultdict(None)
+        self.indexer.has_record_id_metadata["Test"] = True
+        with self.assertRaises(WeaviatePartialBatchError):
+            self.indexer.delete(["some_id"], None, "test")
+
+    def test_delete_raises_when_nothing_gets_deleted(self):
+        mock_client = self._mock_client()
+        mock_client.collections.use.return_value.data.delete_many.return_value = _delete_result(matches=3)
+        self.indexer.has_record_id_metadata = defaultdict(None)
+        self.indexer.has_record_id_metadata["Test"] = True
+        with self.assertRaises(WeaviatePartialBatchError):
+            self.indexer.delete(["some_id"], None, "test")
 
     def test_index_not_delete_no_metadata_field(self):
         mock_client = self._mock_client()
@@ -462,6 +539,7 @@ class TestWeaviateIndexer(unittest.TestCase):
                 "complex": {"a": [1, 2, 3]},
                 "UPPERCASE_NAME": "abc",
                 "id": 12,
+                "Vector": "test9",
                 "empty_list": [],
                 "referral Agency Name": "test1",
                 "123StartsWithNumber": "test2",
@@ -482,6 +560,7 @@ class TestWeaviateIndexer(unittest.TestCase):
                 "uPPERCASE_NAME": "abc",
                 "text": "some_content",
                 "raw_id": 12,
+                "raw_vector": "test9",
                 "referral_Agency_Name": "test1",
                 "_123StartsWithNumber": "test2",
                 "specialchars": "test3",
