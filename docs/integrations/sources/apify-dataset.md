@@ -12,7 +12,7 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 - An Apify account
 - Your Apify personal API token
-- The ID of the dataset you want to sync
+- The ID or name of the dataset you want to sync
 
 ## Set up the connector
 
@@ -24,7 +24,9 @@ This connector reads [Apify datasets](https://docs.apify.com/platform/storage/da
 
 <FieldAnchor field="dataset_id">
 
-**Dataset ID**: In Apify Console, find the dataset ID under [**Storage** > **Datasets**](https://console.apify.com/storage/datasets).
+**Dataset ID or name**: In Apify Console, find the dataset ID under [**Storage** > **Datasets**](https://console.apify.com/storage/datasets).
+
+To use a [named dataset](https://docs.apify.com/platform/storage/usage#named-and-unnamed-storages) instead, enter its name with a `~` prefix, for example `~my-dataset`. For a dataset owned by another user, enter `username~my-dataset`. Each Actor run writes to a new dataset with a new ID by default. If your Actor writes to a named dataset, the name stays the same across runs, so you don't need to update the connector after each run.
 
 </FieldAnchor>
 
