@@ -101,6 +101,6 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          start-message: "🐍 **Hydra Failure session starting...** Reproducing the reported playbook failure as a failing eval, then fixing the playbook so the same eval passes. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/hydra_failure.md)"
+          start-message: "🐍 **Hydra Failure session starting...** Reproducing the reported playbook failure as a failing eval, then fixing the playbook so the same eval passes. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/plugins/devin-playbooks/playbooks/hydra_failure.md)"
           tags: |
             ai-oncall
