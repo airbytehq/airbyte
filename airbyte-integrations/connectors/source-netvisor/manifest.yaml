@@ -1,0 +1,1555 @@
+version: 7.32.0
+
+type: DeclarativeSource
+
+description: >-
+  Access your company's Netvisor data for reporting and analysis. Supports Netvisor test and production environments.
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  netvisor_requester:
+    type: HttpRequester
+    $parameters:
+      base_urls:
+        test: https://isvapi.netvisor.fi/
+        production: https://integration.netvisor.fi/
+    http_method: GET
+    authenticator:
+      type: NoAuth
+    url: |-
+      {%- set values = dict(config, **(stream_interval or {})) -%}
+      {%- if 'window_start' in values and 'window_end' in values -%}
+        {%- set values = dict(values,
+          window_start=(str_to_datetime(values['window_start']) - duration('PT1S')).strftime('%Y-%m-%dT%H:%M:%SZ'),
+          window_end=(str_to_datetime(values['window_end']) + duration('PT1S')).strftime('%Y-%m-%dT%H:%M:%SZ')
+        ) -%}
+      {%- endif -%}
+      {%- set resource = parameters['resource_url_template'] -%}
+      {%- if next_page_token and parameters.get('detail_url_template') -%}
+        {%- set resource = parameters['detail_url_template'] -%}
+        {%- set values = dict(values, voucher_ids=next_page_token['next_page_token'] | join(',')) -%}
+      {%- endif -%}
+      {{ parameters['base_urls'][config['environment']] ~ (resource % values) }}
+    request_headers: |-
+      {%- set values = dict(config, **(stream_interval or {})) -%}
+      {%- if 'window_start' in values and 'window_end' in values -%}
+        {%- set values = dict(values,
+          window_start=(str_to_datetime(values['window_start']) - duration('PT1S')).strftime('%Y-%m-%dT%H:%M:%SZ'),
+          window_end=(str_to_datetime(values['window_end']) + duration('PT1S')).strftime('%Y-%m-%dT%H:%M:%SZ')
+        ) -%}
+      {%- endif -%}
+      {%- set resource = parameters['resource_url_template'] -%}
+      {%- if next_page_token and parameters.get('detail_url_template') -%}
+        {%- set resource = parameters['detail_url_template'] -%}
+        {%- set values = dict(values, voucher_ids=next_page_token['next_page_token'] | join(',')) -%}
+      {%- endif -%}
+      {%- set url = parameters['base_urls'][config['environment']] ~ (resource % values) -%}
+      {%- set now = now_utc() -%}
+      {%- set timestamp = now.strftime('%Y-%m-%d %H:%M:%S') -%}
+      {%- set unix = '' ~ (now.timestamp() | int) -%}
+      {%- set transaction = generate_uuid() -%}
+      {%- set sender = 'Airbyte' -%}
+      {%- set language = config.get('language', 'EN') -%}
+      {%- set customer_id = config['customer_id'] | trim -%}
+      {%- set customer_key = config['customer_key'] | trim -%}
+      {%- set partner_id = config['partner_id'] | trim -%}
+      {%- set partner_key = config['partner_key'] | trim -%}
+      {%- set company = config['company_id'] | trim -%}
+      {%- set secret = customer_key ~ '&' ~ partner_key -%}
+      {%- set message = [url, sender, customer_id, timestamp, language,
+          company, transaction, unix, customer_key, partner_key] | join('&') -%}
+      {%- set mac = message | hmac(secret, 'sha256') -%}
+      {{ {
+        'X-Netvisor-Authentication-Sender': sender,
+        'X-Netvisor-Authentication-CustomerId': customer_id,
+        'X-Netvisor-Authentication-PartnerId': partner_id,
+        'X-Netvisor-Authentication-Timestamp': timestamp,
+        'X-Netvisor-Authentication-TimestampUnix': unix,
+        'X-Netvisor-Authentication-TransactionId': transaction,
+        'X-Netvisor-Interface-Language': language,
+        'X-Netvisor-Organisation-ID': company,
+        'X-Netvisor-Authentication-MAC': mac,
+        'X-Netvisor-Authentication-MACHashCalculationAlgorithm': 'HMACSHA256',
+        'X-Netvisor-Authentication-UseHTTPResponseStatusCodes': '1',
+        'Accept': 'application/xml'
+      } }}
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          error_message_contains: <Status>FAILED</Status>
+          error_message: Netvisor rejected the request. Check API permissions, credentials and resource parameters.
+      max_retries: 3
+  normalize_xml:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - __normalized
+        value: |-
+          {%- macro normalize(value) -%}
+            {%- if value is mapping -%}
+              { {%- for key, child in value.items() -%}
+                {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
+                {{- normalize(child) -}},
+              {%- endfor -%} }
+            {%- elif value is sequence and value is not string -%}
+              [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
+            {%- elif value is string -%}{{ value | tojson }}
+            {%- else -%}{{ value }}{%- endif -%}
+          {%- endmacro -%} {{ normalize(record) }}
+  replace_normalized_record:
+    type: DpathFlattenFields
+    field_path:
+      - __normalized
+    replace_record: true
+  record_metadata:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - company_id
+        value: "{{ config['company_id'] | trim }}"
+  streams:
+    account_balances:
+      type: DeclarativeStream
+      name: account_balances
+      $parameters:
+        resource_url_template: accountbalance.nv?%(balance_query)s
+      primary_key:
+        - - company_id
+        - - Netvisorkey
+        - - Date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: balance_query
+              partition_field: balance_query
+              stream:
+                $ref: '#/definitions/streams/accounting_periods'
+                name: account_balance_periods
+                retriever:
+                  $ref: '#/definitions/streams/accounting_periods/retriever'
+                  record_selector:
+                    $ref: '#/definitions/streams/accounting_periods/retriever/record_selector'
+                    transform_before_filtering: true
+                    record_filter:
+                      type: RecordFilter
+                      condition: "{{ record.get('balance_query') }}"
+                transformations:
+                  - type: AddFields
+                    fields:
+                      - type: AddedFieldDefinition
+                        path:
+                          - balance_query
+                        # The first date anchors income and expense balances to the fiscal period.
+                        value: |-
+                          {%- set period = {} -%}
+                          {%- set _ = none -%}
+                          {%- for key in ['BeginDate', 'EndDate'] -%}
+                            {%- set value = record[key] -%}
+                            {%- set value = value['#text'] if value is mapping else value -%}
+                            {%- set _ = period.update({key: str_to_datetime(format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d'))}) -%}
+                          {%- endfor -%}
+                          {%- set today = str_to_datetime(now_utc().strftime('%Y-%m-%d')) -%}
+                          {%- set start = max(str_to_datetime(config['start_date']).replace(day=1), period['BeginDate'].replace(day=1)) -%}
+                          {%- set end = min(today, period['EndDate']) -%}
+                          {%- set dates = [] -%}
+                          {%- for _ in [none] * max(0, (end.year - start.year) * 12 + end.month - start.month + 1) -%}
+                            {%- set month = start.month - 1 + loop.index0 -%}
+                            {%- set month_start = start.replace(year=start.year + month // 12, month=month % 12 + 1) -%}
+                            {%- set month_end = (month_start + duration('P32D')).replace(day=1) - duration('P1D') -%}
+                            {%- set snapshot = min(month_end, today) -%}
+                            {%- if period['BeginDate'] <= snapshot <= end -%}
+                              {%- set _ = dates.append(snapshot.strftime('%Y-%m-%d')) -%}
+                            {%- endif -%}
+                          {%- endfor -%}
+                          {%- set anchor = period['BeginDate'].strftime('%Y-%m-%d') -%}
+                          {%- if dates -%}
+                            {{ 'balancedates=' ~ (([anchor] + dates if anchor not in dates else dates) | join(',')) ~ '&intervaltype=0&usebalancesheetvalues=1' }}
+                          {%- endif -%}
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          transform_before_filtering: true
+          record_filter:
+            type: RecordFilter
+            condition: |-
+              {%- set date = str_to_datetime(record['Date']) -%}
+              {%- set today = now_utc().strftime('%Y-%m-%d') -%}
+              {{ record['Date'] >= config['start_date'][:7] ~ '-01' and
+                 (record['Date'] == today or (date + duration('P1D')).day == 1) }}
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountBalances
+              - Account
+            record_expander:
+              type: RecordExpander
+              expand_records_from_field:
+                - AccountBalance
+              remain_original_record: true
+              on_no_records: emit_parent
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_balances'
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - original_record
+              - AccountBalance
+        - type: DpathFlattenFields
+          field_path:
+            - original_record
+          delete_origin_value: true
+        - type: DpathFlattenFields
+          field_path:
+            - AccountBalance
+          delete_origin_value: true
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          condition: '{{ path[0] in record }}'
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
+
+    accounting_ledger:
+      type: DeclarativeStream
+      name: accounting_ledger
+      $parameters:
+        resource_url_template: accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1
+        detail_url_template: accountingledger.nv?netvisorkeylist=%(voucher_ids)s&showgenerator=1&includetransactionallocations=1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+          - '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: '%Y-%m-%d'
+        end_datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        step: P{{ config.get('window_days', 30) }}D
+        cursor_granularity: PT1S
+        lookback_window: P2D
+        partition_field_start: window_start
+        partition_field_end: window_end
+        cursor_field: _netvisor_sync_window_end
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            # Keep the ID queue local to this window; checkpoint only after every page succeeds.
+            cursor_value: |-
+              {%- set vouchers = (response.get('Root', {}).get('Vouchers') or {}).get('Voucher') or [] -%}
+              {%- set vouchers = [vouchers] if vouchers is mapping else vouchers -%}
+              {%- set returned = vouchers | map(attribute='NetvisorKey') | list -%}
+              {%- set pending = stream_slice.extra_fields.get('pending_voucher_ids', []) -%}
+              {%- if 'pending_voucher_ids' in stream_slice.extra_fields -%}
+                {%- for key in pending[:500] -%}
+                  {%- set _ = {'present': true}.pop('present' if key in returned else 'Missing voucher in ID lookup') -%}
+                {%- endfor -%}
+                {%- for key in returned -%}
+                  {%- set _ = {'expected': true}.pop('expected' if key in pending[:500] else 'Unexpected voucher in ID lookup') -%}
+                {%- endfor -%}
+                {%- set pending = pending[500:] -%}
+              {%- else -%}
+                {%- for voucher in vouchers if voucher.get('@Status') not in ['deleted', 'invalidated'] -%}
+                  {%- set _ = pending.append(voucher['NetvisorKey']) -%}
+                {%- endfor -%}
+              {%- endif -%}
+              {%- set _ = stream_slice.extra_fields.update({'pending_voucher_ids': pending}) -%}
+              {{ pending[:500] }}
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        record_selector:
+          type: RecordSelector
+          record_filter:
+            type: RecordFilter
+            condition: "{{ 'pending_voucher_ids' in stream_slice.extra_fields or record.get('@Status') in ['deleted', 'invalidated'] }}"
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - Vouchers
+              - Voucher
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounting_ledger'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - VoucherLine
+              value: |-
+                {%- set lines = record.get('VoucherLine') or [] -%}
+                [{%- for line in ([lines] if lines is mapping else lines) -%}
+                  {%- set line = dict(line) -%}
+                  {%- set dimensions = line.get('Dimension') -%}
+                  {%- if 'Dimension' in line -%}
+                    {%- set line = dict(line, Dimension=[] if dimensions is none else ([dimensions] if dimensions is mapping or dimensions is string else dimensions)) -%}
+                  {%- endif -%}
+                  {%- if record.get('Status') in ['deleted', 'invalidated'] and 'TransactionAllocations' not in line -%}
+                    {%- set line = dict(line, TransactionAllocations=none) -%}
+                  {%- endif -%}
+                  {%- set allocations = line.get('TransactionAllocations') -%}
+                  {%- set items = allocations.get('TransactionAllocation') if allocations is mapping else none -%}
+                  {%- if allocations is mapping and 'TransactionAllocation' in allocations -%}
+                    {%- set line = dict(line, TransactionAllocations=[] if items is none else ([items] if items is mapping or items is string else items)) -%}
+                  {%- endif -%}
+                  {%- set number = line.get('VatPercent') -%}
+                  {%- if number is not none -%}
+                    {%- set number = number | trim | replace(',', '.') -%}
+                    {%- set line = dict(line, VatPercent={'valid': number | float}.pop('valid' if number | regex_search('^([+-]?[0-9]+(?:[.][0-9]+)?)$') else 'Invalid VatPercent')) -%}
+                  {%- endif -%}
+                  {{- line -}},
+                {%- endfor -%}]
+            - type: AddedFieldDefinition
+              path:
+                - VoucherDate
+              value: |-
+                {%- set date = record.get('VoucherDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - _netvisor_sync_window_end
+              value: "{{ stream_interval['window_end'] }}"
+
+    accounting_locks:
+      type: DeclarativeStream
+      name: accounting_locks
+      $parameters:
+        resource_url_template: accountingperiodlist.nv
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountingPeriodList
+              - PeriodLockInformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounting_locks'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - AccountingPeriodLockDate
+              value: |-
+                {%- set date = record.get('AccountingPeriodLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - VatPeriodLockDate
+              value: |-
+                {%- set date = record.get('VatPeriodLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - PurchaseLockDate
+              value: |-
+                {%- set date = record.get('PurchaseLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+
+    accounting_periods:
+      type: DeclarativeStream
+      name: accounting_periods
+      $parameters:
+        resource_url_template: accountingperiodlist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountingPeriodList
+              - Period
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounting_periods'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - BeginDate
+              value: |-
+                {%- set date = record.get('BeginDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - EndDate
+              value: |-
+                {%- set date = record.get('EndDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      $parameters:
+        resource_url_template: accountlist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountList
+              - Accounts
+              - Account
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounts'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - IsActive
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsActive') | trim) }}"
+            - type: AddedFieldDefinition
+              path:
+                - IsCumulative
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsCumulative') | trim) }}"
+            - type: AddedFieldDefinition
+              path:
+                - IsNaturalNegative
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsNaturalNegative') | trim) }}"
+        - type: AddFields
+          condition: '{{ path[0] in record }}'
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - Sort
+              value: |-
+                {%- set number = record.get('Sort') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid Sort') if number is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - EndSort
+              value: |-
+                {%- set number = record.get('EndSort') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid EndSort') if number is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
+
+    bank_accounts:
+      type: DeclarativeStream
+      name: bank_accounts
+      $parameters:
+        resource_url_template: getbankaccounts.nv
+      primary_key:
+        - - company_id
+        - - IBAN
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - BankAccounts
+              - BankAccount
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/bank_accounts'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+
+    default_accounts:
+      type: DeclarativeStream
+      name: default_accounts
+      $parameters:
+        resource_url_template: accountlist.nv
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountList
+              - CompanyDefaultAccounts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/default_accounts'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+
+    default_voucher_types:
+      type: DeclarativeStream
+      name: default_voucher_types
+      $parameters:
+        resource_url_template: vouchertypelist.nv
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - VoucherTypeList
+              - DefaultVoucherTypes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/default_voucher_types'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - SalesInvoices
+              value: |-
+                {%- set key = record['SalesInvoices']['NetvisorKey'] if record.get('SalesInvoices') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - SalesInvoicePayments
+              value: |-
+                {%- set key = record['SalesInvoicePayments']['NetvisorKey'] if record.get('SalesInvoicePayments') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - PurchaseInvoices
+              value: |-
+                {%- set key = record['PurchaseInvoices']['NetvisorKey'] if record.get('PurchaseInvoices') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - PurchaseInvoicePayments
+              value: |-
+                {%- set key = record['PurchaseInvoicePayments']['NetvisorKey'] if record.get('PurchaseInvoicePayments') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - OtherSystemGeneratedVouchers
+              value: |-
+                {%- set key = record['OtherSystemGeneratedVouchers']['NetvisorKey'] if record.get('OtherSystemGeneratedVouchers') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - BankStatementViewVouchers
+              value: |-
+                {%- set key = record['BankStatementViewVouchers']['NetvisorKey'] if record.get('BankStatementViewVouchers') else none -%}
+                {{ key | tojson if key is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - Accruals
+              value: |-
+                {%- set key = record['Accruals']['NetvisorKey'] if record.get('Accruals') else none -%}
+                {{ key | tojson if key is not none else none }}
+
+    dimensions:
+      type: DeclarativeStream
+      name: dimensions
+      $parameters:
+        resource_url_template: dimensionlist.nv?showhidden=1
+      primary_key:
+        - - company_id
+        - - Netvisorkey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - DimensionNameList
+              - DimensionName
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dimensions'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - IsHidden
+              value: "{{ {'false': false, 'true': true}.pop(record.get('IsHidden') | trim | lower) }}"
+            - type: AddedFieldDefinition
+              path:
+                - LinkType
+              value: |-
+                {%- set number = record.get('LinkType') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid LinkType') }}
+            - type: AddedFieldDefinition
+              path:
+                - ActivityPeriodStart
+              value: |-
+                {%- set date = record.get('ActivityPeriodStart') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - ActivityPeriodEnd
+              value: |-
+                {%- set date = record.get('ActivityPeriodEnd') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - DimensionDetails
+              value: |-
+                {%- set details = record.get('DimensionDetails') or {} -%}
+                {%- set items = details.get('DimensionDetail') or [] -%}
+                {%- set normalized = [] -%}
+                {%- for item in ([items] if items is mapping else items) -%}
+                  {%- set item = dict(item, IsHidden={'false': false, 'true': true}.pop(item.get('IsHidden') | trim | lower)) -%}
+                  {%- for field in ['Level', 'Sort', 'EndSort'] -%}
+                    {%- set number = item.get(field) -%}
+                    {%- set _ = item.update({field: {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid ' ~ field)}) -%}
+                  {%- endfor -%}
+                  {%- set _ = normalized.append(item) -%}
+                {%- endfor -%}
+                {{ normalized }}
+
+    voucher_types:
+      type: DeclarativeStream
+      name: voucher_types
+      $parameters:
+        resource_url_template: vouchertypelist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/netvisor_requester'
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - VoucherTypeList
+              - VoucherTypes
+              - VoucherType
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/voucher_types'
+      transformations:
+        - $ref: '#/definitions/normalize_xml'
+        - $ref: '#/definitions/replace_normalized_record'
+        - $ref: '#/definitions/record_metadata'
+        - type: AddFields
+          condition: '{{ path[0] in record }}'
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
+
+streams:
+  - $ref: '#/definitions/streams/account_balances'
+  - $ref: '#/definitions/streams/accounting_ledger'
+  - $ref: '#/definitions/streams/accounting_locks'
+  - $ref: '#/definitions/streams/accounting_periods'
+  - $ref: '#/definitions/streams/accounts'
+  - $ref: '#/definitions/streams/bank_accounts'
+  - $ref: '#/definitions/streams/default_accounts'
+  - $ref: '#/definitions/streams/default_voucher_types'
+  - $ref: '#/definitions/streams/dimensions'
+  - $ref: '#/definitions/streams/voucher_types'
+
+spec:
+  type: Spec
+  connection_specification:
+    title: Netvisor
+    type: object
+    required:
+      - environment
+      - customer_id
+      - customer_key
+      - partner_id
+      - partner_key
+      - company_id
+      - start_date
+    properties:
+      environment:
+        type: string
+        order: 0
+        title: Environment
+        enum:
+          - test
+          - production
+        description: Netvisor environment to connect to. Use customer and partner credentials issued for the selected environment.
+      customer_id:
+        type: string
+        order: 1
+        title: Customer API ID
+        description: Customer API identifier with read access.
+      customer_key:
+        type: string
+        order: 2
+        title: Customer API key
+        description: Customer API key created in Netvisor together with the customer API ID.
+        airbyte_secret: true
+      partner_id:
+        type: string
+        order: 3
+        title: Partner ID
+        description: Partner ID for the same test or production environment as the customer API identifiers.
+      partner_key:
+        type: string
+        order: 4
+        title: Partner key
+        description: Partner key issued by Netvisor together with the partner ID for the selected environment.
+        airbyte_secret: true
+      company_id:
+        type: string
+        order: 5
+        title: Company business ID
+        description: Business ID of the Netvisor company to read.
+      start_date:
+        type: string
+        order: 6
+        title: Sync history start date
+        format: date
+        description:
+          Start date for ledger changes and monthly account balance snapshots. Ledger history uses entry modification dates;
+          balances include month ends from the configured start month and today's balance for the current month (UTC).
+          Choose a date before the earliest history you need. Reference data is always retrieved in full.
+      window_days:
+        type: integer
+        order: 7
+        title: Days per request
+        default: 30
+        minimum: 1
+        maximum: 31
+        description: Initial number of days of ledger changes to retrieve per request.
+          Ledger details are fetched in batches of up to 500 vouchers within each time window.
+      language:
+        type: string
+        order: 8
+        title: Response language
+        enum:
+          - FI
+          - SE
+          - EN
+        default: EN
+        description:
+          Language for Netvisor's response messages, mainly errors. Choose FI (Finnish), SE (Swedish),
+          or EN (English).
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _netvisor_valid_date_range
+            value: "{{ 'start_date' not in config or config['start_date'] <= now_utc().strftime('%Y-%m-%d') }}"
+    validations:
+      - type: DpathValidator
+        field_path:
+          - _netvisor_valid_date_range
+        validation_strategy:
+          type: ValidateAdheresToSchema
+          base_schema:
+            type: boolean
+            const: true
+            description: The sync history start date must be today or earlier.
+      - type: DpathValidator
+        field_path:
+          - window_days
+        validation_strategy:
+          type: ValidateAdheresToSchema
+          base_schema:
+            type: integer
+            minimum: 1
+            maximum: 31
+
+concurrency_level:
+  type: ConcurrencyLevel
+  # Netvisor requires sequential calls; overlapping requests to the same company can cause errors.
+  default_concurrency: 1
+
+schemas:
+  account_balances:
+    type: object
+    description:
+      One account balance snapshot per calendar month from the history start month, refreshed on every sync.
+      Date is the month end for completed months and the sync date (UTC) for the current month.
+      Interpret totals using IsCumulative in the accounts stream. Monetary values retain Netvisor's exact decimal representation.
+    properties:
+      company_id:
+        type: string
+      Netvisorkey:
+        type: string
+        description: References NetvisorKey in the accounts stream.
+      Number:
+        type:
+          - string
+          - 'null'
+      Name:
+        type:
+          - string
+          - 'null'
+      ForeignName:
+        type: array
+        items:
+          type:
+            - object
+            - string
+          properties:
+            value:
+              type:
+                - string
+                - 'null'
+          additionalProperties: true
+      Date:
+        type: string
+        format: date
+      Debet:
+        type: string
+      Kredit:
+        type: string
+      Balance:
+        type: string
+    additionalProperties: true
+    required:
+      - company_id
+      - Netvisorkey
+      - Date
+      - Debet
+      - Kredit
+      - Balance
+
+  accounting_ledger:
+    type: object
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Status:
+        type:
+          - string
+          - 'null'
+      NetvisorGuid:
+        type:
+          - string
+          - 'null'
+      VoucherGenerator:
+        type:
+          - string
+          - 'null'
+        description: Person or system that created the voucher, as reported by Netvisor.
+      VoucherNumber:
+        type:
+          - string
+          - 'null'
+      VoucherDescription:
+        type:
+          - string
+          - 'null'
+      VoucherNetvisorURI:
+        type:
+          - string
+          - 'null'
+      VoucherDate:
+        type:
+          - string
+          - 'null'
+        format: date
+      VoucherClass:
+        type:
+          - object
+          - 'null'
+        properties:
+          value:
+            type:
+              - string
+              - 'null'
+          netvisorkey:
+            type:
+              - string
+              - 'null'
+        additionalProperties: true
+      LinkedSourceNetvisorKey:
+        type:
+          - object
+          - 'null'
+        properties:
+          value:
+            type:
+              - string
+              - 'null'
+          type:
+            type:
+              - string
+              - 'null'
+        additionalProperties: true
+      VoucherLine:
+        type: array
+        items:
+          type: object
+          properties:
+            NetvisorKey:
+              type:
+                - string
+                - 'null'
+            Status:
+              type:
+                - string
+                - 'null'
+            AccountNumber:
+              type:
+                - string
+                - 'null'
+            LineSum:
+              type:
+                - string
+                - 'null'
+              description: Exact posting amount as provided by Netvisor. Kept as text to preserve monetary precision.
+            Description:
+              type:
+                - string
+                - 'null'
+            VatPercent:
+              type:
+                - number
+                - 'null'
+            VatCode:
+              type:
+                - string
+                - 'null'
+            TransactionFollowUpStatus:
+              type:
+                - string
+                - 'null'
+            AccountDimension:
+              type:
+                - object
+                - 'null'
+              properties:
+                value:
+                  type:
+                    - string
+                    - 'null'
+                type:
+                  type:
+                    - string
+                    - 'null'
+              additionalProperties: true
+            CorporationEventTarget:
+              type:
+                - object
+                - 'null'
+              properties:
+                TargetCompany:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - 'null'
+                    organisationidentifier:
+                      type:
+                        - string
+                        - 'null'
+                  additionalProperties: true
+                EventStatus:
+                  type:
+                    - string
+                    - 'null'
+              additionalProperties: true
+            Dimension:
+              type: array
+              items:
+                type: object
+                properties:
+                  DimensionName:
+                    type:
+                      - string
+                      - 'null'
+                  DimensionItem:
+                    type:
+                      - string
+                      - 'null'
+                  DimensionItemName:
+                    type:
+                      - string
+                      - 'null'
+                  DimensionItemCode:
+                    type:
+                      - string
+                      - 'null'
+                additionalProperties: true
+            TransactionAllocations:
+              type:
+                - array
+                - 'null'
+              items:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - 'null'
+                  VoucherLineNetvisorKey:
+                    type:
+                      - string
+                      - 'null'
+                  VoucherNetvisorKey:
+                    type:
+                      - string
+                      - 'null'
+                additionalProperties: true
+          additionalProperties: true
+      _netvisor_sync_window_end:
+        type: string
+        format: date-time
+        description: End timestamp of the range processed during the sync. Used to track sync progress.
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - VoucherLine
+
+  accounting_locks:
+    type: object
+    description: Company accounting, VAT and purchase lock dates.
+    properties:
+      company_id:
+        type: string
+      AccountingPeriodLockDate:
+        type:
+          - string
+          - 'null'
+        format: date
+      VatPeriodLockDate:
+        type:
+          - string
+          - 'null'
+        format: date
+      PurchaseLockDate:
+        type:
+          - string
+          - 'null'
+        format: date
+    additionalProperties: true
+    required:
+      - company_id
+
+  accounting_periods:
+    type: object
+    description: Company accounting periods with their names and start and end dates.
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Name:
+        type:
+          - string
+          - 'null'
+      BeginDate:
+        type: string
+        format: date
+      EndDate:
+        type: string
+        format: date
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - BeginDate
+      - EndDate
+
+  accounts:
+    type: object
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Number:
+        type:
+          - string
+          - 'null'
+      Name:
+        type:
+          - string
+          - 'null'
+      AccountType:
+        type:
+          - string
+          - 'null'
+      FatherNetvisorKey:
+        type:
+          - string
+          - 'null'
+      IsActive:
+        type: boolean
+      IsCumulative:
+        type: boolean
+      IsNaturalNegative:
+        type: boolean
+      Sort:
+        type:
+          - integer
+          - 'null'
+      EndSort:
+        type:
+          - integer
+          - 'null'
+      ForeignName:
+        type: array
+        items:
+          type: object
+          properties:
+            value:
+              type:
+                - string
+                - 'null'
+            ISO-3166:
+              type:
+                - string
+                - 'null'
+          additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - IsActive
+      - IsCumulative
+      - IsNaturalNegative
+
+  bank_accounts:
+    type: object
+    description: Company bank accounts and their linked bookkeeping accounts.
+    properties:
+      company_id:
+        type: string
+      Name:
+        type:
+          - string
+          - 'null'
+      IBAN:
+        type: string
+      BIC:
+        type:
+          - string
+          - 'null'
+      CurrencyCode:
+        type:
+          - object
+          - 'null'
+        properties:
+          value:
+            type:
+              - string
+              - 'null'
+          Type:
+            type:
+              - string
+              - 'null'
+        additionalProperties: true
+      BookkeepingAccount:
+        type:
+          - object
+          - 'null'
+        properties:
+          Netvisorkey:
+            type:
+              - string
+              - 'null'
+          AccountNumber:
+            type:
+              - string
+              - 'null'
+          AccountName:
+            type:
+              - string
+              - 'null'
+        additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - IBAN
+
+  default_accounts:
+    type: object
+    description: Company default posting accounts. Mapping values refer to Number in the accounts stream.
+    properties:
+      company_id:
+        type: string
+      TradePayables:
+        type:
+          - string
+          - 'null'
+      PurchaseVATReceivable:
+        type:
+          - string
+          - 'null'
+      RoundingOffDifference:
+        type:
+          - string
+          - 'null'
+      VATpayable:
+        type:
+          - string
+          - 'null'
+      TaxAccount:
+        type:
+          - string
+          - 'null'
+      AdvancePayments:
+        type:
+          - string
+          - 'null'
+      SalesReceivables:
+        type:
+          - string
+          - 'null'
+      SalesVATDebt:
+        type:
+          - string
+          - 'null'
+      Inventory:
+        type:
+          - string
+          - 'null'
+      SalesDiscount:
+        type:
+          - string
+          - 'null'
+      SalesExchangeRateDifferences:
+        type:
+          - string
+          - 'null'
+      Collection:
+        type:
+          - string
+          - 'null'
+      PurchasesDiscounts:
+        type:
+          - string
+          - 'null'
+      PurchasesExchangeRateDifferences:
+        type:
+          - string
+          - 'null'
+      PurchaseInvoiceAccrual:
+        type:
+          - string
+          - 'null'
+      SalesInvoiceAccrual:
+        type:
+          - string
+          - 'null'
+      PurchaseDomesticDefault:
+        type:
+          - string
+          - 'null'
+      PurchaseEUDefault:
+        type:
+          - string
+          - 'null'
+      PurchaseOutsideEUDefault:
+        type:
+          - string
+          - 'null'
+      SalesDomesticDefault:
+        type:
+          - string
+          - 'null'
+      SalesEUDefault:
+        type:
+          - string
+          - 'null'
+      SalesOutsideEUDefault:
+        type:
+          - string
+          - 'null'
+    additionalProperties: true
+    required:
+      - company_id
+
+  default_voucher_types:
+    type: object
+    description: Default voucher type keys for each accounting role. Values refer to NetvisorKey in the voucher_types stream.
+    properties:
+      company_id:
+        type: string
+      SalesInvoices:
+        type:
+          - string
+          - 'null'
+      SalesInvoicePayments:
+        type:
+          - string
+          - 'null'
+      PurchaseInvoices:
+        type:
+          - string
+          - 'null'
+      PurchaseInvoicePayments:
+        type:
+          - string
+          - 'null'
+      OtherSystemGeneratedVouchers:
+        type:
+          - string
+          - 'null'
+      BankStatementViewVouchers:
+        type:
+          - string
+          - 'null'
+      Accruals:
+        type:
+          - string
+          - 'null'
+    additionalProperties: true
+    required:
+      - company_id
+
+  dimensions:
+    type: object
+    description: Company cost object headers and their nested items, including hidden items and hierarchy.
+    properties:
+      company_id:
+        type: string
+      Netvisorkey:
+        type: string
+      Name:
+        type: string
+      IsHidden:
+        type: boolean
+      LinkType:
+        type: integer
+      ActivityPeriodStart:
+        type:
+          - string
+          - 'null'
+        format: date
+      ActivityPeriodEnd:
+        type:
+          - string
+          - 'null'
+        format: date
+      DimensionDetails:
+        type: array
+        items:
+          type: object
+          properties:
+            Netvisorkey:
+              type: string
+            Name:
+              type: string
+            Code:
+              type:
+                - string
+                - 'null'
+            Label:
+              type:
+                - string
+                - 'null'
+            IsHidden:
+              type: boolean
+            Level:
+              type: integer
+            Sort:
+              type: integer
+            EndSort:
+              type: integer
+            FatherID:
+              type: string
+          additionalProperties: true
+          required:
+            - Netvisorkey
+            - Name
+            - IsHidden
+            - Level
+            - Sort
+            - EndSort
+            - FatherID
+    additionalProperties: true
+    required:
+      - company_id
+      - Netvisorkey
+      - Name
+      - IsHidden
+      - LinkType
+      - DimensionDetails
+
+  voucher_types:
+    type: object
+    description: Voucher types used to classify accounting entries. NetvisorKey identifies VoucherClass in the accounting ledger.
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Abbreviation:
+        type:
+          - string
+          - 'null'
+      Name:
+        type:
+          - string
+          - 'null'
+      ForeignName:
+        type: array
+        items:
+          type: object
+          properties:
+            value:
+              type:
+                - string
+                - 'null'
+            ISO-639-1:
+              type:
+                - string
+                - 'null'
+          additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
