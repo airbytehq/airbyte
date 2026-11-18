@@ -9,7 +9,6 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
-from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -25,7 +24,7 @@ from destination_weaviate.no_embedder import NoEmbedder
 
 
 class DestinationWeaviate(Destination):
-    indexer: Indexer
+    indexer: WeaviateIndexer
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
@@ -48,7 +47,11 @@ class DestinationWeaviate(Destination):
             batch_size=config_model.indexing.batch_size,
             omit_raw_text=config_model.omit_raw_text,
         )
-        yield from writer.write(configured_catalog, input_messages)
+        try:
+            yield from writer.write(configured_catalog, input_messages)
+        finally:
+            # Writer only calls post_sync when the sync succeeds
+            self.indexer.close()
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         parsed_config = ConfigModel.parse_obj(config)
