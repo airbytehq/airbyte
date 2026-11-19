@@ -1,0 +1,215 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  Syncs your UptimeRobot monitors, including their recent response times and
+  up/down event logs, using the UptimeRobot API v2.
+
+check:
+  type: CheckStream
+  stream_names:
+    - monitors
+
+definitions:
+  streams:
+    monitors:
+      type: DeclarativeStream
+      name: monitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getMonitors
+          http_method: POST
+          request_body:
+            type: RequestBodyUrlEncodedForm
+            value:
+              api_key: "{{ config['api_key'] }}"
+              format: json
+              logs: "1"
+              response_times: "1"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - monitors
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+          page_size_option:
+            type: RequestOption
+            inject_into: body_data
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: body_data
+            field_name: offset
+      transformations:
+        # Monitor-level HTTP basic-auth credentials: never sync them to a destination.
+        - type: RemoveFields
+          field_pointers:
+            - - http_username
+            - - http_password
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/monitors"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.uptimerobot.com/v2
+    request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        # UptimeRobot returns HTTP 200 with {"stat": "fail"} for errors
+        # such as an invalid API key, so treat that body as a failure.
+        - type: HttpResponseFilter
+          action: FAIL
+          predicate: "{{ response.get('stat') == 'fail' }}"
+          # Only the message: the full error object echoes the API key back in "passed_value".
+          error_message: "UptimeRobot API error: {{ response.get('error', {}).get('message') }}"
+
+streams:
+  - $ref: "#/definitions/streams/monitors"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        description: >-
+          Your UptimeRobot Main API Key or Read-Only API Key. Find it in the
+          UptimeRobot dashboard under Integrations & API -> API.
+        airbyte_secret: true
+    additionalProperties: true
+
+schemas:
+  monitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      friendly_name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - number
+          - "null"
+      sub_type:
+        type:
+          - string
+          - "null"
+      keyword_type:
+        type:
+          - number
+          - "null"
+      keyword_case_type:
+        type:
+          - number
+          - "null"
+      keyword_value:
+        type:
+          - string
+          - "null"
+      port:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - number
+          - "null"
+      timeout:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      create_datetime:
+        type:
+          - number
+          - "null"
+      average_response_time:
+        type:
+          - string
+          - "null"
+      response_times:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            datetime:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      logs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            type:
+              type:
+                - number
+                - "null"
+            datetime:
+              type:
+                - number
+                - "null"
+            duration:
+              type:
+                - number
+                - "null"
+            reason:
+              type:
+                - object
+                - "null"
+              properties:
+                code:
+                  type:
+                    - string
+                    - "null"
+                detail:
+                  type:
+                    - string
+                    - "null"
