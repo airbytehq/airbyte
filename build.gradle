@@ -195,7 +195,7 @@ allprojects {
     dependencies {
         // JUnit dependencies.
         def vAssertJ = "3.25.3"
-        def vJUnit = "5.14.0"
+        def vJUnit = "6.1.3"
         def vJUnitJupiter = "5.24.0"
 
         testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
