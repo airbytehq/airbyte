@@ -49,6 +49,12 @@ data:
     - title: Microsoft Graph authentication
       url: https://learn.microsoft.com/en-us/graph/auth/
       type: authentication_guide
+    - title: Microsoft Graph changelog
+      url: https://developer.microsoft.com/en-us/graph/changelog
+      type: api_release_history
+    - title: Microsoft Graph versioning, support, and breaking change policies
+      url: https://learn.microsoft.com/en-us/graph/versioning-and-support
+      type: api_deprecations
     - title: Microsoft 365 Status
-      url: https://status.office365.com/
+      url: https://status.cloud.microsoft/
       type: status_page
