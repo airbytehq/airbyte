@@ -4,10 +4,14 @@
 
 package io.airbyte.integrations.destination.gcs_v2
 
+import com.google.cloud.storage.StorageException
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
+import io.airbyte.cdk.load.command.gcs.GcsWorkloadIdentityFederationConfiguration
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.gcs.GcsBlob
+import io.airbyte.cdk.load.file.gcs.GcsClientFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,8 +23,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
 /**
- * Connection checker: uploads a small probe file via [GcsV2ClientFactory], verifies it can be
- * listed, then deletes it. Builds the client from the config directly (not via DI) per the
+ * Connection checker: uploads a small probe file via [GcsClientFactory], verifies it can be listed,
+ * then deletes it. Builds the client from the config directly (not via DI) per the
  * [DestinationChecker] contract.
  */
 @Singleton
@@ -31,7 +35,7 @@ class GcsV2Checker<T : OutputStream>(
 
     override fun check(config: GcsV2Configuration<T>) {
         runBlocking {
-            val gcsClient = GcsV2ClientFactory.make(config.gcsClientConfiguration)
+            val gcsClient = GcsClientFactory.make(config.gcsClientConfiguration)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
             val path = pathFactory.getFinalDirectory(mockStream())
             val key = Paths.get(path, "_EXAMPLE").toString()
@@ -62,16 +66,25 @@ class GcsV2Checker<T : OutputStream>(
         }
     }
 
-    /**
-     * GCS is accessed through its S3-compatible XML API, so SDK errors arrive in S3 terminology
-     * (`AccessDenied`, `SignatureDoesNotMatch`, `NoSuchBucket`). Translate the common ones into GCS
-     * / HMAC-key guidance.
-     */
     private fun describeFailure(config: GcsV2Configuration<T>, e: Exception): String {
         val bucket = config.gcsClientConfiguration.gcsBucketName
-        val cause = e.toString()
         val hint =
-            when {
+            when (config.gcsClientConfiguration.credential) {
+                is GcsHmacKeyConfiguration -> hmacHint(bucket, e)
+                is GcsWorkloadIdentityFederationConfiguration -> wifHint(bucket, e)
+            }
+        return "Could not write a test object to GCS bucket '$bucket'. $hint (underlying error: " +
+            "${e.message ?: e::class.simpleName})"
+    }
+
+    internal companion object {
+        /**
+         * HMAC keys go through GCS's S3-compatible XML API, so SDK errors arrive in S3 terminology
+         * (`AccessDenied`, `SignatureDoesNotMatch`, `NoSuchBucket`).
+         */
+        fun hmacHint(bucket: String, e: Exception): String {
+            val cause = e.toString()
+            return when {
                 "SignatureDoesNotMatch" in cause || "InvalidAccessKeyId" in cause ->
                     "The HMAC key access ID or secret is wrong. Create a new HMAC key for the " +
                         "service account in Cloud Storage > Settings > Interoperability and " +
@@ -86,7 +99,34 @@ class GcsV2Checker<T : OutputStream>(
                         "Storage Object Admin role on the bucket)."
                 else -> "Verify the bucket name, region and HMAC key."
             }
-        return "Could not write a test object to GCS bucket '$bucket'. $hint (underlying error: " +
-            "${e.message ?: e::class.simpleName})"
+        }
+
+        /**
+         * Workload Identity Federation goes through the GCS JSON API, so errors are
+         * [StorageException]s carrying the HTTP status. A failed token exchange surfaces as an
+         * `IOException` from the auth library, which the storage client wraps in a
+         * [StorageException] without an HTTP status.
+         */
+        fun wifHint(bucket: String, e: Exception): String {
+            val storageError =
+                generateSequence<Throwable>(e) { it.cause }
+                    .filterIsInstance<StorageException>()
+                    .firstOrNull()
+            return when (storageError?.code) {
+                404 -> "Bucket '$bucket' does not exist or the name is misspelled."
+                403 ->
+                    "The federated identity lacks permissions on bucket '$bucket'. Grant the " +
+                        "federated principal (or the service account it impersonates) the " +
+                        "Storage Object User role (roles/storage.objectUser) on the bucket."
+                401 ->
+                    "Google rejected the federated credentials. Check that the credential " +
+                        "configuration's audience matches the Workload Identity Pool provider."
+                else ->
+                    "Could not obtain a federated token. Check that the credential " +
+                        "configuration's credential_source is readable from the connector, and " +
+                        "that its audience matches the Workload Identity Pool provider and the " +
+                        "provider accepts the subject token."
+            }
+        }
     }
 }

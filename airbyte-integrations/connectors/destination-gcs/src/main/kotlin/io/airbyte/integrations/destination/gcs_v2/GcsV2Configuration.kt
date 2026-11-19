@@ -63,8 +63,10 @@ class GcsV2ConfigurationFactory(private val destinationCatalog: DestinationCatal
         return GcsV2Configuration(
             gcsClientConfiguration =
                 GcsClientConfiguration(
-                    commonSpecification = pojo,
-                    regionSpecification = pojo.gcsBucketRegion ?: GcsRegion.US,
+                    gcsBucketName = pojo.gcsBucketName,
+                    path = pojo.path,
+                    credential = pojo.credential.toGcsAuthConfiguration(),
+                    region = (pojo.gcsBucketRegion ?: GcsRegion.US).region,
                 ),
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),

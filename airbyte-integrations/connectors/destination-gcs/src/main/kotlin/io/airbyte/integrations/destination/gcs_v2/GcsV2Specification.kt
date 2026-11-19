@@ -9,9 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.gcs.GcsAuthSpecification
-import io.airbyte.cdk.load.command.gcs.GcsCommonSpecification
-import io.airbyte.cdk.load.command.gcs.GcsHmacKeySpecification
 import io.airbyte.cdk.load.command.gcs.GcsRegion
 import io.airbyte.cdk.load.command.gcs.GcsRegionSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedAvroFormatSpecification
@@ -28,9 +25,14 @@ import jakarta.inject.Singleton
 /**
  * GCS destination connector specification.
  *
- * Composes [GcsCommonSpecification] (bucket, path, HMAC credential), [GcsRegionSpecification], and
+ * Declares bucket, path and [credential], and composes [GcsRegionSpecification] and
  * [DeprecatedObjectStorageFormatSpecificationProvider] (Avro/CSV/JSONL/Parquet). Additionally
  * declares `gcs_path_format` and `file_name_pattern` for customizable output paths.
+ *
+ * Bucket, path and credential mirror the CDK's `GcsCommonSpecification` (same JSON names, titles
+ * and descriptions, so HMAC configs are unchanged), but [credential] is typed as the connector's
+ * [GcsV2AuthSpecification] so it can also offer Workload Identity Federation. The CDK's
+ * `GcsAuthSpecification` is sealed and HMAC-only.
  *
  * Both path fields are nullable for backward compatibility with v0.4.x configs; when null or blank
  * (for example a cleared optional field in the UI), [toObjectStoragePathConfiguration] falls back
@@ -41,18 +43,30 @@ import jakarta.inject.Singleton
 @JsonSchemaInject()
 class GcsV2Specification :
     ConfigurationSpecification(),
-    GcsCommonSpecification,
     GcsRegionSpecification,
     DeprecatedObjectStorageFormatSpecificationProvider {
 
+    @get:JsonSchemaTitle("Credential")
+    @get:JsonPropertyDescription(
+        """How to authenticate with Cloud Storage. An <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">HMAC key</a> is a long-lived credential for a service account or user account. <a href="https://cloud.google.com/iam/docs/workload-identity-federation">Workload Identity Federation</a> exchanges a token from an external identity provider for short-lived Google credentials, so no Google key is stored in Airbyte.""",
+    )
+    @get:JsonProperty("credential")
     @get:JsonSchemaInject(json = """{"order":0}""")
-    override val credential: GcsAuthSpecification = GcsHmacKeySpecification("", "")
+    val credential: GcsV2AuthSpecification = GcsV2HmacKeySpecification("", "")
 
+    @get:JsonSchemaTitle("GCS Bucket Name")
+    @get:JsonPropertyDescription(
+        """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>.""",
+    )
+    @get:JsonProperty("gcs_bucket_name")
     @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"],"order":1}""")
-    override val gcsBucketName: String = ""
+    val gcsBucketName: String = ""
 
+    @get:JsonSchemaTitle("GCS Bucket Path")
+    @get:JsonPropertyDescription("Directory under the GCS bucket where data will be written.")
+    @get:JsonProperty("gcs_bucket_path")
     @get:JsonSchemaInject(json = """{"examples":["data_sync/test"],"order":2}""")
-    override val path: String = ""
+    val path: String = ""
 
     @get:JsonSchemaInject(json = """{"examples":["us"],"order":3,"default":"us"}""")
     override val gcsBucketRegion: GcsRegion? = GcsRegion.US
