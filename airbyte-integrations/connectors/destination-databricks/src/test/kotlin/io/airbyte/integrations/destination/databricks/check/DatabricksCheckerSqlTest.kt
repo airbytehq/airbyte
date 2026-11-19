@@ -17,10 +17,19 @@ import java.sql.ResultSet
 import java.sql.Statement
 import javax.sql.DataSource
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class DatabricksCheckerSqlTest {
+
+    @Test
+    fun `check table names differ when built in the same second`() {
+        assertNotEquals(
+            DatabricksChecker.buildCheckTableName(),
+            DatabricksChecker.buildCheckTableName(),
+        )
+    }
 
     @Test
     fun `check and cleanup drop the staging volume created by check`() {
