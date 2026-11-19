@@ -704,7 +704,7 @@ class WorkflowRunAttemptsRetriever(SimpleRetriever):
 
 @dataclass
 class ConfigNormalization(ConfigTransformation):
-    """Default/normalize `api_url` and convert the legacy `repository`/`branch` strings to collections."""
+    """Default/normalize `api_url`, convert the legacy `repository`/`branch` strings to lists and pick the authenticator."""
 
     def __init__(self, **kwargs: Any) -> None:
         pass
@@ -719,10 +719,30 @@ class ConfigNormalization(ConfigTransformation):
             config["api_url"] = "https://api.github.com"
         if not config["api_url"].endswith("/"):
             config["api_url"] = config["api_url"] + "/"
+        # Sorted lists, not sets: the token refresh emits this config as a CONNECTOR_CONFIG message,
+        # and a set is not JSON-serializable.
         if not config.get("repositories") and config.get("repository"):
-            config["repositories"] = set(filter(None, config["repository"].split(" ")))
+            config["repositories"] = sorted(set(filter(None, config["repository"].split(" "))))
         if not config.get("branches") and config.get("branch"):
-            config["branches"] = set(filter(None, config["branch"].split(" ")))
+            config["branches"] = sorted(set(filter(None, config["branch"].split(" "))))
+        # Selects the manifest's authenticator. Recomputed on every run, so a saved value is never trusted.
+        config["oauth_token_refresh"] = "enabled" if self._can_refresh_oauth_token(config) else "disabled"
+
+    @staticmethod
+    def _can_refresh_oauth_token(config: Mapping[str, Any]) -> bool:
+        """Whether the config holds everything a token refresh needs and nothing that outranks it.
+
+        A root-level `access_token` (legacy) wins over `credentials`, so it keeps the token
+        authenticator. The refresh endpoint is on github.com, so any other `api_url` host keeps it
+        too: the client secret and refresh token are never sent to a host the config does not name.
+        """
+        credentials = config.get("credentials")
+        return (
+            isinstance(credentials, Mapping)
+            and "access_token" not in config
+            and all(credentials.get(key) for key in ("refresh_token", "client_id", "client_secret"))
+            and urlparse(config["api_url"]).hostname == "api.github.com"
+        )
 
 
 class MigrateStringToArray(ConfigTransformation):
