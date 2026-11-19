@@ -148,6 +148,13 @@ Because parts are combined with `compose`, which accepts at most 32 source objec
 uploaded with Workload Identity Federation can have at most 32 parts. With the default object and
 part sizes, objects have about 10 parts.
 
+Until an object is complete, its parts are visible in the bucket as separate objects named
+`<object name>-<timestamp>-<random>-part-<n>`. They're deleted once the parts are combined. If a
+sync fails part-way, parts can be left behind. Readers that list the stream's prefix during a sync
+should ignore objects whose names contain `-part-`. To clean up leftover parts automatically, add an
+[Object Lifecycle Management](https://cloud.google.com/storage/docs/lifecycle) rule, for example
+one that deletes objects matching the suffix pattern after a day.
+
 ### Encryption
 
 Both Google-managed and customer-managed encryption keys (CMEK) are supported. The connector doesn't
@@ -468,7 +475,7 @@ and upload parallelism from the negotiated CPU limits automatically.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.0   | 2026-11-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | Add Workload Identity Federation authentication (`external_account` credential configuration), using the GCS JSON API. Upgrade to Bulk CDK 1.1.12. |
+| 1.1.0   | 2026-11-19 | [93989](https://github.com/airbytehq/airbyte/pull/93989) | Add Workload Identity Federation authentication (`external_account` credential configuration), using the GCS JSON API. Upgrade to Bulk CDK 1.1.12. |
 | 1.0.2   | 2026-10-30 | [90272](https://github.com/airbytehq/airbyte/pull/90272) | Promote to certified (GA). Treat blank `gcs_path_format` / `file_name_pattern` as the default patterns; declare `allowedHosts` in metadata; report connection-check failures as configuration errors with GCS/HMAC-specific guidance ([90279](https://github.com/airbytehq/airbyte/pull/90279)). |
 | 1.0.1   | 2026-10-22 | [89650](https://github.com/airbytehq/airbyte/pull/89650) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1. |
 | 1.0.0   | 2026-07-15 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK for significantly higher throughput on large syncs through parallel, back-pressured multipart uploads and SOCKET/PROTOBUF data transfer with compatible sources. Streams larger than approximately 200 MB may produce multiple objects, CSV and JSONL output is GZIP-compressed by default, and Airbyte metadata field names change. See [Upgrading to 1.0.0](gcs-migrations.md#upgrading-to-100).                                                                                                                           |
