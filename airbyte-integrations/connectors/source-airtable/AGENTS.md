@@ -13,3 +13,11 @@ Airtable's OAuth implementation issues single-use refresh tokens. Every time an 
 In addition to the single-use refresh tokens above, Airtable access tokens expire **60 minutes after they are issued** ([Airtable token expiry docs](https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens)). This means tokens are refreshed frequently, and the single-use rotation in section 1 happens on every refresh.
 
 **Why this matters:** During long syncs or extended local testing sessions, expect a token refresh (and refresh-token rotation) roughly every hour. This makes the persistence concern in section 1 more likely to surface than for connectors whose access tokens live for days.
+
+## 3. Incremental Sync via filterByFormula
+
+Dynamic table streams use the synthetic `_airtable_extracted_at` cursor, stamped with the end time of the sync window because Airtable records do not include a last-modified timestamp. Incremental requests compare `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. The filter is omitted for full refreshes and the first incremental sync. This approach does not capture changes only to computed fields (formula, rollup, lookup, or count) or deleted records.
+
+## 4. Static `base_collaborators` Stream
+
+`base_collaborators` is the only static stream; every other stream is generated per table by `dynamic_streams`. It reads `GET meta/bases/{baseId}?include[]=collaborators` for each base from the `bases` parent and emits `individualCollaborators.baseCollaborators`, with `base_id` and `base_name` added from the partition so the primary key `[base_id, userId]` is unique across bases. Airtable leaves the collaborator keys out unless `include[]=collaborators` is sent, so dropping the parameter makes the stream read zero records without an error. Workspace and group collaborators are not emitted; add them as separate streams, because changing this stream's key or record shape is a breaking change.

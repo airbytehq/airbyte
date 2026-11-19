@@ -30,4 +30,4 @@ For Airbyte Agents feature requests, use the [Support Center](https://support.ai
 
 ## Report a security issue
 
-**Do not** create a public GitHub issue. If you've found a security issue in any Airbyte product, email us directly at [security@airbyte.io](mailto:security@airbyte.io).
+**Do not** create a public GitHub issue. If you've found a security issue in any Airbyte product, follow the instructions on [Report a security vulnerability](https://airbyte.com/security/vdp).

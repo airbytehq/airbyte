@@ -50,7 +50,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         ObjectLoaderPartLoader.State<T>,
         ObjectKey,
         ObjectLoaderPartFormatter.FormattedPart,
-        ObjectLoaderPartLoader.PartResult<T>
+        ObjectLoaderPartLoader.PartResult<T>,
     > {
     private val log = KotlinLogging.logger {}
 
@@ -66,6 +66,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     sealed interface PartResult<T : RemoteObject<*>> : WithBatchState {
         val objectKey: String
     }
+
     data class LoadedPart<T : RemoteObject<*>>(
         val upload: Deferred<StreamingUpload<T>>,
         override val objectKey: String,
@@ -76,6 +77,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     ) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED
     }
+
     data class NoPart<T : RemoteObject<*>>(override val objectKey: String) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED
     }
@@ -88,16 +90,17 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
                 CoroutineScope(Dispatchers.IO).async {
                     client.startStreamingUpload(
                         key.objectKey,
-                        metadata = destinationConfig.metadataFor(stream)
+                        metadata = destinationConfig.metadataFor(stream),
                     )
                 },
             )
         }
     }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun acceptWithExperimentalCoroutinesApi(
         input: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<T>
+        state: State<T>,
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
         log.debug { "Uploading part $input" }
         if (!input.part.isFinal && input.part.bytes == null) {
@@ -125,7 +128,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
 
     override suspend fun accept(
         input: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<T>
+        state: State<T>,
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
         log.info { "Uploading part $input" }
         if (!input.part.isFinal && input.part.bytes == null) {

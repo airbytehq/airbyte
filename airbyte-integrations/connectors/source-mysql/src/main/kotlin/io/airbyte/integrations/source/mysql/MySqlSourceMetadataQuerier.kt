@@ -3,7 +3,9 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -38,12 +40,12 @@ class MySqlSourceMetadataQuerier(
                     Triple(
                         "binlog_format",
                         "show variables where Variable_name = 'binlog_format'",
-                        "ROW"
+                        "ROW",
                     ),
                     Triple(
                         "binlog_row_image",
                         "show variables where Variable_name = 'binlog_row_image'",
-                        "FULL"
+                        "FULL",
                     ),
                 )
 
@@ -65,7 +67,7 @@ class MySqlSourceMetadataQuerier(
                     }
                 } catch (ex: SQLException) {
                     throw ConfigErrorException(
-                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode.",
                     )
                 }
             }
@@ -76,7 +78,7 @@ class MySqlSourceMetadataQuerier(
         variable: String,
         sql: String,
         expectedValue: String,
-        conn: Connection
+        conn: Connection,
     ) {
         try {
             conn.createStatement().use { stmt: Statement ->
@@ -168,8 +170,7 @@ class MySqlSourceMetadataQuerier(
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
                         pkRows
                             .sortedBy { it.position }
@@ -224,9 +225,12 @@ class MySqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val featureFlags: Set<FeatureFlag>,
     ) : MetadataQuerier.Factory<MySqlSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: MySqlSourceConfiguration): MetadataQuerier {
+            // Before the connection opens: with an unreachable host the network error would win.
+            CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(

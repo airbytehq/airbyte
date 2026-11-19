@@ -54,18 +54,18 @@ class CsvSerializedBuffer(
     }
 
     /**
-     * TODO: (ryankfu) remove this call within
-     * [io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy] and move
-     * to use recordString
-     *
      * @param record AirbyteRecordMessage to be written
      * @throws IOException
+     *
+     * TODO: (ryankfu) remove this call within
+     *   [io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy] and
+     *   move to use recordString
      */
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
     override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
         csvPrinter!!.printRecord(
-            csvSheetGenerator.getDataRow(UUID.randomUUID(), record, generationId, syncId)
+            csvSheetGenerator.getDataRow(UUID.randomUUID(), record, generationId, syncId),
         )
     }
 
@@ -74,7 +74,7 @@ class CsvSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ) {
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
@@ -118,7 +118,7 @@ class CsvSerializedBuffer(
         fun createFunction(
             config: UploadCsvFormatConfig?,
             createStorageFunction: Callable<BufferStorage>,
-            useV2FieldNames: Boolean = false
+            useV2FieldNames: Boolean = false,
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,

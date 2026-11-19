@@ -63,12 +63,12 @@ import java.time.format.DateTimeFormatter
 /**
  * BigQuery flavour of the `extract-jdbc` toolkit hooks:
  * - [JdbcMetadataQuerier.FieldTypeMapper] for column metadata coming from the JDBC driver (the
- * discovery path uses [BigQueryFieldTypes.fromField] on the native table schema instead);
+ *   discovery path uses [BigQueryFieldTypes.fromField] on the native table schema instead);
  * - [SelectQueryGenerator] rendering GoogleSQL: backtick-quoted identifiers, fully qualified
- * `project.dataset.table` references (the connection's project is the job project, which may differ
- * from the data project), literal `LIMIT`, `TABLESAMPLE SYSTEM`;
+ *   `project.dataset.table` references (the connection's project is the job project, which may
+ *   differ from the data project), literal `LIMIT`, `TABLESAMPLE SYSTEM`;
  * - [JdbcAirbyteStreamFactory], which additionally renders the nested JSON schema of `STRUCT` and
- * `ARRAY` columns.
+ *   `ARRAY` columns.
  */
 @Singleton
 @Primary
@@ -113,7 +113,7 @@ private constructor(
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream {
         val stream: AirbyteStream = super.create(config, discoveredStream)
         val properties: ObjectNode = stream.jsonSchema.get("properties") as ObjectNode
@@ -174,7 +174,7 @@ private constructor(
                 // external tables and snapshots are sampled with a plain LIMIT instead.
                 val streamID =
                     StreamIdentifier.from(
-                        StreamDescriptor().withName(name).withNamespace(namespace)
+                        StreamDescriptor().withName(name).withNamespace(namespace),
                     )
                 val sample: String =
                     if (sampleRateInv == 1L || !tableTypes.supportsTableSample(streamID)) ""
@@ -269,14 +269,14 @@ private constructor(
                 // is normalized to a text node so a plain-number decimal binds as text too.
                 if (column.whereCastType() != null) {
                     listOf(
-                        SelectQuery.Binding(Jsons.textNode(bindingValue.asText()), StringFieldType)
+                        SelectQuery.Binding(Jsons.textNode(bindingValue.asText()), StringFieldType),
                     )
                 } else {
                     listOf(
                         SelectQuery.Binding(
                             bindingValue,
-                            column.type as LosslessJdbcFieldType<*, *>
-                        )
+                            column.type as LosslessJdbcFieldType<*, *>,
+                        ),
                     )
                 }
             }
@@ -286,7 +286,7 @@ private constructor(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         return
     }
@@ -295,7 +295,7 @@ private constructor(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         return
     }

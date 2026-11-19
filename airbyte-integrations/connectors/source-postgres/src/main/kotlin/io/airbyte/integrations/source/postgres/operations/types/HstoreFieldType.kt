@@ -29,6 +29,7 @@ object HstoreAccessor : JdbcAccessor<Map<String, String?>> {
         require(obj is Map<*, *>) { "Expected Map for hstore column, got ${obj::class.java.name}" }
         return obj.entries.associate { (k, v) -> k as String to v as String? }
     }
+
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: Map<String, String?>) {
         stmt.setString(
             paramIdx,
@@ -40,7 +41,7 @@ object HstoreAccessor : JdbcAccessor<Map<String, String?>> {
                         "'${it.key}','${it.value}'"
                     }
                 }
-                .joinToString(",", prefix = "hstore(", postfix = ")")
+                .joinToString(",", prefix = "hstore(", postfix = ")"),
         )
     }
 }
@@ -53,7 +54,7 @@ object HstoreCodec : ProtobufAwareCustomConnectorJsonCodec<Map<String, String?>>
     override fun decode(encoded: JsonNode): Map<String, String?> {
         return nullValuePreservingObjectMapper.readValue(
             encoded.asText(),
-            object : TypeReference<Map<String, String?>>() {}
+            object : TypeReference<Map<String, String?>>() {},
         )
     }
 

@@ -230,7 +230,7 @@ class SerializedBufferingStrategyTest {
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withData(MESSAGE_DATA)
+                        .withData(MESSAGE_DATA),
                 )
         }
     }

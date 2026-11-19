@@ -22,7 +22,9 @@ object PostgresMoneyFieldType :
 // money as a quoted string. Protobuf uses NUMBER, requiring BigDecimal/Double/Float.
 object PgMoneyCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
+
     override fun decode(encoded: JsonNode): String = encoded.asText()
+
     // money has a fixed scale of 2, so normalize the numeric value accordingly.
     override fun valueForProtobufEncoding(v: String): Any? =
         BigDecimal(v).setScale(2, RoundingMode.HALF_UP)
@@ -47,7 +49,7 @@ object PostgresMoneyArrayElementFieldType :
     SymmetricJdbcFieldType<Double>(
         LeafAirbyteSchemaType.NUMBER,
         PgMoneyDoubleAccessor,
-        DoubleCodec
+        DoubleCodec,
     )
 
 private object PgMoneyDoubleAccessor : JdbcAccessor<Double> {

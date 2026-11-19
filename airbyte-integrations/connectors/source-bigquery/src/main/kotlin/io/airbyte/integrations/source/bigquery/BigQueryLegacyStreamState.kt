@@ -31,6 +31,7 @@ import java.util.Base64
  * {"stream_name":"id_and_name","stream_namespace":"my_dataset","cursor_field":["id"],
  *  "cursor":"3","cursor_record_count":1}
  * ```
+ *
  * The legacy connector only checkpointed cursor-based incremental syncs; full refresh syncs emitted
  * no state at all. The cursor value is the `asText()` of the emitted record value: numbers as
  * decimal strings, `DATE`/`DATETIME`/`TIMESTAMP` as `yyyy-MM-dd'T'HH:mm:ss'Z'`, `TIME` as
@@ -77,7 +78,7 @@ data class BigQueryLegacyStreamState(
                         LocalDateTimeCodec.encode(parseLegacyTemporal(legacyCursor))
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE ->
                         OffsetDateTimeCodec.encode(
-                            parseLegacyTemporal(legacyCursor).atOffset(ZoneOffset.UTC)
+                            parseLegacyTemporal(legacyCursor).atOffset(ZoneOffset.UTC),
                         )
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE ->
                         LocalTimeCodec.encode(LocalTime.parse(legacyCursor, LEGACY_TIME))

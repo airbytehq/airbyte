@@ -14,7 +14,7 @@ import java.time.Instant
 object NoSelectQuerier : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
-        parameters: SelectQuerier.Parameters
+        parameters: SelectQuerier.Parameters,
     ): SelectQuerier.Result =
         throw UnsupportedOperationException("unit tests must not query BigQuery: ${q.sql}")
 }
@@ -30,7 +30,7 @@ class FixedSnapshotQueries(
     BigQueryReadApiSnapshotQueries(
         BigQuerySourceOperations("p"),
         NoSelectQuerier,
-        ClockFactory().fixed()
+        ClockFactory().fixed(),
     ) {
     val asked: MutableList<Pair<String, Instant>> = mutableListOf()
 
@@ -39,7 +39,7 @@ class FixedSnapshotQueries(
     override fun cursorUpperBound(
         stream: Stream,
         cursor: EmittedField,
-        snapshotTime: Instant
+        snapshotTime: Instant,
     ): JsonNode? {
         asked.add(cursor.id to snapshotTime)
         return upperBound

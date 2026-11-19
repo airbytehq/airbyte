@@ -6,8 +6,22 @@ from typing import Optional
 from base_test import BaseTest
 from request_builder import RequestBuilder
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+
+
+EXPIRED_SAS_RESPONSE_BODY = (
+    "<Error><Code>AuthenticationFailed</Code><Message>Server failed to authenticate the request.</Message>"
+    "<AuthenticationErrorDetail>Signature not valid in the specified time frame: Start [2024-01-01T00:00:00Z] "
+    "- Expiry [2024-01-01T00:10:00Z] - Current [2024-01-01T00:11:00Z]</AuthenticationErrorDetail></Error>"
+)
+PERMISSION_MISMATCH_RESPONSE_BODY = (
+    "<Error><Code>AuthorizationPermissionMismatch</Code><Message>This request is not authorized to perform this "
+    "operation using this permission.</Message></Error>"
+)
+EXPIRED_SAS_ERROR_MESSAGE = "Bing Ads file download URL is expired."
+DEFAULT_FORBIDDEN_ERROR_MESSAGE = "Forbidden. You don't have permission to access this resource."
 
 
 class TestBulkStream(BaseTest):
@@ -67,3 +81,61 @@ class TestBulkStream(BaseTest):
             RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build(),
             HttpResponse(encoded_file_content, 200),
         )
+
+
+class TestBulkDownloadErrorHandling(TestBulkStream):
+    stream_name = "budget"
+    download_entity = "Budgets"
+
+    def mock_apis_with_download_response(self, response: HttpResponse):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_bulk_download_request()
+        self.mock_bulk_download_status_query()
+        self.http_mocker.get(
+            RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build(),
+            response,
+        )
+
+    def _read_with_download_response(self, response: HttpResponse):
+        self.mock_apis_with_download_response(response)
+        return self.read_stream(
+            self.stream_name,
+            SyncMode.full_refresh,
+            self._config,
+            stream_data_file="budget",
+            expecting_exception=True,
+        )
+
+    def _assert_error(self, output, failure_type: str, message: str, message_contains: bool = False):
+        errors = [message.trace.error for message in output.errors]
+        assert any(
+            getattr(error.failure_type, "value", error.failure_type) == failure_type
+            and (message in error.message if message_contains else error.message == message)
+            for error in errors
+        ), [(error.failure_type, error.message) for error in errors]
+
+    def test_expired_download_url_is_transient_error(self):
+        output = self._read_with_download_response(
+            HttpResponse(
+                EXPIRED_SAS_RESPONSE_BODY,
+                403,
+                headers={"x-ms-error-code": "AuthenticationFailed"},
+            )
+        )
+
+        self._assert_error(output, "transient_error", EXPIRED_SAS_ERROR_MESSAGE)
+
+    def test_other_download_forbidden_error_remains_config_error(self):
+        output = self._read_with_download_response(
+            HttpResponse(
+                PERMISSION_MISMATCH_RESPONSE_BODY,
+                403,
+                headers={"x-ms-error-code": "AuthorizationPermissionMismatch"},
+            )
+        )
+
+        self._assert_error(output, "config_error", DEFAULT_FORBIDDEN_ERROR_MESSAGE, message_contains=True)

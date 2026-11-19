@@ -12,7 +12,9 @@
           "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv": "2224-02-27T10:34:32.664000Z",
           "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv": "2224-02-27T10:34:32.680000Z",
           "https://storage.googleapis.com/airbyte-integration-test-source-gcs/a/a.csv": "2224-08-27T21:57:29.858000Z",
-          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/b/b.csv": "2224-08-27T21:57:36.977000Z"
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/b/b.csv": "2224-08-27T21:57:36.977000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/gzip_transport_test_genuine.csv": "2224-06-21T20:09:46.319000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/gzip_transport_test_mislabeled.csv": "2224-06-21T20:09:46.412000Z"
         },
         "_ab_source_file_last_modified": "2224-08-27T21:57:36.977000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/b/b.csv"
       }

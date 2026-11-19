@@ -9,5 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 class MysqlDisableTypingDedupingTest : AbstractMysqlTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode =
         super.getBaseConfig().put("disable_type_dedupe", true)
+
     override fun disableFinalTableComparison(): Boolean = true
 }

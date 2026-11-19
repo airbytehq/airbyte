@@ -58,7 +58,7 @@ class PostgresSourceCdcIntegrationTest {
                 checkpointTargetIntervalSeconds = 60
                 maxDbConnections = 1
                 setIncrementalConfigurationSpecificationValue(
-                    StandardReplicationMethodConfigurationSpecification
+                    StandardReplicationMethodConfigurationSpecification,
                 )
             }
 
@@ -110,7 +110,7 @@ class PostgresSourceCdcIntegrationTest {
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute(
-                        "CREATE TABLE public.$tableName(k bigint PRIMARY KEY, v VARCHAR(80))"
+                        "CREATE TABLE public.$tableName(k bigint PRIMARY KEY, v VARCHAR(80))",
                     )
                 }
             }

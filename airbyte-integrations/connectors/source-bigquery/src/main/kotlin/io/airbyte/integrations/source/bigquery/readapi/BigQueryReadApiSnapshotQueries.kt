@@ -53,7 +53,7 @@ open class BigQueryReadApiSnapshotQueries(
                 stream.name,
                 stream.namespace,
                 cursor,
-                snapshotTime
+                snapshotTime,
             )
         log.info { "Querying the maximum '${cursor.id}' of '${stream.label}' as of $snapshotTime." }
         val value: JsonNode? =

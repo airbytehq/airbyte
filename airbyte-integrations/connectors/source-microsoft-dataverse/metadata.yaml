@@ -50,4 +50,13 @@ data:
     - title: Dataverse API limits
       url: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits
       type: rate_limits
+    - title: Dataverse Web API versions
+      url: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/web-api-versions
+      type: api_release_history
+    - title: Important changes (deprecations) coming in Power Platform
+      url: https://learn.microsoft.com/en-us/power-platform/important-changes-coming
+      type: api_deprecations
+    - title: Microsoft identity platform breaking changes
+      url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
+      type: authentication_guide
 metadataSpecVersion: "1.0"

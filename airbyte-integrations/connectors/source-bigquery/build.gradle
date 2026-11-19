@@ -40,6 +40,17 @@ dependencies {
     // ghcr.io/goccy/bigquery-emulator wrapper.
     testFixturesImplementation 'org.testcontainers:gcloud:1.21.4'
     testImplementation 'org.testcontainers:gcloud:1.21.4'
+
+    constraints {
+        // The BigQuery JDBC driver (even 1.6.0) pins httpcore5 5.2.5 / httpcore5-h2 5.2.4, which
+        // carry CVE-2026-54399 and CVE-2026-54428 (CVSS 7.5, fixed in 5.4.3).
+        implementation('org.apache.httpcomponents.core5:httpcore5:5.4.4') {
+            because 'CVE-2026-54399: google-cloud-bigquery-jdbc pulls 5.2.5'
+        }
+        implementation('org.apache.httpcomponents.core5:httpcore5-h2:5.4.4') {
+            because 'CVE-2026-54428: google-cloud-bigquery-jdbc pulls 5.2.4'
+        }
+    }
 }
 
 // Apache Arrow (Storage Read API read path) accesses java.nio.Buffer internals; the connector image

@@ -62,7 +62,7 @@ fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
         StringBuilder()
             .apply {
                 append(
-                    "jdbc:sqlserver://${hostAndPort.host}:${hostAndPort.port};databaseName=${database}"
+                    "jdbc:sqlserver://${hostAndPort.host}:${hostAndPort.port};databaseName=${database}",
                 )
 
                 when (sslMethod) {

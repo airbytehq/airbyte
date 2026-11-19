@@ -20,7 +20,7 @@ class BigQueryValuesTest {
 
     private val discount =
         BigQueryStructFieldType(
-            listOf(EmittedField("code", StringFieldType), EmittedField("pct", DoubleFieldType))
+            listOf(EmittedField("code", StringFieldType), EmittedField("pct", DoubleFieldType)),
         )
     private val lineItem =
         BigQueryStructFieldType(
@@ -29,7 +29,7 @@ class BigQueryValuesTest {
                 EmittedField("qty", LongFieldType),
                 EmittedField("price", BigDecimalFieldType),
                 EmittedField("discounts", BigQueryArrayFieldType(discount)),
-            )
+            ),
         )
     private val address =
         BigQueryStructFieldType(
@@ -47,10 +47,10 @@ class BigQueryValuesTest {
                 EmittedField("big", BigDecimalFieldType),
                 EmittedField(
                     "inner",
-                    BigQueryStructFieldType(listOf(EmittedField("a", StringFieldType)))
+                    BigQueryStructFieldType(listOf(EmittedField("a", StringFieldType))),
                 ),
                 EmittedField("items", BigQueryArrayFieldType(lineItem)),
-            )
+            ),
         )
 
     @Test
@@ -85,12 +85,12 @@ class BigQueryValuesTest {
             BigQueryValues.fromJsonText(
                 """["08:00:00","23:59:59.999999"]""",
                 null,
-                BigQueryTimeFieldType
+                BigQueryTimeFieldType,
             )
         Assertions.assertEquals(Jsons.readTree("""["08:00:00.000000","23:59:59.999999"]"""), actual)
         Assertions.assertEquals(
             Jsons.readTree("[]"),
-            BigQueryValues.fromJsonText("[]", null, lineItem)
+            BigQueryValues.fromJsonText("[]", null, lineItem),
         )
     }
 
@@ -111,7 +111,7 @@ class BigQueryValuesTest {
         Assertions.assertEquals(
             """{"t":"08:00:00","times":["08:00:00.000001","09:00:00"],"s":"x,2021-10-20"}""",
             BigQueryValues.quoteBareTemporals(
-                """{"t":08:00:00,"times":[08:00:00.000001,09:00:00],"s":"x,2021-10-20"}"""
+                """{"t":08:00:00,"times":[08:00:00.000001,09:00:00],"s":"x,2021-10-20"}""",
             ),
         )
     }
@@ -120,35 +120,35 @@ class BigQueryValuesTest {
     fun testGeoJsonToWkt() {
         Assertions.assertEquals(
             "POINT(1.5 -2)",
-            GeoJson.toWkt(Jsons.readTree("""{"type":"Point","coordinates":[1.5,-2.0]}"""))
+            GeoJson.toWkt(Jsons.readTree("""{"type":"Point","coordinates":[1.5,-2.0]}""")),
         )
         Assertions.assertEquals(
             "LINESTRING(0 0, 1 1)",
-            GeoJson.toWkt(Jsons.readTree("""{"type":"LineString","coordinates":[[0,0],[1,1]]}"""))
+            GeoJson.toWkt(Jsons.readTree("""{"type":"LineString","coordinates":[[0,0],[1,1]]}""")),
         )
         Assertions.assertEquals(
             "POLYGON((0 0, 1 0, 1 1, 0 0), (0.2 0.2, 0.4 0.2, 0.2 0.4, 0.2 0.2))",
             GeoJson.toWkt(
                 Jsons.readTree(
-                    """{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]],[[0.2,0.2],[0.4,0.2],[0.2,0.4],[0.2,0.2]]]}"""
-                )
-            )
+                    """{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]],[[0.2,0.2],[0.4,0.2],[0.2,0.4],[0.2,0.2]]]}""",
+                ),
+            ),
         )
         Assertions.assertEquals(
             "MULTIPOINT(1 2, 3 4)",
-            GeoJson.toWkt(Jsons.readTree("""{"type":"MultiPoint","coordinates":[[1,2],[3,4]]}"""))
+            GeoJson.toWkt(Jsons.readTree("""{"type":"MultiPoint","coordinates":[[1,2],[3,4]]}""")),
         )
         Assertions.assertEquals(
             "GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))",
             GeoJson.toWkt(
                 Jsons.readTree(
-                    """{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2]},{"type":"LineString","coordinates":[[0,0],[1,1]]}]}"""
-                )
-            )
+                    """{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2]},{"type":"LineString","coordinates":[[0,0],[1,1]]}]}""",
+                ),
+            ),
         )
         Assertions.assertEquals(
             "GEOMETRYCOLLECTION EMPTY",
-            GeoJson.toWkt(Jsons.readTree("""{"type":"GeometryCollection","geometries":[]}"""))
+            GeoJson.toWkt(Jsons.readTree("""{"type":"GeometryCollection","geometries":[]}""")),
         )
     }
 }

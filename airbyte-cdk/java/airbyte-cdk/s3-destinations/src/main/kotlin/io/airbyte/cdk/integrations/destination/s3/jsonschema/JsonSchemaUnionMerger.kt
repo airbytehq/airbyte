@@ -17,7 +17,7 @@ class JsonSchemaUnionMerger : JsonSchemaIdentityMapper() {
     private fun mergeRightObjectIntoLeft(left: ObjectNode, right: ObjectNode) {
         val leftProperties = left["properties"] as ObjectNode
         val rightProperties = right["properties"] as ObjectNode
-        rightProperties.fields().forEach { (rightPropertyName, rightPropertySchema) ->
+        rightProperties.properties().forEach { (rightPropertyName, rightPropertySchema) ->
             if (!leftProperties.has(rightPropertyName)) {
                 // Just add the property if it doesn't exist
                 leftProperties.set<ObjectNode>(rightPropertyName, rightPropertySchema as ObjectNode)

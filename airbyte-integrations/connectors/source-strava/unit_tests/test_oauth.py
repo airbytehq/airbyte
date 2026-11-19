@@ -5,16 +5,18 @@ import logging
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import parse_qs
 
 import pytest
 import requests
 import yaml
 
-from airbyte_cdk.models import Status
+from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OAuthAuthenticator
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 MANIFEST = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
@@ -50,6 +52,47 @@ def response(request, body, status=200):
     result.request = request
     result.url = request.url
     return result
+
+
+def test_refresh_request_body_has_only_strava_parameters(config):
+    def refresh(request, **kwargs):
+        assert request.url == TOKEN_URL
+        return response(request, token_response())
+
+    with patch("requests.Session.send", side_effect=refresh) as send:
+        authenticator(config).get_access_token()
+
+    body = parse_qs(send.call_args.args[0].body)
+    assert set(body) == {"grant_type", "client_id", "client_secret", "refresh_token"}
+
+
+@pytest.mark.parametrize(
+    ("status", "body"),
+    [
+        (
+            401,
+            {"message": "Authorization Error", "errors": [{"resource": "Application", "field": "", "code": "invalid"}]},
+        ),
+        (
+            400,
+            {"message": "Bad Request", "errors": [{"resource": "Application", "field": "client_id", "code": "invalid"}]},
+        ),
+        (
+            400,
+            {"message": "Bad Request", "errors": [{"resource": "RefreshToken", "field": "refresh_token", "code": "invalid"}]},
+        ),
+    ],
+)
+def test_refresh_errors_are_config_errors(config, status, body):
+    def refresh(request, **kwargs):
+        assert request.url == TOKEN_URL
+        return response(request, body, status)
+
+    with patch("requests.Session.send", side_effect=refresh):
+        with pytest.raises(AirbyteTracedException) as exc:
+            authenticator(config).get_access_token()
+
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_token_expiry_and_rotated_refresh_token_are_persisted(config, capsys):

@@ -21,7 +21,7 @@ import jakarta.inject.Singleton
 @Singleton
 class ParseStage(
     private val jsonConverter: JsonConverter,
-    private val protobufConverter: ProtobufConverter
+    private val protobufConverter: ProtobufConverter,
 ) : DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!
@@ -39,7 +39,7 @@ class ParseStage(
 
     private fun transform(
         msg: DestinationRecordRaw,
-        partitionKey: PartitionKey
+        partitionKey: PartitionKey,
     ): Map<String, AirbyteValue> {
         val input = ConversionInput(msg = msg, partitionKey = partitionKey)
         return when (msg.rawData) {

@@ -114,6 +114,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.52 | 2026-10-13 | [88612](https://github.com/airbytehq/airbyte/pull/88612) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
 | 0.1.51 | 2026-08-13 | [84344](https://github.com/airbytehq/airbyte/pull/84344) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.1.49 | 2026-07-02 | [81396](https://github.com/airbytehq/airbyte/pull/81396) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
@@ -171,8 +172,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.0.22  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                        |
 | 0.0.21  | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                                                                      |
 | 0.0.20  | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                                                          |
-| 0.0.19  | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Improve error messages                                                                                                       |
-| 0.0.18  | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined                                                  |
+| 0.0.19 | 2023-11-09 | [#32292](https://github.com/airbytehq/airbyte/pull/32292) | Improve error messages |
+| 0.0.18 | 2023-10-26 | [#31373](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined |
 | 0.0.17  | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                              |
 | 0.0.16  | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option                                                                                        |
 | 0.0.15  | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size                                                                                               |

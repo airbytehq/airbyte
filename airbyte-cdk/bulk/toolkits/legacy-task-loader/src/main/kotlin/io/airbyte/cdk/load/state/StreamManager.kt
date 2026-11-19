@@ -55,6 +55,7 @@ class StreamManager(
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
     private val isClosed = AtomicBoolean(false)
+    private val loaderStarted = AtomicBoolean(false)
 
     private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
         ConcurrentHashMap()
@@ -78,6 +79,7 @@ class StreamManager(
     }
 
     fun readCount(): Long = recordsReadPerCheckpoint.values.sumOf { it }
+
     fun byteCount(): Long = bytesPerCheckpoint.values.sumOf { it }
 
     /**
@@ -99,6 +101,23 @@ class StreamManager(
         return markedEndOfStream.get()
     }
 
+    /**
+     * Mark that this stream's loader has successfully started. Set once by
+     * [SyncManager.registerStartedStreamLoader]; a failed start never sets it.
+     */
+    fun markLoaderStarted() {
+        loaderStarted.set(true)
+    }
+
+    /**
+     * Whether [io.airbyte.cdk.load.write.StreamLoader.start] has completed successfully. This is a
+     * single volatile read, so it is safe to call on the per-record hot path as a guard before
+     * falling back to the suspending [SyncManager.getOrAwaitStreamLoader].
+     */
+    fun isLoaderStarted(): Boolean {
+        return loaderStarted.get()
+    }
+
     /** Whether we received a stream complete message for the managed stream. */
     fun receivedStreamComplete(): Boolean {
         return receivedComplete.get()
@@ -109,7 +128,7 @@ class StreamManager(
      * [FailStreamTask]).
      *
      * @return `true` if this stream manager was not already terminating; `false` if another thread
-     * has already invoked `setClosed` on this stream manager
+     *   has already invoked `setClosed` on this stream manager
      */
     fun setClosed(): Boolean {
         return isClosed.setOnce()
@@ -158,7 +177,7 @@ class StreamManager(
 
     private fun countByStateForCheckpoint(
         checkpointId: CheckpointId,
-        state: BatchState
+        state: BatchState,
     ): CheckpointValue {
         val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
         val recordCount = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
@@ -238,13 +257,11 @@ class StreamManager(
         val persistedCount =
             checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            }
-                ?: 0L
+            } ?: 0L
         val completeCount =
             checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            }
-                ?: 0L
+            } ?: 0L
         return max(persistedCount, completeCount)
     }
 

@@ -6,7 +6,7 @@
         "name": "bank_transactions"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -17,7 +17,7 @@
         "name": "contacts"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -28,7 +28,7 @@
         "name": "credit_notes"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -39,7 +39,7 @@
         "name": "invoices"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -50,7 +50,7 @@
         "name": "manual_journals"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -61,7 +61,7 @@
         "name": "overpayments"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -72,7 +72,7 @@
         "name": "prepayments"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -83,7 +83,7 @@
         "name": "purchase_orders"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -94,7 +94,7 @@
         "name": "accounts"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -105,7 +105,7 @@
         "name": "bank_transfers"
       },
       "stream_state": {
-        "CreatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "CreatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -116,7 +116,7 @@
         "name": "employees"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -127,7 +127,7 @@
         "name": "items"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -138,7 +138,7 @@
         "name": "payments"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   },
@@ -149,7 +149,7 @@
         "name": "users"
       },
       "stream_state": {
-        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+        "UpdatedDateUTC": "2099-01-01T00:00:00"
       }
     }
   }

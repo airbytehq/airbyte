@@ -30,8 +30,8 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Singleton
 import java.util.LinkedHashMap
-import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.FileFormat
@@ -109,9 +109,9 @@ class IcebergUtil(
      * does not already exist. If the [Table] already exists, it is loaded from the [Catalog].
      *
      * @param streamDescriptor The [DestinationStream.Descriptor] that contains the Airbyte stream's
-     * namespace and name.
+     *   namespace and name.
      * @param catalog The Iceberg [Catalog] that contains the [Table] or should contain it once
-     * created.
+     *   created.
      * @param schema The Iceberg [Schema] associated with the [Table].
      * @param properties The [Table] configuration properties derived from the [Catalog].
      * @return The Iceberg [Table], created if it does not yet exist.
@@ -119,7 +119,7 @@ class IcebergUtil(
     fun createTable(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
-        schema: Schema
+        schema: Schema,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -214,7 +214,7 @@ class IcebergUtil(
      * [NumberValue].
      */
     fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
-        transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
+        transformer: (AirbyteValue, AirbyteType) -> ChangedValue?,
     ): EnrichedAirbyteValue {
         /**
          * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue

@@ -65,7 +65,9 @@ data class MySqlSourceConfiguration(
         fun mysqlSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>,
+                    MySqlSourceConfigurationSpecification,
+                    MySqlSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>,
         ): MySqlSourceConfiguration = factory.make(supplier.get())
     }
@@ -78,7 +80,7 @@ data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val serverTimezone: String?,
-    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -127,7 +129,7 @@ constructor(
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(
-                pojo.getAdditionalProperties() ?: emptyMap()
+                pojo.getAdditionalProperties() ?: emptyMap(),
             )
 
         // Configure SSL encryption.
@@ -137,7 +139,10 @@ constructor(
                 featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         ) {
             throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
+                "Airbyte Cloud does not allow unencrypted database connections. " +
+                    "Either enable TLS on the MySQL server and select SSL mode required, " +
+                    "verify_ca or verify_identity, or configure an SSH tunnel; " +
+                    "the preferred SSL mode is accepted on Airbyte Cloud only together with an SSH tunnel.",
             )
         }
         val sslProperties: SslProperties = fromEncryptionSpec(pojo.getEncryptionValue()!!)
@@ -162,13 +167,12 @@ constructor(
         val tableFilters = pojo.tableFilters ?: emptyList()
 
         // Convert MySQL TableFilter to JDBC TableFilter for validation
-        val jdbcTableFilters: List<TableFilter> =
-            tableFilters.map {
-                TableFilter().apply {
-                    schemaName = it.databaseName
-                    patterns = it.patterns
-                }
+        val jdbcTableFilters: List<TableFilter> = tableFilters.map {
+            TableFilter().apply {
+                schemaName = it.databaseName
+                patterns = it.patterns
             }
+        }
 
         pojo.database.let { schema ->
             JdbcSourceConfiguration.validateTableFilters(setOf(schema), jdbcTableFilters)
@@ -227,7 +231,7 @@ constructor(
     }
 
     private fun fromIncrementalSpec(
-        incrementalSpec: IncrementalConfigurationSpecification
+        incrementalSpec: IncrementalConfigurationSpecification,
     ): IncrementalConfiguration =
         when (incrementalSpec) {
             UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
@@ -308,7 +312,7 @@ constructor(
                     sslData.clientCertificate,
                     sslData.clientKey,
                     password,
-                    directory = ""
+                    directory = "",
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()

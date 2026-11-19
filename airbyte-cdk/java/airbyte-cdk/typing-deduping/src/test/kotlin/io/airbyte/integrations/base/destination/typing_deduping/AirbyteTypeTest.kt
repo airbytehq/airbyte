@@ -16,165 +16,168 @@ class AirbyteTypeTest {
         val structSchema: MutableList<String> = ArrayList()
         structSchema.add(
             """
-                     {
-                       "type": "object",
-                       "properties": {
-                         "key1": {
-                           "type": "boolean"
-                         },
-                         "key2": {
-                           "type": "integer"
-                         },
-                         "key3": {
-                           "type": "number",
-                           "airbyte_type": "integer"
-                         },
-                         "key4": {
-                           "type": "number"
-                         },
-                         "key5": {
-                           "type": "string",
-                           "format": "date"
-                         },
-                         "key6": {
-                           "type": "string",
-                           "format": "time",
-                           "airbyte_type": "time_without_timezone"
-                         },
-                         "key7": {
-                           "type": "string",
-                           "format": "time",
-                           "airbyte_type": "time_with_timezone"
-                         },
-                         "key8": {
-                           "type": "string",
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_without_timezone"
-                         },
-                         "key9": {
-                           "type": "string",
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_with_timezone"
-                         },
-                         "key10": {
-                           "type": "string",
-                           "format": "date-time"
-                         },
-                         "key11": {
-                           "type": "string"
-                         }
-                       }
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": "object",
+              "properties": {
+                "key1": {
+                  "type": "boolean"
+                },
+                "key2": {
+                  "type": "integer"
+                },
+                "key3": {
+                  "type": "number",
+                  "airbyte_type": "integer"
+                },
+                "key4": {
+                  "type": "number"
+                },
+                "key5": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "key6": {
+                  "type": "string",
+                  "format": "time",
+                  "airbyte_type": "time_without_timezone"
+                },
+                "key7": {
+                  "type": "string",
+                  "format": "time",
+                  "airbyte_type": "time_with_timezone"
+                },
+                "key8": {
+                  "type": "string",
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_without_timezone"
+                },
+                "key9": {
+                  "type": "string",
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_with_timezone"
+                },
+                "key10": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "key11": {
+                  "type": "string"
+                }
+              }
+            }
+
+            """
+                .trimIndent(),
         )
         structSchema.add(
             """
-                     {
-                       "type": ["object"],
-                       "properties": {
-                         "key1": {
-                           "type": ["boolean"]
-                         },
-                         "key2": {
-                           "type": ["integer"]
-                         },
-                         "key3": {
-                           "type": ["number"],
-                           "airbyte_type": "integer"
-                         },
-                         "key4": {
-                           "type": ["number"]
-                         },
-                         "key5": {
-                           "type": ["string"],
-                           "format": "date"
-                         },
-                         "key6": {
-                           "type": ["string"],
-                           "format": "time",
-                           "airbyte_type": "time_without_timezone"
-                         },
-                         "key7": {
-                           "type": ["string"],
-                           "format": "time",
-                           "airbyte_type": "time_with_timezone"
-                         },
-                         "key8": {
-                           "type": ["string"],
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_without_timezone"
-                         },
-                         "key9": {
-                           "type": ["string"],
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_with_timezone"
-                         },
-                         "key10": {
-                           "type": ["string"],
-                           "format": "date-time"
-                         },
-                         "key11": {
-                           "type": ["string"]
-                         }
-                       }
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": ["object"],
+              "properties": {
+                "key1": {
+                  "type": ["boolean"]
+                },
+                "key2": {
+                  "type": ["integer"]
+                },
+                "key3": {
+                  "type": ["number"],
+                  "airbyte_type": "integer"
+                },
+                "key4": {
+                  "type": ["number"]
+                },
+                "key5": {
+                  "type": ["string"],
+                  "format": "date"
+                },
+                "key6": {
+                  "type": ["string"],
+                  "format": "time",
+                  "airbyte_type": "time_without_timezone"
+                },
+                "key7": {
+                  "type": ["string"],
+                  "format": "time",
+                  "airbyte_type": "time_with_timezone"
+                },
+                "key8": {
+                  "type": ["string"],
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_without_timezone"
+                },
+                "key9": {
+                  "type": ["string"],
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_with_timezone"
+                },
+                "key10": {
+                  "type": ["string"],
+                  "format": "date-time"
+                },
+                "key11": {
+                  "type": ["string"]
+                }
+              }
+            }
+
+            """
+                .trimIndent(),
         )
         structSchema.add(
             """
-                     {
-                       "type": ["null", "object"],
-                       "properties": {
-                         "key1": {
-                           "type": ["null", "boolean"]
-                         },
-                         "key2": {
-                           "type": ["null", "integer"]
-                         },
-                         "key3": {
-                           "type": ["null", "number"],
-                           "airbyte_type": "integer"
-                         },
-                         "key4": {
-                           "type": ["null", "number"]
-                         },
-                         "key5": {
-                           "type": ["null", "string"],
-                           "format": "date"
-                         },
-                         "key6": {
-                           "type": ["null", "string"],
-                           "format": "time",
-                           "airbyte_type": "time_without_timezone"
-                         },
-                         "key7": {
-                           "type": ["null", "string"],
-                           "format": "time",
-                           "airbyte_type": "time_with_timezone"
-                         },
-                         "key8": {
-                           "type": ["null", "string"],
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_without_timezone"
-                         },
-                         "key9": {
-                           "type": ["null", "string"],
-                           "format": "date-time",
-                           "airbyte_type": "timestamp_with_timezone"
-                         },
-                         "key10": {
-                           "type": ["null", "string"],
-                           "format": "date-time"
-                         },
-                         "key11": {
-                           "type": ["null", "string"]
-                         }
-                       }
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": ["null", "object"],
+              "properties": {
+                "key1": {
+                  "type": ["null", "boolean"]
+                },
+                "key2": {
+                  "type": ["null", "integer"]
+                },
+                "key3": {
+                  "type": ["null", "number"],
+                  "airbyte_type": "integer"
+                },
+                "key4": {
+                  "type": ["null", "number"]
+                },
+                "key5": {
+                  "type": ["null", "string"],
+                  "format": "date"
+                },
+                "key6": {
+                  "type": ["null", "string"],
+                  "format": "time",
+                  "airbyte_type": "time_without_timezone"
+                },
+                "key7": {
+                  "type": ["null", "string"],
+                  "format": "time",
+                  "airbyte_type": "time_with_timezone"
+                },
+                "key8": {
+                  "type": ["null", "string"],
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_without_timezone"
+                },
+                "key9": {
+                  "type": ["null", "string"],
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_with_timezone"
+                },
+                "key10": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "key11": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+
+            """
+                .trimIndent(),
         )
 
         val propertiesMap = LinkedHashMap<String, AirbyteType>()
@@ -201,27 +204,30 @@ class AirbyteTypeTest {
         val structSchema: MutableList<String> = ArrayList()
         structSchema.add(
             """
-                     {
-                       "type": "object"
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": "object"
+            }
+
+            """
+                .trimIndent(),
         )
         structSchema.add(
             """
-                     {
-                       "type": ["object"]
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": ["object"]
+            }
+
+            """
+                .trimIndent(),
         )
         structSchema.add(
             """
-                     {
-                       "type": ["null", "object"]
-                     }
-                     
-                     """.trimIndent()
+            {
+              "type": ["null", "object"]
+            }
+
+            """
+                .trimIndent(),
         )
 
         val struct: AirbyteType = Struct(LinkedHashMap())
@@ -234,15 +240,16 @@ class AirbyteTypeTest {
     fun testImplicitStruct() {
         val structSchema =
             """
-                                {
-                                  "properties": {
-                                    "key1": {
-                                      "type": "boolean"
-                                    }
-                                  }
-                                }
-                                
-                                """.trimIndent()
+            {
+              "properties": {
+                "key1": {
+                  "type": "boolean"
+                }
+              }
+            }
+
+            """
+                .trimIndent()
 
         val propertiesMap = LinkedHashMap<String, AirbyteType>()
         propertiesMap["key1"] = AirbyteProtocolType.BOOLEAN
@@ -256,42 +263,45 @@ class AirbyteTypeTest {
         val arraySchema: MutableList<String> = ArrayList()
         arraySchema.add(
             """
-                    {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "format": "date-time",
-                        "airbyte_type": "timestamp_with_timezone"
-                      }
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+
+            """
+                .trimIndent(),
         )
         arraySchema.add(
             """
-                    {
-                      "type": ["array"],
-                      "items": {
-                        "type": ["string"],
-                        "format": "date-time",
-                        "airbyte_type": "timestamp_with_timezone"
-                      }
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": ["array"],
+              "items": {
+                "type": ["string"],
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+
+            """
+                .trimIndent(),
         )
         arraySchema.add(
             """
-                    {
-                      "type": ["null", "array"],
-                      "items": {
-                        "type": ["null", "string"],
-                        "format": "date-time",
-                        "airbyte_type": "timestamp_with_timezone"
-                      }
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"],
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+
+            """
+                .trimIndent(),
         )
 
         val array: AirbyteType = Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
@@ -305,28 +315,31 @@ class AirbyteTypeTest {
         val arraySchema: MutableList<String> = ArrayList()
         arraySchema.add(
             """
-                    {
-                      "type": "array"
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": "array"
+            }
+
+            """
+                .trimIndent(),
         )
         arraySchema.add(
             """
-                    {
-                      "type": ["array"]
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": ["array"]
+            }
+
+            """
+                .trimIndent(),
         )
 
         arraySchema.add(
             """
-                    {
-                      "type": ["null", "array"]
-                    }
-                    
-                    """.trimIndent()
+            {
+              "type": ["null", "array"]
+            }
+
+            """
+                .trimIndent(),
         )
 
         val array: AirbyteType = Array(AirbyteProtocolType.UNKNOWN)
@@ -339,11 +352,12 @@ class AirbyteTypeTest {
     fun testUnsupportedOneOf() {
         val unsupportedOneOfSchema =
             """
-                                          {
-                                            "oneOf": ["number", "string"]
-                                          }
-                                          
-                                          """.trimIndent()
+            {
+              "oneOf": ["number", "string"]
+            }
+
+            """
+                .trimIndent()
 
         val options: MutableList<AirbyteType> = ArrayList()
         options.add(AirbyteProtocolType.NUMBER)
@@ -352,7 +366,7 @@ class AirbyteTypeTest {
         val unsupportedOneOf = UnsupportedOneOf(options)
         Assertions.assertEquals(
             unsupportedOneOf,
-            fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema))
+            fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)),
         )
     }
 
@@ -360,11 +374,12 @@ class AirbyteTypeTest {
     fun testUnion() {
         val unionSchema =
             """
-                               {
-                                 "type": ["string", "number"]
-                               }
-                               
-                               """.trimIndent()
+            {
+              "type": ["string", "number"]
+            }
+
+            """
+                .trimIndent()
 
         val options: MutableList<AirbyteType> = ArrayList()
         options.add(AirbyteProtocolType.STRING)
@@ -379,15 +394,16 @@ class AirbyteTypeTest {
         val schema =
             Jsons.deserialize(
                 """
-                                              {
-                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
-                                                "properties": {
-                                                  "foo": {"type": "string"}
-                                                },
-                                                "items": {"type": "string"}
-                                              }
-                                              
-                                              """.trimIndent()
+                {
+                  "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
+                  "properties": {
+                    "foo": {"type": "string"}
+                  },
+                  "items": {"type": "string"}
+                }
+
+                """
+                    .trimIndent(),
             )
 
         val parsed = fromJsonSchema(schema)
@@ -397,8 +413,8 @@ class AirbyteTypeTest {
                 List.of(
                     AirbyteProtocolType.STRING,
                     Struct(linkedMapOf("foo" to AirbyteProtocolType.STRING)),
-                    Array(AirbyteProtocolType.STRING)
-                )
+                    Array(AirbyteProtocolType.STRING),
+                ),
             )
         Assertions.assertEquals(expected, parsed)
     }
@@ -408,11 +424,12 @@ class AirbyteTypeTest {
         val schema =
             Jsons.deserialize(
                 """
-                                              {
-                                                "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
-                                              }
-                                              
-                                              """.trimIndent()
+                {
+                  "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
+                }
+
+                """
+                    .trimIndent(),
             )
 
         val parsed = fromJsonSchema(schema)
@@ -422,8 +439,8 @@ class AirbyteTypeTest {
                 List.of(
                     AirbyteProtocolType.STRING,
                     Struct(LinkedHashMap()),
-                    Array(AirbyteProtocolType.UNKNOWN)
-                )
+                    Array(AirbyteProtocolType.UNKNOWN),
+                ),
             )
         expected.toString()
         Assertions.assertEquals(expected, parsed)
@@ -433,14 +450,15 @@ class AirbyteTypeTest {
     fun testInvalidTextualType() {
         val invalidTypeSchema =
             """
-                                     {
-                                       "type": "foo"
-                                     }
-                                     
-                                     """.trimIndent()
+            {
+              "type": "foo"
+            }
+
+            """
+                .trimIndent()
         Assertions.assertEquals(
             AirbyteProtocolType.UNKNOWN,
-            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema)),
         )
     }
 
@@ -448,14 +466,15 @@ class AirbyteTypeTest {
     fun testInvalidBooleanType() {
         val invalidTypeSchema =
             """
-                                     {
-                                       "type": true
-                                     }
-                                     
-                                     """.trimIndent()
+            {
+              "type": true
+            }
+
+            """
+                .trimIndent()
         Assertions.assertEquals(
             AirbyteProtocolType.UNKNOWN,
-            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema)),
         )
     }
 
@@ -474,7 +493,7 @@ class AirbyteTypeTest {
         for (schema in invalidSchema) {
             Assertions.assertEquals(
                 AirbyteProtocolType.UNKNOWN,
-                fromJsonSchema(Jsons.deserialize(schema))
+                fromJsonSchema(Jsons.deserialize(schema)),
             )
         }
     }
@@ -498,26 +517,24 @@ class AirbyteTypeTest {
                 listOf(
                     AirbyteProtocolType.NUMBER,
                     AirbyteProtocolType.DATE,
-                    AirbyteProtocolType.BOOLEAN
-                )
-            )
-        ] = AirbyteProtocolType.DATE
+                    AirbyteProtocolType.BOOLEAN,
+                ),
+            )] = AirbyteProtocolType.DATE
         unionToType[
             Union(
                 listOf(
                     AirbyteProtocolType.INTEGER,
                     AirbyteProtocolType.BOOLEAN,
-                    AirbyteProtocolType.NUMBER
-                )
-            )
-        ] = AirbyteProtocolType.NUMBER
+                    AirbyteProtocolType.NUMBER,
+                ),
+            )] = AirbyteProtocolType.NUMBER
         unionToType[Union(listOf(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER))] =
             AirbyteProtocolType.INTEGER
 
         Assertions.assertAll(
             unionToType.entries.map { e ->
                 Executable { Assertions.assertEquals(e.value, e.key.chooseType()) }
-            }
+            },
         )
     }
 
@@ -529,12 +546,12 @@ class AirbyteTypeTest {
                     AirbyteProtocolType.STRING,
                     Struct(linkedMapOf("foo" to AirbyteProtocolType.STRING)),
                     Array(
-                        AirbyteProtocolType.STRING
+                        AirbyteProtocolType.STRING,
                     ), // This is bad behavior, but it matches current behavior so we'll test it.
                     // Ideally, we would recognize that the sub-unions are also objects.
                     Union(List.of(Struct(LinkedHashMap()))),
-                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
-                )
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap()))),
+                ),
             )
 
         val columns = u.asColumns()
@@ -545,7 +562,7 @@ class AirbyteTypeTest {
                     put("foo", AirbyteProtocolType.STRING)
                 }
             },
-            columns
+            columns,
         )
     }
 
@@ -567,11 +584,11 @@ class AirbyteTypeTest {
                     AirbyteProtocolType.STRING,
                     Array(AirbyteProtocolType.STRING),
                     UnsupportedOneOf(
-                        ArrayList()
+                        ArrayList(),
                     ), // Similar to testAsColumns(), this is bad behavior.
                     Union(List.of(Struct(LinkedHashMap()))),
-                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
-                )
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap()))),
+                ),
             )
 
         // This prooobably should throw an exception, but for the sake of smooth rollout it just

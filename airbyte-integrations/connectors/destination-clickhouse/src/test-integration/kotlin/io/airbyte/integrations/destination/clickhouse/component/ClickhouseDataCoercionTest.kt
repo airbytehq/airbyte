@@ -57,43 +57,43 @@ class ClickhouseDataCoercionTest(
     override fun `handle integer values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle integer values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#numbers"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#numbers",
     )
     override fun `handle number values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampTz"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampTz",
     )
     override fun `handle timestamptz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timestamptz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampNtz"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampNtz",
     )
     override fun `handle timestampntz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -103,7 +103,7 @@ class ClickhouseDataCoercionTest(
     override fun `handle timetz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timetz values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -113,19 +113,19 @@ class ClickhouseDataCoercionTest(
     override fun `handle timentz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#date"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#date",
     )
     override fun `handle date values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -137,12 +137,12 @@ class ClickhouseDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#string"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#string",
     )
     override fun `handle string values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -153,7 +153,7 @@ class ClickhouseDataCoercionTest(
     override fun `handle object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -164,7 +164,7 @@ class ClickhouseDataCoercionTest(
     override fun `handle empty object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle empty object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -175,7 +175,7 @@ class ClickhouseDataCoercionTest(
     override fun `handle schemaless object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle schemaless object values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -186,7 +186,7 @@ class ClickhouseDataCoercionTest(
     override fun `handle array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle array values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -197,33 +197,33 @@ class ClickhouseDataCoercionTest(
     override fun `handle schemaless array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     /**
-     * We don't have special handling for legacy unions, so don't bother implementing [`handle
-     * legacy union values`].
+     * We don't have special handling for legacy unions, so don't bother implementing
+     * [`handle legacy union values`].
      */
     @ParameterizedTest
     @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnionFixtures#stringifiedUnions")
     override fun `handle union values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#unknown"
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#unknown",
     )
     override fun `handle unknown values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) {
         super.`handle unknown values`(inputValue, expectedValue, expectedChangeReason)
     }
@@ -270,7 +270,7 @@ class ClickhouseDataCoercionTest(
                             )
                         OUT_OF_RANGE_TIMESTAMP ->
                             fixture.copy(
-                                inputValue = TimestampWithTimezoneValue("2300-01-01T00:00:00Z")
+                                inputValue = TimestampWithTimezoneValue("2300-01-01T00:00:00Z"),
                             )
                         else -> fixture
                     }
@@ -283,7 +283,7 @@ class ClickhouseDataCoercionTest(
                             fixture.outputValue?.let {
                                 OffsetDateTime.parse(it as String)
                                     .atZoneSameInstant(ZoneId.of("UTC"))
-                            }
+                            },
                     )
                 }
                 .toArgs()
@@ -317,7 +317,7 @@ class ClickhouseDataCoercionTest(
                             )
                         OUT_OF_RANGE_TIMESTAMP ->
                             fixture.copy(
-                                inputValue = TimestampWithoutTimezoneValue("2300-01-01T00:00:00")
+                                inputValue = TimestampWithoutTimezoneValue("2300-01-01T00:00:00"),
                             )
                         else -> fixture
                     }
@@ -331,7 +331,7 @@ class ClickhouseDataCoercionTest(
                                 LocalDateTime.parse(it as String)
                                     .atOffset(ZoneOffset.UTC)
                                     .atZoneSameInstant(ZoneId.of("UTC"))
-                            }
+                            },
                     )
                 }
                 .toArgs()
@@ -346,12 +346,12 @@ class ClickhouseDataCoercionTest(
                         MINIMUM_TIMESTAMP ->
                             fixture.copy(
                                 inputValue = DateValue("1900-01-01"),
-                                outputValue = "1900-01-01"
+                                outputValue = "1900-01-01",
                             )
                         MAXIMUM_TIMESTAMP ->
                             fixture.copy(
                                 inputValue = DateValue("2299-12-31"),
-                                outputValue = "2299-12-31"
+                                outputValue = "2299-12-31",
                             )
                         OUT_OF_RANGE_TIMESTAMP -> fixture.copy(inputValue = DateValue("2300-01-01"))
                         else -> fixture
@@ -360,7 +360,7 @@ class ClickhouseDataCoercionTest(
                 // clickhouse client returns Date32 values as LocalDate
                 .map { fixture ->
                     fixture.copy(
-                        outputValue = fixture.outputValue?.let { LocalDate.parse(it as String) }
+                        outputValue = fixture.outputValue?.let { LocalDate.parse(it as String) },
                     )
                 }
                 .toArgs()

@@ -51,7 +51,7 @@ class BigQueryJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: DefaultJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<DefaultJdbcPartition> = default.split(unsplitPartition, opaqueStateValues)
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcPartition? {

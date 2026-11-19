@@ -35,7 +35,7 @@ internal class S3DataLakeTableSchemaMapperTest {
         return S3DataLakeTableSchemaMapper(
             config,
             tableIdGenerator,
-            DefaultTempTableNameGenerator()
+            DefaultTempTableNameGenerator(),
         )
     }
 

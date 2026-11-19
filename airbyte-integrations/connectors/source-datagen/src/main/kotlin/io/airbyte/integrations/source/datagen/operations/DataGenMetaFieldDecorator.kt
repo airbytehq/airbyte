@@ -17,19 +17,19 @@ import java.time.OffsetDateTime
 @Singleton
 class DataGenMetaFieldDecorator(
     override val globalCursor: DataOrMetaField?,
-    override val globalMetaFields: Set<MetaField>
+    override val globalMetaFields: Set<MetaField>,
 ) : MetaFieldDecorator {
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {}
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {}
 }

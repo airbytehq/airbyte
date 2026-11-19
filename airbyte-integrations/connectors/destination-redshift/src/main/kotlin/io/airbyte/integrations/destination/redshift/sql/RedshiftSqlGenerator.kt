@@ -59,7 +59,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    WHERE database_name = current_database()
             |    AND schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
             |)
-        """.trimMargin()
+        """
+            .trimMargin()
 
     /** Generates a query to check if a table exists via `information_schema.tables`. */
     fun tableExists(tableName: TableName): String =
@@ -69,7 +70,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
             |    AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
             |)
-        """.trimMargin()
+        """
+            .trimMargin()
 
     fun createTable(
         stream: DestinationStream,
@@ -79,18 +81,17 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         val metaColumns = META_COLUMNS
         val userColumns = getUserColumns(stream)
 
-        val columnDeclarations =
-            buildList {
-                    metaColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
-                    userColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
-                }
-                .joinToString(",\n    ")
+        val columnDeclarations = buildList {
+            metaColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+            }
+            userColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+            }
+        }
+            .joinToString(",\n    ")
 
         val createStatement =
             "CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations);"
@@ -102,7 +103,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 |DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$cascadeSuffix;
                 |$createStatement
                 |COMMIT;
-            """.trimMargin()
+            """
+                .trimMargin()
         } else {
             createStatement
         }
@@ -126,7 +128,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |SELECT ${quoteIdentifier(COLUMN_NAME_AB_GENERATION_ID)}
             |FROM ${getFullyQualifiedName(tableName)}
             |LIMIT 1;
-        """.trimMargin()
+        """
+            .trimMargin()
 
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${getFullyQualifiedName(tableName)} WHERE ${quoteIdentifier("_airbyte_raw_id")} = ?;"
@@ -141,8 +144,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * more columns than the source table, we specify the FILLTARGET parameter.
      *
      * @see <a
-     * href="https://docs.aws.amazon.com/redshift/latest/dg/r_ALTER_TABLE_APPEND.html">Redshift
-     * ALTER TABLE APPEND</a>
+     *   href="https://docs.aws.amazon.com/redshift/latest/dg/r_ALTER_TABLE_APPEND.html">Redshift
+     *   ALTER TABLE APPEND</a>
      */
     fun copyTable(
         sourceTableName: TableName,
@@ -152,7 +155,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |ALTER TABLE ${getFullyQualifiedName(targetTableName)}
             |APPEND FROM ${getFullyQualifiedName(sourceTableName)}
             |FILLTARGET;
-        """.trimMargin()
+        """
+            .trimMargin()
 
     /**
      * Generates a rename-based table swap within a transaction:
@@ -165,7 +169,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$cascadeSuffix;
             |ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             |COMMIT;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -198,7 +203,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // as separate statements. Temp tables are session-scoped so concurrent syncs on
         // different connections cannot collide.
         val dedupTempTable =
-            "_airbyte_dedup_${sourceTableName.namespace}_${sourceTableName.name}".toRedshiftCompatibleName()
+            "_airbyte_dedup_${sourceTableName.namespace}_${sourceTableName.name}"
+                .toRedshiftCompatibleName()
         val dedupRef = quoteIdentifier(dedupTempTable)
 
         val selectDedupedQuery =
@@ -248,7 +254,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 |WHERE $primaryKeysMatchingCondition
                 |  AND $dedupRef.$DELETED_AT_COLUMN_NAME IS NOT NULL
                 |  AND ($cursorComparison);
-                """.trimMargin()
+                """
+                    .trimMargin(),
             )
         }
 
@@ -265,7 +272,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |BEGIN TRANSACTION;
             |${statements.joinToString("\n")}
             |COMMIT;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -294,7 +302,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    FROM ${getFullyQualifiedName(sourceTableName)}
             |  ) AS deduplicated
             |  WHERE row_number = 1
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -338,7 +347,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |  FROM $dedupTableAlias
             |  WHERE $primaryKeysMatches$skipCdcDeletedClause
             |    AND ($cursorComparison)
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -387,7 +397,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    FROM ${getFullyQualifiedName(targetTableName)}
             |    WHERE $primaryKeysConditions
             |  )$skipCdcDeletedClause
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -407,7 +418,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    OR ($target.$cursorTargetColumn = $source.$cursorTargetColumn AND $target.$EXTRACTED_AT_COLUMN_NAME < $source.$EXTRACTED_AT_COLUMN_NAME)
             |    OR ($target.$cursorTargetColumn IS NULL AND $source.$cursorTargetColumn IS NOT NULL)
             |    OR ($target.$cursorTargetColumn IS NULL AND $source.$cursorTargetColumn IS NULL AND $target.$EXTRACTED_AT_COLUMN_NAME < $source.$EXTRACTED_AT_COLUMN_NAME)
-            """.trimMargin()
+            """
+                .trimMargin()
         } else {
             "$target.$EXTRACTED_AT_COLUMN_NAME < $source.$EXTRACTED_AT_COLUMN_NAME"
         }
@@ -444,7 +456,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |BEGIN TRANSACTION;
             |${clauses.joinToString("\n")}
             |COMMIT;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /**
@@ -454,6 +467,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * 1. ADD a temp column with the new type
      * 2. UPDATE to cast data from the old column into the temp column
      * 3. UPDATE `_airbyte_meta` to record a `DESTINATION_TYPECAST_ERROR` for any row where the
+     *
      * ```
      *    original value was non-null but the cast produced null (following the v1 pattern)
      * ```
@@ -496,8 +510,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                     quotedName,
                     tempColumn,
                     quotedMeta,
-                    columnName
-                )
+                    columnName,
+                ),
             )
             // Step 4: Drop the original column
             add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName$cascadeSuffix;")
@@ -531,7 +545,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |)
             |WHERE $quotedOriginalColumn IS NOT NULL
             |AND $quotedTempColumn IS NULL;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /** Generates a query to retrieve column metadata from `information_schema.columns` */
@@ -542,7 +557,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
             |AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
             |ORDER BY ordinal_position;
-        """.trimMargin()
+        """
+            .trimMargin()
 
     /** Generates a Redshift COPY command to load gzip CSV data from S3 */
     fun copyFromS3(
@@ -563,7 +579,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |ROUNDEC
             |IGNOREHEADER 1
             |NULL AS '$NULL_SENTINEL';
-        """.trimMargin()
+        """
+            .trimMargin()
 
     // ================================================================
     // Internal helpers

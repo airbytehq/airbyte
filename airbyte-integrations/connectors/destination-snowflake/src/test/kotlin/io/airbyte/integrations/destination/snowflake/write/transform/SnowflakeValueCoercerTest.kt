@@ -41,7 +41,7 @@ internal class SnowflakeValueCoercerTest {
                 mockk {
                     every { legacyRawTablesOnly } returns false
                     every { numberDataTypeConversion } returns NumberDataType.FLOAT
-                }
+                },
             )
     }
 
@@ -115,7 +115,7 @@ internal class SnowflakeValueCoercerTest {
                     ObjectType(
                         properties = properties,
                         additionalProperties = false,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "name",
                 changes = mutableListOf(),
@@ -355,16 +355,16 @@ internal class SnowflakeValueCoercerTest {
                                                 ObjectValue(
                                                     LinkedHashMap<String, AirbyteValue>().apply {
                                                         put("level4", StringValue("deep value"))
-                                                    }
-                                                )
+                                                    },
+                                                ),
                                             )
-                                        }
-                                    )
+                                        },
+                                    ),
                                 )
-                            }
-                        )
+                            },
+                        ),
                     )
-                }
+                },
             )
 
         val airbyteValue =
@@ -374,7 +374,7 @@ internal class SnowflakeValueCoercerTest {
                     ObjectType(
                         properties = LinkedHashMap(),
                         additionalProperties = true,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "deep_object",
                 changes = mutableListOf(),
@@ -450,7 +450,7 @@ internal class SnowflakeValueCoercerTest {
             ObjectValue(
                 LinkedHashMap<String, AirbyteValue>().apply {
                     put("field", StringValue("a".repeat(stringLength)))
-                }
+                },
             )
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -459,7 +459,7 @@ internal class SnowflakeValueCoercerTest {
                     ObjectType(
                         properties = LinkedHashMap(),
                         additionalProperties = true,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "large_variant",
                 changes = mutableListOf(),
@@ -481,7 +481,7 @@ internal class SnowflakeValueCoercerTest {
             ObjectValue(
                 LinkedHashMap<String, AirbyteValue>().apply {
                     put("field", StringValue("a".repeat(stringLength)))
-                }
+                },
             )
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -490,7 +490,7 @@ internal class SnowflakeValueCoercerTest {
                     ObjectType(
                         properties = LinkedHashMap(),
                         additionalProperties = true,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "exact_limit_variant",
                 changes = mutableListOf(),
@@ -561,12 +561,12 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldNullify).reason
+            (overResult as ValidationResult.ShouldNullify).reason,
         )
         assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldNullify).reason
+            (underResult as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -630,12 +630,12 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldNullify).reason
+            (overResult as ValidationResult.ShouldNullify).reason,
         )
         assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldNullify).reason
+            (underResult as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -696,7 +696,7 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldTruncate::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldTruncate).reason
+            (result as ValidationResult.ShouldTruncate).reason,
         )
 
         // The truncated value should be within range
@@ -715,7 +715,7 @@ internal class SnowflakeValueCoercerTest {
             ObjectValue(
                 LinkedHashMap<String, AirbyteValue>().apply {
                     put("field", StringValue("🎉".repeat(multiByteCount)))
-                }
+                },
             )
 
         val airbyteValue =
@@ -725,7 +725,7 @@ internal class SnowflakeValueCoercerTest {
                     ObjectType(
                         properties = LinkedHashMap(),
                         additionalProperties = true,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "emoji_variant",
                 changes = mutableListOf(),
@@ -742,7 +742,7 @@ internal class SnowflakeValueCoercerTest {
             mockk {
                 every { legacyRawTablesOnly } returns rawMode
                 every { numberDataTypeConversion } returns NumberDataType.NUMBER_38_9
-            }
+            },
         )
 
     private fun enrichedNumber(value: String) =
@@ -764,7 +764,7 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldTruncate::class, floatResult::class)
         assertEquals(
             BigDecimal.valueOf(9.007199254740992E15),
-            ((floatResult as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value
+            ((floatResult as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value,
         )
 
         // NUMBER(38,9) mode keeps the exact value with no change flag.
@@ -789,7 +789,7 @@ internal class SnowflakeValueCoercerTest {
             assertEquals(ValidationResult.ShouldNullify::class, result::class)
             assertEquals(
                 AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-                (result as ValidationResult.ShouldNullify).reason
+                (result as ValidationResult.ShouldNullify).reason,
             )
         }
     }
@@ -804,7 +804,7 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(BigDecimal("0.123456789"), (truncated.truncatedValue as NumberValue).value)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            truncated.reason
+            truncated.reason,
         )
 
         // Negative values also round away from zero.
@@ -812,7 +812,7 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(
             BigDecimal("-0.123456789"),
             ((negativeResult as ValidationResult.ShouldTruncate).truncatedValue as NumberValue)
-                .value
+                .value,
         )
     }
 
@@ -821,7 +821,7 @@ internal class SnowflakeValueCoercerTest {
         // Scale > 9 but numerically unchanged by rounding: not a truncation.
         assertEquals(
             ValidationResult.Valid,
-            numericModeCoercer().validate(enrichedNumber("1.0000000000"))
+            numericModeCoercer().validate(enrichedNumber("1.0000000000")),
         )
     }
 
@@ -843,7 +843,7 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldTruncate::class, result::class)
         assertEquals(
             BigDecimal.valueOf(9.007199254740992E15),
-            ((result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value
+            ((result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value,
         )
     }
 }

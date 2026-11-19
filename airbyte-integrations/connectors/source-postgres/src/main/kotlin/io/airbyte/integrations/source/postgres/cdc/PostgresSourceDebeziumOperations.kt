@@ -77,7 +77,7 @@ class PostgresSourceDebeziumOperations(
         const val LSN_COMMIT = "lsn_commit"
 
         internal fun deserializeStateUnvalidated(
-            opaqueStateValue: OpaqueStateValue
+            opaqueStateValue: OpaqueStateValue,
         ): DebeziumOffset {
             // {
             //     "state": {
@@ -126,8 +126,10 @@ class PostgresSourceDebeziumOperations(
             .with("converters", "datetime")
             .with("datetime.type", PostgresCustomConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
-            // TODO: This will eventually be deprecated in favor of lsn.flush.mode
-            .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
+            // Debezium 3.4 maps the deprecated `flush.lsn.source` true/false to these two modes.
+            // Neither lets the pgjdbc keep-alive advance the slot, so an idle database relies on
+            // `heartbeat.action.query` to prevent WAL growth.
+            .with("lsn.flush.mode", if (cdcConfig.debeziumCommitsLsn) "connector" else "manual")
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
@@ -188,7 +190,7 @@ class PostgresSourceDebeziumOperations(
             } catch (e: Exception) {
                 log.error(e) { "Error deserializing incumbent state value." }
                 return AbortDebeziumWarmStartState(
-                    "Error deserializing incumbent state value: ${e.message}"
+                    "Error deserializing incumbent state value: ${e.message}",
                 )
             }
         return ValidDebeziumWarmStartState(debeziumOffset, null)
@@ -219,7 +221,7 @@ class PostgresSourceDebeziumOperations(
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
-        stream: Stream
+        stream: Stream,
     ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
@@ -375,7 +377,7 @@ class PostgresSourceDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue {
         // We want:
         // {
@@ -399,7 +401,7 @@ class PostgresSourceDebeziumOperations(
         val sequence =
             Jsons.readValue(
                 source["sequence"].toString(),
-                object : TypeReference<List<String>>() {}
+                object : TypeReference<List<String>>() {},
             )
         val lsnCommit = sequence?.get(0)?.toLong()
         return PostgresSourceCdcPosition(

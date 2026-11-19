@@ -60,8 +60,8 @@ class BigQueryReadApiAvailabilityProbeTest {
                 .withNamespace("ds")
                 .withJsonSchema(
                     Jsons.readTree(
-                        """{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}"""
-                    )
+                        """{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}""",
+                    ),
                 )
         tableTypes.register(StreamIdentifier.from(airbyteStream), type)
         return ConfiguredAirbyteStream().withStream(airbyteStream)

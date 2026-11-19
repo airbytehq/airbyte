@@ -92,8 +92,7 @@ class DatabricksDataDumper(
                                 }
                             val extractedAt =
                                 rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT, utcCalendar())
-                                    ?.toInstant()
-                                    ?: Instant.EPOCH
+                                    ?.toInstant() ?: Instant.EPOCH
                             val generationId =
                                 rs.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID).let {
                                     if (rs.wasNull()) null else it
@@ -183,8 +182,7 @@ class DatabricksDataDumper(
                                         ?: "DESTINATION_SERIALIZATION_ERROR",
                                 ),
                         )
-                    }
-                        ?: emptyList()
+                    } ?: emptyList()
                 val syncId = node.get("sync_id")?.asLong()
                 OutputRecord.Meta(changes = changes, syncId = syncId)
             } catch (_: Exception) {

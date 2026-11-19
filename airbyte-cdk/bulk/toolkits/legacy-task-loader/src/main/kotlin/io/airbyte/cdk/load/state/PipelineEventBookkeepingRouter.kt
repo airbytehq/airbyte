@@ -47,10 +47,12 @@ import org.apache.mina.util.ConcurrentHashSet
  * - sockets receive checkpointId on the record, stdio infers from state message order
  * - speed will receive complete/incomplete on all sockets (no need to publish)
  * - because they are flows, sockets don't need memory management; the buffer can serve as the
+ *
  * ```
  *    backpressure scheme (note: the exception to this is for file transfer, which forwards the
  *    record after handling the file; and of course obviously for state)
  * ```
+ *
  * These differences might diverge/converge as we tune (i.e., because of lock contention with
  * multiple sockets, or because the socket pattern ends up working for stdio as well). For now,
  * since the main difference is what is done with the pipeline events, we'll consolidate bookkeeping
@@ -68,7 +70,7 @@ class PipelineEventBookkeepingRouter(
     private val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("numDataChannels") private val numDataChannels: Int,
     @Named("markEndOfStreamAtEndOfSync") private val markEndOfStreamAtEndOfSync: Boolean,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
@@ -115,10 +117,17 @@ class PipelineEventBookkeepingRouter(
             syncManager.awaitSetupComplete()
             log.info { "Setup complete, starting stream ${stream.mappedDescriptor}" }
             openStreamQueue.publish(stream)
-            syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
-            log.info { "Initialization for stream ${stream.mappedDescriptor} complete" }
         }
+
         val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+
+        // Other data channels can carry the same stream, so every message must wait for it to
+        // open. The flag check is a single volatile read on the manager we already hold, so once
+        // the loader has started the hot path never pays for the map lookup, the suspend call, or
+        // its continuation allocation.
+        if (!manager.isLoaderStarted()) {
+            syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
+        }
 
         return when (message) {
             is DestinationRecord -> {
@@ -130,7 +139,7 @@ class PipelineEventBookkeepingRouter(
                     mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.mappedDescriptor),
                     record,
-                    postProcessingCallback
+                    postProcessingCallback,
                 )
             }
             is DestinationRecordStreamComplete -> {
@@ -147,7 +156,7 @@ class PipelineEventBookkeepingRouter(
                 val checkpointId = resolveCheckpointId(null, stream.mappedDescriptor)
                 val index = manager.incrementReadCount(checkpointId)
                 fileTransferQueue.publish(
-                    FileTransferQueueRecord(stream, message, index, checkpointId)
+                    FileTransferQueueRecord(stream, message, index, checkpointId),
                 )
                 PipelineHeartbeat()
             }
@@ -171,7 +180,7 @@ class PipelineEventBookkeepingRouter(
                 if (maybeKey != null) {
                     if (checkpoint.sourceStats == null) {
                         error(
-                            "Source stats should always be present when checkpoint key is provided"
+                            "Source stats should always be present when checkpoint key is provided",
                         )
                     }
                 }
@@ -186,9 +195,9 @@ class PipelineEventBookkeepingRouter(
                         StreamCheckpointWrapped(
                             manager.stream.mappedDescriptor,
                             key,
-                            messageWithCount
-                        )
-                    )
+                            messageWithCount,
+                        ),
+                    ),
                 )
             }
             is GlobalSnapshotCheckpoint -> {
@@ -199,7 +208,7 @@ class PipelineEventBookkeepingRouter(
                     catalog.streams.map { stream ->
                         if (checkpoint.sourceStats == null) {
                             error(
-                                "Source stats should always be present when checkpoint key is provided"
+                                "Source stats should always be present when checkpoint key is provided",
                             )
                         }
 
@@ -224,15 +233,15 @@ class PipelineEventBookkeepingRouter(
                 val singleKey =
                     streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
                         ?: error(
-                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+                            "For global state, all streams should have the same key: $streamWithKeyAndCount",
                         )
                 val totalCounts = streamWithKeyAndCount.sumOf { it.second }
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCounts))
                 checkpointQueue.publish(
                     reservation.replace(
-                        GlobalSnapshotCheckpointWrapped(singleKey, messageWithCount)
-                    )
+                        GlobalSnapshotCheckpointWrapped(singleKey, messageWithCount),
+                    ),
                 )
             }
             is GlobalCheckpoint -> {
@@ -243,7 +252,7 @@ class PipelineEventBookkeepingRouter(
                         if (maybeKey != null) {
                             if (checkpoint.sourceStats == null) {
                                 error(
-                                    "Source stats should always be present when checkpoint key is provided"
+                                    "Source stats should always be present when checkpoint key is provided",
                                 )
                             }
                         }
@@ -254,13 +263,13 @@ class PipelineEventBookkeepingRouter(
                 val singleKey =
                     streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
                         ?: error(
-                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+                            "For global state, all streams should have the same key: $streamWithKeyAndCount",
                         )
                 val totalCounts = streamWithKeyAndCount.sumOf { it.second }
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCounts))
                 checkpointQueue.publish(
-                    reservation.replace(GlobalCheckpointWrapped(singleKey, messageWithCount))
+                    reservation.replace(GlobalCheckpointWrapped(singleKey, messageWithCount)),
                 )
             }
         }
@@ -268,12 +277,12 @@ class PipelineEventBookkeepingRouter(
 
     private fun resolveCheckpointId(
         checkpointId: CheckpointId?,
-        mappedDescriptor: DestinationStream.Descriptor
+        mappedDescriptor: DestinationStream.Descriptor,
     ): CheckpointId = checkpointId ?: currentCheckpointKey(mappedDescriptor).checkpointId
 
     private fun resolveCheckpointKey(
         checkpointKey: CheckpointKey?,
-        mappedDescriptor: DestinationStream.Descriptor
+        mappedDescriptor: DestinationStream.Descriptor,
     ): CheckpointKey = checkpointKey ?: currentCheckpointKey(mappedDescriptor)
 
     private fun incrementIndex(mappedDescriptor: DestinationStream.Descriptor) {
@@ -301,8 +310,8 @@ class PipelineEventBookkeepingRouter(
                             it.mappedDescriptor,
                             "bookkeepingRouter",
                             0,
-                            manager.readCount()
-                        )
+                            manager.readCount(),
+                        ),
                     )
                 }
             }

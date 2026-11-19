@@ -307,7 +307,7 @@ object Jsons {
     private fun replaceNested(
         json: JsonNode,
         keys: List<String>,
-        typedReplacement: BiConsumer<ObjectNode, String>
+        typedReplacement: BiConsumer<ObjectNode, String>,
     ) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))
@@ -365,7 +365,7 @@ object Jsons {
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
             val output: MutableMap<String, Any> = HashMap()
-            val it = node.fields()
+            val it = node.properties().iterator()
             while (it.hasNext()) {
                 val entry = it.next()
                 val field = entry.key

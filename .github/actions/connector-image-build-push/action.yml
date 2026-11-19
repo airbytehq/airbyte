@@ -76,19 +76,27 @@ runs:
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-    - name: Install Poe and yq
+    - name: Install Poe and check yq version
       shell: bash
       run: |
         uv tool install poethepoet
-        sudo snap install yq
+        yq --version
 
     - name: Validate inputs and resolve variables
       id: vars
       shell: bash
+      env:
+        IN_CONNECTOR_NAME: ${{ inputs.connector-name }}
+        IN_TAG_OVERRIDE: ${{ inputs.tag-override }}
+        IN_WITH_SEMVER_SUFFIX: ${{ inputs.with-semver-suffix }}
+        IN_PUSH_LATEST_TAG: ${{ inputs.push-latest-tag }}
+        IN_DRY_RUN: ${{ inputs.dry-run }}
+        IN_FORCE_PUBLISH: ${{ inputs.force-publish }}
+        IN_REGISTRY: ${{ inputs.registry }}
       run: |
         set -euo pipefail
 
-        CONNECTOR_NAME="${{ inputs.connector-name }}"
+        CONNECTOR_NAME="${IN_CONNECTOR_NAME}"
         CONNECTOR_DIR="airbyte-integrations/connectors/${CONNECTOR_NAME}"
         METADATA_FILE="${CONNECTOR_DIR}/metadata.yaml"
 
@@ -135,14 +143,14 @@ runs:
         fi
 
         # Determine the image tags to use 
-        if [[ "${{ inputs.tag-override }}" ]]; then
-          CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
+        if [[ "${IN_TAG_OVERRIDE}" ]]; then
+          CONNECTOR_VERSION_TAG="${IN_TAG_OVERRIDE}"
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
-        elif [[ "${{ inputs.with-semver-suffix }}" == "preview" ]]; then
+        elif [[ "${IN_WITH_SEMVER_SUFFIX}" == "preview" ]]; then
           hash=$(git rev-parse --short=7 HEAD)
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
           echo "🏷 Using preview tag: $CONNECTOR_VERSION_TAG"
-        elif [[ "${{ inputs.with-semver-suffix }}" == "rc" ]]; then
+        elif [[ "${IN_WITH_SEMVER_SUFFIX}" == "rc" ]]; then
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-rc1"
           echo "🏷 Using RC tag: $CONNECTOR_VERSION_TAG"
         else
@@ -151,13 +159,13 @@ runs:
         fi
 
         # Determine whether to push with latest tag
-        if [[ "${{ inputs.push-latest-tag }}" == "true" || "${{ inputs.push-latest-tag }}" == "false" ]]; then
+        if [[ "${IN_PUSH_LATEST_TAG}" == "true" || "${IN_PUSH_LATEST_TAG}" == "false" ]]; then
           # Use explicit input value
-          PUSH_LATEST_TAG="${{ inputs.push-latest-tag }}"
+          PUSH_LATEST_TAG="${IN_PUSH_LATEST_TAG}"
           echo "🏷 Using explicit push-latest-tag setting: $PUSH_LATEST_TAG"
         else
           # Auto-determine based on with-semver-suffix and release candidate status
-          if [[ "${{ inputs.with-semver-suffix }}" == "none" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
+          if [[ "${IN_WITH_SEMVER_SUFFIX}" == "none" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
             PUSH_LATEST_TAG="true"
             echo "🏷 Will push with latest tag for production release"
           else
@@ -167,13 +175,13 @@ runs:
         fi
 
         # Can't dry-run and force-publish at the same time
-        if [[ "${{ inputs.dry-run }}" == "true" && "${{ inputs.force-publish }}" == "true" ]]; then
+        if [[ "${IN_DRY_RUN}" == "true" && "${IN_FORCE_PUBLISH}" == "true" ]]; then
           echo "❌ Cannot use dry-run and force-publish together"
           exit 1
         fi
 
         # Validate image registry input
-        case "${{ inputs.registry }}" in
+        case "${IN_REGISTRY}" in
           "docker.io/airbyte")
             # Supported registries
             ;;
@@ -183,17 +191,17 @@ runs:
             exit 1
             ;;
           *)
-            echo "❌ Unsupported registry: ${{ inputs.registry }}"
+            echo "❌ Unsupported registry: ${IN_REGISTRY}"
             exit 1
             ;;
         esac
 
-        FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
+        FULL_IMAGE_NAME="${IN_REGISTRY}/${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
 
         # Get all tags to use for image pushing
         DOCKER_TAGS="${FULL_IMAGE_NAME}"
         if [[ "$PUSH_LATEST_TAG" == "true" ]]; then
-          DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
+          DOCKER_TAGS="${DOCKER_TAGS},${IN_REGISTRY}/${CONNECTOR_NAME}:latest"
         fi
 
         echo "📋 Build Details:"
@@ -201,12 +209,12 @@ runs:
         echo "  Language: $CONNECTOR_LANGUAGE"
         echo "  Base Image: $BASE_IMAGE"
         echo "  Version Tag: $CONNECTOR_VERSION_TAG"
-        echo "  Registry: ${{ inputs.registry }}"
+        echo "  Registry: ${IN_REGISTRY}"
         echo "  Full Image Name: $FULL_IMAGE_NAME"
-        echo "  Semver Suffix: ${{ inputs.with-semver-suffix }}"
+        echo "  Semver Suffix: ${IN_WITH_SEMVER_SUFFIX}"
         echo "  Push Latest Tag: $PUSH_LATEST_TAG"
-        echo "  Dry Run: ${{ inputs.dry-run }}"
-        echo "  Force Publish: ${{ inputs.force-publish }}"
+        echo "  Dry Run: ${IN_DRY_RUN}"
+        echo "  Force Publish: ${IN_FORCE_PUBLISH}"
 
         {
           echo "connector-name=$CONNECTOR_NAME"
@@ -221,6 +229,11 @@ runs:
     - name: Check if image already exists
       id: check-exists
       shell: bash
+      env:
+        STEP_VARS_CONNECTOR_NAME: ${{ steps.vars.outputs.connector-name }}
+        STEP_VARS_CONNECTOR_VERSION_TAG: ${{ steps.vars.outputs.connector-version-tag }}
+        IN_DRY_RUN: ${{ inputs.dry-run }}
+        IN_FORCE_PUBLISH: ${{ inputs.force-publish }}
       run: |
         set -euo pipefail
 
@@ -230,9 +243,9 @@ runs:
         IMAGE_EXISTS="unknown"
 
         # Use Docker Hub API with retry and exponential backoff
-        URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.connector-version-tag }}/"
+        URL="https://registry.hub.docker.com/v2/repositories/airbyte/${STEP_VARS_CONNECTOR_NAME}/tags/${STEP_VARS_CONNECTOR_VERSION_TAG}/"
         STATUS=""
-        echo "🔍 Checking if image exists on Docker Hub: ${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}"
+        echo "🔍 Checking if image exists on Docker Hub: ${STEP_VARS_CONNECTOR_NAME}:${STEP_VARS_CONNECTOR_VERSION_TAG}"
 
         max_attempts=5
         for attempt in {1..$max_attempts}; do
@@ -275,14 +288,14 @@ runs:
         esac
 
         # If dry-run is enabled, set build and publish decisions accordingly
-        if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+        if [[ "${IN_DRY_RUN}" == "true" ]]; then
           echo "🔄 Dry run mode enabled - will build but not push"
           DO_BUILD="true"
           DO_PUBLISH="false"
         fi
 
         # If force-publish is enabled, override decisions
-        if [[ "${{ inputs.force-publish }}" == "true" ]]; then
+        if [[ "${IN_FORCE_PUBLISH}" == "true" ]]; then
           echo "🔄 Force publish enabled - will build and push regardless of existing image"
           DO_BUILD="true"
           DO_PUBLISH="true"
@@ -294,8 +307,8 @@ runs:
         echo "  Image exists: $IMAGE_EXISTS"
         echo "  Will build: $DO_BUILD"
         echo "  Will publish: $DO_PUBLISH"
-        echo "  Dry run mode: ${{ inputs.dry-run }}"
-        echo "  Force publish: ${{ inputs.force-publish }}"
+        echo "  Dry run mode: ${IN_DRY_RUN}"
+        echo "  Force publish: ${IN_FORCE_PUBLISH}"
 
         # Set outputs for subsequent steps
         {
@@ -332,8 +345,10 @@ runs:
     - name: Run `spec` Image Test
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
       shell: bash
+      env:
+        STEP_VARS_CONNECTOR_IMAGE_NAME: ${{ steps.vars.outputs.connector-image-name }}
       run: |
-        image_name="${{ steps.vars.outputs.connector-image-name }}"
+        image_name="${STEP_VARS_CONNECTOR_IMAGE_NAME}"
         echo "Running spec test for image: $image_name"
         docker run --rm $image_name spec > /dev/null
 

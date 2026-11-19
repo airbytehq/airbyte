@@ -61,7 +61,13 @@ internal class PostgresAirbyteClientTest {
         every { postgresConfiguration.legacyRawTablesOnly } returns false
         every { columnManager.getMetaColumnNames() } returns emptySet()
         client =
-            PostgresAirbyteClient(dataSource, sqlGenerator, columnManager, postgresConfiguration)
+            PostgresAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                columnManager,
+                postgresConfiguration,
+                metaColumnRepairEnabled = false,
+            )
     }
 
     @Test
@@ -308,7 +314,7 @@ internal class PostgresAirbyteClientTest {
                 stream = stream,
                 tableName = tableName,
                 columnNameMapping = columnNameMapping,
-                replace = true
+                replace = true,
             )
             verify(exactly = 2) { statement.execute(any()) }
             verify(exactly = 2) { mockConnection.close() }
@@ -366,7 +372,7 @@ internal class PostgresAirbyteClientTest {
             client.copyTable(
                 columnNameMapping = columnNameMapping,
                 sourceTableName = sourceTableName,
-                targetTableName = targetTableName
+                targetTableName = targetTableName,
             )
             verify(exactly = 1) { mockConnection.close() }
             verify(exactly = 1) {
@@ -375,7 +381,7 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.copyTable(
                     match { it.containsAll(listOf("targetCol1", "targetCol2")) },
                     sourceTableName,
-                    targetTableName
+                    targetTableName,
                 )
             }
         }
@@ -407,7 +413,7 @@ internal class PostgresAirbyteClientTest {
                 stream = stream,
                 columnNameMapping = columnNameMapping,
                 sourceTableName = sourceTableName,
-                targetTableName = targetTableName
+                targetTableName = targetTableName,
             )
             verify(exactly = 1) { mockConnection.close() }
         }
@@ -657,7 +663,7 @@ internal class PostgresAirbyteClientTest {
             mapOf(
                 "col1" to ColumnType("varchar", true),
                 "col2" to ColumnType("decimal", true),
-                "col3" to ColumnType("timestamp with time zone", true)
+                "col3" to ColumnType("timestamp with time zone", true),
             )
 
         assertEquals(expectedColumns, result)
@@ -681,7 +687,7 @@ internal class PostgresAirbyteClientTest {
         assertEquals(1, modified.size)
         assertEquals(
             ColumnTypeChange(ColumnType("integer", true), ColumnType("varchar", true)),
-            modified["col2"]
+            modified["col2"],
         )
     }
 
@@ -769,7 +775,7 @@ internal class PostgresAirbyteClientTest {
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = false,
-                    cursorColumnName = null
+                    cursorColumnName = null,
                 )
             }
         }
@@ -846,7 +852,7 @@ internal class PostgresAirbyteClientTest {
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = false,
-                    cursorColumnName = null
+                    cursorColumnName = null,
                 )
             }
         }
@@ -923,7 +929,7 @@ internal class PostgresAirbyteClientTest {
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),
                     recreateCursorIndex = false,
-                    cursorColumnName = null
+                    cursorColumnName = null,
                 )
             }
         }
@@ -1000,7 +1006,7 @@ internal class PostgresAirbyteClientTest {
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = true,
-                    cursorColumnName = "new_cursor"
+                    cursorColumnName = "new_cursor",
                 )
             }
         }
@@ -1079,11 +1085,12 @@ internal class PostgresAirbyteClientTest {
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),
                     recreateCursorIndex = true,
-                    cursorColumnName = "new_cursor"
+                    cursorColumnName = "new_cursor",
                 )
             }
         }
     }
+
     @Test
     fun testGetColumnsFromDbIncludesMetaColumnsWhenRepairEnabled() {
         val tableName = TableName(namespace = "test_namespace", name = "test_table")
@@ -1181,7 +1188,7 @@ internal class PostgresAirbyteClientTest {
                     COLUMN_NAME_AB_EXTRACTED_AT,
                     COLUMN_NAME_AB_META,
                     "col1",
-                )
+                ),
             )
 
         val alterSql = "ALTER_META_SQL"
@@ -1278,7 +1285,7 @@ internal class PostgresAirbyteClientTest {
         // Pre-direct-load-shaped table missing _airbyte_meta and _airbyte_generation_id.
         val tableSchemaResultSet =
             mockTableSchemaResultSet(
-                listOf(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, "col1")
+                listOf(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, "col1"),
             )
         val statement =
             mockk<Statement> {

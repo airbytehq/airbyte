@@ -114,7 +114,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
-        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
+        env:
+          IN_CONNECTORS: ${{ inputs.connectors }}
+        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${IN_CONNECTORS}) | tee -a $GITHUB_OUTPUT
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
         if: github.event_name == 'push'
@@ -134,18 +136,22 @@ jobs:
       - name: Resolve semver suffix
         id: resolve-semver-suffix
         shell: bash
+        env:
+          EXPR_1: ${{ inputs.with-semver-suffix || 'default' }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+          EXPR_2: ${{ inputs.registry-refresh-only || 'false' }}
         run: |
           # Determine the semver suffix mode.
           # Priority: with-semver-suffix input > defaults
           # Note: On push events, inputs.* is undefined (empty string), so we treat empty as 'default'
-          SEMVER_SUFFIX="${{ inputs.with-semver-suffix || 'default' }}"
+          SEMVER_SUFFIX="${EXPR_1}"
 
           # Resolve 'default' based on trigger type
           if [[ "$SEMVER_SUFFIX" == "default" ]]; then
-            if [[ "${{ github.event_name }}" == "push" ]]; then
+            if [[ "${GH_EVENT_NAME}" == "push" ]]; then
               # On merge to master, use exact version (no suffix)
               SEMVER_SUFFIX="none"
-            elif [[ "${{ inputs.registry-refresh-only || 'false' }}" == "true" ]]; then
+            elif [[ "${EXPR_2}" == "true" ]]; then
               # Registry refresh-only publishes use the exact version already declared in metadata.yaml.
               SEMVER_SUFFIX="none"
             else
@@ -159,13 +165,17 @@ jobs:
         if: >
           inputs.registry-refresh-only == true
         shell: bash
+        env:
+          STEP_LIST_CONNECTORS_MANUAL_CONNECTORS_TO_PUBLISH: ${{ steps.list-connectors-manual.outputs.connectors-to-publish }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+          STEP_RESOLVE_SEMVER_SUFFIX_WITH_SEMVER_SUFFIX: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+          if [[ "${GH_EVENT_NAME}" != "workflow_dispatch" ]]; then
             echo "registry-refresh-only publishes are only supported from workflow_dispatch."
             exit 1
           fi
-          CONNECTOR_COUNT=$(echo '${{ steps.list-connectors-manual.outputs.connectors-to-publish }}' | jq '.connector | length')
+          CONNECTOR_COUNT=$(echo "${STEP_LIST_CONNECTORS_MANUAL_CONNECTORS_TO_PUBLISH}" | jq '.connector | length')
           if [[ "$CONNECTOR_COUNT" -eq 0 ]]; then
             echo "registry-refresh-only publishes require at least one connector."
             exit 1
@@ -174,21 +184,23 @@ jobs:
             echo "registry-refresh-only publishes currently support exactly one connector."
             exit 1
           fi
-          if [[ "${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}" != "none" ]]; then
+          if [[ "${STEP_RESOLVE_SEMVER_SUFFIX_WITH_SEMVER_SUFFIX}" != "none" ]]; then
             echo "registry-refresh-only publishes must use with-semver-suffix=none or default."
             exit 1
           fi
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
         shell: bash
+        env:
+          IN_PUBLISH_JAVA_TARS: ${{ inputs.publish-java-tars }}
         run: |
           # If workflow is triggered on merge to master, we can assume
           # the workflow is running in the open-source repo and we always want to publish.
-          if [[ "${{ inputs.publish-java-tars }}" == "" ]]; then
+          if [[ "${IN_PUBLISH_JAVA_TARS}" == "" ]]; then
             echo "publish-java-tars=true" | tee -a $GITHUB_OUTPUT
           # if workflow is triggered manually, any other way, use the input publish-java-tars.
           else
-            echo "publish-java-tars=${{ inputs.publish-java-tars }}" | tee -a $GITHUB_OUTPUT
+            echo "publish-java-tars=${IN_PUBLISH_JAVA_TARS}" | tee -a $GITHUB_OUTPUT
           fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
@@ -259,19 +271,16 @@ jobs:
           check-latest: true
           update-environment: true
 
-      - name: Install and configure Poetry
-        # v1
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
-        with:
-          # There are a few uses of `poetry run --directory` in various scripts.
-          # If we upgrade to 2.x, those need to be switched to `--project`.
-          version: 1.8.5
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
+
+      - name: Install Poetry
+        # There are a few uses of `poetry run --directory` in various scripts.
+        # If we upgrade to 2.x, those need to be switched to `--project`.
+        run: uv tool install poetry==1.8.5
 
       - name: Install Poe and Ops CLI
         run: |
@@ -291,10 +300,12 @@ jobs:
       - name: Resolve ephemeral version tag (preview)
         id: resolve-ephemeral-version
         if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           RESOLVED_TAG=$(
             airbyte-ops local connector get-version \
-              --name "${{ matrix.connector }}" \
+              --name "${MATRIX_CONNECTOR}" \
               --repo-path "$GITHUB_WORKSPACE" \
               --next --prerelease
           )
@@ -303,10 +314,12 @@ jobs:
       - name: Resolve ephemeral version tag (rc)
         id: resolve-ephemeral-version-rc
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           RESOLVED_TAG=$(
             airbyte-ops local connector get-version \
-              --name "${{ matrix.connector }}" \
+              --name "${MATRIX_CONNECTOR}" \
               --repo-path "$GITHUB_WORKSPACE" \
               --next --bump-type rc
           )
@@ -314,12 +327,14 @@ jobs:
 
       - name: Resolve connector version tag
         id: resolve-version
-        run: |
-          echo "connector-version-tag=${{
+        env:
+          CONNECTOR_VERSION_TAG: ${{
             steps.resolve-ephemeral-version.outputs.connector-version-tag
             || steps.resolve-ephemeral-version-rc.outputs.connector-version-tag
             || steps.connector-metadata.outputs.connector-version
-          }}" | tee -a $GITHUB_OUTPUT
+            }}
+        run: |
+          echo "connector-version-tag=${CONNECTOR_VERSION_TAG}" | tee -a $GITHUB_OUTPUT
 
       - name: Resolve docker image tag
         id: resolve-docker-image-tag
@@ -329,16 +344,19 @@ jobs:
           # `airbyte-ops registry connector-version next` fetches metadata.yaml from
           # master via the GitHub API; without a token it hits the anonymous rate limit.
           GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          STEP_CONNECTOR_METADATA_CONNECTOR_VERSION: ${{ steps.connector-metadata.outputs.connector-version }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           set -euo pipefail
-          CONNECTOR_VERSION="${{ steps.connector-metadata.outputs.connector-version }}"
-          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          CONNECTOR_VERSION="${STEP_CONNECTOR_METADATA_CONNECTOR_VERSION}"
+          SEMVER_SUFFIX="${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
 
           # Generate docker image tag based on semver suffix mode
           case "$SEMVER_SUFFIX" in
             preview)
               DOCKER_TAG=$(airbyte-ops registry connector-version next \
-                --name "${{ matrix.connector }}" \
+                --name "${MATRIX_CONNECTOR}" \
                 --sha "$(git rev-parse HEAD)" \
                 --base-version "${CONNECTOR_VERSION}")
               echo "docker-image-tag=${DOCKER_TAG}" | tee -a $GITHUB_OUTPUT
@@ -363,11 +381,13 @@ jobs:
         id: check-release-block
         if: needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          BLOCK_FILE="airbyte-integrations/connectors/${{ matrix.connector }}/block-release.yaml"
+          BLOCK_FILE="airbyte-integrations/connectors/${MATRIX_CONNECTOR}/block-release.yaml"
           if [[ -f "$BLOCK_FILE" ]]; then
             REASON=$(cat "$BLOCK_FILE" | head -1 | sed 's/^reason: *//' | tr -d '"')
-            echo "::warning::⚠️ Release BLOCKED for ${{ matrix.connector }}: ${REASON}"
+            echo "::warning::⚠️ Release BLOCKED for ${MATRIX_CONNECTOR}: ${REASON}"
             echo "::warning::Skipping all publish steps. Remove block-release.yaml to unblock."
             echo "blocked=true" >> $GITHUB_OUTPUT
             cat "$BLOCK_FILE"
@@ -385,8 +405,10 @@ jobs:
           needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
         env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
@@ -400,8 +422,10 @@ jobs:
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
         run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" --publish
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
@@ -413,9 +437,11 @@ jobs:
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
         run: |
           echo "DRY-RUN: Building JVM connector without publishing..."
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
@@ -426,8 +452,10 @@ jobs:
           needs.publish_options.outputs.dry-run != 'true' &&
           needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
-        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
         env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
@@ -440,8 +468,82 @@ jobs:
           needs.publish_options.outputs.publish-java-tars == 'true' &&
           needs.publish_options.outputs.dry-run == 'true' &&
           needs.publish_options.outputs.registry-refresh-only != 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
+          echo "DRY-RUN: Skipping JVM connector tar file upload for ${MATRIX_CONNECTOR}"
+
+      # ---------- JVM connector fat jar ----------
+      # Bulk CDK connectors also publish a self-contained jar to CloudRepo as
+      # io.airbyte.connectors:<image name>:<image tag>, which the platform runs connector checks from.
+      # Published releases there can't be overwritten, so a version that is already published is skipped.
+      - name: Resolve Variables (JVM connector fat jar)
+        id: resolve-fat-jar
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          JAR_REPOSITORY_URL: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars
+        run: |
+          set -euo pipefail
+          connector_dir="airbyte-integrations/connectors/${CONNECTOR}"
+          artifact_id=$(yq -r '.data.dockerRepository' "${connector_dir}/metadata.yaml" | awk -F/ '{print $NF}')
+          jar_url="${JAR_REPOSITORY_URL}/io/airbyte/connectors/${artifact_id}/${JAR_VERSION}/${artifact_id}-${JAR_VERSION}.jar"
+
+          uses_bulk_cdk=false
+          grep -q "id 'airbyte-bulk-connector'" "${connector_dir}/build.gradle" && uses_bulk_cdk=true
+
+          # curl prints 000 when CloudRepo can't be reached; report that below instead of failing on curl's exit code.
+          status=$(curl -s -o /dev/null -w '%{http_code}' --head "$jar_url" || true)
+          [[ "$status" != "200" && "$status" != "404" ]] \
+            && echo "::error::CloudRepo answered ${status} for ${jar_url}" \
+            && exit 1
+          already_published=false
+          [[ "$status" == "200" ]] && already_published=true
+
+          publish=false
+          [[ "$uses_bulk_cdk" == "true" && "$already_published" == "false" ]] && publish=true
+          {
+            echo "jar-url=${jar_url}"
+            echo "uses-bulk-cdk=${uses_bulk_cdk}"
+            echo "already-published=${already_published}"
+            echo "publish=${publish}"
+          } | tee -a "$GITHUB_OUTPUT"
+        # Remove once the fat jar step has proven itself, like the tar file step above.
+        continue-on-error: true
+
+      - name: Publish JVM connector fat jar
+        id: publish-JVM-connector-fat-jar
+        if: >
+          steps.resolve-fat-jar.outputs.publish == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: >
+          ./gradlew -DciMode=true -PconnectorJarVersion="${JAR_VERSION}"
+          ":airbyte-integrations:connectors:${CONNECTOR}:publishConnectorJar"
+        # Remove once the fat jar step has proven itself, like the tar file step above.
+        continue-on-error: true
+
+      - name: "[DRY-RUN] Build JVM connector fat jar (no publish)"
+        if: >
+          steps.resolve-fat-jar.outputs.publish == 'true' &&
+          needs.publish_options.outputs.dry-run == 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+        run: >
+          ./gradlew -DciMode=true -PconnectorJarVersion="${JAR_VERSION}"
+          ":airbyte-integrations:connectors:${CONNECTOR}:connectorFatJar"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
@@ -464,9 +566,12 @@ jobs:
         if: >
           needs.publish_options.outputs.registry-refresh-only == 'true'
         shell: bash
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
         run: |
-          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
-          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}"
           docker pull "${DOCKER_IMAGE}"
 
       - name: Enable progressive rollout for RC builds
@@ -494,12 +599,15 @@ jobs:
         if: >
           steps.check-release-block.outputs.blocked != 'true' &&
           needs.publish_options.outputs.with-semver-suffix == 'preview'
+        env:
+          STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          echo "Bumping metadata.yaml version to ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          echo "Bumping metadata.yaml version to ${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}"
           airbyte-ops local connector bump-version \
-            --name "${{ matrix.connector }}" \
+            --name "${MATRIX_CONNECTOR}" \
             --repo-path "$GITHUB_WORKSPACE" \
-            --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
+            --new-version "${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}" \
             --no-changelog \
             --progressive-rollout-enabled=false
 
@@ -565,10 +673,12 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
         run: |
-          echo "Generating registry artifacts for ${{ matrix.connector }}"
-          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
-          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          echo "Generating registry artifacts for ${MATRIX_CONNECTOR}"
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}"
           PR_NUMBER_ARGS=()
           PR_NUMBER="${PR_NUMBER//[[:space:]]/}"
           if [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
@@ -578,9 +688,9 @@ jobs:
           fi
           airbyte-ops \
             registry connector-version artifacts generate \
-            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --metadata-file "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts/${{ matrix.connector }} \
+            --output-dir "./registry-artifacts/${MATRIX_CONNECTOR}" \
             --with-validate \
             --with-sbom \
             --with-dependency-dump \
@@ -604,13 +714,15 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
         run: |
-          echo "Publishing registry artifacts for ${{ matrix.connector }}"
+          echo "Publishing registry artifacts for ${MATRIX_CONNECTOR}"
           airbyte-ops \
             registry connector-version artifacts publish \
-            --name "${{ matrix.connector }}" \
-            --version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
-            --artifacts-dir ./registry-artifacts/${{ matrix.connector }} \
+            --name "${MATRIX_CONNECTOR}" \
+            --version "${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}" \
+            --artifacts-dir "./registry-artifacts/${MATRIX_CONNECTOR}" \
             --store "${REGISTRY_STORE}" \
             --with-validate
 
@@ -620,11 +732,17 @@ jobs:
           success() &&
           steps.check-release-block.outputs.blocked != 'true' &&
           needs.publish_options.outputs.dry-run != 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
+          IN_PR: ${{ inputs.pr }}
+          NEEDS_PUBLISH_OPTIONS_REGISTRY_REFRESH_ONLY: ${{ needs.publish_options.outputs.registry-refresh-only }}
         run: |
-          CONNECTOR="${{ matrix.connector }}"
-          DOCKER_TAG="${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
-          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
-          PR_NUMBER="${{ inputs.pr }}"
+          CONNECTOR="${MATRIX_CONNECTOR}"
+          DOCKER_TAG="${STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG}"
+          SEMVER_SUFFIX="${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
+          PR_NUMBER="${IN_PR}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
@@ -639,7 +757,7 @@ jobs:
             RELEASE_TYPE="Pre-release"
             EMOJI="🔵"
           fi
-          if [[ "${{ needs.publish_options.outputs.registry-refresh-only }}" == "true" ]]; then
+          if [[ "${NEEDS_PUBLISH_OPTIONS_REGISTRY_REFRESH_ONLY}" == "true" ]]; then
             RELEASE_TYPE="Registry refresh-only artifact"
             EMOJI="🟡"
           fi
@@ -724,9 +842,14 @@ jobs:
           GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
       - name: Build notification context
         id: context
+        env:
+          NEEDS_PUBLISH_OPTIONS_CONNECTORS_TO_PUBLISH: ${{ needs.publish_options.outputs.connectors-to-publish }}
+          IN_PR: ${{ inputs.pr }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
+          GH_EVENT_NAME: ${{ github.event_name }}
         run: |
-          PR_NUMBER="${{ inputs.pr }}"
-          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          PR_NUMBER="${IN_PR}"
+          SEMVER_SUFFIX="${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Append ?pr=N for "Back to pull request" link in GitHub Actions UI
@@ -742,7 +865,7 @@ jobs:
           fi
 
           # Extract connector names from the matrix JSON
-          CONNECTORS_JSON='${{ needs.publish_options.outputs.connectors-to-publish }}'
+          CONNECTORS_JSON="${NEEDS_PUBLISH_OPTIONS_CONNECTORS_TO_PUBLISH}"
           CONNECTOR_NAMES=$(echo "$CONNECTORS_JSON" | jq -r '.connector | join(", ")')
           if [[ -n "$CONNECTOR_NAMES" ]]; then
             CONNECTOR_TEXT="\nConnector(s): \`${CONNECTOR_NAMES}\`"
@@ -753,14 +876,14 @@ jobs:
           # Build trigger description
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
-          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          elif [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
             TRIGGER_TEXT="merged to master"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${GH_EVENT_NAME}" == "workflow_dispatch" ]]; then
             TRIGGER_TEXT="triggered via workflow_dispatch"
-          elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+          elif [[ "${GH_EVENT_NAME}" == "workflow_call" ]]; then
             TRIGGER_TEXT="triggered via workflow_call"
           else
-            TRIGGER_TEXT="triggered via ${{ github.event_name }}"
+            TRIGGER_TEXT="triggered via ${GH_EVENT_NAME}"
           fi
 
           echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT

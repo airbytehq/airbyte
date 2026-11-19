@@ -32,6 +32,7 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /**
          * Determines if a given version number represents a legacy state format
+         *
          * @param version The version number to check (null is considered legacy)
          * @return true if the version is legacy and needs migration
          */
@@ -53,7 +54,7 @@ data class MsSqlServerJdbcStreamStateValue(
                         MsSqlServerJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
                             cursor = cursorCheckpoint,
-                        )
+                        ),
                     )
             }
         }
@@ -73,7 +74,7 @@ data class MsSqlServerJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
                             pkValue = pkNode,
                             stateType = StateType.PRIMARY_KEY.stateType,
-                        )
+                        ),
                     )
             }
         }
@@ -98,9 +99,9 @@ data class MsSqlServerJdbcStreamStateValue(
                                 Jsons.valueToTree(
                                     MsSqlServerJdbcStreamStateValue(
                                         cursorField = listOf(cursor.id),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     )
             }
         }

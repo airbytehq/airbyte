@@ -36,7 +36,7 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: DeadLetterQueueTestAggregator
+        state: DeadLetterQueueTestAggregator,
     ): DlqLoader.DlqLoadResult {
         TODO("Not yet implemented")
     }
@@ -47,9 +47,11 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
 @Singleton
 class DeadLetterQueueTestConfigurationFactory :
     DestinationConfigurationFactory<
-        DeadLetterQueueTestSpecification, DeadLetterQueueTestConfiguration> {
+        DeadLetterQueueTestSpecification,
+        DeadLetterQueueTestConfiguration,
+    > {
     override fun makeWithoutExceptionHandling(
-        pojo: DeadLetterQueueTestSpecification
+        pojo: DeadLetterQueueTestSpecification,
     ): DeadLetterQueueTestConfiguration =
         DeadLetterQueueTestConfiguration(
             objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig(),

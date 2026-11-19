@@ -4,19 +4,29 @@ products: cloud
 
 # Install the Airbyte MCP
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
-:::
-
 The Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
+
+To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
 
 ```text
 https://mcp.airbyte.com/mcp
 ```
 
+## Read-only mode
+
+To limit your agent's Airbyte access to read-only, use this URL instead:
+
+```text
+https://mcp.airbyte.com/mcp?read-only=true
+```
+
+In read-only mode, your agent only gets read-only tools. It can list and check your sources, destinations, and connections, read job logs, and answer questions. It can't create, change, or delete anything, and it can't run or cancel syncs. Use this URL anywhere these instructions use the main URL.
+
+To leave read-only mode, switch your client back to the main URL or use the explicit `read-only=false` syntax. For more options, see [Advanced configuration](advanced-configuration.md).
+
 ## Prerequisites
 
-- An [Airbyte Cloud](https://cloud.airbyte.com) account in an organization enrolled in the private beta.
+- An [Airbyte Cloud](https://cloud.airbyte.com) account.
 - An MCP client that supports remote MCP servers with OAuth and the Streamable HTTP transport.
 - To read data directly from sources and destinations, an organization admin must [enable the context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
 

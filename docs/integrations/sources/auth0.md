@@ -80,6 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.6 | 2024-06-25 | [40344](https://github.com/airbytehq/airbyte/pull/40344) | Update dependencies |
 | 0.5.5 | 2024-06-21 | [39933](https://github.com/airbytehq/airbyte/pull/39933) | Update dependencies |
 | 0.5.4 | 2024-06-06 | [39194](https://github.com/airbytehq/airbyte/pull/39194) | [autopull] Upgrade base image to v1.2.2 |
+| 0.5.3 | 2024-05-31 | [38513](https://github.com/airbytehq/airbyte/pull/38513) | Upgrade base image and update dependencies |
 | 0.5.2 | 2024-05-02 | [37770](https://github.com/airbytehq/airbyte/pull/37770) | Add Selective Authenticator. Migrate to poetry |
 | 0.5.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
 | 0.5.0 | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image |

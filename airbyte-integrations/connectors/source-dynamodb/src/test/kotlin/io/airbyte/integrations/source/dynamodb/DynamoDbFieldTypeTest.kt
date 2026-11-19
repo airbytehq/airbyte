@@ -46,10 +46,10 @@ class DynamoDbFieldTypeTest {
                     AttributeValue.builder()
                         .bs(
                             SdkBytes.fromByteArray(
-                                "byteArray1".toByteArray(StandardCharsets.UTF_8)
+                                "byteArray1".toByteArray(StandardCharsets.UTF_8),
                             ),
                             SdkBytes.fromByteArray(
-                                "byteArray2".toByteArray(StandardCharsets.UTF_8)
+                                "byteArray2".toByteArray(StandardCharsets.UTF_8),
                             ),
                         )
                         .build(),
@@ -199,7 +199,7 @@ class DynamoDbFieldTypeTest {
             DynamoDbFieldType.fromJsonSchema(Jsons.readTree(json)).airbyteSchemaType
         Assertions.assertEquals(
             LeafAirbyteSchemaType.JSONB,
-            derived("""{"type":["null","string"]}""")
+            derived("""{"type":["null","string"]}"""),
         )
         Assertions.assertEquals(
             LeafAirbyteSchemaType.JSONB,
@@ -243,7 +243,7 @@ class DynamoDbFieldTypeTest {
             Assertions.assertEquals(leaf.asJsonSchema(), type.jsonSchema(), scalar.toString())
         }
         Assertions.assertNull(
-            DynamoDbFieldType.ofKeyAttribute(ScalarAttributeType.UNKNOWN_TO_SDK_VERSION)
+            DynamoDbFieldType.ofKeyAttribute(ScalarAttributeType.UNKNOWN_TO_SDK_VERSION),
         )
     }
 }

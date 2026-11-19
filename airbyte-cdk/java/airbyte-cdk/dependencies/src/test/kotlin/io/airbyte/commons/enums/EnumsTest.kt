@@ -10,21 +10,21 @@ import org.junit.jupiter.api.Test
 internal class EnumsTest {
     internal enum class E1 {
         TEST,
-        TEST2
+        TEST2,
     }
 
     internal enum class E2 {
-        TEST
+        TEST,
     }
 
     internal enum class E3 {
         TEST,
-        TEST2
+        TEST2,
     }
 
     internal enum class E4 {
         TEST,
-        TEST3
+        TEST3,
     }
 
     @Test
@@ -68,7 +68,7 @@ internal class EnumsTest {
         VALUE_1,
         VALUE_TWO,
         value_three,
-        value_4
+        value_4,
     }
 
     @Test
@@ -78,21 +78,21 @@ internal class EnumsTest {
         Assertions.assertEquals(Optional.of(E5.VALUE_1), Enums.toEnum("value_1", E5::class.java))
         Assertions.assertEquals(
             Optional.of(E5.VALUE_TWO),
-            Enums.toEnum("VALUE_TWO", E5::class.java)
+            Enums.toEnum("VALUE_TWO", E5::class.java),
         )
         Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("valuetwo", E5::class.java))
         Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("valueTWO", E5::class.java))
         Assertions.assertEquals(
             Optional.of(E5.VALUE_TWO),
-            Enums.toEnum("valueTWO$", E5::class.java)
+            Enums.toEnum("valueTWO$", E5::class.java),
         )
         Assertions.assertEquals(
             Optional.of(E5.VALUE_TWO),
-            Enums.toEnum("___valueTWO___", E5::class.java)
+            Enums.toEnum("___valueTWO___", E5::class.java),
         )
         Assertions.assertEquals(
             Optional.of(E5.value_three),
-            Enums.toEnum("VALUE_THREE", E5::class.java)
+            Enums.toEnum("VALUE_THREE", E5::class.java),
         )
         Assertions.assertEquals(Optional.of(E5.value_4), Enums.toEnum("VALUE_4", E5::class.java))
         Assertions.assertEquals(Optional.empty<Any>(), Enums.toEnum("VALUE_5", E5::class.java))

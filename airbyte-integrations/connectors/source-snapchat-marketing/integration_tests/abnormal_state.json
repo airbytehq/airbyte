@@ -3,10 +3,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "adaccounts",
-        "namespace": null
+        "name": "adaccounts"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -14,10 +14,26 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "ad_account_id": "orgs",
+              "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+              "parent_slice": {
+                "organization_id": "me"
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-16T00:18:26.939000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-16T00:18:26.939000Z"
+        },
+        "lookback_window": 3
       }
     }
   },
@@ -25,10 +41,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "creatives",
-        "namespace": null
+        "name": "creatives"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -39,7 +55,7 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
             }
           },
           {
@@ -51,10 +67,45 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "7a205dba-557f-4f00-82d7-c78853dcad39",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-05-15T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-15T23:28:58.082000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-15T23:28:58.082000Z"
+        },
+        "lookback_window": 5,
+        "parent_state": {}
       }
     }
   },
@@ -62,10 +113,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "media",
-        "namespace": null
+        "name": "media"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -76,7 +127,7 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
             }
           },
           {
@@ -88,10 +139,45 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "7a205dba-557f-4f00-82d7-c78853dcad39",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-05-15T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-16T00:38:11.648000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-16T00:38:11.648000Z"
+        },
+        "lookback_window": 4,
+        "parent_state": {}
       }
     }
   },
@@ -99,10 +185,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "campaigns",
-        "namespace": null
+        "name": "campaigns"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -113,7 +199,7 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
             }
           },
           {
@@ -125,10 +211,45 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "7a205dba-557f-4f00-82d7-c78853dcad39",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-05-15T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-16T00:24:44.552000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-16T00:24:44.552000Z"
+        },
+        "lookback_window": 13,
+        "parent_state": {}
       }
     }
   },
@@ -136,10 +257,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "ads",
-        "namespace": null
+        "name": "ads"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -150,7 +271,7 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
             }
           },
           {
@@ -162,10 +283,45 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "7a205dba-557f-4f00-82d7-c78853dcad39",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-05-15T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-16T00:25:38.576000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-16T00:25:38.576000Z"
+        },
+        "lookback_window": 13,
+        "parent_state": {}
       }
     }
   },
@@ -173,10 +329,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "adsquads",
-        "namespace": null
+        "name": "adsquads"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -187,7 +343,7 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
             }
           },
           {
@@ -199,10 +355,45 @@
               }
             },
             "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
+              "updated_at": "2221-01-01T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "7a205dba-557f-4f00-82d7-c78853dcad39",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-05-15T00:00:00.000000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "ad_account_id": "orgs",
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {
+                  "organization_id": "me"
+                }
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-06-16T00:27:04.708000Z"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated_at": "2221-06-16T00:27:04.708000Z"
+        },
+        "lookback_window": 13,
+        "parent_state": {}
       }
     }
   },

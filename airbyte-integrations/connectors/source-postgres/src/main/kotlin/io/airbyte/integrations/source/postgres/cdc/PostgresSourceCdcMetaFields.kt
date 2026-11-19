@@ -11,8 +11,7 @@ import io.airbyte.cdk.discover.MetaField
 enum class PostgresSourceCdcMetaFields(
     override val type: FieldType,
 ) : MetaField {
-    CDC_LSN(CdcNumberMetaFieldType),
-    ;
+    CDC_LSN(CdcNumberMetaFieldType);
 
     override val id: String
         get() = MetaField.META_PREFIX + name.lowercase()

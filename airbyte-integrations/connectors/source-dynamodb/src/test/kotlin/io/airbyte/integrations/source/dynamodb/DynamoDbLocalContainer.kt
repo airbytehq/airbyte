@@ -44,7 +44,7 @@ class DynamoDbLocalContainer :
             .region(Region.of(REGION))
             .credentialsProvider(
                 StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
+                    AwsBasicCredentials.create(ACCESS_KEY_ID, SECRET_ACCESS_KEY),
                 ),
             )
             .build()
@@ -140,7 +140,7 @@ class DynamoDbLocalContainer :
                 while (pending.isNotEmpty()) {
                     val response: BatchWriteItemResponse =
                         batchWriteItem(
-                            BatchWriteItemRequest.builder().requestItems(pending).build()
+                            BatchWriteItemRequest.builder().requestItems(pending).build(),
                         )
                     pending =
                         if (response.hasUnprocessedItems()) response.unprocessedItems()

@@ -34,6 +34,7 @@ import org.testcontainers.utility.MountableFile
 internal class TestJdbcUtils {
     private var dbName: String = "dummy"
     private lateinit var dataSource: DataSource
+
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
@@ -54,8 +55,8 @@ internal class TestJdbcUtils {
                     DatabaseDriver.POSTGRESQL.urlFormatString,
                     config[JdbcUtils.HOST_KEY].asText(),
                     config[JdbcUtils.PORT_KEY].asInt(),
-                    config[JdbcUtils.DATABASE_KEY].asText()
-                )
+                    config[JdbcUtils.DATABASE_KEY].asText(),
+                ),
             )
 
         val defaultJdbcDatabase: JdbcDatabase = DefaultJdbcDatabase(dataSource)
@@ -67,7 +68,7 @@ internal class TestJdbcUtils {
             connection
                 .createStatement()
                 .execute(
-                    "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
                 )
         }
     }
@@ -80,7 +81,7 @@ internal class TestJdbcUtils {
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
-                .build()
+                .build(),
         )
     }
 
@@ -88,7 +89,7 @@ internal class TestJdbcUtils {
     private fun <T> getConfigWithSsl(
         psqlDb: PostgreSQLContainer<*>?,
         dbName: String?,
-        sslValue: T
+        sslValue: T,
     ): JsonNode {
         return Jsons.jsonNode(
             ImmutableMap.builder<Any, Any>()
@@ -98,7 +99,7 @@ internal class TestJdbcUtils {
                 .put("username", psqlDb.username)
                 .put("password", psqlDb.password)
                 .put("ssl", sslValue)
-                .build()
+                .build(),
         )
     }
 
@@ -146,7 +147,7 @@ internal class TestJdbcUtils {
             createTableWithAllTypes(connection)
             val ps =
                 connection.prepareStatement(
-                    "INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+                    "INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
                 )
 
             // insert the bit here to stay consistent even though setStatementField does not support
@@ -228,9 +229,9 @@ internal class TestJdbcUtils {
                             .put("client_certificate", "test_client_cert")
                             .put("client_key", "test_client_key")
                             .put("client_key_password", "test_pass")
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             )
         val sslSet = JdbcUtils.useSsl(config)
         Assertions.assertTrue(sslSet)
@@ -248,9 +249,9 @@ internal class TestJdbcUtils {
                     .put("password", PSQL_DB.password)
                     .put(
                         "ssl_mode",
-                        ImmutableMap.builder<Any, Any>().put("mode", "disable").build()
+                        ImmutableMap.builder<Any, Any>().put("mode", "disable").build(),
                     )
-                    .build()
+                    .build(),
             )
         val sslSet = JdbcUtils.useSsl(config)
         Assertions.assertFalse(sslSet)
@@ -302,7 +303,7 @@ internal class TestJdbcUtils {
         "'30', 30",
         "'999000000000', 999000000000",
         "'999E+9', 999000000000",
-        "'1.79E+3', 1790"
+        "'1.79E+3', 1790",
     )
     @Throws(SQLException::class)
     fun testSetStatementSpecialValues(colValue: String, value: Long) {
@@ -317,7 +318,7 @@ internal class TestJdbcUtils {
 
             assertExpectedOutputValues(
                 connection,
-                (Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode).put("bigint", value)
+                (Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode).put("bigint", value),
             )
             assertExpectedOutputTypes(connection)
         }
@@ -330,7 +331,7 @@ internal class TestJdbcUtils {
             Lists.newArrayList(
                 Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
                 Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
+                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")),
             )
 
         private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
@@ -371,7 +372,7 @@ internal class TestJdbcUtils {
                         "binary1 bytea," +
                         "text_array _text," +
                         "int_array int[]" +
-                        ");"
+                        ");",
                 )
         }
 
@@ -418,7 +419,7 @@ internal class TestJdbcUtils {
                         "decode('61616161', 'hex')," +
                         "'{one,two,three}'," +
                         "'{1,2,3}'" +
-                        ");"
+                        ");",
                 )
         }
 
@@ -430,7 +431,7 @@ internal class TestJdbcUtils {
             val actual = sourceOperations.rowToJson(resultSet)
 
             // field-wise comparison to make debugging easier.
-            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode> ->
+            MoreStreams.toStream(expected.properties()).forEach { e: Map.Entry<String, JsonNode> ->
                 Assertions.assertEquals(e.value, actual[e.key], "key: " + e.key)
             }
             Assertions.assertEquals(expected, actual)
@@ -446,7 +447,7 @@ internal class TestJdbcUtils {
             for (i in 1..columnCount) {
                 actual[resultSet.metaData.getColumnName(i)] =
                     sourceOperations.getAirbyteType(
-                        JDBCType.valueOf(resultSet.metaData.getColumnType(i))
+                        JDBCType.valueOf(resultSet.metaData.getColumnType(i)),
                     )
             }
 

@@ -39,7 +39,7 @@ internal class SnowflakeNamingUtilsTest {
     )
     fun `uppercase reserved keywords are prefixed with underscore`(
         input: String,
-        expected: String
+        expected: String,
     ) {
         assertEquals(expected, input.toSnowflakeCompatibleName())
     }

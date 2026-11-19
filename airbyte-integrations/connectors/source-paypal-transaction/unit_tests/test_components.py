@@ -11,6 +11,7 @@ import requests
 import yaml
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
 
 @pytest.fixture
@@ -177,6 +178,21 @@ def test_manifest_transaction_id_has_value_type_string(manifest):
     assert tid_fields[0].get("value_type") == "string", (
         "transaction_id AddFields must set value_type: string to prevent " "scientific-notation IDs from being coerced to float('inf')"
     )
+
+
+def test_transactions_rate_limits_use_long_backoff(manifest):
+    """Transactions must retry rate limits instead of failing after the default delay."""
+    resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest)
+    transactions = resolved_manifest["definitions"]["streams"]["transactions"]
+    error_handler = transactions["retriever"]["requester"]["error_handler"]
+    assert error_handler["type"] == "DefaultErrorHandler"
+
+    backoff_strategies = error_handler["backoff_strategies"]
+    assert {
+        strategy["type"]: strategy["backoff_time_in_seconds"]
+        for strategy in backoff_strategies
+        if strategy["type"] == "ConstantBackoffStrategy"
+    } == {"ConstantBackoffStrategy": 100}
 
 
 @pytest.mark.parametrize(

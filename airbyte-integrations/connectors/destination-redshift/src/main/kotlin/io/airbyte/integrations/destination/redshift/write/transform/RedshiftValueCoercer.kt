@@ -71,7 +71,7 @@ class RedshiftValueCoercer : ValueCoercer {
             is IntegerValue -> {
                 if (abValue.value !in BIGINT_RANGE) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -80,7 +80,7 @@ class RedshiftValueCoercer : ValueCoercer {
             is NumberValue -> {
                 if (abValue.value < NUMERIC_MIN || abValue.value > NUMERIC_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -90,11 +90,11 @@ class RedshiftValueCoercer : ValueCoercer {
             is ObjectValue -> {
                 if (containsOversizedNestedString(abValue)) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else if (!isSuperValid(abValue.toCsvValue().toString())) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -103,7 +103,7 @@ class RedshiftValueCoercer : ValueCoercer {
             is StringValue -> {
                 if (isStringOversized(abValue.value)) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -138,7 +138,7 @@ internal fun isStringOversized(s: String): Boolean {
  * limit of 65,535 bytes, even though the total SUPER value can be up to 16 MB.
  *
  * @see <a href="https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html">SUPER
- * limitations</a>
+ *   limitations</a>
  */
 internal fun containsOversizedNestedString(value: AirbyteValue): Boolean =
     when (value) {

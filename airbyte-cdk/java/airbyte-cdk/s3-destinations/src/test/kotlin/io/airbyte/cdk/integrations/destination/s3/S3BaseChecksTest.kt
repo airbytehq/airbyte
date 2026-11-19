@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import org.junit.jupiter.api.BeforeEach
@@ -16,18 +17,22 @@ class S3BaseChecksTest {
     private lateinit var s3Client: AmazonS3
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     fun setup() {
         s3Client = Mockito.mock(AmazonS3::class.java)
         Mockito.`when`(
-                s3Client.doesObjectExist(ArgumentMatchers.anyString(), ArgumentMatchers.eq(""))
+                s3Client.doesObjectExist(ArgumentMatchers.anyString(), ArgumentMatchers.eq("")),
             )
             .thenThrow(IllegalArgumentException("Object path must not be empty"))
         Mockito.`when`(
                 s3Client.putObject(
                     ArgumentMatchers.anyString(),
                     ArgumentMatchers.eq(""),
-                    ArgumentMatchers.anyString()
-                )
+                    ArgumentMatchers.anyString(),
+                ),
             )
             .thenThrow(IllegalArgumentException("Object path must not be empty"))
     }
@@ -43,7 +48,7 @@ class S3BaseChecksTest {
                 null,
                 null,
                 null,
-                s3Client!!
+                s3Client!!,
             )
         val operations = S3StorageOperations(S3NameTransformer(), s3Client!!, config)
         Mockito.`when`(s3Client!!.doesObjectExist("test_bucket", "test/bucket/path/"))
@@ -55,18 +60,18 @@ class S3BaseChecksTest {
             .putObject(
                 ArgumentMatchers.eq("test_bucket"),
                 ArgumentMatchers.startsWith("test/bucket/path/_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
+                ArgumentMatchers.anyString(),
             )
         Mockito.verify(s3Client)
             .listObjects(
                 ArgumentMatchers.argThat { request: ListObjectsRequest ->
                     "test_bucket" == request.bucketName
-                }
+                },
             )
         Mockito.verify(s3Client)
             .deleteObject(
                 ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("test/bucket/path/_airbyte_connection_test_")
+                ArgumentMatchers.startsWith("test/bucket/path/_airbyte_connection_test_"),
             )
     }
 
@@ -83,18 +88,18 @@ class S3BaseChecksTest {
             .putObject(
                 ArgumentMatchers.eq("test_bucket"),
                 ArgumentMatchers.startsWith("_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
+                ArgumentMatchers.anyString(),
             )
         Mockito.verify(s3Client)
             .listObjects(
                 ArgumentMatchers.argThat { request: ListObjectsRequest ->
                     "test_bucket" == request.bucketName
-                }
+                },
             )
         Mockito.verify(s3Client)
             .deleteObject(
                 ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_")
+                ArgumentMatchers.startsWith("_airbyte_connection_test_"),
             )
     }
 
@@ -111,18 +116,18 @@ class S3BaseChecksTest {
             .putObject(
                 ArgumentMatchers.eq("test_bucket"),
                 ArgumentMatchers.startsWith("_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
+                ArgumentMatchers.anyString(),
             )
         Mockito.verify(s3Client)
             .listObjects(
                 ArgumentMatchers.argThat { request: ListObjectsRequest ->
                     "test_bucket" == request.bucketName
-                }
+                },
             )
         Mockito.verify(s3Client)
             .deleteObject(
                 ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_")
+                ArgumentMatchers.startsWith("_airbyte_connection_test_"),
             )
     }
 }

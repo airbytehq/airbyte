@@ -24,17 +24,10 @@ definitions:
       type: DefaultErrorHandler
       max_retries: 5
       backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
         - type: ExponentialBackoffStrategy
           factor: 5
-      response_filters:
-        - type: HttpResponseFilter
-          action: RETRY
-          http_codes:
-            - 429
-            - 500
-            - 502
-            - 503
-            - 504
 
   record_selector:
     type: RecordSelector
@@ -75,15 +68,18 @@ definitions:
       - '%Y-%m-%d'
     cursor_granularity: P1D
     step: P14D
-    lookback_window: 'P{{ config.get("lookback_window", 30) }}D'
+    lookback_window: 'P{{ config.get("lookback_window", 32) }}D'
     start_datetime:
       type: MinMaxDatetime
       datetime: '{{ config.get("start_date") or "2026-02-01" }}'
       datetime_format: '%Y-%m-%d'
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%d") }}'
+      # date_range bounds are read in the ad account's time zone and cannot be in the future. The account zone is
+      # not known here, so end at the current date in UTC-12, which is never ahead of any account's local date.
+      datetime: '{{ config.get("end_date") or (now_utc() - duration("PT12H")).strftime("%Y-%m-%d") }}'
       datetime_format: '%Y-%m-%d'
+      max_datetime: '{{ (now_utc() - duration("PT12H")).strftime("%Y-%m-%d") }}'
 
   ad_account_stream:
     type: DeclarativeStream
@@ -115,6 +111,7 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /campaigns
+        use_cache: true
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -134,6 +131,7 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /ad_groups
+        use_cache: true
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -238,6 +236,21 @@ definitions:
       schema:
         $ref: '#/schemas/custom_audiences'
 
+  pixel_management_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: Pixel management is not enabled for this ad account, so conversion pixels cannot be read. Contact your OpenAI partner representative to enable it. Stream skipped.
+
   conversion_pixels_stream:
     type: DeclarativeStream
     name: conversion_pixels
@@ -248,6 +261,8 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /conversions/pixels
+        error_handler:
+          $ref: '#/definitions/pixel_management_error_handler'
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -261,6 +276,8 @@ definitions:
     type: DefaultErrorHandler
     max_retries: 5
     backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
@@ -268,15 +285,11 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-        error_message: Spend limits can only be read with an ad account admin API key. Stream skipped.
-      - type: HttpResponseFilter
-        action: RETRY
-        http_codes:
-          - 429
-          - 500
-          - 502
-          - 503
-          - 504
+        error_message: >-
+          Skipping spend_limit_windows: the API answered 403
+          ({{ (("" ~ (response.error.message or "no error message"))[:300]) if response is mapping and response.error is mapping else (("" ~ response.error)[:300] if response is mapping and response.error is string and response.error else "no error message") }}).
+          OpenAI documents this endpoint only for ad accounts on postpaid invoice billing
+          and for API keys with permission to manage billing.
 
   spend_limit_windows_stream:
     type: DeclarativeStream
@@ -642,6 +655,9 @@ definitions:
     request_body_json:
       aggregation_level: '{{ parameters["aggregation_level"] }}'
       time_granularity: daily
+      attribution_time_basis: ad_event_time
+      attribution_window_days: 30
+      view_through_attribution_window_days: 1
       entity_ids: '{{ [ stream_slice["entity_id"] ] }}'
       time_ranges: >-
         {{ [ '{"type":"date_range","since":"' ~ stream_slice["start_time"] ~ '","until":"' ~ stream_slice["end_time"] ~ '"}' ] }}
@@ -777,7 +793,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. Defaults to 2026-02-01, when ads in ChatGPT launched; there is no data before that.
+        description: Date in the ad account's time zone, in the format YYYY-MM-DD. Any data before this date will not be replicated. Defaults to 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps daily insights for the most recent 365 days and product insights for about 30 days, so older days are no longer available for those streams.
         default: '2026-02-01'
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         pattern_descriptor: YYYY-MM-DD
@@ -788,7 +804,7 @@ spec:
       end_date:
         type: string
         title: End Date
-        description: UTC date in the format YYYY-MM-DD. Any data after this date will not be replicated. (Default value of today is used if not set)
+        description: Date in the ad account's time zone, in the format YYYY-MM-DD. Any data after this date will not be replicated. If empty or later than the current date in UTC-12 (the latest date that has started in every time zone), data is synced through that date.
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         pattern_descriptor: YYYY-MM-DD
         examples:
@@ -798,16 +814,16 @@ spec:
       lookback_window:
         type: integer
         title: Lookback Window
-        description: Also known as attribution or conversion window. How far into the past to look for records (in days) on every sync, so conversions attributed after the click are picked up. Set it to the longest attribution_window_days among your conversion event settings; OpenAI's API docs prescribe 30 for that field, which is the default. Used only for insights streams in incremental sync mode.
+        description: How far into the past to look for records (in days) on every sync, so conversions attributed after the ad interaction are picked up. The connector requests conversions with a 30-day click window, and OpenAI needs at least one day to process conversions, so keep this at 32 or higher when you sync conversions streams. Used only for insights streams in incremental sync mode.
         minimum: 0
         maximum: 90
-        default: 30
+        default: 32
         order: 3
 
       num_workers:
         type: integer
         title: Number of concurrent workers
-        description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases.
+        description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases. Values below 2 run with 2 workers.
         minimum: 1
         maximum: 20
         default: 3
@@ -845,7 +861,31 @@ schemas:
     properties:
       id:
         type: string
+      creative_optimization_opt_in:
+        type:
+          - boolean
+          - 'null'
+      geographic_serving_country_code:
+        type:
+          - string
+          - 'null'
+      geographic_serving_scope:
+        type:
+          - string
+          - 'null'
       name:
+        type:
+          - string
+          - 'null'
+      legal_name:
+        type:
+          - string
+          - 'null'
+      account_name:
+        type:
+          - string
+          - 'null'
+      brand_name:
         type:
           - string
           - 'null'
@@ -879,6 +919,14 @@ schemas:
             type:
               - string
               - 'null'
+          reason:
+            type:
+              - string
+              - 'null'
+          screenshot_url:
+            type:
+              - string
+              - 'null'
       account_integrity_review:
         type:
           - object
@@ -906,6 +954,14 @@ schemas:
             additionalProperties: true
             properties:
               status:
+                type:
+                  - string
+                  - 'null'
+              reason:
+                type:
+                  - string
+                  - 'null'
+              screenshot_url:
                 type:
                   - string
                   - 'null'
@@ -974,6 +1030,10 @@ schemas:
           - 'null'
         items:
           type: string
+      conversion_event_settings_automatically_attached:
+        type:
+          - boolean
+          - 'null'
       targeting:
         type:
           - object
@@ -1079,6 +1139,11 @@ schemas:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
   ad_groups:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -1118,6 +1183,10 @@ schemas:
           - 'null'
         items:
           type: string
+      hide_product_prices:
+        type:
+          - boolean
+          - 'null'
       bidding_config:
         type:
           - object
@@ -1139,6 +1208,15 @@ schemas:
             items:
               type: object
               additionalProperties: true
+              properties:
+                custom_audience_id:
+                  type:
+                    - string
+                    - 'null'
+                bid_multiplier_micros:
+                  type:
+                    - integer
+                    - 'null'
           strategy:
             type:
               - string
@@ -1160,11 +1238,31 @@ schemas:
             items:
               type: object
               additionalProperties: true
+              properties:
+                field:
+                  type:
+                    - string
+                    - 'null'
+                operator:
+                  type:
+                    - string
+                    - 'null'
+                values:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type: string
       landing_page_configuration:
         type:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
       user_external_id:
         type:
           - string
@@ -1268,11 +1366,24 @@ schemas:
             type:
               - string
               - 'null'
+          reason:
+            type:
+              - string
+              - 'null'
+          screenshot_url:
+            type:
+              - string
+              - 'null'
       landing_page_configuration:
         type:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
       user_external_id:
         type:
           - string
@@ -1335,6 +1446,15 @@ schemas:
         items:
           type: object
           additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - 'null'
+            name:
+              type:
+                - string
+                - 'null'
       archived:
         type:
           - boolean
@@ -2334,6 +2454,50 @@ schemas:
     properties:
       id:
         type: string
+      created_at:
+        type:
+          - integer
+          - 'null'
+      updated_at:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      hash_spec_version:
+        type:
+          - string
+          - 'null'
+      uploaded_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      matched_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      matched_user_count_range:
+        type:
+          - string
+          - 'null'
+      invalid_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      membership_revision:
+        type:
+          - integer
+          - 'null'
   conversion_pixels:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -2435,5 +2599,5 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: '{{ config.get("num_workers", 3) }}'
+  default_concurrency: "{{ [config.get('num_workers') or 3, 2] | max }}"
   max_concurrency: 20

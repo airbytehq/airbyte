@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 from typing import Any
+from urllib.parse import urlencode
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -10,7 +11,10 @@ class UptickRequestBuilder:
 
     BASE_URL = "https://test-tenant.onuptick.com"
     ACCESS_TOKEN = "tok"
+    NEXT_PAGE_CURSOR = "next-page-cursor"
     START_DATE = "2000-01-01T00:00:00.000000+0000"
+    # Streams without an `updated` cursor: full refresh only, ordered by id, no updatedsince.
+    FULL_REFRESH_STREAMS = frozenset({"majorservices"})
     FIELDS = {
         "creditnotelineitems": (
             "CreditNoteLineItem",
@@ -22,11 +26,15 @@ class UptickRequestBuilder:
         ),
         "majorservices": (
             "MajorService",
-            "id,created,updated,asset,routineserviceleveltype,due,status",
+            "id,asset,routineserviceleveltype,due,status",
         ),
         "promptquestions": (
             "PromptQuestion",
             "id,created,updated,deleted,label,type,ref,order,config,section",
+        ),
+        "promptanswergroups": (
+            "PromptAnswerGroup",
+            "id,created,updated,servicetask,task,section,key,order,group_type,guid",
         ),
         "promptanswers": (
             "PromptAnswer",
@@ -52,11 +60,19 @@ class UptickRequestBuilder:
             "AccreditationType",
             "id,created,updated,name,type,property_specific,extra_fields",
         ),
+        "costcentres": (
+            "CostCentre",
+            "id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory",
+        ),
+        "products": (
+            "Product",
+            "id,created,updated,deleted,name,type,description,code,sku,upc,account_code,expense_account_code,default_taxcode,internal_note,is_starred,is_active,is_stocked,cost_price,unit_description,unit_price,current_price,category,subcategory,markup,estimated_time,partner_uid,autocomplete_label,tracking_categories,extra_fields,supplier,accounting_organisation,is_attendancefee,included_labour,included_travel,labour_increment,last_used,latest_unit_cost",
+        ),
     }
 
     @classmethod
-    def token_endpoint(cls) -> str:
-        return f"{cls.BASE_URL}/api/oauth2/token/"
+    def token_endpoint(cls, base_url: str = BASE_URL) -> str:
+        return f"{base_url}/api/oauth2/token/"
 
     @classmethod
     def collection(
@@ -65,6 +81,7 @@ class UptickRequestBuilder:
         page: int = 1,
         updatedsince: str = START_DATE,
         token: str = ACCESS_TOKEN,
+        base_url: str = BASE_URL,
     ) -> HttpRequest:
         model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
@@ -72,15 +89,23 @@ class UptickRequestBuilder:
             "show_deleted": "true",
             f"fields[{model}]": fields,
             "updatedsince": updatedsince,
+            "page[size]": "1000",
         }
+        if stream in cls.FULL_REFRESH_STREAMS:
+            query_params["ordering"] = "id"
+            del query_params["updatedsince"]
         if page > 1:
-            query_params["page"] = str(page)
+            query_params["page[cursor]"] = cls.NEXT_PAGE_CURSOR
+        query = urlencode(query_params)
+        url = f"{base_url}/api/v2.16/{stream}/?"
+        if page == 1:
+            url += "page[cursor]&"
+        url += query
         return HttpRequest(
-            url=f"{cls.BASE_URL}/api/v2.15/{stream}/",
-            query_params=query_params,
+            url=url,
             headers={"Authorization": f"Bearer {token}"},
         )
 
     @classmethod
     def next_page_url(cls, stream: str) -> str:
-        return f"{cls.BASE_URL}/api/v2.15/{stream}/?page=2"
+        return f"{cls.BASE_URL}/api/v2.16/{stream}/?page%5Bcursor%5D={cls.NEXT_PAGE_CURSOR}&page%5Bsize%5D=1000"

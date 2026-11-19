@@ -23,7 +23,7 @@ import org.postgresql.util.PGobject
 private val testObjectMapper: ObjectMapper = ObjectMapper()
 
 class PostgresDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
+    private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration,
 ) : DestinationDataDumper {
     private fun sanitizeColumnName(name: String): String {
         // Replicate the sanitization logic used by TableCatalog
@@ -45,7 +45,7 @@ class PostgresDataDumper(
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val schemaMapper =
@@ -58,7 +58,7 @@ class PostgresDataDumper(
                 .postgresDataSource(
                     postgresConfiguration = config,
                     resolvedHost = config.host,
-                    resolvedPort = config.port
+                    resolvedPort = config.port,
                 )
 
         // Build reverse mapping from sanitized column names back to original names
@@ -85,7 +85,8 @@ class PostgresDataDumper(
                     FROM information_schema.tables
                     WHERE table_schema = '${tableName.namespace}'
                     AND table_name = '${tableName.name}'
-                """.trimIndent()
+                """
+                        .trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)
                 existsResultSet.next()
@@ -138,7 +139,7 @@ class PostgresDataDumper(
                             generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
                             data = ObjectValue(dataMap),
                             airbyteMeta =
-                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
+                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META)),
                         )
                     output.add(outputRecord)
                 }
@@ -151,7 +152,7 @@ class PostgresDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Postgres does not support file transfer.")
     }

@@ -170,7 +170,7 @@ class RedshiftInsertBuffer(
      * The key is composed of two parts:
      * - **Directory**: `{bucketPath}/{namespace}/{tableName}/` (always hardcoded)
      * - **Filename**: resolved from [S3StagingConfiguration.fileNamePattern] if set, otherwise
-     * falls back to a default `{timestamp}_{uuid}.csv.gz` format.
+     *   falls back to a default `{timestamp}_{uuid}.csv.gz` format.
      *
      * Supported filename pattern tokens (matching v1 parity):
      * - `{date}` — UTC date formatted as `yyyy_MM_dd`
@@ -190,8 +190,7 @@ class RedshiftInsertBuffer(
             s3Config.s3BucketPath?.let { path ->
                 val trimmed = path.trimEnd('/')
                 if (trimmed.isNotEmpty()) "$trimmed/" else ""
-            }
-                ?: ""
+            } ?: ""
         val directory = "${prefix}${tableName.namespace}/${tableName.name}/"
         val fileName = resolveFileName()
         partNumber++

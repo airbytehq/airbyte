@@ -118,7 +118,6 @@ global:
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
-      projectId: <project-id>
       credentialsJsonSecretKey: gcp.json
 ```
 
