@@ -1,0 +1,1651 @@
+version: 7.45.1
+type: DeclarativeSource
+description: TrackingTime is time tracking software for agencies, professional services, and teams that
+  bill by the hour. This connector syncs time entries, projects, tasks, customers, services, and users
+  from the TrackingTime API.
+check:
+  type: CheckStream
+  stream_names:
+  - customers
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.trackingtime.co/api/v4
+    http_method: GET
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: API_TOKEN
+      password: '{{ config[''app_password''] }}'
+    request_headers:
+      Content-Type: application/json
+      User-Agent: airbyte-source-trackingtime
+  data_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - data
+  page_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_size
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 1000
+      start_from_page: 0
+      inject_on_first_request: true
+  tasks_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_size
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 100
+      start_from_page: 0
+      inject_on_first_request: true
+  remove_secrets:
+    type: RemoveFields
+    field_pointers:
+    - - '**'
+      - token
+    - - '**'
+      - json
+    - - invite_link
+streams:
+- type: DeclarativeStream
+  name: time_entries
+  primary_key:
+  - ID
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /events/flat
+      request_parameters:
+        filter: COMPANY
+        include_custom_fields: 'true'
+    record_selector:
+      $ref: '#/definitions/data_selector'
+    paginator:
+      $ref: '#/definitions/page_paginator'
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: Start
+    cursor_datetime_formats:
+    - '%Y-%m-%d %H:%M:%S'
+    datetime_format: '%Y-%m-%d'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%d'
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+      datetime_format: '%Y-%m-%d'
+    step: P1M
+    cursor_granularity: P1D
+    lookback_window: P30D
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: from
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: to
+  transformations:
+  - type: RemoveFields
+    field_pointers:
+    - - Icalendar Token
+    - - User Avatar Url
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/time_entries'
+- type: DeclarativeStream
+  name: projects
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /projects
+      request_parameters:
+        filter: ALL
+    record_selector:
+      $ref: '#/definitions/data_selector'
+  transformations:
+  - $ref: '#/definitions/remove_secrets'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/projects'
+- type: DeclarativeStream
+  name: tasks
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /tasks
+      request_parameters:
+        filter: ALL
+    record_selector:
+      $ref: '#/definitions/data_selector'
+    paginator:
+      $ref: '#/definitions/tasks_paginator'
+  transformations:
+  - $ref: '#/definitions/remove_secrets'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/tasks'
+- type: DeclarativeStream
+  name: customers
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /customers
+    record_selector:
+      $ref: '#/definitions/data_selector'
+  transformations:
+  - $ref: '#/definitions/remove_secrets'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/customers'
+- type: DeclarativeStream
+  name: services
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /services
+    record_selector:
+      $ref: '#/definitions/data_selector'
+  transformations:
+  - $ref: '#/definitions/remove_secrets'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/services'
+- type: DeclarativeStream
+  name: users
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: '#/definitions/base_requester'
+      path: /users
+      request_parameters:
+        filter: ALL
+    record_selector:
+      $ref: '#/definitions/data_selector'
+  transformations:
+  - $ref: '#/definitions/remove_secrets'
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: '#/schemas/users'
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/trackingtime
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+    - app_password
+    - start_date
+    additionalProperties: true
+    properties:
+      app_password:
+        type: string
+        title: App Password
+        description: TrackingTime app password. Create one in TrackingTime under Profile Settings > App
+          Passwords.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: Time entries starting on or after this date are synced. Format YYYY-MM-DD.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+        - '2026-01-01'
+        order: 1
+schemas:
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ID:
+        type:
+        - 'null'
+        - integer
+      Start:
+        type:
+        - 'null'
+        - string
+      End:
+        type:
+        - 'null'
+        - string
+      Duration:
+        type:
+        - 'null'
+        - integer
+      Task Id:
+        type:
+        - 'null'
+        - integer
+      Task Type:
+        type:
+        - 'null'
+        - string
+      Task Visibility:
+        type:
+        - 'null'
+        - string
+      Is Archived:
+        type:
+        - 'null'
+        - boolean
+      User:
+        type:
+        - 'null'
+        - string
+      User Id:
+        type:
+        - 'null'
+        - integer
+      Timezone:
+        type:
+        - 'null'
+        - string
+      Notes:
+        type:
+        - 'null'
+        - string
+      Is Billable:
+        type:
+        - 'null'
+        - boolean
+      Is Billed:
+        type:
+        - 'null'
+        - boolean
+      Event Type:
+        type:
+        - 'null'
+        - string
+      User Color Index:
+        type:
+        - 'null'
+        - integer
+      Has files:
+        type:
+        - 'null'
+        - boolean
+      Project:
+        type:
+        - 'null'
+        - string
+      Project Id:
+        type:
+        - 'null'
+        - integer
+      Task:
+        type:
+        - 'null'
+        - string
+      Task List:
+        type:
+        - 'null'
+        - string
+      User Hourly Rate:
+        type:
+        - 'null'
+        - number
+      User Hourly Cost:
+        type:
+        - 'null'
+        - number
+      Color:
+        type:
+        - 'null'
+        - string
+      Hourly Rate:
+        type:
+        - 'null'
+        - number
+      Estimated Time:
+        type:
+        - 'null'
+        - number
+      Service:
+        type:
+        - 'null'
+        - string
+      Service Id:
+        type:
+        - 'null'
+        - integer
+      Customer:
+        type:
+        - 'null'
+        - string
+      Customer Id:
+        type:
+        - 'null'
+        - integer
+      Customer Color Index:
+        type:
+        - 'null'
+        - integer
+      Service Color Index:
+        type:
+        - 'null'
+        - integer
+      Project Notes:
+        type:
+        - 'null'
+        - string
+      Due Date:
+        type:
+        - 'null'
+        - string
+      Time Off Id:
+        type:
+        - 'null'
+        - integer
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+        - 'null'
+        - string
+      is_archived:
+        type:
+        - 'null'
+        - boolean
+      estimated_time:
+        type:
+        - 'null'
+        - number
+      accumulated_time:
+        type:
+        - 'null'
+        - integer
+      worked_hours:
+        type:
+        - 'null'
+        - number
+      is_public:
+        type:
+        - 'null'
+        - boolean
+      customer:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+      following:
+        type:
+        - 'null'
+        - boolean
+      active_tasks:
+        type:
+        - 'null'
+        - integer
+      archived_tasks:
+        type:
+        - 'null'
+        - integer
+      is_template:
+        type:
+        - 'null'
+        - boolean
+      billing_data:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          hourly_rate:
+            type:
+            - 'null'
+            - number
+          fixed_rate:
+            type:
+            - 'null'
+            - number
+          is_billable:
+            type:
+            - 'null'
+            - boolean
+      billing:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          hourly_rate:
+            type:
+            - 'null'
+            - number
+          fixed_rate:
+            type:
+            - 'null'
+            - number
+          is_billable:
+            type:
+            - 'null'
+            - boolean
+      accumulated_rate:
+        type:
+        - 'null'
+        - number
+      accumulated_rate_billed:
+        type:
+        - 'null'
+        - number
+      created_by:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      sum_estimates:
+        type:
+        - 'null'
+        - boolean
+      is_retainer:
+        type:
+        - 'null'
+        - boolean
+      accumulated_cost:
+        type:
+        - 'null'
+        - number
+      task_management:
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      account_index:
+        type:
+        - 'null'
+        - number
+      color:
+        type:
+        - 'null'
+        - string
+      service:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      third_party_data:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+      delivery_date:
+        type:
+        - 'null'
+        - string
+      default_view:
+        type:
+        - 'null'
+        - string
+      retainer_settings:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          project_id:
+            type:
+            - 'null'
+            - integer
+          frequency:
+            type:
+            - 'null'
+            - string
+          closing_day:
+            type:
+            - 'null'
+            - integer
+          anchor_start_date:
+            type:
+            - 'null'
+            - string
+          billing_type:
+            type:
+            - 'null'
+            - string
+          estimated_time_hours:
+            type:
+            - 'null'
+            - number
+          hourly_rate:
+            type:
+            - 'null'
+            - string
+          rate_source:
+            type:
+            - 'null'
+            - string
+          active:
+            type:
+            - 'null'
+            - boolean
+          created_by:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          updated_by:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - string
+      current_retainer_cycle:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          retainer_settings_id:
+            type:
+            - 'null'
+            - integer
+          cycle_order:
+            type:
+            - 'null'
+            - integer
+          period_key:
+            type:
+            - 'null'
+            - string
+          start_date:
+            type:
+            - 'null'
+            - string
+          end_date:
+            type:
+            - 'null'
+            - string
+          frequency:
+            type:
+            - 'null'
+            - string
+          billing_type:
+            type:
+            - 'null'
+            - string
+          budget_type:
+            type:
+            - 'null'
+            - string
+          estimated_time_hours:
+            type:
+            - 'null'
+            - number
+          budget_amount:
+            type:
+            - 'null'
+            - number
+          hourly_rate:
+            type:
+            - 'null'
+            - string
+          rate_source:
+            type:
+            - 'null'
+            - string
+          currency:
+            type:
+            - 'null'
+            - string
+          carry_over_time_hours:
+            type:
+            - 'null'
+            - number
+          carry_over_amount:
+            type:
+            - 'null'
+            - number
+          overage_policy:
+            type:
+            - 'null'
+            - string
+          proration_applied:
+            type:
+            - 'null'
+            - boolean
+          accumulated_time:
+            type:
+            - 'null'
+            - number
+          accumulated_billable_amount:
+            type:
+            - 'null'
+            - number
+          accumulated_billed_amount:
+            type:
+            - 'null'
+            - number
+          accumulated_non_billable_amount:
+            type:
+            - 'null'
+            - number
+          archived_tasks:
+            type:
+            - 'null'
+            - integer
+          total_amount:
+            type:
+            - 'null'
+            - number
+          accumulated_cost_amount:
+            type:
+            - 'null'
+            - number
+          profit_amount:
+            type:
+            - 'null'
+            - number
+          rounded_time:
+            type:
+            - 'null'
+            - integer
+          rounded_billable_amount:
+            type:
+            - 'null'
+            - number
+          rounded_non_billable_amount:
+            type:
+            - 'null'
+            - number
+          rounded_total_amount:
+            type:
+            - 'null'
+            - number
+          rounded_billed_amount:
+            type:
+            - 'null'
+            - number
+          rounded_cost_amount:
+            type:
+            - 'null'
+            - number
+          rounded_profit_amount:
+            type:
+            - 'null'
+            - number
+          recompute_version:
+            type:
+            - 'null'
+            - integer
+          effective_time_budget_hours:
+            type:
+            - 'null'
+            - number
+          effective_money_budget_amount:
+            type:
+            - 'null'
+            - number
+          progress_pct:
+            type:
+            - 'null'
+            - number
+          over_budget_pct:
+            type:
+            - 'null'
+            - number
+          recompute_status:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+          locked_at:
+            type:
+            - 'null'
+            - string
+          locked_by:
+            type:
+            - 'null'
+            - string
+          closed_at:
+            type:
+            - 'null'
+            - string
+          closed_by:
+            type:
+            - 'null'
+            - string
+          recomputed_at:
+            type:
+            - 'null'
+            - string
+          created_by:
+            type:
+            - 'null'
+            - string
+          updated_by:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - string
+      retainer_cycles_status:
+        type:
+        - 'null'
+        - string
+      code:
+        type:
+        - 'null'
+        - string
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+        - 'null'
+        - string
+      type:
+        type:
+        - 'null'
+        - string
+      project_id:
+        type:
+        - 'null'
+        - integer
+      project:
+        type:
+        - 'null'
+        - string
+      project_accumulated_time:
+        type:
+        - 'null'
+        - integer
+      project_loc_worked_hours:
+        type:
+        - 'null'
+        - string
+      project_is_public:
+        type:
+        - 'null'
+        - boolean
+      customer:
+        type:
+        - 'null'
+        - string
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      estimated_time:
+        type:
+        - 'null'
+        - number
+      loc_estimated_time:
+        type:
+        - 'null'
+        - string
+      accumulated_time:
+        type:
+        - 'null'
+        - integer
+      is_archived:
+        type:
+        - 'null'
+        - boolean
+      start_date:
+        type:
+        - 'null'
+        - string
+      loc_start_date:
+        type:
+        - 'null'
+        - string
+      list_position:
+        type:
+        - 'null'
+        - number
+      worked_hours:
+        type:
+        - 'null'
+        - number
+      loc_worked_hours:
+        type:
+        - 'null'
+        - string
+      accumulated_time_display:
+        type:
+        - 'null'
+        - string
+      tracking:
+        type:
+        - 'null'
+        - boolean
+      account_id:
+        type:
+        - 'null'
+        - integer
+      day_index:
+        type:
+        - 'null'
+        - integer
+      index:
+        type:
+        - 'null'
+        - integer
+      user:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      users:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+      created_by:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      task_management:
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+      service:
+        type:
+        - 'null'
+        - string
+      service_id:
+        type:
+        - 'null'
+        - integer
+      color:
+        type:
+        - 'null'
+        - string
+      visibility:
+        type:
+        - 'null'
+        - string
+      list_id:
+        type:
+        - 'null'
+        - integer
+      list_name:
+        type:
+        - 'null'
+        - string
+      end_date:
+        type:
+        - 'null'
+        - string
+      loc_end_date:
+        type:
+        - 'null'
+        - string
+      closed_by:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      project_code:
+        type:
+        - 'null'
+        - string
+      third_party_project:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          project:
+            type:
+            - 'null'
+            - integer
+          status:
+            type:
+            - 'null'
+            - string
+          service:
+            type:
+            - 'null'
+            - string
+          service_project_name:
+            type:
+            - 'null'
+            - string
+          service_project_id:
+            type:
+            - 'null'
+            - string
+          service_account_id:
+            type:
+            - 'null'
+            - string
+          revision:
+            type:
+            - 'null'
+            - string
+          metadata:
+            type:
+            - 'null'
+            - string
+          created_at:
+            type:
+            - 'null'
+            - string
+          created_by:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - string
+          updated_by:
+            type:
+            - 'null'
+            - string
+          last_sync_at:
+            type:
+            - 'null'
+            - string
+          last_synced_at:
+            type:
+            - 'null'
+            - string
+          sync_status:
+            type:
+            - 'null'
+            - string
+          permalink:
+            type:
+            - 'null'
+            - string
+      due_date:
+        type:
+        - 'null'
+        - string
+      loc_due_date:
+        type:
+        - 'null'
+        - string
+      service_item:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      third_party_data:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+        - 'null'
+        - string
+      is_archived:
+        type:
+        - 'null'
+        - boolean
+      total_projects:
+        type:
+        - 'null'
+        - integer
+      archived_projects:
+        type:
+        - 'null'
+        - integer
+      active_projects:
+        type:
+        - 'null'
+        - integer
+      color_index:
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+      contact:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          email:
+            type:
+            - 'null'
+            - string
+          notes:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+  services:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+        - 'null'
+        - string
+      worked_hours:
+        type:
+        - 'null'
+        - number
+      is_archived:
+        type:
+        - 'null'
+        - boolean
+      loc_worked_hours:
+        type:
+        - 'null'
+        - string
+      color_index:
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      surname:
+        type:
+        - 'null'
+        - string
+      email:
+        type:
+        - 'null'
+        - string
+      role:
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        type:
+        - 'null'
+        - string
+      is_archived:
+        type:
+        - 'null'
+        - boolean
+      status:
+        type:
+        - 'null'
+        - string
+      account_id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+      billing:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          hourly_rate:
+            type:
+            - 'null'
+            - number
+          hourly_cost:
+            type:
+            - 'null'
+            - number
+          billing_data_id:
+            type:
+            - 'null'
+            - integer
+          team_billing_data_id:
+            type:
+            - 'null'
+            - integer
+      schedule:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          name:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+          frequency:
+            type:
+            - 'null'
+            - string
+          hours:
+            type:
+            - 'null'
+            - string
+          from_to:
+            type:
+            - 'null'
+            - string
+          mon:
+            type:
+            - 'null'
+            - number
+          tue:
+            type:
+            - 'null'
+            - number
+          wed:
+            type:
+            - 'null'
+            - number
+          thu:
+            type:
+            - 'null'
+            - number
+          fri:
+            type:
+            - 'null'
+            - number
+          sat:
+            type:
+            - 'null'
+            - string
+          sun:
+            type:
+            - 'null'
+            - string
+          mon_from:
+            type:
+            - 'null'
+            - string
+          tue_from:
+            type:
+            - 'null'
+            - string
+          wed_from:
+            type:
+            - 'null'
+            - string
+          thu_from:
+            type:
+            - 'null'
+            - string
+          fri_from:
+            type:
+            - 'null'
+            - string
+          sat_from:
+            type:
+            - 'null'
+            - string
+          sun_from:
+            type:
+            - 'null'
+            - string
+          mon_to:
+            type:
+            - 'null'
+            - string
+          tue_to:
+            type:
+            - 'null'
+            - string
+          wed_to:
+            type:
+            - 'null'
+            - string
+          thu_to:
+            type:
+            - 'null'
+            - string
+          fri_to:
+            type:
+            - 'null'
+            - string
+          sat_to:
+            type:
+            - 'null'
+            - string
+          sun_to:
+            type:
+            - 'null'
+            - string
+          notify_users:
+            type:
+            - 'null'
+            - boolean
+          is_default:
+            type:
+            - 'null'
+            - boolean
+          users:
+            type:
+            - 'null'
+            - string
+      metadata:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          first_seen_at:
+            type:
+            - 'null'
+            - string
+          last_seen_at:
+            type:
+            - 'null'
+            - string
+          web_last_seen_at:
+            type:
+            - 'null'
+            - string
+          mac_last_seen_at:
+            type:
+            - 'null'
+            - string
+          chrome_last_seen_at:
+            type:
+            - 'null'
+            - string
+          button_last_seen_at:
+            type:
+            - 'null'
+            - string
+          tray_last_seen_at:
+            type:
+            - 'null'
+            - string
+          hangouts_last_seen_at:
+            type:
+            - 'null'
+            - string
+          slack_last_seen_at:
+            type:
+            - 'null'
+            - string
+          mobile_last_seen_at:
+            type:
+            - 'null'
+            - string
+          teams_last_seent_at:
+            type:
+            - 'null'
+            - string
+          email_bounce_reason:
+            type:
+            - 'null'
+            - string
+          email_spam:
+            type:
+            - 'null'
+            - string
+          preferred_version:
+            type:
+            - 'null'
+            - string
+      added_by:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      project_count:
+        type:
+        - 'null'
+        - integer
+      is_supervisor:
+        type:
+        - 'null'
+        - boolean
+      supervisor:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+          surname:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          lock_date:
+            type:
+            - 'null'
+            - string
+          third_party_data:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      lock_date:
+        type:
+        - 'null'
+        - string
+      user_group_id:
+        type:
+        - 'null'
+        - integer
+      user_group_name:
+        type:
+        - 'null'
+        - string
