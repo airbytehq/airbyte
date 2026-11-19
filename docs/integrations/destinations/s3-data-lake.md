@@ -373,7 +373,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and replaces the `main` branch with that staging branch at the end of a successful sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version. The connector removes the staging branch after a successful promotion, and preserves it after failed syncs so retries can recover staged data.
+- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch. For an unchanged schema, it removes old-generation files from staging before replacing the `main` branch once. Queries against `main` see either the complete previous generation or the complete replacement generation, including an empty replacement. Failed cleanup leaves the previous generation visible.
+
+- Schema-changing truncate syncs retain the legacy publication behavior: schema updates are committed separately, and staging is promoted to `main` before cleanup and again after cleanup. Readers may see mixed generations, and old files may read null for replaced columns. If cleanup fails after the first promotion, the replacement rows remain visible alongside old rows. These syncs do not provide an atomic schema-and-data swap.
+
+- The connector removes the staging branch after successful completion, and preserves it after failed syncs so retries can recover staged data.
 
 ### Branch replacement
 
@@ -433,6 +437,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.3 | 2026-11-18 | [93986](https://github.com/airbytehq/airbyte/pull/93986) | Prevent transient mixed generations during same-schema overwrite syncs by cleaning staging before promotion. |
 | 0.4.2 | 2026-10-22 | [89644](https://github.com/airbytehq/airbyte/pull/89644) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; drop Jetty from the Hadoop client. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
