@@ -197,6 +197,33 @@ def test_given_rejected_refresh_token_when_read_then_config_error_and_nothing_is
     assert emitted_configs(capsys) == []
 
 
+@pytest.mark.parametrize("status_code", [200, 400, 401])
+def test_given_wrong_client_credentials_when_read_then_config_error_that_names_the_oauth_app(requests_mock, capsys, status_code):
+    """GitHub answers a wrong client ID or secret with HTTP 200 and `error: incorrect_client_credentials`.
+    Signing in again does not fix it, so the message has to point at the OAuth app credentials."""
+    branches = mock_repository(requests_mock)
+    refresh = mock_refresh(
+        requests_mock,
+        status_code=status_code,
+        json={
+            "error": "incorrect_client_credentials",
+            "error_description": "The client_id and/or client_secret passed are incorrect.",
+            "error_uri": "https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#incorrect-client-credentials",
+        },
+    )
+    source = make_source(config=oauth_config())
+    capsys.readouterr()
+
+    with pytest.raises(AirbyteTracedException) as error:
+        read_branches(source)
+
+    assert error.value.failure_type == FailureType.config_error
+    assert "Check the OAuth app credentials" in error.value.message
+    assert refresh.call_count == 1
+    assert not branches.called
+    assert emitted_configs(capsys) == []
+
+
 def test_given_rejected_refresh_token_when_check_then_check_fails(requests_mock, capsys):
     mock_repository(requests_mock)
     mock_refresh(requests_mock, json={"error": "bad_refresh_token", "error_description": "The refresh token passed is incorrect or expired."})

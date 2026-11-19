@@ -77,12 +77,17 @@ definitions:
     # GitHub answers this endpoint form-encoded unless JSON is asked for.
     refresh_request_headers:
       Accept: application/json
+    # A wrong client ID or secret is not fixed by signing in again, so it gets its own message.
+    refresh_token_error_messages:
+      incorrect_client_credentials: >-
+        GitHub rejected the client ID or client secret of the OAuth app. Check the OAuth app credentials, then
+        authenticate the source again.
     refresh_token_updater:
       refresh_token_name: refresh_token
-      # GitHub documents the `bad_refresh_token` error but not its HTTP status, so 200 is listed too.
+      # GitHub documents these errors but not their HTTP status; a wrong client ID or secret comes with HTTP 200.
       refresh_token_error_status_codes: [200, 400, 401]
       refresh_token_error_key: error
-      refresh_token_error_values: ["bad_refresh_token"]
+      refresh_token_error_values: ["bad_refresh_token", "incorrect_client_credentials"]
 
   requester_base:
     type: HttpRequester

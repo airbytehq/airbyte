@@ -278,6 +278,10 @@ override credentials, or a self-managed deployment) usually does.
   and its other token endpoint errors come with HTTP 200. `refresh_token_error_status_codes`
   lists 200, 400 and 401 so each ends in a config error that asks the user to authenticate again
   and leaves the stored tokens untouched.
+- A wrong client ID or client secret comes back as HTTP 200 with `error: incorrect_client_credentials`
+  (checked live). It is in `refresh_token_error_values` too, and `refresh_token_error_messages`
+  tells the user to check the OAuth app credentials, because signing in again does not fix it.
+  Without it, the response has no `access_token` and the sync fails with a system error.
 - The rotated tokens are saved through a `CONNECTOR_CONFIG` control message that carries the
   whole normalized config. It therefore also holds `api_url` with its default and trailing
   slash, and `oauth_token_refresh`. Both are recomputed on every run, so a saved value is never
