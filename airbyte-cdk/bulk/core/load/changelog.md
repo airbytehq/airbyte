@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.12 — 2026-11-19
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — legacy-task-load-gcs: add Workload Identity Federation support. New `GcsWorkloadIdentityFederationConfiguration` (a `GcsAuthConfiguration` holding an `external_account` credential configuration, validated by `fromCredentialsJson`: rejects service account keys, executable credential sources and non-`https://*.googleapis.com` token/impersonation URLs). `GcsClientFactory` builds a `GcsNativeClient` for it, and exposes `GcsClientFactory.make(config)` for non-DI callers such as checkers. `GcsNativeClient` and `GcsStreamingUpload` now treat keys as full object names, like `GcsS3Client`: `list` no longer prefixes the bucket name, the other operations no longer prepend the bucket path, and `get`/`getMetadata` throw `NoSuchElementException` for a missing object instead of an NPE. `GcsAuthSpecification` is unchanged, so connector specs (e.g. destination-bigquery) are unaffected; connectors opt into WIF by mapping their own spec onto the new configuration.
+
 ### 1.1.11 — 2026-11-09
 
 [#91300](https://github.com/airbytehq/airbyte/pull/91300) — Fix a race in the legacy task loader by making every `handleStreamMessage()` call wait for stream loader initialization, preventing concurrent SOCKET channels from forwarding records before `StreamLoader.start()` completes. The wait is guarded by a new `StreamManager.isLoaderStarted()` flag (set by `SyncManager.registerStartedStreamLoader()` on success), so once a stream is open the per-record path is a single volatile read with no map lookup, suspend call, or allocation.
