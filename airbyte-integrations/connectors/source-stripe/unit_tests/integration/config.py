@@ -26,6 +26,10 @@ class ConfigBuilder:
         self._config["start_date"] = start_datetime.isoformat()[:-13] + "Z"
         return self
 
+    def with_accounts_start_date(self, start_datetime: datetime) -> "ConfigBuilder":
+        self._config["accounts_start_date"] = start_datetime.isoformat()[:-13] + "Z"
+        return self
+
     def with_lookback_window_in_days(self, number_of_days: int) -> "ConfigBuilder":
         self._config["lookback_window_days"] = number_of_days
         return self

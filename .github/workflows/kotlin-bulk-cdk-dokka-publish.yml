@@ -138,7 +138,7 @@ jobs:
       - name: Debug - Deployment Mode
         run: |
           echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
+          echo "Ref: ${GITHUB_REF}"
           echo "Is Production: ${{ github.ref == 'refs/heads/master' }}"
           echo "Vercel Args: ${{ github.ref == 'refs/heads/master' && '--prod' || '(none - preview)' }}"
 

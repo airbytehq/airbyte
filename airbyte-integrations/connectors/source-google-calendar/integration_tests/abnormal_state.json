@@ -6,7 +6,11 @@
         "name": "events"
       },
       "stream_state": {
-        "updated": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": true,
+        "state": {
+          "updated": "2099-01-01T00:00:00.000Z"
+        },
+        "lookback_window": 0
       }
     }
   }

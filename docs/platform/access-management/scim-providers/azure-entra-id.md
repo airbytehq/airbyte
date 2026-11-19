@@ -44,7 +44,7 @@ Airbyte shows the SCIM base URL after setup, but it shows the bearer token only 
 
 ## Review attribute mappings
 
-Before you start provisioning, review the **Mappings** for users and groups. Entra ID's default mappings commonly include `addresses` and `phoneNumbers`, which Airbyte doesn't accept, so delete those mappings. Remove any other mappings for unsupported attributes. See [Supported user attributes](../scim#supported-user-attributes). An unsupported mapping causes provisioning to fail for the user, not just that field.
+Before you start provisioning, review the **Mappings** for users and groups. Entra ID's default mappings commonly include `addresses` and `phoneNumbers`, which Airbyte doesn't accept, so delete those mappings. Entra ID can also map enterprise user extension attributes, whose target attribute names start with `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`. Airbyte doesn't accept these attributes, so delete those mappings too. Remove any other mappings for unsupported attributes. See [Supported user attributes](../scim#supported-user-attributes). An unsupported mapping causes provisioning to fail for the user, not just that field.
 
 Airbyte does not support nested groups. Group members must be users that Entra ID provisions into the same Airbyte organization.
 

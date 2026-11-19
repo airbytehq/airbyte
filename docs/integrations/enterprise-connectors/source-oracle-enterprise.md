@@ -13,8 +13,6 @@ Airbyte's Oracle enterprise source connector offers the following features:
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
-The required minimum platform version is v0.58.0 for this connector.
-
 ## Features
 
 | Feature                       | Supported | Notes              |

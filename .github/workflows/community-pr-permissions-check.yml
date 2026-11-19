@@ -28,13 +28,16 @@ jobs:
 
       - name: Examine PR Fork Permissions
         id: check
+        env:
+          EVENT_PULL_REQUEST_HEAD_REPO_OWNER_TYPE: ${{ github.event.pull_request.head.repo.owner.type }}
+          EVENT_PULL_REQUEST_MAINTAINER_CAN_MODIFY: ${{ github.event.pull_request.maintainer_can_modify }}
         run: |
           # Get PR details from GitHub context
           IS_ORG_FORK="false"
           MISSING_MAINTAINER_EDIT="false"
 
-          OWNER_TYPE="${{ github.event.pull_request.head.repo.owner.type }}"
-          MAINTAINER_CAN_MODIFY="${{ github.event.pull_request.maintainer_can_modify }}"
+          OWNER_TYPE="${EVENT_PULL_REQUEST_HEAD_REPO_OWNER_TYPE}"
+          MAINTAINER_CAN_MODIFY="${EVENT_PULL_REQUEST_MAINTAINER_CAN_MODIFY}"
 
           echo "Owner type: $OWNER_TYPE"
           echo "Maintainer can modify: $MAINTAINER_CAN_MODIFY"
