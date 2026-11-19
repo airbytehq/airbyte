@@ -154,9 +154,19 @@ class S3DataLakeStreamLoader(
         // stale table metadata without this.
         table.refresh()
         // Commit all pending schema updates in order (important for two-phase commits)
-        computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
+        val pendingSchemaUpdates = computeOrExecuteSchemaUpdate().pendingUpdates
+        pendingSchemaUpdates.forEach { it.commit() }
 
         if (stream.isSingleGenerationTruncate()) {
+            if (pendingSchemaUpdates.isNotEmpty()) {
+                // Preserve the legacy schema-change path: after replacing columns, old files may
+                // read null. Publish the new rows before cleanup so they remain queryable if it
+                // fails.
+                logger.info {
+                    "Schema changed. Publishing staging branch '$stagingBranchName' to '$mainBranchName' before generation cleanup."
+                }
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+            }
             logger.info {
                 "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
             }
@@ -164,8 +174,8 @@ class S3DataLakeStreamLoader(
             icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
         }
 
-        // Staging inherits the old files. Publish only after cleanup so readers never see both
-        // generations, and a failed cleanup leaves the previous generation available for queries.
+        // Without schema updates, publish only after cleanup so readers never see both generations.
+        // Schema-changing refreshes also publish here to expose the completed cleanup.
         logger.info {
             "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
         }

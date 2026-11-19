@@ -114,17 +114,31 @@ internal class S3DataLakeStreamLoaderTest {
         every { streamStateStore.put(any(), any()) } returns Unit
     }
 
-    @ParameterizedTest
-    @CsvSource("false,false", "false,true", "true,false", "true,true")
-    fun testOverwritePublishesOnlyCompleteGenerations(
+    @ParameterizedTest(name = "empty={0}, interruptedCleanup={1}, schemaChanged={2}")
+    @CsvSource(
+        "false,false,false",
+        "false,true,false",
+        "true,false,false",
+        "true,true,false",
+        "false,true,true",
+    )
+    fun testOverwritePublicationAndRecovery(
         emptyReplacement: Boolean,
         interruptCleanup: Boolean,
+        changeSchema: Boolean,
     ) {
         val schema =
             Schema(
                 Types.NestedField.optional(1, "id", Types.LongType.get()),
                 Types.NestedField.optional(2, "generation", Types.LongType.get()),
             )
+        val incomingSchema =
+            if (changeSchema) {
+                Schema(
+                    Types.NestedField.optional(1, "id", Types.StringType.get()),
+                    Types.NestedField.optional(2, "generation", Types.LongType.get()),
+                )
+            } else schema
         // Observe every real catalog commit, including intermediate promotions and file deletes.
         val catalog =
             object : InMemoryCatalog() {
@@ -148,20 +162,27 @@ internal class S3DataLakeStreamLoaderTest {
             catalog.createNamespace(Namespace.of("namespace"))
             val table = catalog.createTable(identifier, schema)
             val stagingBranchName = "airbyte_staging_test"
+            var replacementSchema = schema
+            val checkpointState = slot<S3DataLakeStreamState>()
+            every { streamStateStore.put(any(), capture(checkpointState)) } just runs
 
             fun append(branch: String, generation: Long, vararg ids: Long) {
+                val writerSchema = if (generation == 2L) replacementSchema else schema
                 val path =
                     "${table.location()}/${UUID.randomUUID()}-ab-generation-id-$generation-e.avro"
                 val output = table.io().newOutputFile(path)
                 val appender =
                     Avro.write(output)
-                        .schema(schema)
+                        .schema(writerSchema)
                         .createWriterFunc { DataWriter.create<GenericRecord>(it) }
                         .build<GenericRecord>()
                 appender.use {
                     ids.forEach { id ->
-                        val record = GenericRecord.create(schema)
-                        record.setField("id", id)
+                        val record = GenericRecord.create(writerSchema)
+                        record.setField(
+                            "id",
+                            if (generation == 2L && changeSchema) id.toString() else id,
+                        )
                         record.setField("generation", generation)
                         appender.add(record)
                     }
@@ -176,30 +197,46 @@ internal class S3DataLakeStreamLoaderTest {
                 table.newAppend().toBranch(branch).appendFile(file).commit()
             }
 
-            fun readMain(): List<Pair<Long, Long>> {
+            fun readMain(): List<Pair<String?, Long>> {
                 val reader = catalog.loadTable(identifier)
                 return IcebergGenerics.read(reader).build().use { records ->
                     records
-                        .map { it.getField("id") as Long to it.getField("generation") as Long }
+                        .map { it.getField("id")?.toString() to it.getField("generation") as Long }
                         .sortedWith(compareBy({ it.first }, { it.second }))
                 }
             }
 
             append("main", 1, 1, 2)
             append("main", 1, 4)
-            val previous = listOf(1L to 1L, 2L to 1L, 4L to 1L)
-            val replacement = if (emptyReplacement) emptyList() else listOf(1L to 2L, 3L to 2L)
+            val previous = listOf("1" to 1L, "2" to 1L, "4" to 1L)
+            val replacement = if (emptyReplacement) emptyList() else listOf("1" to 2L, "3" to 2L)
+            // An incompatible column replacement allocates a new field ID. Old files read null
+            // for that column after the schema commit, as they did before the ordering fix.
+            val projectedPrevious = listOf(null to 1L, null to 1L, null to 1L)
             catalog.afterCommit = {
                 val visible = readMain()
+                val allowed =
+                    if (changeSchema) {
+                        listOf(
+                            previous,
+                            projectedPrevious,
+                            projectedPrevious + replacement,
+                            replacement,
+                        )
+                    } else listOf(previous, replacement)
                 assertTrue(
-                    visible == previous || visible == replacement,
-                    "Reader saw an incomplete or mixed generation: $visible",
+                    visible in allowed,
+                    "Reader saw an unexpected row set: $visible",
                 )
             }
             val objectSchema =
                 ObjectType(
                     linkedMapOf(
-                        "id" to FieldType(IntegerType, nullable = true),
+                        "id" to
+                            FieldType(
+                                if (changeSchema) StringType else IntegerType,
+                                nullable = true,
+                            ),
                         "generation" to FieldType(IntegerType, nullable = true),
                     ),
                 )
@@ -214,7 +251,7 @@ internal class S3DataLakeStreamLoaderTest {
             val icebergUtil: IcebergUtil = mockk {
                 every { createCatalog(any(), any()) } returns catalog
                 every { createTable(any(), any(), any()) } returns table
-                every { toIcebergSchema(any()) } returns schema
+                every { toIcebergSchema(any()) } returns incomingSchema
                 every { constructGenerationIdSuffix(stream) } returns "ab-generation-id-2-e"
             }
             fun loader() = makeStreamLoader(stream, makeIcebergConfiguration(), icebergUtil)
@@ -222,6 +259,7 @@ internal class S3DataLakeStreamLoaderTest {
             runBlocking {
                 val firstAttempt = loader()
                 firstAttempt.start()
+                replacementSchema = checkpointState.captured.schema
                 if (!emptyReplacement) {
                     append(stagingBranchName, 2, 1)
                     append(stagingBranchName, 2, 3)
@@ -238,7 +276,10 @@ internal class S3DataLakeStreamLoaderTest {
                     val failure =
                         assertFailsWith<IllegalStateException> { firstAttempt.teardown(true) }
                     assertEquals("cleanup interrupted", failure.message)
-                    assertEquals(previous, readMain())
+                    assertEquals(
+                        if (changeSchema) projectedPrevious + replacement else previous,
+                        readMain(),
+                    )
                     catalog.beforeCommit = {}
                     // Reuse the checkpointed branch without replaying the already-written records.
                     val retry = loader()

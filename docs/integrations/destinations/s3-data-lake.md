@@ -373,7 +373,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and removes old-generation files from staging before replacing the `main` branch at the end of a successful sync. For an unchanged schema, queries against `main` see either the complete previous generation or the complete replacement generation, including an empty replacement. Schema updates are separate metadata commits and are not part of this atomic data swap. The connector removes the staging branch after a successful promotion, and preserves it after failed syncs so retries can recover staged data.
+- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch. For an unchanged schema, it removes old-generation files from staging before replacing the `main` branch once. Queries against `main` see either the complete previous generation or the complete replacement generation, including an empty replacement. Failed cleanup leaves the previous generation visible.
+
+- Schema-changing truncate syncs retain the legacy publication behavior: schema updates are committed separately, and staging is promoted to `main` before cleanup and again after cleanup. Readers may see mixed generations, and old files may read null for replaced columns. If cleanup fails after the first promotion, the replacement rows remain visible alongside old rows. These syncs do not provide an atomic schema-and-data swap.
+
+- The connector removes the staging branch after successful completion, and preserves it after failed syncs so retries can recover staged data.
 
 ### Branch replacement
 
