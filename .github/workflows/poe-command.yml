@@ -37,7 +37,15 @@ permissions:
   issues: write
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   run-poe-command:
+    needs: guard-pr
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     runs-on: ubuntu-latest

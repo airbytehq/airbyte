@@ -75,7 +75,15 @@ env:
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   publish-cdk:
+    needs: guard-pr
     name: Publish Java CDK
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 30

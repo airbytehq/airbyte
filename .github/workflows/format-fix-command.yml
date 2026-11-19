@@ -28,7 +28,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   format-fix:
+    needs: guard-pr
     name: "Run pre-commit fix"
     runs-on: ubuntu-24.04
     steps:

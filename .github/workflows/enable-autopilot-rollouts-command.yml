@@ -44,7 +44,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   enable-autopilot-rollouts:
+    needs: guard-pr
     name: "Enable autopilot rollouts for connectors in this PR"
     runs-on: ubuntu-24.04
     steps:
