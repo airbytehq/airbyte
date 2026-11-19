@@ -119,7 +119,26 @@ class GcsV2CheckTest :
                     Pattern.compile(
                         "(?i)(NoSuchBucket|NoSuchKey|404|Not.?Found|Access.?Denied|bucket)",
                     ),
+                CheckTestConfig(
+                    configContents =
+                        replaceCredential(
+                            baseConfig,
+                            mapOf(
+                                "credential_type" to "WORKLOAD_IDENTITY_FEDERATION",
+                                "credentials_json" to
+                                    """{"type": "service_account", "private_key": "fake"}""",
+                            ),
+                        ),
+                    featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                    name = "wif-with-service-account-key",
+                ) to Pattern.compile("external_account"),
             )
+        }
+
+        private fun replaceCredential(baseConfig: String, credential: Map<String, String>): String {
+            val config = mapper.readTree(baseConfig) as ObjectNode
+            config.set<ObjectNode>("credential", mapper.valueToTree(credential))
+            return mapper.writeValueAsString(config)
         }
 
         private fun mutateCredentialField(

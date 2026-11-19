@@ -25,7 +25,11 @@ dependencies {
     // legacy-task-load-object-storage test fixtures. destination-s3 gets it transitively because
     // legacy-task-load-s3 re-exports those fixtures; legacy-task-load-gcs does not, so depend on
     // them directly here (pinned to the same CDK version as the toolkits).
-    integrationTestImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-task-load-object-storage:$cdkVersion")
+    integrationTestImplementation testFixtures(cdkVersion == 'local'
+        ? project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
+        : "io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-task-load-object-storage:$cdkVersion")
+
+    testImplementation "io.mockk:mockk:1.14.11"
 }
 
 application {

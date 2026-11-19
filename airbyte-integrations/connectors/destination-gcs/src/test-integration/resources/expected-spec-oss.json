@@ -35,8 +35,28 @@
             }
           },
           "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
+        }, {
+          "title" : "Workload Identity Federation",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "credential_type" : {
+              "type" : "string",
+              "enum" : [ "WORKLOAD_IDENTITY_FEDERATION" ],
+              "default" : "WORKLOAD_IDENTITY_FEDERATION"
+            },
+            "credentials_json" : {
+              "type" : "string",
+              "description" : "Contents of a <a href=\"https://cloud.google.com/iam/docs/workload-identity-federation\">Workload Identity Federation</a> credential configuration file (<code>\"type\": \"external_account\"</code>), as created by <code>gcloud iam workload-identity-pools create-cred-config</code>. Service account keys are not accepted.",
+              "title" : "Credential Configuration",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 0
+            }
+          },
+          "required" : [ "credential_type", "credentials_json" ]
         } ],
-        "description" : "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
+        "description" : "How to authenticate with Cloud Storage. An <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">HMAC key</a> is a long-lived credential for a service account or user account. <a href=\"https://cloud.google.com/iam/docs/workload-identity-federation\">Workload Identity Federation</a> exchanges a token from an external identity provider for short-lived Google credentials, so no Google key is stored in Airbyte.",
         "title" : "Credential",
         "order" : 0,
         "type" : "object"

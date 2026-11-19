@@ -4,9 +4,11 @@ This page guides you through setting up the Google Cloud Storage (GCS) destinati
 
 The GCS destination writes each stream to one or more objects in a GCS bucket. You choose the
 output format (Avro, CSV, JSON Lines, or Parquet), and you can control the directory layout and the
-object names with path templates. The connector authenticates with an HMAC key and uses the
-[GCS XML API](https://cloud.google.com/storage/docs/xml-api/overview), which is compatible with
-the Amazon S3 API.
+object names with path templates. The connector authenticates with either an HMAC key, using the
+[GCS XML API](https://cloud.google.com/storage/docs/xml-api/overview) (compatible with the Amazon
+S3 API), or with
+[Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation),
+using the [GCS JSON API](https://cloud.google.com/storage/docs/json_api).
 
 :::info
 This page covers the **Google Cloud Storage** destination, which writes plain files. If you want an
@@ -19,25 +21,39 @@ Apache Iceberg lakehouse on GCS, use the separate
 - A GCS bucket. [Create a bucket](https://cloud.google.com/storage/docs/creating-buckets) or
   choose an existing one. Bucket retention policies and object holds must allow Airbyte to delete the
   objects it creates (see [Permissions](#permissions)).
-- A Google Cloud service account with an
-  [HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys). If your
-  organization uses the `constraints/storage.restrictAuthTypes` organization policy, it must allow
-  HMAC authentication.
-- Network access from the Airbyte deployment to `https://storage.googleapis.com`.
+- One of:
+  - A Google Cloud service account with an
+    [HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys). If your
+    organization uses the `constraints/storage.restrictAuthTypes` organization policy, it must
+    allow HMAC authentication.
+  - A [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
+    pool and provider that trusts an identity available to the Airbyte deployment, such as a
+    Kubernetes service account token or AWS credentials. See
+    [Workload Identity Federation](#workload-identity-federation).
+- Network access from the Airbyte deployment to `https://storage.googleapis.com`. Workload Identity
+  Federation also needs `https://sts.googleapis.com` and, if it impersonates a service account,
+  `https://iamcredentials.googleapis.com`.
 
 ## Setup guide
 
-### Step 1: Create a service account and HMAC key
+### Step 1: Create credentials
+
+For an HMAC key:
 
 1. In the Google Cloud console, create a dedicated service account for Airbyte.
 2. [Create an HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys)
    for that service account. Copy the **Access ID** and the **Secret** immediately. Google Cloud
    doesn't display the secret again.
 
+For Workload Identity Federation, create a credential configuration file as described in
+[Workload Identity Federation](#workload-identity-federation).
+
 ### Step 2: Grant permissions {#permissions}
 
-Grant the service account the **Storage Object User** role (`roles/storage.objectUser`) on the
-bucket. If you prefer a custom role, it must include at least these permissions:
+Grant the **Storage Object User** role (`roles/storage.objectUser`) on the bucket to the service
+account that owns the HMAC key or, for Workload Identity Federation, to the federated principal or
+the service account it impersonates. If you prefer a custom role, it must include at least these
+permissions:
 
 ```text
 storage.objects.create
@@ -57,6 +73,10 @@ Why each permission is needed:
 | `storage.objects.list`, `storage.objects.get` | Discovering existing objects and reading their generation metadata so Full Refresh - Overwrite can remove stale data. |
 | `storage.objects.delete` | Deleting the connection-check probe object and stale objects in Full Refresh - Overwrite syncs. |
 
+With Workload Identity Federation, the connector uploads each part as a temporary object and
+combines them with [`compose`](https://cloud.google.com/storage/docs/composite-objects) instead of
+using multipart uploads, so the `storage.multipartUploads.*` permissions aren't used.
+
 ### Step 3: Set up the destination in Airbyte
 
 1. In the Airbyte UI, go to **Destinations**, click **New destination**, and select
@@ -73,8 +93,10 @@ Why each permission is needed:
 | **GCS Bucket Name** | Yes | | Name of the bucket that receives the data. |
 | **GCS Bucket Path** | Yes | | Prefix inside the bucket under which all objects are written. A trailing `/` is optional. |
 | **GCS Bucket Region** | No | `us` | Location of the bucket. See [GCS locations](https://cloud.google.com/storage/docs/locations). |
-| **Authentication** → **HMAC Access ID** | Yes | | Access ID of the service account's HMAC key. |
-| **Authentication** → **HMAC Secret** | Yes | | Secret of the HMAC key. |
+| **Credential** | Yes | HMAC key | **HMAC key** or **Workload Identity Federation**. |
+| **Credential** → **HMAC Access Key** | For HMAC key | | Access ID of the service account's HMAC key. |
+| **Credential** → **HMAC Secret** | For HMAC key | | Secret of the HMAC key. |
+| **Credential** → **Credential Configuration** | For Workload Identity Federation | | Contents of an `external_account` credential configuration file. |
 | **Output Format** | Yes | | One of Avro, CSV, JSON Lines, or Parquet, with format-specific options. See [Output formats](#output-formats). |
 | **GCS Path Format** | No | `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_` | Template for the object key below the bucket path. See [GCS Path Format](#gcs-path-format). |
 | **File Name Pattern** | No | `{part_number}{format_extension}` | Template for the final file name. See [File Name Pattern](#file-name-pattern). |
@@ -82,11 +104,56 @@ Why each permission is needed:
 ### Authentication
 
 The connector supports
-[HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys) only.
-Service account JSON keys, OAuth, and Application Default Credentials aren't supported by this
-connector. Because the connector talks to the GCS XML API through an S3-compatible client, error
+[HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys) and
+[Workload Identity Federation](#workload-identity-federation). Service account JSON keys, OAuth,
+and Application Default Credentials aren't supported.
+
+With an HMAC key, the connector talks to the GCS XML API through an S3-compatible client, so error
 messages from Google Cloud are reported in S3 terminology (for example `AccessDenied` or
 `SignatureDoesNotMatch`). See [Troubleshooting](#troubleshooting).
+
+### Workload Identity Federation
+
+Workload Identity Federation lets the connector exchange a token from an external identity
+provider, such as a Kubernetes service account token or AWS credentials, for short-lived Google
+credentials. No long-lived Google key is stored in Airbyte. This option is intended for
+self-managed Airbyte deployments where the connector pod can read such a token.
+
+1. [Create a workload identity pool and provider](https://cloud.google.com/iam/docs/workload-identity-federation-with-other-providers)
+   that trusts your identity provider. For Kubernetes, see
+   [Workload Identity Federation with Kubernetes](https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes).
+2. Grant bucket access in one of two ways:
+   - **Direct access**: grant **Storage Object User** on the bucket to the federated principal, for
+     example
+     `principal://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/subject/SUBJECT`.
+   - **Service account impersonation**: grant **Storage Object User** on the bucket to a service
+     account, and grant the federated principal the **Workload Identity User** role
+     (`roles/iam.workloadIdentityUser`) on that service account.
+3. Create a credential configuration file with
+   [`gcloud iam workload-identity-pools create-cred-config`](https://cloud.google.com/sdk/gcloud/reference/iam/workload-identity-pools/create-cred-config).
+   Add `--service-account=SERVICE_ACCOUNT_EMAIL` for service account impersonation. The
+   `credential_source` must point at a file or URL that the connector pod can read, or use AWS
+   credentials.
+4. In the connector, select **Workload Identity Federation** and paste the contents of the file
+   into **Credential Configuration**.
+
+The connector rejects credential configurations that aren't `"type": "external_account"`, that use
+an executable credential source, or whose `token_url` or `service_account_impersonation_url` isn't
+an `https://*.googleapis.com` URL.
+
+If `credential_source` uses a URL, the connector must also be able to reach that URL. Add its host
+to the connector's allowed hosts if your deployment enforces them.
+
+Because parts are combined with `compose`, which accepts at most 32 source objects, an object
+uploaded with Workload Identity Federation can have at most 32 parts. With the default object and
+part sizes, objects have about 10 parts.
+
+Until an object is complete, its parts are visible in the bucket as separate objects named
+`<object name>-<timestamp>-<random>-part-<n>`. They're deleted once the parts are combined. If a
+sync fails part-way, parts can be left behind. Readers that list the stream's prefix during a sync
+should ignore objects whose names contain `-part-`. To clean up leftover parts automatically, add an
+[Object Lifecycle Management](https://cloud.google.com/storage/docs/lifecycle) rule, for example
+one that deletes objects matching the suffix pattern after a day.
 
 ### Encryption
 
@@ -351,6 +418,16 @@ names are sanitized to characters that are safe in object keys.
 
 ## Troubleshooting
 
+### Workload Identity Federation: connection check fails
+
+- **Could not obtain a federated token**: the connector couldn't read the subject token from
+  `credential_source`, or Google's Security Token Service rejected it. Check that the file or URL is
+  available inside the connector pod, and that the `audience` matches the workload identity pool
+  provider.
+- **The federated identity lacks permissions**: grant **Storage Object User** on the bucket to the
+  federated principal or the impersonated service account. With impersonation, also check that the
+  principal has **Workload Identity User** on the service account.
+
 ### Connection check fails with `AccessDenied`
 
 The connector reports Google Cloud errors in S3 terminology because it uses the S3-compatible XML
@@ -398,6 +475,7 @@ and upload parallelism from the negotiated CPU limits automatically.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0   | 2026-11-19 | [93989](https://github.com/airbytehq/airbyte/pull/93989) | Add Workload Identity Federation authentication (`external_account` credential configuration), using the GCS JSON API. Upgrade to Bulk CDK 1.1.12. |
 | 1.0.2   | 2026-10-30 | [90272](https://github.com/airbytehq/airbyte/pull/90272) | Promote to certified (GA). Treat blank `gcs_path_format` / `file_name_pattern` as the default patterns; declare `allowedHosts` in metadata; report connection-check failures as configuration errors with GCS/HMAC-specific guidance ([90279](https://github.com/airbytehq/airbyte/pull/90279)). |
 | 1.0.1   | 2026-10-22 | [89650](https://github.com/airbytehq/airbyte/pull/89650) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1. |
 | 1.0.0   | 2026-07-15 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK for significantly higher throughput on large syncs through parallel, back-pressured multipart uploads and SOCKET/PROTOBUF data transfer with compatible sources. Streams larger than approximately 200 MB may produce multiple objects, CSV and JSONL output is GZIP-compressed by default, and Airbyte metadata field names change. See [Upgrading to 1.0.0](gcs-migrations.md#upgrading-to-100).                                                                                                                           |

@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.ObjectStorageDataDumper
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.gcs.GcsClientFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -35,7 +36,7 @@ object GcsV2DataDumper : DestinationDataDumper {
         val config =
             GcsV2ConfigurationFactory(DestinationCatalog(listOf(stream)))
                 .makeWithoutExceptionHandling(spec as GcsV2Specification)
-        val gcsClient = GcsV2ClientFactory.make(config.gcsClientConfiguration)
+        val gcsClient = GcsClientFactory.make(config.gcsClientConfiguration)
         val pathFactory = ObjectStoragePathFactory.from(config)
         return ObjectStorageDataDumper(
             stream,

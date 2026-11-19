@@ -9,4 +9,5 @@ dependencies {
     api 'com.google.cloud:google-cloud-storage'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
 }

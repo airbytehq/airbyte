@@ -33,7 +33,7 @@ class GcsStreamingUploadTest {
     @BeforeEach
     fun setup() {
         storage = mockk()
-        key = "test-object-key"
+        key = "test-path/test-object-key"
         config =
             GcsClientConfiguration(
                 gcsBucketName = "test-bucket",
@@ -63,8 +63,8 @@ class GcsStreamingUploadTest {
 
         // Verify the blob info has the correct bucket and path format
         val capturedBlobInfo = blobInfoSlot.captured
-        assertTrue(capturedBlobInfo.name.contains("test-path"))
-        assertTrue(capturedBlobInfo.name.contains("-part-1"))
+        assertTrue(capturedBlobInfo.name.startsWith("$key-"))
+        assertTrue(capturedBlobInfo.name.endsWith("-part-1"))
         assertEquals("test-bucket", capturedBlobInfo.bucket)
     }
 
@@ -177,59 +177,19 @@ class GcsStreamingUploadTest {
     }
 
     @Test
-    fun `combinePath - correctly combines paths`(): Unit = runBlocking {
-        // Test with non-empty path
-        val config1 =
-            GcsClientConfiguration(
-                gcsBucketName = "bucket",
-                path = "prefix",
-                credential = GcsHmacKeyConfiguration("dummy-access-key", "dummy-secret-key"),
-                region = GcsRegion.US_WEST1.region,
-            )
-        val upload1 = GcsStreamingUpload(storage, "key", config1, emptyMap())
+    fun `uploadPart - writes parts next to the full key without prepending the bucket path`():
+        Unit = runBlocking {
+        // The key already contains the bucket path, so the part must not be written under
+        // "test-path/test-path/...".
+        val blobInfoSlot = slot<BlobInfo>()
+        every { storage.create(capture(blobInfoSlot), any<ByteArray>()) } returns mockk()
 
-        // Test without a path
-        val config2 =
-            GcsClientConfiguration(
-                gcsBucketName = "bucket",
-                path = "",
-                credential = GcsHmacKeyConfiguration("dummy-access-key", "dummy-secret-key"),
-                region = GcsRegion.US_WEST1.region,
-            )
-        val upload2 = GcsStreamingUpload(storage, "key", config2, emptyMap())
+        streamingUpload.uploadPart("data".toByteArray(), 1)
 
-        // Mock for uploadPart to work
-        every { storage.create(any(), any<ByteArray>()) } returns mockk()
-
-        // Act - calling uploadPart uses combinePath internally
-        upload1.uploadPart("data".toByteArray(), 1)
-        upload2.uploadPart("data".toByteArray(), 1)
-
-        // Assert
-        // Use list to capture all BlobInfo instances since there were multiple calls
-        val blobInfoList = mutableListOf<BlobInfo>()
-
-        verify(atLeast = 2) { storage.create(capture(blobInfoList), any<ByteArray>()) }
-
-        // Check that at least one blob has prefix/ and at least one doesn't
-        val prefixBlob = blobInfoList.find { it.name.contains("prefix/") }
-        val nonPrefixBlob = blobInfoList.find {
-            !it.name.contains("prefix/") && it.name.contains("key")
-        }
-
-        // Verify blob with prefix
-        assertTrue(prefixBlob != null, "Expected to find a blob with 'prefix/' in name")
-        prefixBlob?.let {
-            assertEquals("bucket", it.bucket)
-            assertTrue(it.name.contains("-part-"), "Expected part name to contain '-part-'")
-        }
-
-        // Verify blob without prefix
-        assertTrue(nonPrefixBlob != null, "Expected to find a blob without 'prefix/' in name")
-        nonPrefixBlob?.let {
-            assertEquals("bucket", it.bucket)
-            assertFalse(it.name.startsWith("/"), "Blob name should not start with '/'")
-        }
+        val name = blobInfoSlot.captured.name
+        assertEquals("test-bucket", blobInfoSlot.captured.bucket)
+        assertTrue(name.startsWith("test-path/test-object-key-"), "unexpected part name: $name")
+        assertFalse(name.startsWith("test-path/test-path/"), "bucket path was prepended twice")
     }
 
     @Test
