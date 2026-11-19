@@ -65,6 +65,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-11-19 | | Initial release by [@trackingtime](https://github.com/TrackingTime) |
+| 0.0.1 | 2026-11-19 | [93998](https://github.com/airbytehq/airbyte/pull/93998) | Initial release by [@trackingtime](https://github.com/TrackingTime) |
 
 </details>
