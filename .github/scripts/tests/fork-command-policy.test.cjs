@@ -131,7 +131,67 @@ test("PR validation accepts same repo and rejects forks, deleted heads and API f
   assert.match(guard, /if: inputs.pr != ''/);
 });
 
-test("all blocked entry workflows gate their root job without inheriting secrets", () => {
+test("fork restriction appends to the original comment", () => {
+  const step = dispatcher
+    .split("- name: Explain fork PR restriction\n")[1]
+    .split("\n      - name:")[0];
+  assert.match(
+    step,
+    /uses: peter-evans\/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae/,
+  );
+  assert.match(step, /edit-mode: append/);
+  assert.match(step, /comment-id: \$\{\{ github.event.comment.id \}\}/);
+  assert.doesNotMatch(step, /run:/);
+});
+
+function dependencies(workflow) {
+  const jobs = workflow.split("\njobs:\n")[1];
+  assert.ok(jobs, "Workflow must declare jobs");
+  const headings = [...jobs.matchAll(/^  ([\w-]+):\n/gm)];
+  return Object.fromEntries(
+    headings.map((heading, index) => {
+      const body = jobs.slice(heading.index, headings[index + 1]?.index);
+      const needs = body.match(
+        /^    needs:([^\n]*)(?:\n((?:      - [\w-]+\n)+))?/m,
+      );
+      const names = needs
+        ? (needs[1] + (needs[2] || "")).match(/[a-zA-Z_][\w-]*/g) || []
+        : [];
+      return [heading[1], names];
+    }),
+  );
+}
+
+function assertGuarded(graph) {
+  const roots = Object.keys(graph).filter((job) => graph[job].length === 0);
+  assert.deepEqual(roots, ["guard-pr"]);
+  function reachesGuard(job, visited = new Set()) {
+    assert.ok(Object.hasOwn(graph, job), "Unknown dependency: " + job);
+    assert.ok(!visited.has(job), "Cyclic dependency: " + job);
+    return (
+      job === "guard-pr" ||
+      graph[job].some((dependency) =>
+        reachesGuard(dependency, new Set([...visited, job])),
+      )
+    );
+  }
+  for (const job of Object.keys(graph)) {
+    assert.ok(reachesGuard(job), job + " must depend on guard-pr");
+  }
+  return roots;
+}
+
+test("dependency checks reject a parallel unguarded job", () => {
+  assert.throws(() =>
+    assertGuarded({
+      "guard-pr": [],
+      protected: ["guard-pr"],
+      parallel: [],
+    }),
+  );
+});
+
+test("all jobs in blocked entry workflows depend on the only root, guard-pr", () => {
   for (const command of blocked) {
     const workflow = fs.readFileSync(
       path.join(workflows, command + "-command.yml"),
@@ -146,9 +206,9 @@ test("all blocked entry workflows gate their root job without inheriting secrets
       /pr: \$\{\{ inputs.pr && format\('\{0\}', inputs.pr\) \|\| '' \}\}/,
     );
     assert.match(workflow, /repo: \$\{\{ inputs.repo \|\| '' \}\}/);
-    const jobs = workflow.split("\njobs:\n")[1];
-    const firstJob = jobs.split(/\n  [\w-]+:\n/)[1];
-    assert.match(firstJob, /    needs: guard-pr/);
-    assert.doesNotMatch(jobs.split(/\n  [\w-]+:\n/)[0], /secrets:/);
+    const roots = assertGuarded(dependencies(workflow));
+    console.log(command + "-command.yml root jobs: " + roots.join(", "));
+    const guardJob = workflow.split("\njobs:\n")[1].split(/\n  [\w-]+:\n/)[0];
+    assert.doesNotMatch(guardJob, /secrets:/);
   }
 });
