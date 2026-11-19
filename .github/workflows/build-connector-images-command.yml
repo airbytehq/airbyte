@@ -27,7 +27,15 @@ on:
         type: number
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   init-workflow:
+    needs: guard-pr
     name: "Initialize Workflow"
     runs-on: ubuntu-24.04
     steps:
