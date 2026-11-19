@@ -437,7 +437,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.3 | 2026-11-18 | [93984](https://github.com/airbytehq/airbyte/pull/93984) | Prevent transient mixed generations during same-schema overwrite syncs by cleaning staging before promotion. |
+| 0.4.3 | 2026-11-18 | [93986](https://github.com/airbytehq/airbyte/pull/93986) | Prevent transient mixed generations during same-schema overwrite syncs by cleaning staging before promotion. |
 | 0.4.2 | 2026-10-22 | [89644](https://github.com/airbytehq/airbyte/pull/89644) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; drop Jetty from the Hadoop client. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
