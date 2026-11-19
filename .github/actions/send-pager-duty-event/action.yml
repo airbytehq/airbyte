@@ -20,6 +20,11 @@ runs:
     - name: Send PagerDuty event
       id: send-pager-duty-event
       shell: bash
+      env:
+        IN_SUMMARY: ${{ inputs.summary }}
+        IN_SEVERITY: ${{ inputs.severity }}
+        IN_SOURCE: ${{ inputs.source }}
+        IN_INTEGRATION_KEY: ${{ inputs.integration_key }}
       run: |
         curl --request 'POST' \
           --fail \
@@ -27,10 +32,10 @@ runs:
           --header 'Content-Type: application/json' \
           --data '{
             "payload": {
-              "summary": "${{ inputs.summary }}",
-              "severity": "${{ inputs.severity }}",
-              "source": "${{ inputs.source }}"
+              "summary": "'"${IN_SUMMARY}"'",
+              "severity": "'"${IN_SEVERITY}"'",
+              "source": "'"${IN_SOURCE}"'"
             },
             "event_action": "trigger",
-            "routing_key": "${{ inputs.integration_key }}"
+            "routing_key": "'"${IN_INTEGRATION_KEY}"'"
           }'
