@@ -1,7 +1,7 @@
 # UptimeRobot
 
-Sync your [UptimeRobot](https://uptimerobot.com/) monitors into your data warehouse.
-This source connector syncs every monitor in your account, including its configuration, current status, average response time, recent response times and up/down event logs.
+Sync your [UptimeRobot](https://uptimerobot.com/) monitoring data into your data warehouse.
+This source connector syncs every monitor in your account (including its configuration, current status, average response time, recent response times and up/down event logs), plus your alert contacts, maintenance windows and public status pages.
 It uses the [UptimeRobot API v2](https://uptimerobot.com/api/). Configuration requires only your UptimeRobot API key.
 
 ## Prerequisites
@@ -20,11 +20,15 @@ It uses the [UptimeRobot API v2](https://uptimerobot.com/api/). Configuration re
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | monitors | id | DefaultPaginator | ✅ | ❌ |
+| alert_contacts | id | DefaultPaginator | ✅ | ❌ |
+| maintenance_windows | id | DefaultPaginator | ✅ | ❌ |
+| status_pages | id | DefaultPaginator | ✅ | ❌ |
 
 ## Limitations
 
-- The UptimeRobot API returns up to 50 monitors per request. The connector pages through all of them using `offset` and `limit`.
-- For security, the connector drops each monitor's `http_username` and `http_password` (the HTTP basic-auth credentials a monitor uses to check your site), so they are never written to your destination.
+- The UptimeRobot API returns up to 50 items per request. The connector pages through all of them using `offset` and `limit`.
+- The `alert_contacts` stream includes each contact's `value`: the email address, phone number or webhook URL that alerts are sent to.
+- For security, the connector drops each monitor's `http_username` and `http_password` (the HTTP basic-auth credentials a monitor uses to check your site) and any status page `password`, so they are never written to your destination.
 - UptimeRobot applies [rate limits](https://uptimerobot.com/api/#rate-limits) based on your plan.
 
 ## IP allow list
