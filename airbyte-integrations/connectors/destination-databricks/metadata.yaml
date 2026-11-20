@@ -2,14 +2,14 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 4.0.7
+  dockerImageTag: 4.0.8
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
   license: ELv2
   name: Databricks Lakehouse
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorIPCOptions:
     dataChannel:
       version: 0.0.2
