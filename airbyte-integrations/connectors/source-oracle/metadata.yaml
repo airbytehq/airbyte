@@ -7,7 +7,7 @@ data:
       - ${host}
       - ${tunnel_method.tunnel_host}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -20,7 +20,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  dockerImageTag: 0.5.8
+  dockerImageTag: 0.5.9
   dockerRepository: airbyte/source-oracle
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   githubIssueLabel: source-oracle
