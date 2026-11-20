@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Mapping
 
+import paramiko
 import pytest
 from destination_sftp_json import DestinationSftpJson
 from destination_sftp_json.client import SftpClient
@@ -28,7 +29,7 @@ from airbyte_cdk.models import (
 def configured_catalog() -> ConfiguredAirbyteCatalog:
     stream_schema = {
         "type": "object",
-        "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}},
+        "properties": {"str_col": {"type": "string"}, "int_col": {"type": "integer"}},
     }
 
     append_stream = ConfiguredAirbyteStream(
@@ -63,6 +64,32 @@ def test_check_valid_config(config: Mapping):
     assert outcome.status == Status.SUCCEEDED
 
 
+def test_check_valid_config_ssh_key(config_ssh_key: Mapping):
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), config_ssh_key)
+    assert outcome.status == Status.SUCCEEDED
+
+
+def test_check_valid_config_strict_host_key(config_strict_host_key: Mapping):
+    """A connection succeeds when the pinned host key matches the server's key."""
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), config_strict_host_key)
+    assert outcome.status == Status.SUCCEEDED
+
+
+def test_check_fails_on_host_key_mismatch(config_strict_host_key: Mapping):
+    """Strict host key checking rejects the connection when the pinned key is wrong."""
+    wrong_key = paramiko.RSAKey.generate(bits=2048)
+    bad_config = {
+        **config_strict_host_key,
+        "host_key_checking": {
+            "mode": "strict",
+            "host_key_type": wrong_key.get_name(),
+            "host_key": wrong_key.get_base64(),
+        },
+    }
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), bad_config)
+    assert outcome.status == Status.FAILED
+
+
 def test_check_invalid_config(config):
     outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), {**config, "destination_path": "/doesnotexist"})
     assert outcome.status == Status.FAILED
@@ -73,12 +100,12 @@ def test_check_invalid_config(config):
 #
 
 
-def _state(data: Dict[str, Any]) -> AirbyteStateMessage:
-    """Wraps state data in AirbyteStateMessage"""
+def _state(data: Dict[str, Any]) -> AirbyteMessage:
+    """Wraps state data in an AirbyteMessage (Type.STATE)."""
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
-def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage:
+def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     """Wraps record data in AirbyteRecordMessage"""
     return AirbyteMessage(
         type=Type.RECORD,
@@ -90,13 +117,13 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage
     )
 
 
-def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
+def _sort(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
     """Sorts messages by stream name"""
     return sorted(messages, key=lambda x: x.record.stream)
 
 
-def retrieve_all_records(client: SftpClient, streams: List[str]) -> List[AirbyteRecordMessage]:
-    """retrieves and formats all records on the SFTP server as Airbyte messages"""
+def retrieve_all_records(client: SftpClient, streams: List[str]) -> List[AirbyteMessage]:
+    """Retrieves and formats all records on the SFTP server as Airbyte messages."""
     all_records = []
     for stream in streams:
         for data in client.read_data(stream):
