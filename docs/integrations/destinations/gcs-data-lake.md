@@ -222,6 +222,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.15 | 2026-11-20 | [94016](https://github.com/airbytehq/airbyte/pull/94016) | Update base image to java-connector-base 2.0.5. |
 | 1.0.14 | 2026-10-22 | [89651](https://github.com/airbytehq/airbyte/pull/89651) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; drop Jetty from the Hadoop client. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-16 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
