@@ -7,14 +7,14 @@ data:
       - ${host}
       - ${tunnel_method.tunnel_host}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: integrationTests
     - suite: acceptanceTests
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   dockerRepository: airbyte/source-clickhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
