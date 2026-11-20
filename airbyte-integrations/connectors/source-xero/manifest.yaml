@@ -1,11 +1,31 @@
-version: 5.14.0
+version: 6.61.6
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - bank_transactions
+    # Use the cheapest possible stream for the connection check. `organisations`
+    # returns a single record and never paginates, so testing/starting a connection
+    # costs one API call and cannot be starved by rate limits (unlike the previous
+    # `bank_transactions`, a heavy paginated stream that 429'd and failed the check).
+    - organisations
+
+# Proactively pace requests under Xero's published limits so the connector never
+# thrashes against a 429. Xero allows 60 calls/minute per tenant; we cap at 55 to
+# leave headroom for clock skew and token-refresh traffic. The budget is shared
+# across all (concurrent) streams, so total throughput stays within the limit.
+# See https://developer.xero.com/documentation/guides/oauth2/limits/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 55
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_base: "https://api.xero.com"
 
 definitions:
   streams:
@@ -444,38 +464,27 @@ definitions:
         - credentials
         - auth_type
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 30
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [401]
-              error_message: "Failed to authorize request"
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes: [403]
-        # Stop immediately if Daily Limit reached
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [429]
-              error_message: "daily limit"
-        # Retry standard rate limits (e.g. 60/min)
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
-              factor: 2
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes: [429]
+      type: DefaultErrorHandler
+      response_filters:
+        # Authentication failures are terminal — surface them clearly.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401]
+          error_message: "Failed to authorize request. Verify your Xero credentials and that the tenant is still connected."
+        # A tenant may lack the scope for a given stream — skip it instead of failing the whole sync.
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [403]
+      # 429 (and transient 5xx) are retried honoring Xero's Retry-After header.
+      # A per-minute limit returns a small Retry-After and is retried in place.
+      # The daily limit (5,000/tenant) returns a very large Retry-After (seconds
+      # until the window resets); that exceeds max_waiting_time_in_seconds, which
+      # stops the stream cleanly so the next scheduled sync resumes from saved
+      # state rather than blocking a worker for hours or hammering the API.
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+          max_waiting_time_in_seconds: 300
 
 streams:
   - $ref: "#/definitions/streams/bank_transactions"
