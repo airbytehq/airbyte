@@ -1008,6 +1008,11 @@ schemas:
         type:
           - "string"
           - "null"
+      timezone_source:
+        description: "Set when Grades.com inferred the time zone from the address because none was set: `inferred` (certain), `inferred_main` (a state with two zones and no ZIP: its main zone; ask the owner). Null when someone set it."
+        type:
+          - "string"
+          - "null"
       role:
         description: "The caller's role in this company (`super_admin` for platform super admins)."
         type:
@@ -1076,12 +1081,72 @@ schemas:
         type:
           - "boolean"
           - "null"
+      setup_answers:
+        description: "The one-tap setup answers after sign-up (docs/auth.md \"Setup questions\"): every question (null = not answered), `answered_at` and `skipped_at` (the first \"Skip\", sent as `{\"skipped\": true}`); null when never answered or skipped."
+        type:
+          - "object"
+          - "null"
+        properties:
+          business_kind:
+            type:
+              - "string"
+              - "null"
+          review_asking:
+            type:
+              - "string"
+              - "null"
+          locations:
+            type:
+              - "string"
+              - "null"
+          answered_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          skipped_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+        additionalProperties: true
       created_at:
         type:
           - "string"
           - "null"
         format: "date-time"
         airbyte_type: "timestamp_with_timezone"
+      active:
+        description: "The business is active (not deactivated)."
+        type:
+          - "boolean"
+          - "null"
+      moderation:
+        description: "Moderation state of the business (`Approved`, `UnderModeration`, `Rejected`)."
+        type:
+          - "string"
+          - "null"
+      membership:
+        description: "The caller's own membership row of this business: when it was created and accepted. Null when the caller reaches it only through its HQ, an agency or as a platform super admin (see `access.via`)."
+        type:
+          - "object"
+          - "null"
+        properties:
+          created_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          invitation_accepted_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+        additionalProperties: true
     additionalProperties: true
   sources:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1169,6 +1234,94 @@ schemas:
               - "integer"
               - "null"
         additionalProperties: true
+      live_reviews_count:
+        description: "List of sources only: reviews from this source that are live (not removed from the site; `reviews_count` also counts the removed ones kept in the archive)."
+        type:
+          - "integer"
+          - "null"
+      latest_review_at:
+        description: "List of sources only: publish date of the newest live review from this source."
+        type:
+          - "string"
+          - "null"
+        format: "date-time"
+        airbyte_type: "timestamp_with_timezone"
+      reconnect_last_attempt_at:
+        description: "List of sources only: the last failed attempt while the source waits to be reconnected."
+        type:
+          - "string"
+          - "null"
+      img:
+        description: "List of sources only: the icon path of the driver (`sources.img`)."
+        type:
+          - "string"
+          - "null"
+      parse_run:
+        description: "List of sources only: the current fetch run (`id`, when its state row was created); null before the first run."
+        type:
+          - "object"
+          - "null"
+        properties:
+          id:
+            type:
+              - "string"
+              - "null"
+          created_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+        additionalProperties: true
+      health:
+        description: "List of sources only: the sync health the dashboard shows (its Connections and review sites pages, the same rule): `status` (`never`, `in_progress`, `finished`), `last_success_at`, `error` (`reconnect_required` needs the owner; `listing_not_found` the page is gone from the site; `apify_failing` / `apify_stale` Grades.com is retrying, the stored reviews stay; null = healthy; a Google source the Client Hub feeds is never stale) and `refresh_cadence` (`minutely`, `daily`, `weekly`)."
+        type:
+          - "object"
+          - "null"
+        properties:
+          status:
+            type:
+              - "string"
+              - "null"
+          last_started_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          last_finished_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          last_success_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          expected_count:
+            type:
+              - "integer"
+              - "null"
+          collected_count:
+            type:
+              - "integer"
+              - "null"
+          error:
+            type:
+              - "string"
+              - "null"
+          error_message:
+            type:
+              - "string"
+              - "null"
+          refresh_cadence:
+            type:
+              - "string"
+              - "null"
+        additionalProperties: true
     additionalProperties: true
   reviews:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1249,6 +1402,21 @@ schemas:
           - "null"
       hidden:
         description: "Hidden from public displays (`hide_in_widget`)."
+        type:
+          - "boolean"
+          - "null"
+      likes:
+        description: "Likes the review has on its site (\"helpful\" votes), null when the site does not show them."
+        type:
+          - "integer"
+          - "null"
+      dislikes:
+        description: "Dislikes the review has on its site, null when the site does not show them."
+        type:
+          - "integer"
+          - "null"
+      was_updated:
+        description: "Whether the reviewer edited the review on its site after publishing it (the archive keeps the earlier versions: GET .../reviews/{review}/history)."
         type:
           - "boolean"
           - "null"
@@ -1424,6 +1592,11 @@ schemas:
               - "string"
               - "null"
         additionalProperties: true
+      replies_visible:
+        description: "false when Grades.com cannot see owner replies on this review's site (the Facebook page and G2 collectors never return them; the dashboard list's `repliesVisible`): the review is neither answered nor unanswered (\"Replies not visible for this site\") and never counts in reply rates or \"needs a reply\"."
+        type:
+          - "boolean"
+          - "null"
       reply:
         description: "The business's reply, null when there is none. `status` `published`: the review site shows it (`response_text`); `saved`: saved in Grades.com and not posted to the site (a site without a reply API, or `publish: false`): the review counts as replied, the owner still posts it on the site. `text` is withheld with `text_policy: aggregate`. `has_company_response` filters on the same rule."
         type:
@@ -1444,6 +1617,16 @@ schemas:
               - "null"
             format: "date-time"
             airbyte_type: "timestamp_with_timezone"
+          marked_replied_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          marked_replied_by:
+            type:
+              - "string"
+              - "null"
         additionalProperties: true
     additionalProperties: true
   review_replies:
@@ -1560,6 +1743,16 @@ schemas:
               - "null"
             format: "date-time"
             airbyte_type: "timestamp_with_timezone"
+          marked_replied_at:
+            type:
+              - "string"
+              - "null"
+            format: "date-time"
+            airbyte_type: "timestamp_with_timezone"
+          marked_replied_by:
+            type:
+              - "string"
+              - "null"
         additionalProperties: true
       text_policy:
         description: "`aggregate`: a source shown only as a rating and a link (Yelp) whose `text`, `author`, `avatar` and `response_text` are withheld (send `yelp_consent=true` after recording the Yelp consent). `yelp_consent`: that text is included after consent, for internal use only. Null for every other review."
@@ -1575,6 +1768,26 @@ schemas:
         description: "Why the text is withheld and how to get it (with `text_policy: aggregate`), else null. Written for developers: show people `text_notice` instead."
         type:
           - "string"
+          - "null"
+      replies_visible:
+        description: "false when Grades.com cannot see owner replies on this review's site (the Facebook page and G2 collectors never return them; the dashboard list's `repliesVisible`): the review is neither answered nor unanswered (\"Replies not visible for this site\") and never counts in reply rates or \"needs a reply\"."
+        type:
+          - "boolean"
+          - "null"
+      was_updated:
+        description: "Whether the reviewer edited the review on its site after publishing it (the archive keeps the earlier versions: GET .../reviews/{review}/history)."
+        type:
+          - "boolean"
+          - "null"
+      likes:
+        description: "Likes the review has on its site (\"helpful\" votes), null when the site does not show them."
+        type:
+          - "integer"
+          - "null"
+      dislikes:
+        description: "Dislikes the review has on its site, null when the site does not show them."
+        type:
+          - "integer"
           - "null"
     additionalProperties: true
   review_stats:
@@ -1627,6 +1840,46 @@ schemas:
               - "integer"
               - "null"
         additionalProperties: true
+      reviews_total:
+        description: "Every review that counts (still on its site), rated or not: Facebook recommendations have no stars. The Dashboard's review total; `total` counts only the rated ones the average is based on."
+        type:
+          - "integer"
+          - "null"
+      computed_at:
+        description: "When the stored statistics (`total`, `ratings`, `by_source`, `trend`) were last refreshed; null before the first refresh. `reviews_total` and `by_platform` are read live."
+        type:
+          - "string"
+          - "null"
+        format: "date-time"
+        airbyte_type: "timestamp_with_timezone"
+      source:
+        description: "Only with `?source=`: the driver `by_platform`, `reviews_total` and `trend` are narrowed to."
+        type:
+          - "string"
+          - "null"
+      trend:
+        description: "Only with `?months=`: one entry per calendar month (UTC, by published date), oldest first, months without rated reviews included."
+        type:
+          - "array"
+          - "null"
+        items:
+          type:
+            - "object"
+            - "null"
+          properties:
+            month:
+              type:
+                - "string"
+                - "null"
+            total:
+              type:
+                - "integer"
+                - "null"
+            average_rating:
+              type:
+                - "number"
+                - "null"
+          additionalProperties: true
       by_source:
         description: "Per source driver (internal ids such as `yelp_apify` or `api`, which mixes Client Hub and Direct reviews). To show sites to people use `by_platform`."
         type:
@@ -1693,6 +1946,10 @@ schemas:
                 type:
                   - "string"
                   - "null"
+            reviews_total:
+              type:
+                - "integer"
+                - "null"
           additionalProperties: true
     additionalProperties: true
   review_stats_daily:
@@ -2751,6 +3008,7 @@ schemas:
           - "integer"
           - "null"
       cost_usd:
+        description: "Platform super admins only."
         type:
           - "number"
           - "null"
