@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-peec-ai:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "Requires a live Peec AI API key; covered by unit_tests/test_manifest.py against a mock API"
+  discovery:
+    bypass_reason: "Schemas are declared inline in manifest.yaml"
+  basic_read:
+    bypass_reason: "Requires a live Peec AI API key; reads are covered by unit_tests/test_manifest.py against a mock API"
+  incremental:
+    bypass_reason: "Requires a live Peec AI API key; reads are covered by unit_tests/test_manifest.py against a mock API"
+  full_refresh:
+    bypass_reason: "Requires a live Peec AI API key; reads are covered by unit_tests/test_manifest.py against a mock API"
