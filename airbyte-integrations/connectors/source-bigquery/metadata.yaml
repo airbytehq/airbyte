@@ -3,7 +3,7 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorSubtype: database
   # Speed mode: records (and a copy of the states) can go to the destination over Unix domain
   # sockets, as JSONL or protobuf, when the platform sets DATA_CHANNEL_MEDIUM=SOCKET,
@@ -17,7 +17,7 @@ data:
     - suite: unitTests
   connectorType: source
   definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   githubIssueLabel: source-bigquery
