@@ -5,7 +5,7 @@ import logging
 from http import HTTPStatus
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -110,6 +110,6 @@ class TestFullRefresh(TestCase):
         get_account_request().build()
         http_mocker.get(get_account_request().build(), build_response(status_code=HTTPStatus.FORBIDDEN, body={}))
 
-        is_successful, error = get_source(config={}).check_connection(logger=logger, config={})
-        assert not is_successful
-        assert "Forbidden" in error
+        result = get_source(config={}).check(logger=logger, config={})
+        assert result.status == Status.FAILED
+        assert "Forbidden" in result.message

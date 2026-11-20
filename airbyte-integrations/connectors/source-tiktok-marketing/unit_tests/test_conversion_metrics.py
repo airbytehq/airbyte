@@ -45,10 +45,21 @@ CONVERSION_METRICS = [
     "real_time_conversion",
 ]
 
+# Website "Place an Order" metrics ("Orders placed (website)" in Ads Manager), added to the ad,
+# ad group and campaign daily report streams. Some advertisers optimise on Place an Order rather
+# than Complete Payment, so this is their main conversion KPI.
+WEB_ORDER_METRICS = [
+    "on_web_order",
+    "total_on_web_order_value",
+    "cost_per_on_web_order",
+    "value_per_on_web_order",
+    "on_web_order_rate",
+]
+
 EXPECTED = {
-    "ads_reports_daily": FUNNEL_LEGS,
-    "ad_groups_reports_daily": FUNNEL_LEGS + PURCHASE_METRICS,
-    "campaigns_reports_daily": FUNNEL_LEGS + PURCHASE_METRICS + CONVERSION_METRICS,
+    "ads_reports_daily": FUNNEL_LEGS + WEB_ORDER_METRICS,
+    "ad_groups_reports_daily": FUNNEL_LEGS + PURCHASE_METRICS + WEB_ORDER_METRICS,
+    "campaigns_reports_daily": FUNNEL_LEGS + PURCHASE_METRICS + CONVERSION_METRICS + WEB_ORDER_METRICS,
 }
 
 # report_type=AUDIENCE rejects these metrics, so the audience streams must not carry them.
@@ -88,11 +99,11 @@ def test_daily_report_streams_have_no_duplicate_metrics(manifest, stream_name):
 def test_audience_streams_do_not_request_conversion_metrics(manifest, stream_name):
     """report_type=AUDIENCE rejects these metrics; requesting one fails the whole call."""
     metrics = _report_metrics(manifest, stream_name)
-    leaked = [metric for metric in FUNNEL_LEGS + PURCHASE_METRICS if metric in metrics]
+    leaked = [metric for metric in FUNNEL_LEGS + PURCHASE_METRICS + WEB_ORDER_METRICS if metric in metrics]
     assert not leaked, f"{stream_name} must not request BASIC-only metrics: {leaked}"
 
 
-@pytest.mark.parametrize("metric", FUNNEL_LEGS, ids=FUNNEL_LEGS)
+@pytest.mark.parametrize("metric", FUNNEL_LEGS + WEB_ORDER_METRICS, ids=FUNNEL_LEGS + WEB_ORDER_METRICS)
 def test_new_metrics_are_declared_in_base_report_schema(manifest, metric):
     properties = manifest["definitions"]["schemas"]["base_report"]["properties"]["metrics"]["properties"]
     assert metric in properties, f"{metric} is requested but not declared in the base_report schema"

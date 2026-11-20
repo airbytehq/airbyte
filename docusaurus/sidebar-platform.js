@@ -515,16 +515,17 @@ module.exports = {
         "enterprise-setup/README",
         {
           type: "category",
-          label: "Enterprise Flex",
+          label: "Hybrid deployment",
           link: {
             type: "doc",
-            id: "enterprise-flex/readme",
+            id: "hybrid-deployment",
           },
           items: [
             "enterprise-flex/getting-started",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
             "enterprise-flex/log-collection",
+            "enterprise-flex/support-and-upgrade-policy",
           ],
         },
         {

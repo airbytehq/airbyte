@@ -24,6 +24,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.69 | 2026-11-17 | [93093](https://github.com/airbytehq/airbyte/pull/93093) | Update dependencies |
+| 0.0.68 | 2026-11-10 | [91363](https://github.com/airbytehq/airbyte/pull/91363) | Update dependencies |
 | 0.0.67 | 2026-11-03 | [90325](https://github.com/airbytehq/airbyte/pull/90325) | Use a single error handler for the `nps` stream (no behavior change) |
 | 0.0.66 | 2026-11-03 | [90456](https://github.com/airbytehq/airbyte/pull/90456) | Update dependencies |
 | 0.0.65 | 2026-10-27 | [89817](https://github.com/airbytehq/airbyte/pull/89817) | Update dependencies |

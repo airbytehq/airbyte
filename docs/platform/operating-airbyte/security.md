@@ -44,12 +44,13 @@ You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 - Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
-  ```
+
+  ```nginx
   # Example nginx reverse proxy config
   server {
     listen 443 ssl;
     server_name airbyte.<your-domain>.com;
-    client_max_body_size 200M;  # required for Airbyte API
+    client_max_body_size 200M;  # Limit for this reverse proxy, not abctl's ingress
     ssl_certificate <path-to-your-cert>.crt.pem;
     ssl_certificate_key <path-to-your-key>.key.pem;
 
@@ -60,8 +61,11 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default 
-password follow the instructions found [here](/platform/deploying-airbyte/integrations/authentication)
+
+  This example places a reverse proxy in front of an abctl installation. A larger limit on this proxy doesn't raise the limit on abctl's ingress. See [Request body size](../deploying-airbyte/integrations/ingress.md#request-body-size) for the limits that apply to your deployment.
+
+- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default
+password, follow the [authentication instructions](/platform/deploying-airbyte/integrations/authentication).
 
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
@@ -95,7 +99,7 @@ Airbyte Cloud leverages the security features of leading Cloud providers and set
 
 ### Physical infrastructure
 
-Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](../enterprise-flex/), that data plane runs in your own infrastructure.
+Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](/platform/hybrid-deployment), that data plane runs in your own infrastructure.
 
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 

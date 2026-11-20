@@ -38,6 +38,8 @@ acceptance_tests:
         empty_streams:
           - name: "users/🪦/tblf0p02nFaloKU96"
             bypass_reason: "This table in the test base has no records; it also returns none with the master manifest (verified 2026-10-16)."
+          - name: "base_collaborators"
+            bypass_reason: "The test bases have no directly added collaborators, only the workspace owner, whom Airtable lists under workspaceCollaborators (verified 2026-11-04). unit_tests/test_collaborators.py covers the records."
       # Skipping to pass FAST Tests -- engineer should verify
       # connector works w/ oauth in Airbyte Cloud before merging.
       # - config_path: "secrets/config_oauth.json"

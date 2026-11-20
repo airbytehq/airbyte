@@ -1,1 +1,13 @@
-{ "cash_flows": { "updateDateTime": "9999-05-04T18:31:18Z" } }
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cash_flows"
+      },
+      "stream_state": {
+        "updateDateTime": "9999-05-04T18:31:18Z"
+      }
+    }
+  }
+]

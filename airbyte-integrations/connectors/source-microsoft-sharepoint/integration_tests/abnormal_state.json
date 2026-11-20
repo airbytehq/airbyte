@@ -23,7 +23,17 @@
       },
       "stream_state": {
         "history": {
-          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf": "2130-12-15T16:47:21.000000Z"
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf": "2130-12-15T16:47:21.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-2025-facilities-review.pdf": "2130-07-20T22:53:07.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-board-deck-q2-2025.pdf": "2130-07-20T22:53:07.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-fy2025-metrics-pack.pdf": "2130-07-20T22:53:07.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-pricing-and-packaging-2025.pdf": "2130-07-20T22:53:07.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-strategy-review-a.pdf": "2130-07-20T22:53:07.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/cobalt-strategy-review-b.pdf": "2130-07-20T22:53:08.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/incident-register-2026-h1.pdf": "2130-07-20T22:53:10.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/new-engineer-access-checklist.pdf": "2130-07-20T22:53:10.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/product-roadmap-q3.pdf": "2130-07-20T22:53:12.000000Z",
+          "https://airbyte179.sharepoint.com/JohnnyTest3/support-csat-summary.pdf": "2130-07-20T22:53:13.000000Z"
         },
         "_ab_source_file_last_modified": "2130-12-15T16:47:21.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf"
       }

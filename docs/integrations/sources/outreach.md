@@ -49,6 +49,36 @@ List of available streams:
 - Tasks
 - Templates
 - Snippets
+- Events
+- Teams
+- Roles
+- Profiles
+- Duties
+- Rulesets
+- Favorites
+- MailAliases
+- Sequence Templates
+- Content Categories
+- Content Category Memberships
+- Content Category Ownerships
+- Opportunity Stages
+- Opportunity Prospect Roles
+- Task Priorities
+- EmailAddresses
+- PhoneNumbers
+- Recipients
+- ComplianceRequests
+- AuditLogs
+
+:::note
+EmailAddresses, PhoneNumbers, Recipients, ComplianceRequests and AuditLogs need the `emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes. Connections authorized before version 1.5.0 must re-authenticate before selecting these streams.
+
+AuditLogs requires an Outreach admin user. Outreach keeps audit-log events for about 90 days, so the first sync returns at most that much history regardless of the start date.
+:::
+
+:::warning Personal data in the ComplianceRequests stream
+ComplianceRequests includes a `pii` field with the personal data Outreach keeps to process each request, such as the email address of the person who asked to be deleted. Outreach keeps this data after the deletion completes, so syncing this stream copies it into your destination. If you only need to audit requests, deselect the `pii` column or the stream.
+:::
 
 :::warning Upcoming change to the Prospects stream
 Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
@@ -69,6 +99,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.5.1 | 2026-11-17 | [93283](https://github.com/airbytehq/airbyte/pull/93283) | Update dependencies |
+| 1.5.0 | 2026-11-12 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` streams |
+| 1.4.0 | 2026-11-12 | [92567](https://github.com/airbytehq/airbyte/pull/92567) | Add sequence_templates, content_categories, content_category_memberships, content_category_ownerships, opportunity_stages, opportunity_prospect_roles and task_priorities streams |
+| 1.3.0 | 2026-11-12 | [92565](https://github.com/airbytehq/airbyte/pull/92565) | Add the events, teams, roles, profiles, duties, rulesets, favorites and mail_aliases streams |
+| 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
+| 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
+| 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
 | 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
 | 1.1.50 | 2026-10-20 | [89080](https://github.com/airbytehq/airbyte/pull/89080) | Save rotated OAuth tokens and refresh the access token on 401 |

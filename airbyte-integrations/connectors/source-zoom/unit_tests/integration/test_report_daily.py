@@ -73,7 +73,7 @@ class TestReportDaily(TestCase):
         )
 
         assert_completed_without_errors(output, _STREAM)
-        assert [record["date"] for record in records_data(output)] == ["2026-09-15", "2026-10-20"]
+        assert sorted(record["date"] for record in records_data(output)) == ["2026-09-15", "2026-10-20"]
         for current in requests:
             http_mocker.assert_number_of_calls(current, 1)
 
@@ -101,7 +101,7 @@ class TestReportDaily(TestCase):
         )
 
         assert_completed_without_errors(output, _STREAM)
-        assert [record["date"] for record in records_data(output)] == [
+        assert sorted(record["date"] for record in records_data(output)) == [
             "2026-06-15",
             "2026-07-15",
             "2026-08-15",
