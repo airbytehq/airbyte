@@ -105,7 +105,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.10 | 2026-11-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update base image to java-connector-base 2.0.5 |
+| 0.9.10 | 2026-11-20 | [94014](https://github.com/airbytehq/airbyte/pull/94014) | Update base image to java-connector-base 2.0.5 |
 | 0.9.9 | 2026-10-30 | [90277](https://github.com/airbytehq/airbyte/pull/90277) | Promote to certified (GA). Logging/Failing modes count records per stream instead of per internal batch; `FAILING` now fails on exactly the Nth record. |
 | 0.9.8 | 2026-10-22 | [89655](https://github.com/airbytehq/airbyte/pull/89655) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139 |
 | 0.9.7 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / load 1.1.7 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
