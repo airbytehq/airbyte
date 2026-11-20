@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.5 — 2026-11-13
+
+[#76895](https://github.com/airbytehq/airbyte/pull/76895) — Classify broken-pipe failures on the source-to-destination socket as transient errors with an actionable message.
+
 ### 1.2.4 — 2026-11-10
 
 [#91499](https://github.com/airbytehq/airbyte/pull/91499) — Release resources and exit when the output channel fails during partition cleanup.
