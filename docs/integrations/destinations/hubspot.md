@@ -138,6 +138,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.14 | 2026-11-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update base image to java-connector-base 2.0.5 |
 | 0.0.13 | 2026-11-10 | [91834](https://github.com/airbytehq/airbyte/pull/91834) | Fix HubSpot OAuth authorization by sending the PKCE code_challenge_method and code_verifier |
 | 0.0.12 | 2026-06-17 | [80214](https://github.com/airbytehq/airbyte/pull/80214) | Move to community support level |
 | 0.0.11 | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
