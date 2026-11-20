@@ -1,0 +1,36 @@
+# Consumed by the CDK's pytest-based standard tests
+# (airbyte_cdk.test.standard_tests), which replaced the old CAT runner.
+#
+# Every category that needs `secrets/config.json` is bypassed, because that file
+# is a live SAP system: Airbyte's CI fetches connector secrets from their own
+# GSM and has no SAP to point at, so declaring these would block the suite on
+# infrastructure that cannot exist. The same coverage runs in this repository's
+# CI, on a self-hosted runner with an ABAP Platform Trial attached -- see e2e/
+# and docs/development.md.
+connector_image: airbyte/source-sap:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_sap/spec.yaml"
+  connection:
+    tests:
+      # Runs anywhere: it asserts a *failure*, so it needs no SAP system, and it
+      # is what distinguishes a working image from one whose ERPL extensions are
+      # missing -- a spec-only run cannot tell those apart, because spec never
+      # loads an extension.
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    bypass_reason: &needs_sap >-
+      Requires a live SAP system. Covered in this repository's e2e suite, which
+      runs the connector as a subprocess against an ABAP Platform Trial on a
+      self-hosted runner.
+  basic_read:
+    bypass_reason: *needs_sap
+  full_refresh:
+    bypass_reason: *needs_sap
+  incremental:
+    bypass_reason: >-
+      Incremental sync is covered end-to-end in e2e/, which asserts the two-run
+      delta behaviour (snapshot, then changes only) against a live SAP system.
+      The standard suite cannot express a server-side delta pointer.
