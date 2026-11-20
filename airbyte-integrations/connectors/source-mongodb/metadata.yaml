@@ -6,7 +6,7 @@ data:
     hosts:
       - ${connection_string}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorIPCOptions:
     dataChannel:
       version: "0.0.2"
@@ -19,7 +19,7 @@ data:
     - suite: acceptanceTests
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 3.0.2
+  dockerImageTag: 3.0.3
   dockerRepository: airbyte/source-mongodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb
   githubIssueLabel: source-mongodb
