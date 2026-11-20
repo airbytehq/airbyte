@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.2.6 | 2026-11-20 | [94026](https://github.com/airbytehq/airbyte/pull/94026) | Update base image to java-connector-base 2.0.5 |
 | 0.2.5 | 2026-10-22 | [89643](https://github.com/airbytehq/airbyte/pull/89643) | Upgrade to Bulk CDK 1.2.3: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86. |
 | 0.2.4 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / extract 1.1.21 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
 | 0.2.3 | 2026-10-09 | [88425](https://github.com/airbytehq/airbyte/pull/88425) | Upgrade to Bulk CDK 1.1.14. |
