@@ -6,7 +6,7 @@ data:
     hosts:
       - ${host}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -19,7 +19,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-teradata
   documentationUrl: https://docs.airbyte.com/integrations/sources/teradata
   githubIssueLabel: source-teradata
