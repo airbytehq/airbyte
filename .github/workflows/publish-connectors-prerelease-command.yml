@@ -154,6 +154,11 @@ jobs:
   publish:
     name: Publish Pre-release
     needs: [init]
+    # Reusable-workflow callers must grant every permission the called jobs request.
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
     uses: ./.github/workflows/publish_connectors.yml
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}

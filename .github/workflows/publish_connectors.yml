@@ -220,6 +220,21 @@ jobs:
     needs: [publish_options]
     if: needs.publish_options.outputs.connector-count != '0'
     runs-on: ubuntu-24.04
+    # Production PyPI publishes run in the master-restricted `pypi-publish` environment,
+    # which the PyPI Trusted Publisher for each connector package requires.
+    environment: >-
+      ${{
+        github.ref == 'refs/heads/master'
+        && needs.publish_options.outputs.with-semver-suffix == 'none'
+        && needs.publish_options.outputs.dry-run != 'true'
+        && needs.publish_options.outputs.registry-refresh-only != 'true'
+        && 'pypi-publish'
+        || ''
+      }}
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
     strategy:
       matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
@@ -395,6 +410,27 @@ jobs:
             echo "blocked=false" >> $GITHUB_OUTPUT
           fi
 
+      # Exchanges the job's OIDC token for a short-lived PyPI upload token (PyPI Trusted Publishing):
+      # https://docs.pypi.org/trusted-publishers/using-a-publisher/#the-manual-way
+      - name: Mint PyPI token via Trusted Publishing
+        id: mint-pypi-token
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'python' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.with-semver-suffix == 'none' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          audience=$(curl -fsS https://pypi.org/_/oidc/audience | jq -r '.audience')
+          oidc_token=$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" | jq -r '.value')
+          pypi_token=$(jq -n --arg token "$oidc_token" '{token: $token}' \
+            | curl -fsS -X POST https://pypi.org/_/oidc/mint-token -d @- | jq -r '.token')
+          echo "::add-mask::${pypi_token}"
+          echo "pypi-token=${pypi_token}" >> "$GITHUB_OUTPUT"
+
       - name: Publish to Python Registry
         id: publish-python-registry
         if: >
@@ -409,7 +445,7 @@ jobs:
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
-          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: Build and publish JVM connectors images
