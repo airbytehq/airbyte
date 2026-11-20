@@ -29,8 +29,8 @@ jobs:
         with:
           submodules: true # Needed for when airbyte-enterprise calls this workflow
 
-      - name: Install yq
-        run: sudo snap install yq
+      - name: Check yq version
+        run: yq --version
 
       - name: Generate Destination Connector Matrix
         id: generate-matrix
@@ -91,11 +91,15 @@ jobs:
 
       - name: Fetch connector secrets
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
-        run: airbyte-ops secrets fetch ${{ matrix.connector }}
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+        run: airbyte-ops secrets fetch "${MATRIX_CONNECTOR}"
 
       - name: Run CDK upgrade
         if: matrix.connector
-        run: ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk --cdkVersion=local
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+        run: ./gradlew ":airbyte-integrations:connectors:${MATRIX_CONNECTOR}:upgradeCdk" --cdkVersion=local
 
       - name: Run Unit Tests
         id: run-unit-tests
@@ -141,7 +145,8 @@ jobs:
         if: always() && steps.check-move-notify.outputs.should-notify == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
-          ${{ matrix.connector }} \
+          "${MATRIX_CONNECTOR}" \
           "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}" \
           ${{ github.sha }}

@@ -16,11 +16,13 @@ catch-all.
 """
 
 import logging
+from typing import Iterator
 from unittest import mock
 
 import jsonschema
 import pytest
 import requests_mock
+import time_machine
 import yaml
 from conftest import _BASE_URL, _CONFIG, _MANIFEST_PATH, _get_source, _read_stream
 
@@ -87,6 +89,13 @@ _TIMESTAMP_SCHEMA_PATHS = [
     ("schedules", "current_shifts[].end_at"),
     ("workflows", "runs_from"),
 ]
+
+
+@pytest.fixture(autouse=True)
+def frozen_time() -> Iterator[time_machine.Coordinates]:
+    with time_machine.travel("2026-10-10T00:00:00Z", tick=False) as clock:
+        with mock.patch("time.sleep", side_effect=lambda seconds: clock.shift(seconds + 0.001)):
+            yield clock
 
 
 def _mock_empty(mocker, path, records_field):
@@ -756,7 +765,7 @@ def test_fail_responses_surface_the_manifest_messages(status, body, failure_type
     assert error.message == expected
 
 
-def test_rate_limit_waits_for_retry_after_then_succeeds():
+def test_rate_limit_waits_for_retry_after_then_succeeds(frozen_time: time_machine.Coordinates):
     responses = [
         {
             "status_code": 429,
@@ -765,7 +774,10 @@ def test_rate_limit_waits_for_retry_after_then_succeeds():
         },
         {"status_code": 200, "json": {"incidents": [{"id": "i-1", "updated_at": "2026-09-20T08:00:00.123Z"}], "pagination_meta": {}}},
     ]
-    with mock.patch("time.sleep") as sleep, requests_mock.Mocker() as mocker:
+    with (
+        mock.patch("time.sleep", side_effect=lambda seconds: frozen_time.shift(seconds + 0.001)) as sleep,
+        requests_mock.Mocker() as mocker,
+    ):
         mocker.get(f"{_BASE_URL}/v2/incidents", responses)
         output = _read_stream("incidents", config=_RECENT_CONFIG)
         assert len(mocker.request_history) == 2

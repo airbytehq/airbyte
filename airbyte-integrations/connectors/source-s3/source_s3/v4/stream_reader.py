@@ -137,6 +137,30 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return autorefresh_session.client("s3", **client_kv_args)
 
+    def check_bucket_access(self, logger: logging.Logger) -> None:
+        """
+        Checks that the configured bucket can be listed with the configured credentials, endpoint and region, by listing a
+        single object. Nothing about streams is involved. Raises a config error naming the cause otherwise.
+        """
+        bucket = self.config.bucket
+        logger.info(f"Listing one object of bucket '{bucket}' to check access.")
+        try:
+            self.s3_client.list_objects_v2(Bucket=bucket, MaxKeys=1)
+        except ClientError as exc:
+            error = exc.response.get("Error", {})
+            code = error.get("Code", "")
+            if code == "NoSuchBucket":
+                message = f"The bucket {bucket} does not exist."
+            else:
+                message = (
+                    f"Airbyte cannot list the bucket '{bucket}' with the configured credentials: {code} {error.get('Message', '')}".strip()
+                )
+            raise CustomFileBasedException(message=message, internal_message=str(exc), failure_type=FailureType.config_error, exception=exc)
+        except Exception as exc:
+            message = f"Airbyte could not reach the bucket '{bucket}': {exc}"
+            raise CustomFileBasedException(message=message, internal_message=message, failure_type=FailureType.config_error, exception=exc)
+        logger.info(f"The bucket '{bucket}' is accessible.")
+
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.

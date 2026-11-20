@@ -109,7 +109,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created
-        lookback_window: P60D
+        lookback_window: P365D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -158,11 +158,14 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: start
+        lookback_window: P30D
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
+          min_datetime: "{{ (now_utc() - duration('P364D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime: >-
             {{ config.start_date or (now_utc() -
             duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
@@ -453,6 +456,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      deprecated:
+        type: boolean
       type:
         type:
           - "null"
@@ -479,7 +484,13 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        properties: {}
+        properties:
+          id:
+            type: [integer, "null"]
+          name:
+            type: [string, "null"]
+          icon:
+            type: [string, "null"]
       actions:
         type:
           - "null"
@@ -491,7 +502,11 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        properties: {}
+        properties:
+          unit:
+            type: [string, "null"]
+          amount:
+            type: [number, "null"]
       created:
         type:
           - "null"
@@ -521,7 +536,11 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        properties: {}
+        properties:
+          employee:
+            type: [string, "null"]
+          manager:
+            type: [string, "null"]
       start:
         type:
           - "null"
@@ -531,7 +550,15 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        properties: {}
+        properties:
+          lastChanged:
+            type: [string, "null"]
+          lastChangedByUserId:
+            type: [integer, "null"]
+          status:
+            type: [string, "null"]
+      updated:
+        type: [string, "null"]
   timesheet_entries:
     type: object
     $schema: http://json-schema.org/schema#
@@ -558,7 +585,7 @@ schemas:
           - number
           - "null"
       end:
-        type: string
+        type: [string, "null"]
       hours:
         type:
           - number
@@ -570,15 +597,36 @@ schemas:
           - string
           - "null"
       start:
+        type: [string, "null"]
+      createdAt:
         type: string
+        format: date-time
+      updatedAt:
+        type: [string, "null"]
+        format: date-time
+      projectInfo:
+        type: [object, "null"]
+        properties:
+          project:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          task:
+            type: [object, "null"]
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
       timezone:
         type:
           - string
           - "null"
     required:
       - id
-      - start
-      - end
   employees:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -590,3 +638,95 @@ schemas:
           - string
       _cursor:
         type: integer
+      firstName:
+        type: [string, "null"]
+      lastName:
+        type: [string, "null"]
+      preferredName:
+        type: [string, "null"]
+      middleName:
+        type: [string, "null"]
+      photoUrl:
+        type: [string, "null"]
+      jobTitleName:
+        type: [string, "null"]
+      jobTitleId:
+        type: [string, "null"]
+      status:
+        type: [string, "null"]
+      workEmail:
+        type: [string, "null"]
+      homeEmail:
+        type: [string, "null"]
+      bestEmail:
+        type: [string, "null"]
+      workPhone:
+        type: [string, "null"]
+      workPhoneExtension:
+        type: [string, "null"]
+      mobilePhone:
+        type: [string, "null"]
+      homePhone:
+        type: [string, "null"]
+      skypeUsername:
+        type: [string, "null"]
+      linkedinUrl:
+        type: [string, "null"]
+      facebookUrl:
+        type: [string, "null"]
+      instagramUrl:
+        type: [string, "null"]
+      twitterUrl:
+        type: [string, "null"]
+      pinterestUrl:
+        type: [string, "null"]
+      birthDate:
+        type: [string, "null"]
+      hireDate:
+        type: [string, "null"]
+      originalHireDate:
+        type: [string, "null"]
+      terminationDate:
+        type: [string, "null"]
+      address1:
+        type: [string, "null"]
+      city:
+        type: [string, "null"]
+      state:
+        type: [string, "null"]
+      country:
+        type: [string, "null"]
+      gender:
+        type: [string, "null"]
+      marital:
+        type: [string, "null"]
+      payRate:
+        type: [string, "null"]
+      payType:
+        type: [string, "null"]
+      payPeriod:
+        type: [string, "null"]
+      exempt:
+        type: [string, "null"]
+      division:
+        type: [string, "null"]
+      divisionId:
+        type: [string, "null"]
+      department:
+        type: [string, "null"]
+      departmentId:
+        type: [string, "null"]
+      location:
+        type: [string, "null"]
+      locationId:
+        type: [string, "null"]
+      employmentStatus:
+        type: [string, "null"]
+      employmentStatusId:
+        type: [string, "null"]
+      reportsToName:
+        type: [string, "null"]
+      reportsToId:
+        type: [string, "null"]
+      canUploadPhoto:
+        type: [boolean, "null"]
