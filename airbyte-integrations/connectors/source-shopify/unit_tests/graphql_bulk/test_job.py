@@ -3,12 +3,14 @@
 #
 
 
+import json
 from os import remove
 
 import orjson
 import pendulum as pdm
 import pytest
 import requests
+from requests.exceptions import ChunkedEncodingError
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.retry import bulk_retry_on_exception
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
@@ -34,6 +36,40 @@ from airbyte_cdk.models import FailureType, SyncMode
 
 _ANY_SLICE = {}
 _ANY_FILTER_FIELD = "any_filter_field"
+
+
+def test_failed_bulk_result_download_removes_partial_file(mocker, monkeypatch, tmp_path, auth_config) -> None:
+    monkeypatch.chdir(tmp_path)
+    stream = MetafieldOrders(auth_config)
+    result_url = "https://storage.googleapis.com/bulk?response-content-disposition=attachment%3B+filename%3D%22bulk-interrupted.jsonl%22"
+    status_response = requests.Response()
+    status_response.status_code = 200
+    status_response._content = json.dumps({"data": {"node": {"url": result_url}}}).encode()
+    download_response = requests.Response()
+    download_response.status_code = 200
+
+    def interrupted_chunks(chunk_size):
+        yield b'{"id":"gid://shopify/Order/1"}\n'
+        raise ChunkedEncodingError("download interrupted")
+
+    chunks = mocker.patch.object(download_response, "iter_content", side_effect=interrupted_chunks)
+    mocker.patch.object(stream.job_manager.http_client, "send_request", return_value=(None, download_response))
+
+    with pytest.raises(ChunkedEncodingError, match="download interrupted"):
+        stream.job_manager._job_get_result(status_response)
+
+    assert list(tmp_path.iterdir()) == []
+
+    chunks.side_effect = lambda chunk_size: iter([b'{"id":"gid://shopify/Order/1"}\n'])
+    assert stream.job_manager._job_get_result(status_response) == "bulk-interrupted.jsonl"
+    complete_result = (tmp_path / "bulk-interrupted.jsonl").read_bytes()
+    assert complete_result == b'{"id":"gid://shopify/Order/1"}\n<end_of_file>'
+
+    chunks.side_effect = interrupted_chunks
+    with pytest.raises(ChunkedEncodingError, match="download interrupted"):
+        stream.job_manager._job_get_result(status_response)
+    assert (tmp_path / "bulk-interrupted.jsonl").read_bytes() == complete_result
+    assert [path.name for path in tmp_path.iterdir()] == ["bulk-interrupted.jsonl"]
 
 
 def test_job_manager_default_values(auth_config) -> None:
