@@ -380,6 +380,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.7 | 2026-11-12 | [76463](https://github.com/airbytehq/airbyte/pull/76463) | Remove deprecated `pre_tax_price` and `pre_tax_price_set` REST order/refund line-item fields following [Shopify deprecation 2026-03-23](https://shopify.dev/changelog/removal-of-pretaxprice-from-the-order-rest-admin-api) |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.4 | 2026-11-03 | [89704](https://github.com/airbytehq/airbyte/pull/89704) | Emit `transactions` of orders updated since the saved state so transaction status changes, such as refunds going from `PENDING` to `SUCCESS`, are captured by incremental syncs; refresh `transactions` to correct stale rows |
