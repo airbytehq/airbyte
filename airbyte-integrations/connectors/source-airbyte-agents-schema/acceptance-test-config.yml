@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-airbyte-agents-schema:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "No shared test credentials yet; requires an Airbyte API application and a destination id."
+  discovery:
+    bypass_reason: "No shared test credentials yet; requires an Airbyte API application and a destination id."
+  basic_read:
+    bypass_reason: "No shared test credentials yet; requires an Airbyte API application and a destination id."
+  incremental:
+    bypass_reason: "Incremental not yet implemented (see docs); planned on connection updatedAt."
+  full_refresh:
+    bypass_reason: "No shared test credentials yet; requires an Airbyte API application and a destination id."
