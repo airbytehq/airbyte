@@ -150,6 +150,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.12 | 2026-11-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update base image to java-connector-base 2.0.5 |
 | 1.1.11 | 2026-10-22 | [89649](https://github.com/airbytehq/airbyte/pull/89649) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1, azure-identity 1.18.7 |
 | 1.1.10 | 2026-10-09 | [87614](https://github.com/airbytehq/airbyte/pull/87614) | Upgrade to Bulk CDK 1.1.1. |
 | 1.1.9 | 2026-09-01 | [84984](https://github.com/airbytehq/airbyte/pull/84984) | Upgrade to Bulk CDK 1.0.25. |
