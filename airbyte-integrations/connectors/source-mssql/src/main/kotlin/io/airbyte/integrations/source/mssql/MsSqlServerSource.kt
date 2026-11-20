@@ -9,6 +9,8 @@ import io.airbyte.cdk.AirbyteSourceRunner
 object MsSqlServerSource {
     @JvmStatic
     fun main(args: Array<String>) {
+        // Must stay the first statement: it has to run before anything initializes TLS.
+        TlsCompatibility.install()
         AirbyteSourceRunner.run(*args)
     }
 }
