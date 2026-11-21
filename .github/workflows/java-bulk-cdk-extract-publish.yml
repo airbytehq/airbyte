@@ -19,12 +19,11 @@ concurrency:
   group: publish-bulk-cdk-extract
   cancel-in-progress: false
 
-env:
-  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-
 jobs:
   publish-bulk-cdk-extract:
+    permissions:
+      contents: read
+      id-token: write
     name: Publish Bulk CDK Extract
     runs-on: linux-24.04-large
     timeout-minutes: 30
@@ -43,6 +42,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Configure S3 build cache
+        uses: ./.github/actions/configure-s3-build-cache
+        with:
+          read-role: ${{ vars.S3_BUILD_CACHE_READ_ROLE_ARN }}
+          write-role: ${{ vars.S3_BUILD_CACHE_WRITE_ROLE_ARN }}
 
       - name: Error if Extract CDK Version Exists
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
