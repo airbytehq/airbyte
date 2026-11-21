@@ -154,6 +154,10 @@ jobs:
   publish:
     name: Publish Pre-release
     needs: [init]
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
     uses: ./.github/workflows/publish_connectors.yml
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}

@@ -220,6 +220,10 @@ jobs:
     needs: [publish_options]
     if: needs.publish_options.outputs.connector-count != '0'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
     strategy:
       matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
@@ -257,11 +261,18 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Get Docker Hub OIDC token
+        id: docker-hub-oidc
+        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+        with:
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+          expires-in: 21600
+
       - name: Log in to Docker Hub
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          username: airbyte
+          password: ${{ steps.docker-hub-oidc.outputs.token }}
 
       - name: Set up Python
         # v5
@@ -557,8 +568,7 @@ jobs:
           tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
-          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
 
       # --- Registry artifact generation and publishing ---
 
