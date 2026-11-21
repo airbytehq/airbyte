@@ -1,0 +1,66 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "apis",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "slug"
+          ]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "best_plans",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "api_slug"
+          ],
+          [
+            "rank"
+          ]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "plans",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "providers",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "slug"
+          ]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
