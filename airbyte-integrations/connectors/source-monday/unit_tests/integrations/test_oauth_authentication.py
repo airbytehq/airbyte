@@ -6,7 +6,9 @@ from datetime import timedelta
 from unittest import TestCase
 from urllib.parse import parse_qs
 
-from airbyte_cdk.models import FailureType, SyncMode, Type
+import pytest
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -67,13 +69,24 @@ def _jwt(payload):
     return f"header.{encoded}.signature"
 
 
-def _migrated_token_expiry(output):
-    control_messages = output.get_message_by_types([Type.CONTROL])
+def _migrated_token_expiry(control_messages):
     assert len(control_messages) == 1
     return ab_datetime_parse(control_messages[0].control.connectorConfig.config["credentials"]["token_expiry_date"])
 
 
 class TestOAuthAuthentication(TestCase):
+    @pytest.fixture(autouse=True)
+    def _capture_stdout(self, capsys: pytest.CaptureFixture[str]) -> None:
+        self._capsys = capsys
+
+    def _control_messages(self, output) -> list[AirbyteMessage]:
+        messages = output.get_message_by_types([Type.CONTROL])
+        for line in self._capsys.readouterr().out.splitlines():
+            message = AirbyteMessageSerializer.load(json.loads(line))
+            if message.type == Type.CONTROL:
+                messages.append(message)
+        return messages
+
     @HttpMocker()
     def test_given_expired_token_when_read_then_refresh_token_and_emit_control_message(self, http_mocker):
         config = (
@@ -109,7 +122,7 @@ class TestOAuthAuthentication(TestCase):
         assert token_request_body["client_id"] == ["client-id"]
         assert token_request_body["client_secret"] == ["client-secret"]
 
-        control_messages = output.get_message_by_types([Type.CONTROL])
+        control_messages = self._control_messages(output)
         assert len(control_messages) == 1
         updated_credentials = control_messages[0].control.connectorConfig.config["credentials"]
         assert updated_credentials["access_token"] == "new-access"
@@ -159,7 +172,7 @@ class TestOAuthAuthentication(TestCase):
         assert migration_requests[0].json() == {"api_token": "legacy-access", "client_id": "client-id", "client_secret": "client-secret"}
         assert _requests_to(http_mocker, _TOKEN_REFRESH_ENDPOINT) == []
 
-        control_messages = output.get_message_by_types([Type.CONTROL])
+        control_messages = self._control_messages(output)
         assert len(control_messages) == 1
         updated_credentials = control_messages[0].control.connectorConfig.config["credentials"]
         assert updated_credentials["access_token"] == "migrated-access"
@@ -220,7 +233,7 @@ class TestOAuthAuthentication(TestCase):
 
         assert len(output.records) == 2
         assert len(_requests_to(http_mocker, _TOKEN_MIGRATION_ENDPOINT)) == 1
-        assert len(output.get_message_by_types([Type.CONTROL])) == 1
+        assert len(self._control_messages(output)) == 1
 
     @HttpMocker()
     def test_given_legacy_config_when_migration_rejected_then_other_streams_do_not_call_migrate_again(self, http_mocker):
@@ -246,7 +259,7 @@ class TestOAuthAuthentication(TestCase):
         output = read_stream("teams", SyncMode.full_refresh, _legacy_oauth_config())
 
         assert len(output.records) == 1
-        assert abs((_migrated_token_expiry(output) - exp).total_seconds()) < 60
+        assert abs((_migrated_token_expiry(self._control_messages(output)) - exp).total_seconds()) < 60
 
     @HttpMocker()
     def test_given_migration_response_without_expires_in_when_read_then_token_expiry_defaults_to_one_hour(self, http_mocker):
@@ -261,7 +274,11 @@ class TestOAuthAuthentication(TestCase):
         output = read_stream("teams", SyncMode.full_refresh, _legacy_oauth_config())
 
         assert len(output.records) == 1
-        assert ab_datetime_now() + timedelta(minutes=59) < _migrated_token_expiry(output) < ab_datetime_now() + timedelta(minutes=61)
+        assert (
+            ab_datetime_now() + timedelta(minutes=59)
+            < _migrated_token_expiry(self._control_messages(output))
+            < ab_datetime_now() + timedelta(minutes=61)
+        )
 
     @HttpMocker()
     def test_given_api_token_config_when_read_then_no_token_refresh(self, http_mocker):
