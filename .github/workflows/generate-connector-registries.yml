@@ -198,7 +198,7 @@ jobs:
 
       - name: Install Ops CLI
         # The minimum version is gated on the airbyte-ops-mcp PR 1264 release.
-        run: uv tool install "airbyte-internal-ops>=0.99.0"
+        run: uv --no-config tool install "airbyte-internal-ops>=0.99.0"
 
       - name: Resolve Variables
         id: resolve-vars

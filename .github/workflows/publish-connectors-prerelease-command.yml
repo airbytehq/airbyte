@@ -155,6 +155,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      pull-requests: read
     name: Publish Pre-release
     needs: [init]
     uses: ./.github/workflows/publish_connectors.yml

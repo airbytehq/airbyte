@@ -97,6 +97,9 @@ env:
       || 'gitops-prod'
     }}
 
+permissions:
+  contents: read
+
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -216,6 +219,9 @@ jobs:
       registry-refresh-connector-name: ${{ fromJson(steps.list-connectors-manual.outputs.connectors-to-publish || '{"connector":[""]}').connector[0] }}
       connector-count: ${{ steps.count-connectors.outputs.connector-count }}
   publish_connectors:
+    permissions:
+      contents: read
+      pull-requests: read
     name: Publish connectors
     needs: [publish_options]
     if: needs.publish_options.outputs.connector-count != '0'
