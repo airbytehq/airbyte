@@ -295,6 +295,15 @@ streams:
             and response.error.metadata.details else '') if response.error is mapping
             else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
+        - type: HttpResponseFilter
+          predicate: >-
+            {{ response is mapping and
+               ((response.get('error') is mapping and response['error'].get('type') == 'date restricted')
+                or response.get('type') == 'date restricted') }}
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            {% set error = response['error'] if response.get('error') is mapping and response['error'].get('type') == 'date restricted' else response %}{% set metadata = error.get('metadata') if error.get('metadata') is mapping else {} %}Amplitude rejected the requested date range because it is older than the project's data retention limit{{ ': ' ~ metadata['details'] if metadata.get('details') else '' }}. {{ 'Set the Start Date on or after ' ~ metadata['cutoff_date'] ~ '.' if metadata.get('cutoff_date') else 'Set the Start Date within the project\'s data retention period.' }}
         - http_codes:
           - 403
           action: FAIL
@@ -376,6 +385,15 @@ streams:
             and response.error.metadata.details else '') if response.error is mapping
             else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
+        - type: HttpResponseFilter
+          predicate: >-
+            {{ response is mapping and
+               ((response.get('error') is mapping and response['error'].get('type') == 'date restricted')
+                or response.get('type') == 'date restricted') }}
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            {% set error = response['error'] if response.get('error') is mapping and response['error'].get('type') == 'date restricted' else response %}{% set metadata = error.get('metadata') if error.get('metadata') is mapping else {} %}Amplitude rejected the requested date range because it is older than the project's data retention limit{{ ': ' ~ metadata['details'] if metadata.get('details') else '' }}. {{ 'Set the Start Date on or after ' ~ metadata['cutoff_date'] ~ '.' if metadata.get('cutoff_date') else 'Set the Start Date within the project\'s data retention period.' }}
         - http_codes:
           - 403
           action: FAIL
@@ -573,6 +591,15 @@ streams:
           - 400
           action: SPLIT_REQUEST_WINDOW
           type: HttpResponseFilter
+        - type: HttpResponseFilter
+          predicate: >-
+            {{ response is mapping and
+               ((response.get('error') is mapping and response['error'].get('type') == 'date restricted')
+                or response.get('type') == 'date restricted') }}
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            {% set error = response['error'] if response.get('error') is mapping and response['error'].get('type') == 'date restricted' else response %}{% set metadata = error.get('metadata') if error.get('metadata') is mapping else {} %}Amplitude rejected the requested date range because it is older than the project's data retention limit{{ ': ' ~ metadata['details'] if metadata.get('details') else '' }}. {{ 'Set the Start Date on or after ' ~ metadata['cutoff_date'] ~ '.' if metadata.get('cutoff_date') else 'Set the Start Date within the project\'s data retention period.' }}
         - http_codes:
           - 403
           action: FAIL
