@@ -16,6 +16,7 @@ airbyte_cdk = "^7.5.0"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^8.0.0"
+freezegun = "^1.4.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
