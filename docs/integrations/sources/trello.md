@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.3.12 | 2026-11-17 | [79022](https://github.com/airbytehq/airbyte/pull/79022) | Update dependencies |
 | 1.3.11 | 2026-11-09 | [91444](https://github.com/airbytehq/airbyte/pull/91444) | Upgrade to CDK 7 and update the board partition router to read parent streams through the CDK 7 partition API |
 | 1.3.10 | 2025-08-24 | [65474](https://github.com/airbytehq/airbyte/pull/65474) | Update dependencies |
 | 1.3.9 | 2025-08-10 | [64813](https://github.com/airbytehq/airbyte/pull/64813) | Update dependencies |
