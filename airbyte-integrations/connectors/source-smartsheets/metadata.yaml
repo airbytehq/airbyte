@@ -65,4 +65,13 @@ data:
     - title: Smartsheet Status
       url: https://status.smartsheet.com/
       type: status_page
+    - title: Smartsheet API changelog
+      url: https://developers.smartsheet.com/api/smartsheet/changelog
+      type: api_release_history
+    - title: Smartsheet API deprecation process
+      url: https://developers.smartsheet.com/api/smartsheet/guides/deprecation-process
+      type: api_deprecations
+    - title: Smartsheet OAuth guide
+      url: https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth
+      type: authentication_guide
 metadataSpecVersion: "1.0"
