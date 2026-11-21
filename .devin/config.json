@@ -3,7 +3,7 @@
     {
       "source": "git-subdir",
       "url": "https://github.com/airbytehq/ai-skills.git",
-      "path": "plugins/hydra-connector-ops"
+      "path": "plugins/connector-ops"
     }
   ]
 }
