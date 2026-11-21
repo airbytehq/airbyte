@@ -121,8 +121,6 @@ class RedshiftInsertBuffer(
             redshiftClient.copyFromS3(
                 tableName = tableName,
                 s3Path = s3Path,
-                accessKeyId = s3Config.accessKeyId,
-                secretAccessKey = s3Config.secretAccessKey,
                 region = s3Config.s3BucketRegion,
             )
 

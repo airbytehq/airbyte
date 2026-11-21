@@ -8,22 +8,48 @@ import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 
 private val log = KotlinLogging.logger {}
 
 /**
- * Manages S3 client creation for staging operations.
+ * Manages AWS credentials and S3 client creation for staging operations.
  *
- * Creates an [S3Client] from the S3 staging configuration using static credentials (access key +
- * secret key) and the configured region.
+ * Credentials are resolved in order:
+ * 1. Static access key + secret key from the S3 staging configuration, if provided. Explicitly
+ *    configured keys always win, so an ambient pod role never silently overrides them.
+ * 2. OIDC web identity token (`AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN` env vars), exchanged
+ *    for temporary credentials via STS AssumeRoleWithWebIdentity.
  */
 @Singleton
 class S3Connect(private val configuration: RedshiftConfiguration) {
 
-    fun createS3Client(): S3Client {
+    /** [webIdentityProvider] is a parameter so tests can substitute the OIDC token source. */
+    fun createCredentialsProvider(
+        webIdentityProvider: AwsCredentialsProvider =
+            WebIdentityTokenFileCredentialsProvider.create(),
+    ): AwsCredentialsProvider {
+        val s3Config = configuration.uploadingMethod!!
+        val providers = mutableListOf<AwsCredentialsProvider>()
+        if (!s3Config.accessKeyId.isNullOrBlank() && !s3Config.secretAccessKey.isNullOrBlank()) {
+            providers.add(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey),
+                ),
+            )
+        }
+        providers.add(webIdentityProvider)
+        return AwsCredentialsProviderChain.builder().credentialsProviders(providers).build()
+    }
+
+    fun createS3Client(
+        credentialsProvider: AwsCredentialsProvider = createCredentialsProvider(),
+    ): S3Client {
         val s3Config = configuration.uploadingMethod!!
 
         log.info {
@@ -32,11 +58,7 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
         }
 
         return S3Client.builder()
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey),
-                ),
-            )
+            .credentialsProvider(credentialsProvider)
             .region(Region.of(s3Config.s3BucketRegion))
             .build()
     }
