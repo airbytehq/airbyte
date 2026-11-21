@@ -3,9 +3,11 @@
 #
 
 
+from googleapiclient.errors import HttpError
 from pygsheets import Worksheet
 
-from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.models import AirbyteStream, FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets
@@ -64,9 +66,21 @@ class GoogleSheetsWriter(WriteBufferMixin):
             values = [
                 [self._truncate_cell(val, row_idx, col_idx) for col_idx, val in enumerate(row)] for row_idx, row in enumerate(values, 1)
             ]
-            stream.append_table(values, start="A2", dimension="ROWS")
+            try:
+                stream.append_table(values, start="A2", dimension="ROWS")
+            except HttpError as error:
+                if self._is_workbook_cell_limit_error(error):
+                    raise AirbyteTracedException(
+                        message="Google Sheets workbook exceeds the 10,000,000-cell limit.",
+                        internal_message=str(error),
+                        failure_type=FailureType.config_error,
+                    ) from error
+                raise
         else:
             self.logger.info(f"Skipping empty stream: {stream_name}")
+
+    def _is_workbook_cell_limit_error(self, error: HttpError) -> bool:
+        return error.status_code == 400 and "above the limit of 10000000 cells" in error.reason
 
     def _truncate_cell(self, value: str, row_idx: int, col_idx: int) -> str:
         """
