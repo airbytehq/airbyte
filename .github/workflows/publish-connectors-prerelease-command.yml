@@ -152,6 +152,10 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
   publish:
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
     name: Publish Pre-release
     needs: [init]
     uses: ./.github/workflows/publish_connectors.yml

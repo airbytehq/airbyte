@@ -33,6 +33,11 @@ permissions:
 
 jobs:
   finalize-rollout:
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    environment: connector-registry-write
     name: "Finalize Rollout (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
     steps:
@@ -45,6 +50,12 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_WRITER_SERVICE_ACCOUNT }}
+
       # Determine the RC version to operate on. If an explicit version is
       # provided (via workflow_dispatch input or client_payload), use it.
       # Otherwise, query GCS for active progressive-rollout markers and
@@ -53,7 +64,6 @@ jobs:
         id: determine-version
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           VERSION_INPUT: ${{ github.event.inputs.version || github.event.client_payload.version || '' }}
           CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
         run: |
@@ -64,16 +74,15 @@ jobs:
           fi
 
           RESOLVED=$(uv run --with google-cloud-storage --with packaging --with pyyaml python3 - <<'PYTHON'
-          import json, os, sys
+          import os, sys
           import yaml
           from packaging.version import Version
           from google.cloud import storage
 
-          creds_json = os.environ["GCS_CREDENTIALS"]
           connector = os.environ["CONNECTOR_NAME"]
           bucket_name = "prod-airbyte-cloud-connector-metadata-service"
 
-          client = storage.Client.from_service_account_info(json.loads(creds_json))
+          client = storage.Client()
           bucket = client.bucket(bucket_name)
 
           # Find active progressive-rollout markers
@@ -174,7 +183,6 @@ jobs:
         if: steps.resolve-vars.outputs.action == 'promote'
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
           STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
@@ -188,7 +196,6 @@ jobs:
         if: steps.resolve-vars.outputs.action == 'rollback'
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
           STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
@@ -201,7 +208,6 @@ jobs:
       - name: "Recompile registry for ${{ steps.resolve-vars.outputs.connector_name }} v${{ steps.resolve-vars.outputs.version }}"
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: >
           airbyte-ops registry store compile

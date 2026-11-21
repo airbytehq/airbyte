@@ -61,6 +61,10 @@ concurrency:
 
 jobs:
   yank-version:
+    permissions:
+      contents: read
+      id-token: write
+    environment: connector-registry-write
     name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector-name }}@${{ inputs.version }}"
     runs-on: ubuntu-24.04
     steps:
@@ -75,9 +79,14 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_WRITER_SERVICE_ACCOUNT }}
+
       - name: Update connector version yank marker
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_STORE: ${{ inputs.store }}
           INPUT_REASON: ${{ inputs.reason }}
@@ -116,6 +125,9 @@ jobs:
           airbyte-ops registry connector-version "$REGISTRY_ACTION" "${args[@]}"
 
   compile-registry:
+    permissions:
+      contents: read
+      id-token: write
     name: Compile registry
     needs: yank-version
     uses: ./.github/workflows/generate-connector-registries.yml
