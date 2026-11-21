@@ -799,6 +799,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
   generate_connector_registry:
+    permissions:
+      contents: read
+      id-token: write
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
     if: needs.publish_options.outputs.dry-run != 'true'

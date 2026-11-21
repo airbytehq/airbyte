@@ -72,6 +72,10 @@ concurrency:
 
 jobs:
   registry-compile:
+    permissions:
+      contents: read
+      id-token: write
+    environment: connector-registry-write
     name: Compile Registry
     if: inputs.dry-run != true
     runs-on: ubuntu-24.04
@@ -89,12 +93,17 @@ jobs:
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install Ops CLI
-        run: uv tool install airbyte-internal-ops
+        run: uv --no-config tool install airbyte-internal-ops
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_WRITER_SERVICE_ACCOUNT }}
 
       - name: Compile Registries
         id: registry-compile
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
           CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
@@ -167,6 +176,10 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
   registry-compile-dryrun:
+    permissions:
+      contents: read
+      id-token: write
+    environment: connector-registry-read
     name: Compile Registry (Dry-Run)
     if: inputs.dry-run == true
     runs-on: ubuntu-24.04
@@ -175,6 +188,11 @@ jobs:
       REGISTRY_BUCKET: prod-airbyte-cloud-connector-metadata-service
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
       - name: Install uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
@@ -189,11 +207,16 @@ jobs:
           echo "COMPILE_OUTPUT_DIR=$RUNNER_TEMP/registry-compile-output" | tee -a "$GITHUB_ENV"
           echo "REPORT_DIR=$RUNNER_TEMP/registry-comparison-reports" | tee -a "$GITHUB_ENV"
 
+      - name: Authenticate to Google Cloud
+        id: authenticate-gcloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_READER_SERVICE_ACCOUNT }}
+
       - name: Compile Registry To Local Output
         id: compile-dryrun
         env:
-          # This credential is read/write; the Ops CLI enforces the source-store read-only guarantee.
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
           CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
@@ -209,33 +232,26 @@ jobs:
         if: always()
         run: mkdir -p "${REPORT_DIR}/prod-snapshot"
 
-      - name: Authenticate to Google Cloud
-        id: authenticate-gcloud
-        if: always()
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
-        with:
-          credentials_json: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-
       - name: Set up Google Cloud CLI
-        if: always()
+        if: ${{ !cancelled() && steps.authenticate-gcloud.outcome == 'success' }}
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
       - name: Download Cloud Registry Snapshot
-        if: always()
+        if: ${{ !cancelled() && steps.authenticate-gcloud.outcome == 'success' }}
         run: >
           gcloud storage cp
           "gs://${REGISTRY_BUCKET}/registries/v0/cloud_registry.json"
           "${REPORT_DIR}/prod-snapshot/cloud_registry.json"
 
       - name: Download OSS Registry Snapshot
-        if: always()
+        if: ${{ !cancelled() && steps.authenticate-gcloud.outcome == 'success' }}
         run: >
           gcloud storage cp
           "gs://${REGISTRY_BUCKET}/registries/v0/oss_registry.json"
           "${REPORT_DIR}/prod-snapshot/oss_registry.json"
 
       - name: Download Composite Registry Snapshot
-        if: always()
+        if: ${{ !cancelled() && steps.authenticate-gcloud.outcome == 'success' }}
         run: >
           gcloud storage cp
           "gs://${REGISTRY_BUCKET}/registries/v0/composite_registry.json"
@@ -245,8 +261,6 @@ jobs:
         if: >
           steps.compile-dryrun.outcome == 'success' &&
           steps.authenticate-gcloud.outcome == 'success'
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         run: >
           airbyte-ops registry store compare
