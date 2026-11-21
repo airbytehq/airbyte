@@ -102,6 +102,10 @@ definitions:
         token_expiry_date_config_path:
           - token_expiry_date
 
+        refresh_token_policy:
+          writeback_required: always
+          description: "Strava returns a new refresh token with every new access token; once a new refresh token has been returned, the older one no longer works. Access tokens expire after 6 hours."
+          policy_docs_url: https://developers.strava.com/docs/authentication/
 streams:
   - $ref: "#/definitions/streams/athlete_stats"
   - $ref: "#/definitions/streams/activities"
