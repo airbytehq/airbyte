@@ -49,22 +49,21 @@ jobs:
     if: >
       github.event.action == 'auto_merge_disabled'
       && contains(github.event.pull_request.labels.*.name, 'auto-merge')
-    permissions: {}
+    permissions:
+      id-token: write
     runs-on: ubuntu-24.04
     steps:
-      - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: get-app-token
+      - name: Get Octo STS token
+        uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05 # v1.1.1
+        id: octo-sts
         with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+          scope: airbytehq/airbyte
+          identity: auto-merge-toggle
 
       - name: Remove auto-merge label
         if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
         env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: >
           gh pr edit "$PR_NUMBER"
@@ -73,7 +72,7 @@ jobs:
 
       - name: Post notice comment
         env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: >
           gh pr comment "$PR_NUMBER"
