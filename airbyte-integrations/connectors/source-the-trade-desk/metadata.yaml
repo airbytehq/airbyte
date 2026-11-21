@@ -1,0 +1,49 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ef1ace73-fdae-4d2f-93a5-7ef40addb554
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-the-trade-desk
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-trade-desk
+  githubIssueLabel: source-the-trade-desk
+  icon: icon.svg
+  license: ELv2
+  name: The Trade Desk
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-the-trade-desk
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_THE_TRADE_DESK_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: The Trade Desk Platform API reference
+      url: https://partner.thetradedesk.com/v3/portal/api/doc/ApiReferencePlatform
+      type: api_reference
+    - title: The Trade Desk authentication guide
+      url: https://partner.thetradedesk.com/v3/portal/api/area/Authentication
+      type: authentication_guide
+    - title: The Trade Desk Partner Sandbox
+      url: https://partner.thetradedesk.com/v3/portal/api/doc/PartnerSandbox
+      type: sandbox_environment
+metadataSpecVersion: "1.0"
