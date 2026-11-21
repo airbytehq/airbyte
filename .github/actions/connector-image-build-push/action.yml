@@ -31,11 +31,8 @@ inputs:
     description: "(CAUTION!) Enable to force publish (override) the image even if it already exists on the remote registry"
     required: false
     default: "false"
-  docker-hub-username:
-    description: "Docker Hub username for authentication"
-    required: true
-  docker-hub-password:
-    description: "Docker Hub password for authentication"
+  docker-hub-oidc-connection-id:
+    description: "Docker Hub OIDC connection ID. The calling job needs `id-token: write`."
     required: true
 
 outputs:
@@ -317,12 +314,20 @@ runs:
           echo "do-publish=$DO_PUBLISH"
         } >> $GITHUB_OUTPUT
 
+    - name: Get Docker Hub OIDC token
+      if: ${{ steps.check-exists.outputs.do-publish == 'true' && inputs.docker-hub-oidc-connection-id != '' }}
+      id: docker-hub-oidc
+      uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+      with:
+        connection-id: ${{ inputs.docker-hub-oidc-connection-id }}
+        expires-in: 3600
+
     - name: Login to Docker Hub
-      if: ${{ steps.check-exists.outputs.do-publish == 'true' && inputs.docker-hub-username != '' && inputs.docker-hub-password != '' }}
+      if: ${{ steps.check-exists.outputs.do-publish == 'true' && inputs.docker-hub-oidc-connection-id != '' }}
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
       with:
-        username: ${{ inputs.docker-hub-username }}
-        password: ${{ inputs.docker-hub-password }}
+        username: airbyte
+        password: ${{ steps.docker-hub-oidc.outputs.token }}
 
     - name: Set up Docker Buildx
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}

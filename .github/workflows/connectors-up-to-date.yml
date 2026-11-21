@@ -179,6 +179,7 @@ jobs:
       pull-requests: write
       contents: write
       actions: read
+      id-token: write
     env:
       CONNECTOR_NAME: ${{ matrix.connector }}
       CONNECTOR_DIR: ${{ matrix.connector_dir }}
@@ -226,11 +227,18 @@ jobs:
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Get Docker Hub OIDC token
+        id: docker-hub-oidc
+        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+        with:
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+          expires-in: 21600
+
       - name: Docker login
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          username: airbyte
+          password: ${{ steps.docker-hub-oidc.outputs.token }}
 
       # --- Step 1: Set up Python + Poetry ---
       # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
