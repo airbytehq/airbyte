@@ -15,25 +15,26 @@
       },
       "port" : {
         "type" : "integer",
-        "description" : "Port of the database.",
+        "description" : "The TCP port where PostgreSQL accepts connections. The standard PostgreSQL port is 5432; use the port configured for your database server.",
         "title" : "Port",
         "group" : "connection",
         "order" : 1,
         "minimum" : 0,
         "maximum" : 65536,
+        "default" : 5432,
         "examples" : [ "5432" ]
       },
       "database" : {
         "type" : "string",
-        "description" : "Name of the database.",
-        "title" : "Database Name",
+        "description" : "Name of the PostgreSQL database that Airbyte will write to.",
+        "title" : "Database name",
         "group" : "connection",
         "order" : 2
       },
       "schema" : {
         "type" : "string",
         "description" : "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
-        "title" : "Default Schema",
+        "title" : "Default schema",
         "group" : "connection",
         "order" : 3,
         "examples" : [ "public" ],
@@ -48,7 +49,7 @@
       },
       "password" : {
         "type" : "string",
-        "description" : "Password associated with the username.",
+        "description" : "Enter the password assigned to the PostgreSQL user when password authentication is enabled; leave blank if your server uses passwordless authentication. See <a href=\"https://docs.airbyte.com/integrations/destinations/postgres#step-1-set-up-postgres\">Step 1</a> for how to create the user.",
         "title" : "Password",
         "group" : "connection",
         "order" : 5,
@@ -57,7 +58,7 @@
       "ssl" : {
         "type" : "boolean",
         "description" : "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-        "title" : "SSL Connection",
+        "title" : "SSL connection",
         "group" : "connection",
         "order" : 6
       },
@@ -127,16 +128,16 @@
             },
             "ca_certificate" : {
               "type" : "string",
-              "description" : "CA certificate",
-              "title" : "CA Certificate",
+              "description" : "Obtain the CA certificate from your database administrator or certificate authority; it verifies the PostgreSQL server's SSL certificate.",
+              "title" : "CA certificate",
               "airbyte_secret" : true,
               "multiline" : true,
               "order" : 1
             },
             "client_key_password" : {
               "type" : "string",
-              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
-              "title" : "Client Key Password",
+              "description" : "For an encrypted client private key, enter the passphrase set when the key was created; obtain it from the administrator who provided the key. Leave this field empty if the key has no passphrase.",
+              "title" : "Client key password",
               "airbyte_secret" : true,
               "order" : 2
             }
@@ -155,40 +156,40 @@
             },
             "ca_certificate" : {
               "type" : "string",
-              "description" : "CA certificate",
-              "title" : "CA Certificate",
+              "description" : "Obtain the CA certificate from your database administrator or certificate authority; it verifies the PostgreSQL server's SSL certificate.",
+              "title" : "CA certificate",
               "airbyte_secret" : true,
               "multiline" : true,
               "order" : 1
             },
             "client_certificate" : {
               "type" : "string",
-              "description" : "Client certificate",
-              "title" : "Client Certificate",
+              "description" : "When the PostgreSQL server requires mutual TLS, obtain the client certificate from your database administrator or certificate authority.",
+              "title" : "Client certificate",
               "airbyte_secret" : true,
               "multiline" : true,
               "order" : 2
             },
             "client_key" : {
               "type" : "string",
-              "description" : "Client key",
-              "title" : "Client Key",
+              "description" : "When the PostgreSQL server requires mutual TLS, obtain the private key that matches the client certificate from your database administrator through an approved secure channel.",
+              "title" : "Client key",
               "airbyte_secret" : true,
               "multiline" : true,
               "order" : 3
             },
             "client_key_password" : {
               "type" : "string",
-              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
-              "title" : "Client Key Password",
+              "description" : "For an encrypted client private key, enter the passphrase set when the key was created; obtain it from the administrator who provided the key. Leave this field empty if the key has no passphrase.",
+              "title" : "Client key password",
               "airbyte_secret" : true,
               "order" : 4
             }
           },
           "required" : [ "mode", "ca_certificate", "client_certificate", "client_key" ]
         } ],
-        "description" : "SSL connection modes.\n  <b>disable</b> - Disables encryption of communication between Airbyte and destination database.\n  <b>allow</b> - Enables encryption only when required by the destination database.\n  <b>prefer</b> - Allows unencrypted connections only if the destination database does not support encryption.\n  <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.\n  <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.\n  <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
-        "title" : "SSL Modes",
+        "description" : "SSL connection modes.\n  <b>disable</b> - Disables encryption of communication between Airbyte and destination database.\n  <b>allow</b> - Enables encryption only when required by the destination database.\n  <b>prefer</b> - Allows unencrypted connections only if the destination database does not support encryption.\n  <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.\n  <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.\n  <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.\n See more information in the <a href=\"https://docs.airbyte.com/integrations/destinations/postgres#step-2-set-up-the-postgres-connector-in-airbyte\">Postgres connector setup instructions</a>.",
+        "title" : "SSL mode",
         "group" : "connection",
         "order" : 7,
         "type" : "object"
@@ -206,28 +207,28 @@
       "jdbc_url_params" : {
         "type" : "string",
         "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "title" : "JDBC URL Params",
+        "title" : "JDBC URL parameters",
         "group" : "connection",
         "order" : 9
       },
       "raw_data_schema" : {
         "type" : "string",
         "description" : "Airbyte will use this schema for various internal tables. In legacy raw tables mode, the raw tables will be stored in this schema. Defaults to \"airbyte_internal\".",
-        "title" : "Airbyte Internal Schema Name",
+        "title" : "Airbyte internal schema name",
         "group" : "connection",
         "order" : 10
       },
       "disable_type_dedupe" : {
         "type" : "boolean",
         "description" : "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
-        "title" : "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "title" : "Disable final tables (warning: unstable option; columns in raw table schema might change between versions)",
         "group" : "connection",
         "order" : 11
       },
       "drop_cascade" : {
         "type" : "boolean",
         "description" : "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
-        "title" : "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "title" : "Drop tables with CASCADE (warning: risk of unrecoverable data loss)",
         "group" : "connection",
         "order" : 12
       },
@@ -337,13 +338,13 @@
           "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
         } ],
         "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
-        "title" : "SSH Tunnel Method",
+        "title" : "SSH tunnel method",
         "group" : "connection",
         "order" : 14,
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "database", "schema", "username" ],
+    "required" : [ "host", "port", "database", "schema", "username", "cdc_deletion_mode" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
