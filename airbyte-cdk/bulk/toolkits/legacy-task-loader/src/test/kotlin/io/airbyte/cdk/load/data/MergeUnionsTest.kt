@@ -101,4 +101,98 @@ class MergeUnionsTest {
         val output = MergeUnions().map(inputSchema)
         Assertions.assertEquals(expectedOutput, output)
     }
+
+    @Test
+    fun testObjectTypeSubsumesObjectTypeWithoutSchema() {
+        val concreteObject =
+            ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
+                .with(concreteObject)
+                .with(ObjectTypeWithoutSchema)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun testObjectTypeSubsumesObjectTypeWithEmptySchema() {
+        val concreteObject =
+            ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
+                .with(concreteObject)
+                .with(ObjectTypeWithEmptySchema)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun testSchemalessObjectVariantsDedup() {
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(expectedInstead = FieldType(ObjectTypeWithoutSchema, nullable = false))
+                .with(ObjectTypeWithoutSchema)
+                .with(ObjectTypeWithEmptySchema)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun testSchemalessObjectBeforeConcreteObject() {
+        val concreteObject =
+            ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
+                .with(ObjectTypeWithoutSchema)
+                .with(concreteObject)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun testObjectTypeSubsumesAllSchemalessVariants() {
+        val concreteObject =
+            ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
+                .with(ObjectTypeWithEmptySchema)
+                .with(concreteObject)
+                .with(ObjectTypeWithoutSchema)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun testSchemalessObjectWithOtherTypes() {
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .withUnion(
+                    expectedInstead =
+                        FieldType(
+                            UnionType.of(StringType, ObjectTypeWithoutSchema),
+                            nullable = false
+                        )
+                )
+                .with(StringType)
+                .with(ObjectTypeWithoutSchema)
+                .with(ObjectTypeWithEmptySchema)
+                .endUnion()
+                .build()
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
+    }
 }
