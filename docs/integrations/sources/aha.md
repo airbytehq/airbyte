@@ -57,6 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.26 | 2026-11-17 | [78557](https://github.com/airbytehq/airbyte/pull/78557) | Update dependencies |
 | 0.4.25 | 2026-11-10 | [91318](https://github.com/airbytehq/airbyte/pull/91318) | Update to source-declarative-manifest base image 7.47.0 (airbyte-cdk 7.x) |
 | 0.4.24 | 2025-05-10 | [59855](https://github.com/airbytehq/airbyte/pull/59855) | Update dependencies |
 | 0.4.23 | 2025-05-03 | [59356](https://github.com/airbytehq/airbyte/pull/59356) | Update dependencies |
@@ -99,6 +100,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.3.1 | 2023-06-05 | [27002](https://github.com/airbytehq/airbyte/pull/27002) | Flag spec `api_key` field as `airbyte-secret` |
 | 0.3.0 | 2023-05-30 | [22642](https://github.com/airbytehq/airbyte/pull/22642) | Add `idea_comments`, `idea_endorsements`, and `idea_categories` streams |
 | 0.2.0 | 2023-05-26 | [26666](https://github.com/airbytehq/airbyte/pull/26666) | Fix integration test and schemas |
-| 0.1.0   | 2022-11-02 | [18893](https://github.com/airbytehq/airbyte/pull/18893) | 🎉 New Source: Aha                                                      |
+| 0.1.0 | 2022-11-02 | [18893](https://github.com/airbytehq/airbyte/pull/18893) | 🎉 New Source: Aha |
 
 </details>
