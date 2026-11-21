@@ -1,0 +1,13 @@
+# Octo STS trust policy for .github/workflows/slash-commands.yml (issue_comment).
+# Dispatches slash-command workflows and reacts to/edits the triggering comment.
+issuer: https://token.actions.githubusercontent.com
+subject: repo:airbytehq/airbyte:ref:refs/heads/master
+claim_pattern:
+  event_name: issue_comment
+  ref: refs/heads/master
+  job_workflow_ref: airbytehq/airbyte/\.github/workflows/slash-commands\.yml@refs/heads/master
+permissions:
+  actions: write
+  contents: read
+  issues: write
+  pull_requests: write

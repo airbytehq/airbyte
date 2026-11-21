@@ -1,0 +1,12 @@
+# Octo STS trust policy for .github/workflows/auto-merge-labels.yml (pull_request_target).
+# Disables native auto-merge when the auto-merge label is removed.
+issuer: https://token.actions.githubusercontent.com
+# pull_request_target runs the base-branch workflow; its sub is `pull_request` or the base ref.
+subject_pattern: repo:airbytehq/airbyte:(pull_request|ref:refs/heads/master)
+claim_pattern:
+  event_name: pull_request_target
+  ref: refs/heads/master
+  job_workflow_ref: airbytehq/airbyte/\.github/workflows/auto-merge-labels\.yml@refs/heads/master
+permissions:
+  contents: read
+  pull_requests: write
