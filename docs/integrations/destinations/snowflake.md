@@ -57,6 +57,11 @@ Derive the public key from the private key you just created:
 openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
 ```
 
+The two keys go in different places:
+
+- **Public key** (`rsa_key.pub`): goes on the Snowflake user in [Step 2](#step-2-set-up-airbyte-specific-entities-in-snowflake). Use only the key body, without the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` lines.
+- **Private key** (`rsa_key.p8`): goes in Airbyte in [Step 5](#step-5-set-up-snowflake-as-a-destination-in-airbyte). Paste the full file, including the `-----BEGIN ... PRIVATE KEY-----` and `-----END ... PRIVATE KEY-----` lines. Never give the private key to Snowflake.
+
 #### 3. Store the keys securely
 
 Copy both key files to a secure local directory. Protect the private key file with appropriate file-system permissions. It is your responsibility to secure the key when it is not in use.
@@ -153,6 +158,24 @@ one-minute auto-suspend timeout dedicated to Airbyte syncs. This is the smallest
 tier and ensures the warehouse shuts down quickly after each load completes, minimizing idle compute
 charges. The script above already configures this (`warehouse_size = xsmall`, `auto_suspend = 60`).
 :::
+
+#### Verify the public key fingerprint
+
+To confirm that the public key on the Snowflake user matches your key pair, compare two fingerprints:
+
+1. In Snowflake, run the following and note the `RSA_PUBLIC_KEY_FP` value. Replace `AIRBYTE_USER` if you renamed the user.
+
+   ```sql
+   desc user AIRBYTE_USER;
+   ```
+
+2. On your machine, compute the fingerprint of your public key:
+
+   ```bash
+   openssl rsa -pubin -in rsa_key.pub -outform DER | openssl dgst -sha256 -binary | openssl enc -base64
+   ```
+
+Snowflake shows the fingerprint with a `SHA256:` prefix, for example `SHA256:abc123...`. The keys match if the `openssl` output equals the `RSA_PUBLIC_KEY_FP` value after that prefix. If they differ, run the `alter user ... set rsa_public_key` statement from the script again with the contents of `rsa_key.pub`.
 
 ### Step 3: Configure network policies
 
