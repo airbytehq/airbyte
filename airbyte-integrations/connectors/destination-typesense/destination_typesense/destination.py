@@ -2,23 +2,48 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import dataclasses
+import io
 import logging
 import time
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, List, Mapping
 
+import orjson
 from typesense import Client
 
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     DestinationSyncMode,
     Status,
     Type,
 )
 from destination_typesense.writer import TypesenseWriter
+
+
+logger = logging.getLogger("airbyte")
+
+_STATE_ADDITIONAL_PROPERTIES_ATTR = "_airbyte_additional_properties"
+_AIRBYTE_STATE_MESSAGE_WIRE_KEYS = {
+    "global" if field.name == "global_" else field.name for field in dataclasses.fields(AirbyteStateMessage)
+}
+
+
+def serialize_airbyte_message(message: AirbyteMessage) -> dict[str, Any]:
+    """Work around airbytehq/airbyte-python-cdk#1134 until the CDK preserves state extras."""
+    serialized_message = AirbyteMessageSerializer.dump(message)
+    if message.type == Type.STATE and message.state is not None:
+        additional_properties = getattr(message.state, _STATE_ADDITIONAL_PROPERTIES_ATTR, {})
+        if additional_properties:
+            state = serialized_message.setdefault("state", {})
+            for key, value in additional_properties.items():
+                state.setdefault(key, value)
+    return serialized_message
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -46,6 +71,29 @@ def get_client(config: Mapping[str, Any]) -> Client:
 
 
 class DestinationTypesense(Destination):
+    def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
+        """Preserve state extras until airbytehq/airbyte-python-cdk#1134 is fixed upstream."""
+        for line in input_stream:
+            try:
+                raw = orjson.loads(line)
+            except orjson.JSONDecodeError:
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
+                continue
+
+            message = AirbyteMessageSerializer.load(raw)
+            if message.type == Type.STATE and isinstance(raw.get("state"), dict) and message.state is not None:
+                additional_properties = {key: value for key, value in raw["state"].items() if key not in _AIRBYTE_STATE_MESSAGE_WIRE_KEYS}
+                if additional_properties:
+                    setattr(message.state, _STATE_ADDITIONAL_PROPERTIES_ATTR, additional_properties)
+            yield message
+
+    def run(self, args: List[str]) -> None:
+        init_uncaught_exception_handler(logger)
+        parsed_args = self.parse_args(args)
+        output_messages = self.run_cmd(parsed_args)
+        for message in output_messages:
+            print(orjson.dumps(serialize_airbyte_message(message)).decode())
+
     def write(
         self,
         config: Mapping[str, Any],
