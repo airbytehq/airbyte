@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the Trello sour
 
 **For Airbyte Cloud:**
 
-- OAuth 1.0
+- A Trello account to sign in with OAuth 2.0, or a Trello API key and token
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -37,18 +37,33 @@ Create a [Trello Account](https://trello.com).
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Trello** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your Trello account`.
-5. Log in and `Allow` access.
-6. **Start date** - The date from which you'd like to replicate data for streams.
-7. **Trello Board IDs (Optional)** - IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will be replicated.
+4. Under **Authentication**, select **OAuth 2.0** and click **Authenticate your Trello account**. Sign in to Trello and allow access. To use an API key and token instead, select **API key and token** and enter both.
+5. **Start date** - The date from which you'd like to replicate data for streams.
+6. **Trello Board IDs (Optional)** - IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will be replicated.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Authenticate with **API Key** and **API Token** pair.
+1. Under **Authentication**, select **API key and token** and enter your **API Key** and **API Token**.
 <!-- /env:oss -->
+
+### Authentication
+
+<!-- env:cloud -->
+
+When you authenticate with OAuth 2.0, Trello asks you to grant these read-only scopes:
+
+- `read:board:trello`: boards, and the cards, lists and comments on them
+- `read:organization:trello`: workspaces
+- `read:member:trello`: your member profile and your board and workspace memberships
+- `offline_access`: a refresh token, so syncs can run while you're away
+
+A Trello access token expires after an hour. The connector requests a new one when it needs to and saves the refresh token that comes with it, because Trello accepts each refresh token only once. If Trello rejects the refresh token, for example because it expired or the app's access was revoked, the sync fails with a configuration error. Re-authenticate in the source settings to continue.
+<!-- /env:cloud -->
+
+Sources created before version 1.4.0 keep their API key and token, including Airbyte Cloud sources set up with the earlier OAuth 1.0 sign-in. Version 1.4.0 moves them under **Authentication** automatically, and you don't need to do anything.
 
 ## Supported sync modes
 
@@ -87,6 +102,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.4.0 | 2026-11-23 | [94045](https://github.com/airbytehq/airbyte/pull/94045) | Add OAuth 2.0 authentication and move the API key and token under `credentials` |
 | 1.3.12 | 2026-11-23 | [94046](https://github.com/airbytehq/airbyte/pull/94046) | Define the requester, streams and schemas once in the manifest and replace the single-child `CompositeErrorHandler`, with no change in behavior |
 | 1.3.11 | 2026-11-09 | [91444](https://github.com/airbytehq/airbyte/pull/91444) | Upgrade to CDK 7 and update the board partition router to read parent streams through the CDK 7 partition API |
 | 1.3.10 | 2025-08-24 | [65474](https://github.com/airbytehq/airbyte/pull/65474) | Update dependencies |

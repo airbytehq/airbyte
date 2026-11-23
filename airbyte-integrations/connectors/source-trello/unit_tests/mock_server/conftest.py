@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -29,3 +30,11 @@ def clear_cache_before_each_test():
     if cache_dir.is_dir():
         for cache_file in cache_dir.glob("*.sqlite"):
             cache_file.unlink()
+
+
+@pytest.fixture
+def sleeps(monkeypatch):
+    """Records retry backoffs instead of waiting them out."""
+    calls = []
+    monkeypatch.setattr(time, "sleep", calls.append)
+    return calls

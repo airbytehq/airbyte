@@ -13,17 +13,66 @@ definitions:
     url_base: https://api.trello.com/1/
     http_method: GET
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: OAuth oauth_consumer_key="{{ config['key'] }}", oauth_token="{{ config['token'] }}"
-      inject_into:
-        type: RequestOption
-        field_name: Authorization
-        inject_into: header
+      $ref: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 10
+      response_filters:
+        # The CDK refreshes an access token only once it is past its expiry, so a request sent just before the
+        # hour is up can get a 401. Refresh once and retry; a second 401 fails as a config error. API key
+        # credentials have nothing to refresh, so the CDK retries them as usual before failing.
+        # Rejected bearer tokens get an HTML page from Atlassian, so the message doesn't read the body.
+        - type: HttpResponseFilter
+          http_codes: [401]
+          action: REFRESH_TOKEN_THEN_RETRY
+          failure_type: config_error
+          error_message: >-
+            Trello rejected the credentials (HTTP 401). If the source uses OAuth 2.0, re-authenticate with Trello in
+            the source settings. If it uses an API key and token, generate a new token in Trello and update it in the
+            source settings.
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/oauth_authenticator"
+      api_key: "#/definitions/api_key_authenticator"
+
+  api_key_authenticator:
+    type: ApiKeyAuthenticator
+    api_token: OAuth oauth_consumer_key="{{ config['credentials']['key'] }}", oauth_token="{{ config['credentials']['token'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: Authorization
+      inject_into: header
+
+  # Access tokens last 1 hour. Refresh tokens last 90 days and are single use, so refresh_token_updater keeps
+  # one token chain in the config for every stream and writes each rotation back to the platform.
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://auth.atlassian.com/oauth/token
+    grant_type: refresh_token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_token_error_status_codes: [400, 401, 403]
+    refresh_token_error_key: error
+    refresh_token_error_values: [invalid_grant, invalid_client, unauthorized_client]
+    refresh_token_error_messages:
+      invalid_grant: >-
+        Trello rejected the OAuth 2.0 refresh token because it expired, was revoked or was already used.
+        Re-authenticate with Trello in the source settings.
+      unauthorized_client: >-
+        Trello rejected the OAuth 2.0 refresh token or client. Re-authenticate with Trello in the source settings.
+      invalid_client: >-
+        Trello rejected the OAuth 2.0 client ID or client secret. Re-authenticate with Trello in the source settings.
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path: ["credentials", "access_token"]
+      refresh_token_config_path: ["credentials", "refresh_token"]
+      token_expiry_date_config_path: ["credentials", "token_expiry_date"]
 
   selector:
     type: RecordSelector
@@ -248,26 +297,88 @@ spec:
     type: object
     additionalProperties: true
     required:
-      - key
-      - token
+      - credentials
       - start_date
     properties:
-      key:
-        type: string
-        title: API key
-        description: >-
-          Trello API key. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
-          for instructions on how to generate it.
-        airbyte_secret: true
+      credentials:
+        title: Authentication
+        description: Sign in to Trello with OAuth 2.0, or use a Trello API key and token.
+        type: object
         order: 0
-      token:
-        type: string
-        title: API token
-        description: >-
-          Trello API token. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
-          for instructions on how to generate it.
-        airbyte_secret: true
-        order: 1
+        oneOf:
+          - title: OAuth 2.0
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: Client ID of the Trello OAuth 2.0 client.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client secret
+                description: Client secret of the Trello OAuth 2.0 client.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh token
+                description: >-
+                  OAuth 2.0 refresh token. Trello issues a new refresh token on every token refresh and accepts each one
+                  only once.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access token
+                description: OAuth 2.0 access token, refreshed automatically when it expires.
+                airbyte_secret: true
+                airbyte_hidden: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Access token expiry date
+                description: Expiry of the OAuth 2.0 access token, set automatically.
+                format: date-time
+                airbyte_hidden: true
+                order: 5
+          - title: API key and token
+            type: object
+            required:
+              - auth_type
+              - key
+              - token
+            properties:
+              auth_type:
+                type: string
+                const: api_key
+                order: 0
+              key:
+                type: string
+                title: API key
+                description: >-
+                  Trello API key. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+                  for instructions on how to generate it.
+                airbyte_secret: true
+                order: 1
+              token:
+                type: string
+                title: API token
+                description: >-
+                  Trello API token. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+                  for instructions on how to generate it.
+                airbyte_secret: true
+                order: 2
       start_date:
         type: string
         title: Start Date
@@ -276,7 +387,7 @@ spec:
         examples:
           - "2021-03-01T00:00:00Z"
         format: date-time
-        order: 2
+        order: 1
       board_ids:
         type: array
         items:
@@ -287,22 +398,66 @@ spec:
           IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will
           be replicated. Please note that this is not the 8-character ID in the board's shortLink (URL of the board).
           Rather, what is required here is the 24-character ID usually returned by the API
-        order: 3
+        order: 2
+      # Versions before 1.4.0 read the API key and token here. The config migration copies them into
+      # `credentials` and leaves them in place, so a migrated source can still run on 1.3.x.
+      key:
+        type: string
+        title: API key (earlier versions)
+        description: The API key read by versions before 1.4.0. It is copied into Authentication automatically.
+        airbyte_secret: true
+        airbyte_hidden: true
+      token:
+        type: string
+        title: API token (earlier versions)
+        description: The API token read by versions before 1.4.0. It is copied into Authentication automatically.
+        airbyte_secret: true
+        airbyte_hidden: true
   advanced_auth:
     auth_flow_type: oauth2.0
+    predicate_key: ["credentials", "auth_type"]
+    predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        # PKCE: the state doubles as the code verifier, so it must be 43 to 128 characters (RFC 7636).
+        consent_url: >-
+          https://auth.atlassian.com/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&prompt=consent&{{scopes_param}}&{{state_param}}&code_challenge_method=S256&code_challenge={{ state_value | codechallengeS256 }}
+        # offline_access is what makes Atlassian return a refresh token.
+        scopes:
+          - scope: read:board:trello
+          - scope: read:organization:trello
+          - scope: read:member:trello
+          - scope: offline_access
+        state:
+          min: 43
+          max: 128
+        access_token_url: https://auth.atlassian.com/oauth/token
+        access_token_params:
+          grant_type: authorization_code
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          code_verifier: "{{ state_value }}"
+        # expires_in becomes token_expiry_date, so the setup check uses the issued access token instead of
+        # spending the single-use refresh token.
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
         properties:
-          token:
+          access_token:
             type: string
-            path_in_connector_config:
-              - token
-          key:
+            path_in_connector_config: ["credentials", "access_token"]
+          refresh_token:
             type: string
-            path_in_connector_config:
-              - key
+            path_in_connector_config: ["credentials", "refresh_token"]
+          token_expiry_date:
+            type: string
+            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
@@ -311,6 +466,40 @@ spec:
             type: string
           client_secret:
             type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config: ["credentials", "client_id"]
+          client_secret:
+            type: string
+            path_in_connector_config: ["credentials", "client_secret"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Copy the top-level API key and token of earlier versions into credentials.
+        transformations:
+          # The condition is checked again before each field, and stays true until auth_type is written.
+          # Both values must be non-empty: an empty secret makes the platform reject the migrated config.
+          - type: ConfigAddFields
+            condition: >-
+              {{ (config.get('key') or '') != '' and (config.get('token') or '') != '' and (config.get('credentials') or {}).get('auth_type') is not string }}
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "key"]
+                value: "{{ config.get('key') or '' }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["credentials", "token"]
+                value: "{{ config.get('token') or '' }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: api_key
+                value_type: string
 
 schemas:
   boards:
