@@ -211,14 +211,14 @@ jobs:
           REGISTRY_REFRESH_ONLY: ${{ inputs.registry-refresh-only || 'false' }}
         run: |
           set -euo pipefail
-          # Production PyPI uploads run in the master-restricted environment
-          # that each connector package's PyPI Trusted Publisher requires.
+          # Production publishes use the master-restricted environment
+          # registered with PyPI Trusted Publishing and Docker Hub OIDC.
           publish_pypi=false
           pypi_environment=""
           if [[ "$GITHUB_REF" == "refs/heads/master" && "$SEMVER_SUFFIX" == "none" \
             && "$DRY_RUN" != "true" && "$REGISTRY_REFRESH_ONLY" != "true" ]]; then
             publish_pypi=true
-            pypi_environment="PyPI Connector Publishing"
+            pypi_environment="Connector Publishing"
           fi
           {
             printf "dry-run=%s\n" "$DRY_RUN"
