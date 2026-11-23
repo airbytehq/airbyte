@@ -97,6 +97,9 @@ env:
       || 'gitops-prod'
     }}
 
+permissions:
+  contents: read
+
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -241,6 +244,11 @@ jobs:
       connector-count: ${{ steps.count-connectors.outputs.connector-count }}
       publish-pypi: ${{ steps.resolve-vars.outputs.publish-pypi }}
       pypi-environment: ${{ steps.resolve-vars.outputs.pypi-environment }}
+      federated-publish: >-
+        ${{ !inputs.gitref && github.ref == 'refs/heads/master' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            (github.workflow_ref == 'airbytehq/airbyte/.github/workflows/publish_connectors.yml@refs/heads/master' ||
+             github.workflow_ref == 'airbytehq/airbyte-enterprise/.github/workflows/publish_enterprise_connectors.yml@refs/heads/master') }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -768,7 +776,8 @@ jobs:
         if: >
           steps.check-release-block.outputs.blocked != 'true' &&
           needs.publish_options.outputs.dry-run != 'true' &&
-          steps.generate-registry-artifacts.outcome == 'success'
+          steps.generate-registry-artifacts.outcome == 'success' &&
+          needs.publish_options.outputs.federated-publish != 'true'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -785,12 +794,40 @@ jobs:
             --store "${REGISTRY_STORE}" \
             --with-validate
 
+      - name: Stage Registry Artifacts for Publishing
+        if: >
+          needs.publish_options.outputs.federated-publish == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          steps.generate-registry-artifacts.outcome == 'success'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          DOCKER_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/registry-publish"
+          cp -R "./registry-artifacts/$CONNECTOR" "$RUNNER_TEMP/registry-publish/files"
+          printf '%s\n' "$DOCKER_TAG" > "$RUNNER_TEMP/registry-publish/version"
+
+      - name: Hand Off Registry Artifacts
+        if: >
+          needs.publish_options.outputs.federated-publish == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          steps.generate-registry-artifacts.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: registry-publish-${{ matrix.connector }}
+          path: ${{ runner.temp }}/registry-publish/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
       - name: Build success notification context
         id: success-context
         if: >
           success() &&
           steps.check-release-block.outputs.blocked != 'true' &&
-          needs.publish_options.outputs.dry-run != 'true'
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.federated-publish != 'true'
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
@@ -857,10 +894,48 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
+  publish_registry_artifacts:
+    name: Publish Registry Artifacts
+    needs: [publish_options, publish_connectors]
+    if: >
+      !cancelled() &&
+      needs.publish_options.outputs.federated-publish == 'true' &&
+      needs.publish_options.outputs.dry-run != 'true' &&
+      needs.publish_options.outputs.connector-count != '0'
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
+      max-parallel: 5
+      fail-fast: false
+    uses: ./.github/workflows/publish-connector-registry-artifacts.yml
+    with:
+      connector: ${{ matrix.connector }}
+      release-type: >-
+        ${{ needs.publish_options.outputs.registry-refresh-only == 'true' && '🟡 Registry refresh-only artifact' ||
+            needs.publish_options.outputs.with-semver-suffix == 'none' && '🟢 GA' || '🔵 Pre-release' }}
+    secrets:
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+  compile_published_connector_registry:
+    name: Compile Published Connector Registry
+    needs: [publish_options, publish_connectors, publish_registry_artifacts]
+    if: needs.publish_options.outputs.federated-publish == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/compile-published-connector-registry.yml
+    with:
+      force: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' }}
+      connector-name: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' && needs.publish_options.outputs.registry-refresh-connector-name || '' }}
+    secrets:
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
-    if: needs.publish_options.outputs.dry-run != 'true'
+    if: needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.federated-publish != 'true'
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
       pr: ${{ inputs.pr }}
@@ -874,7 +949,12 @@ jobs:
     needs:
       - publish_connectors
       - publish_options
-    if: ${{ always() && needs.publish_connectors.result == 'failure' }}
+      - publish_registry_artifacts
+      - compile_published_connector_registry
+    if: >-
+      ${{ always() && (needs.publish_connectors.result == 'failure' ||
+                       needs.publish_registry_artifacts.result == 'failure' ||
+                       needs.compile_published_connector_registry.result == 'failure') }}
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0

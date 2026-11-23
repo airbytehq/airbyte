@@ -1,0 +1,110 @@
+name: Publish Connector Registry Artifacts
+
+on:
+  workflow_call:
+    inputs:
+      connector:
+        description: "Connector. The connector whose artifacts were generated in this run."
+        required: true
+        type: string
+      release-type:
+        description: "Release type. Label for the publish notification."
+        required: true
+        type: string
+    secrets:
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish Connector Registry Artifacts
+    if: >
+      github.ref == 'refs/heads/master' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.workflow_ref == 'airbytehq/airbyte/.github/workflows/publish_connectors.yml@refs/heads/master' ||
+       github.workflow_ref == 'airbytehq/airbyte-enterprise/.github/workflows/publish_enterprise_connectors.yml@refs/heads/master')
+    runs-on: ubuntu-24.04
+    environment: Connector Publishing
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download Registry Artifacts from This Run
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: registry-publish-${{ inputs.connector }}
+          path: ${{ runner.temp }}/registry-publish
+
+      - name: Resolve Variables
+        id: resolve-vars
+        shell: bash
+        env:
+          CONNECTOR: ${{ inputs.connector }}
+        run: |
+          [[ "$CONNECTOR" =~ ^[a-z0-9][a-z0-9-]*$ ]] || exit 1
+          bundle="$RUNNER_TEMP/registry-publish"
+          [[ -d "$bundle" ]] || exit 0
+          [[ -f "$bundle/version" && -f "$bundle/files/metadata.yaml" ]] || exit 1
+          version="$(< "$bundle/version")"
+          [[ "$version" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]] || exit 1
+          printf 'version=%s\n' "$version" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Check Out Trusted Workspace
+        if: steps.resolve-vars.outputs.version != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set Up uv
+        if: steps.resolve-vars.outputs.version != ''
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+
+      - name: Install Ops CLI
+        if: steps.resolve-vars.outputs.version != ''
+        run: uv --no-config tool install airbyte-internal-ops==0.149.2
+
+      - name: Authenticate to Google Cloud
+        if: steps.resolve-vars.outputs.version != ''
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_WRITER_SERVICE_ACCOUNT }}
+
+      - name: Publish Registry Artifacts
+        if: steps.resolve-vars.outputs.version != ''
+        shell: bash
+        env:
+          CONNECTOR: ${{ inputs.connector }}
+          VERSION: ${{ steps.resolve-vars.outputs.version }}
+        run: >
+          airbyte-ops registry connector-version artifacts publish
+          --name "$CONNECTOR"
+          --version "$VERSION"
+          --artifacts-dir "$RUNNER_TEMP/registry-publish/files"
+          --store coral:prod
+          --with-validate
+
+    outputs:
+      version: ${{ steps.resolve-vars.outputs.version }}
+
+  notify:
+    name: Notify Slack on Connector Publish Success
+    runs-on: ubuntu-24.04
+    needs: publish
+    if: needs.publish.outputs.version != ''
+    steps:
+      - name: Send Connector Publish Success
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": ${{ toJSON(format('{0} Publish SUCCESS: Connector: <https://hub.docker.com/r/airbyte/{1}/tags?name={2}|airbyte/{1}:{2}>. Reference: <https://connectors.airbyte.com/files/metadata/airbyte/{1}/{2}/cloud.json|cloud.json> · <https://connectors.airbyte.com/files/metadata/airbyte/{1}/{2}/oss.json|oss.json> · <{3}/{4}/actions/runs/{5}|CI Logs>', inputs.release-type, inputs.connector, needs.publish.outputs.version, github.server_url, github.repository, github.run_id)) }}
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}

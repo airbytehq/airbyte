@@ -1,0 +1,84 @@
+name: Compile Published Connector Registry
+
+on:
+  workflow_call:
+    inputs:
+      force:
+        description: "Force. Resync latest directories even if version markers are current."
+        type: boolean
+        default: false
+      connector-name:
+        description: "Connector name. Limit the latest resync and per-connector indexes to this connector."
+        type: string
+    secrets:
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generate-connector-registry
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    name: Compile Published Connector Registry
+    if: >
+      github.ref == 'refs/heads/master' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.workflow_ref == 'airbytehq/airbyte/.github/workflows/publish_connectors.yml@refs/heads/master' ||
+       github.workflow_ref == 'airbytehq/airbyte-enterprise/.github/workflows/publish_enterprise_connectors.yml@refs/heads/master')
+    runs-on: ubuntu-24.04
+    environment: Connector Publishing
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SENTRY_ENVIRONMENT: production
+    steps:
+      - name: Check Out Trusted Workspace
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set Up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+
+      - name: Install Ops CLI
+        run: uv --no-config tool install airbyte-internal-ops==0.149.2
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_WRITER_SERVICE_ACCOUNT }}
+
+      - name: Compile Registries
+        shell: bash
+        env:
+          FORCE: ${{ inputs.force }}
+          CONNECTOR: ${{ inputs.connector-name }}
+        run: |
+          args=()
+          [[ "$FORCE" != true ]] || args+=(--force)
+          [[ -z "$CONNECTOR" ]] || args+=(--connector-name "$CONNECTOR")
+          airbyte-ops registry store compile --store coral:prod --with-secrets-mask --with-legacy-migration v1 "${args[@]}"
+
+  notify:
+    name: Notify Slack on Registry Compile Success
+    runs-on: ubuntu-24.04
+    needs: compile
+    steps:
+      - name: Send Registry Compile Success
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "☑️ *Registry Compile SUCCESS*\nReference: <https://connectors.airbyte.com/files/registries/v0/cloud_registry.json|Cloud Registry> · <https://connectors.airbyte.com/files/registries/v0/oss_registry.json|OSS Registry> · <https://console.cloud.google.com/storage/browser/prod-airbyte-cloud-connector-metadata-service/registries/v0|GCS Bucket> · <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|CI Logs>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
