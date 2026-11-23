@@ -184,8 +184,56 @@ class TestVideosStream(TestCase):
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert record["id"] == "urn:li:video:AAA111"
+        assert record["post_urn"] == "urn:li:share:1000001"
         assert record["duration"] == 45500
         assert output.records[0].record.stream == _STREAM_NAME
+        assert not output.errors
+
+    @HttpMocker()
+    def test_video_shared_by_two_posts_is_emitted_once_per_post(self, http_mocker: HttpMocker):
+        """
+        Given: Two creatives referencing two different posts that carry the same video
+        When: Running a full refresh sync
+        Then: The video is emitted once per post, each record keyed by the post it was resolved from
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [
+                    _create_creative_record(2001, 111111111, "urn:li:share:1000001"),
+                    _create_creative_record(2002, 111111111, "urn:li:ugcPost:1000002"),
+                ]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000001", "urn:li:video:AAA111")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:ugcPost:1000002").build(),
+            _single_object_response(_create_post_record("urn:li:ugcPost:1000002", "urn:li:video:AAA111")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.video_endpoint("urn:li:video:AAA111").build(),
+            _single_object_response(_create_video_record("AAA111")),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+        )
+
+        assert sorted((r.record.data["id"], r.record.data["post_urn"]) for r in output.records) == [
+            ("urn:li:video:AAA111", "urn:li:share:1000001"),
+            ("urn:li:video:AAA111", "urn:li:ugcPost:1000002"),
+        ]
         assert not output.errors
 
     @HttpMocker()
