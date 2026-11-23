@@ -25,4 +25,7 @@ jobs:
     uses: ./.github/workflows/ai-review-command.yml
     with:
       pr: "${{ github.event.pull_request.number }}"
-    secrets: inherit
+    secrets:
+      DEVIN_AI_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+      OCTAVIA_BOT_APP_ID: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+      OCTAVIA_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}

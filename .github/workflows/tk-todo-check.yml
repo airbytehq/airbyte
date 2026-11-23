@@ -14,7 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
 
       - name: Check for TK-TODO markers # IGNORE:TK
         uses: aaronsteers/tk-todo-check-action@v1.0.0 # IGNORE:TK
+        with:
+          # The lockfile names this action, which the marker search would match.
+          exclude-patterns: actions.lock
