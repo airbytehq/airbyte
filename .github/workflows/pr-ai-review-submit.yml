@@ -60,8 +60,9 @@ jobs:
         id: check-labels
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_NUMBER="${EVENT_ISSUE_NUMBER}"
 
           # Get PR labels
           LABELS=$(curl -sS \
@@ -94,9 +95,11 @@ jobs:
         id: check-existing
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          STEP_PARSE_MARKER_HEAD_SHA: ${{ steps.parse-marker.outputs.head_sha }}
         run: |
-          PR_NUMBER="${{ github.event.issue.number }}"
-          HEAD_SHA="${{ steps.parse-marker.outputs.head_sha }}"
+          PR_NUMBER="${EVENT_ISSUE_NUMBER}"
+          HEAD_SHA="${STEP_PARSE_MARKER_HEAD_SHA}"
 
           # Get existing reviews
           REVIEWS=$(curl -sS \
@@ -125,9 +128,11 @@ jobs:
           steps.check-existing.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          STEP_PARSE_MARKER_HEAD_SHA: ${{ steps.parse-marker.outputs.head_sha }}
         run: |
-          PR_NUMBER="${{ github.event.issue.number }}"
-          HEAD_SHA="${{ steps.parse-marker.outputs.head_sha }}"
+          PR_NUMBER="${EVENT_ISSUE_NUMBER}"
+          HEAD_SHA="${STEP_PARSE_MARKER_HEAD_SHA}"
 
           echo "Submitting REQUEST_CHANGES review for PR #$PR_NUMBER at HEAD SHA $HEAD_SHA"
 
@@ -157,12 +162,15 @@ jobs:
 
       - name: Log skip reason
         if: steps.parse-marker.outputs.result == 'FAIL' && (steps.check-labels.outputs.skip == 'true' || steps.check-existing.outputs.skip == 'true')
+        env:
+          STEP_CHECK_LABELS_REASON: ${{ steps.check-labels.outputs.reason }}
+          STEP_CHECK_EXISTING_SKIP: ${{ steps.check-existing.outputs.skip }}
         run: |
-          if [[ "${{ steps.check-labels.outputs.reason }}" == "override" ]]; then
+          if [[ "${STEP_CHECK_LABELS_REASON}" == "override" ]]; then
             echo "Skipped: ai-review-override label present"
-          elif [[ "${{ steps.check-labels.outputs.reason }}" == "escalation" ]]; then
+          elif [[ "${STEP_CHECK_LABELS_REASON}" == "escalation" ]]; then
             echo "Skipped: needs-human-review label present (escalated to human review)"
-          elif [[ "${{ steps.check-existing.outputs.skip }}" == "true" ]]; then
+          elif [[ "${STEP_CHECK_EXISTING_SKIP}" == "true" ]]; then
             echo "Skipped: Duplicate REQUEST_CHANGES review for same HEAD SHA"
           fi
 

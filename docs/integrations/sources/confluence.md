@@ -104,6 +104,7 @@ schema and set the affected streams back to Full Refresh.
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.45 | 2026-11-17 | [93144](https://github.com/airbytehq/airbyte/pull/93144) | Update dependencies |
 | 1.0.44 | 2026-11-10 | [91457](https://github.com/airbytehq/airbyte/pull/91457) | Update dependencies |
 | 1.0.43 | 2026-11-03 | [90513](https://github.com/airbytehq/airbyte/pull/90513) | Update dependencies |
 | 1.0.42 | 2026-10-27 | [89859](https://github.com/airbytehq/airbyte/pull/89859) | Update dependencies |

@@ -332,7 +332,7 @@ If you use your own OAuth app, do one of the following:
 
 ### Troubleshooting
 
-- **Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth**: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
+- Syncs start failing with `GitHub authentication failed (HTTP 401)` about eight hours after you authenticate with OAuth: your own GitHub OAuth app issues expiring tokens. See [OAuth apps with expiring user access tokens](#oauth-apps-with-expiring-user-access-tokens).
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
@@ -344,6 +344,7 @@ If you use your own OAuth app, do one of the following:
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.7 | 2026-11-17 | [93190](https://github.com/airbytehq/airbyte/pull/93190) | Update dependencies |
 | 2.8.6 | 2026-11-10 | [91494](https://github.com/airbytehq/airbyte/pull/91494) | Update dependencies |
 | 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
@@ -415,7 +416,7 @@ If you use your own OAuth app, do one of the following:
 | 2.1.2 | 2025-11-11 | [69271](https://github.com/airbytehq/airbyte/pull/69271) | Update dependencies |
 | 2.1.1 | 2025-11-04 | [69002](https://github.com/airbytehq/airbyte/pull/69002) | Update dependencies |
 | 2.1.0 | 2025-10-29 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
-| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
+| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | Breaking Change: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
 | 1.9.2 | 2025-10-21 | [68332](https://github.com/airbytehq/airbyte/pull/68332) | Update dependencies |
 | 1.9.1 | 2025-10-20 | [68197](https://github.com/airbytehq/airbyte/pull/68197) | Promoting release candidate 1.9.1-rc.1 to a main version. |
 | 1.9.1-rc.1 | 2025-10-13 | [67584](https://github.com/airbytehq/airbyte/pull/67584) | Graceful error handling of invalid credentials when running operations |

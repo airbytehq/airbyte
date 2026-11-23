@@ -55,6 +55,7 @@ The Report Service API allows 50 requests per second per source IP address, with
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |---------|------------| -------------------------------------------------------- |---------------------------------------------|
+| 0.2.3 | 2026-11-17 | [93069](https://github.com/airbytehq/airbyte/pull/93069) | Update dependencies |
 | 0.2.2 | 2026-11-11 | [90889](https://github.com/airbytehq/airbyte/pull/90889) | Raise minimum supported Python version to 3.11 |
 | 0.2.1 | 2026-11-10 | [78584](https://github.com/airbytehq/airbyte/pull/78584) | Update dependencies |
 | 0.2.0 | 2026-11-03 | [90863](https://github.com/airbytehq/airbyte/pull/90863) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |

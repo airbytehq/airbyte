@@ -171,6 +171,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.3 | 2026-11-17 | [93205](https://github.com/airbytehq/airbyte/pull/93205) | Update dependencies |
 | 1.1.2 | 2026-11-10 | [91289](https://github.com/airbytehq/airbyte/pull/91289) | Skip notes that Granola returns as not found in the detailed_notes stream instead of failing the sync |
 | 1.1.1 | 2026-11-10 | [91556](https://github.com/airbytehq/airbyte/pull/91556) | Update dependencies |
 | 1.1.0 | 2026-11-04 | [89049](https://github.com/airbytehq/airbyte/pull/89049) | Add incremental sync to the detailed_notes stream |
