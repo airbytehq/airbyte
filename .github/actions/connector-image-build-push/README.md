@@ -21,7 +21,7 @@ This GitHub Action builds and pushes Docker images for Airbyte connectors (Pytho
   uses: ./.github/actions/connector-image-build-push
   with:
     connector-name: 'source-faker'
-    docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+    docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
     dry-run: 'false'
 ```
 
@@ -36,7 +36,7 @@ This GitHub Action builds and pushes Docker images for Airbyte connectors (Pytho
     tag-override: 'v1.2.3'
     push-latest: 'true'
     force-publish: 'true'
-    docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+    docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
     dry-run: 'false'
 ```
 

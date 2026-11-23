@@ -292,7 +292,7 @@ jobs:
         id: docker-hub-oidc
         uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
         with:
-          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
           expires-in: 21600
 
       - name: Log in to Docker Hub
@@ -623,7 +623,7 @@ jobs:
           tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
-          docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+          docker-hub-oidc-connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
 
       # --- Registry artifact generation and publishing ---
 
