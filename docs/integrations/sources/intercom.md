@@ -140,6 +140,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2026-11-23 | [94040](https://github.com/airbytehq/airbyte/pull/94040) | Report an invalid or revoked access token (HTTP 401 `unauthorized` or `token_not_found`) as a re-authentication error instead of a missing-permission error |
 | 1.0.1 | 2026-11-17 | [93211](https://github.com/airbytehq/airbyte/pull/93211) | Update dependencies |
 | 1.0.0 | 2026-11-10 | [91060](https://github.com/airbytehq/airbyte/pull/91060) | Add `company_id` to `company_segments` and make `[company_id, id]` its primary key |
 | 0.13.30 | 2026-11-10 | [91585](https://github.com/airbytehq/airbyte/pull/91585) | Update dependencies |
