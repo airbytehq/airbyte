@@ -74,4 +74,10 @@ data:
     - title: PostHog Status
       url: https://status.posthog.com/
       type: status_page
+    - title: PostHog event storage changes
+      url: https://posthog.com/blog/changing-event-storage
+      type: api_deprecations
+    - title: PostHog events retention update
+      url: https://posthog.com/blog/events-data-retention-update
+      type: api_deprecations
 metadataSpecVersion: "1.0"
