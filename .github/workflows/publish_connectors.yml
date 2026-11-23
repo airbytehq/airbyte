@@ -433,10 +433,12 @@ jobs:
           PUBLISH_PYPI: ${{ needs.publish_options.outputs.publish-pypi }}
           RELEASE_BLOCKED: ${{ steps.check-release-block.outputs.blocked }}
           CONNECTOR_LANGUAGE: ${{ steps.connector-metadata.outputs.connector-language }}
+          METADATA_FILE: airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml
         run: |
           set -euo pipefail
           publish_pypi=false
-          if [[ "$PUBLISH_PYPI" == "true" && "$RELEASE_BLOCKED" != "true" && "$CONNECTOR_LANGUAGE" == "python" ]]; then
+          if [[ "$PUBLISH_PYPI" == "true" && "$RELEASE_BLOCKED" != "true" && "$CONNECTOR_LANGUAGE" == "python" ]] \
+            && [[ "$(yq eval '.data.remoteRegistries.pypi.enabled' "$METADATA_FILE")" == "true" ]]; then
             publish_pypi=true
           fi
           echo "publish-pypi=${publish_pypi}" | tee -a "$GITHUB_OUTPUT"
