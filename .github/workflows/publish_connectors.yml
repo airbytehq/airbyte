@@ -451,16 +451,9 @@ jobs:
         shell: bash
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
-          PYPI_ENVIRONMENT: ${{ needs.publish_options.outputs.pypi-environment }}
         run: |
           set -euo pipefail
           package_name=$(yq eval '.data.remoteRegistries.pypi.packageName' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
-          workflow_filename=${GITHUB_WORKFLOW_REF%@*}
-          workflow_filename=${workflow_filename##*/}
-          prefill_url="https://pypi.org/manage/project/${package_name}/settings/publishing/?$(jq -rn \
-            --arg owner "${GITHUB_REPOSITORY%%/*}" --arg repository "${GITHUB_REPOSITORY#*/}" \
-            --arg workflow "$workflow_filename" --arg environment "$PYPI_ENVIRONMENT" \
-            '"provider=github&owner=\($owner|@uri)&repository=\($repository|@uri)&workflow_filename=\($workflow|@uri)&environment=\($environment|@uri)"')"
           response_file=$(mktemp)
           trap 'rm -f "$response_file"' EXIT
           endpoint=audience
@@ -469,7 +462,7 @@ jobs:
           report_mint_failure() {
             body=$(jq -c 'del(.token)' "$response_file" 2>/dev/null || cat "$response_file")
             [[ -z "$oidc_token" ]] || body=${body//"$oidc_token"/[REDACTED]}
-            message="PyPI Trusted Publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}) at ${endpoint} (HTTP ${status}). Response: ${body}. To register the publisher, log in to PyPI first, then open ${prefill_url} and check that the environment name (${PYPI_ENVIRONMENT}) and workflow filename (${workflow_filename}) still match this workflow, since both can change over time. Runbook: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
+            message="PyPI Trusted Publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}) at ${endpoint} (HTTP ${status}). Response: ${body}. Log in to PyPI, then check or register the Trusted Publisher in the package's Publishing settings, or for a new package at https://pypi.org/manage/account/publishing/ (pending publisher). Verify the current workflow filename and environment name, since both can change. Runbook: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
             message=${message//'%'/'%25'}
             message=${message//$'\r'/'%0D'}
             message=${message//$'\n'/'%0A'}
