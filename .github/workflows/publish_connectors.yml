@@ -218,7 +218,7 @@ jobs:
           if [[ "$GITHUB_REF" == "refs/heads/master" && "$SEMVER_SUFFIX" == "none" \
             && "$DRY_RUN" != "true" && "$REGISTRY_REFRESH_ONLY" != "true" ]]; then
             publish_pypi=true
-            pypi_environment="PyPI Connector Publishing"
+            pypi_environment="Connector Publishing"
           fi
           {
             printf "dry-run=%s\n" "$DRY_RUN"
