@@ -202,6 +202,30 @@ jobs:
           else
             echo "publish-java-tars=${IN_PUBLISH_JAVA_TARS}" | tee -a $GITHUB_OUTPUT
           fi
+      - name: Resolve Variables
+        id: resolve-vars
+        shell: bash
+        env:
+          SEMVER_SUFFIX: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
+          DRY_RUN: ${{ inputs.dry-run || 'false' }}
+          REGISTRY_REFRESH_ONLY: ${{ inputs.registry-refresh-only || 'false' }}
+        run: |
+          set -euo pipefail
+          # Production PyPI uploads run in the master-restricted environment
+          # that each connector package's PyPI Trusted Publisher requires.
+          publish_pypi=false
+          pypi_environment=""
+          if [[ "$GITHUB_REF" == "refs/heads/master" && "$SEMVER_SUFFIX" == "none" \
+            && "$DRY_RUN" != "true" && "$REGISTRY_REFRESH_ONLY" != "true" ]]; then
+            publish_pypi=true
+            pypi_environment="PyPI Connector Publishing"
+          fi
+          {
+            printf "dry-run=%s\n" "$DRY_RUN"
+            printf "registry-refresh-only=%s\n" "$REGISTRY_REFRESH_ONLY"
+            printf "publish-pypi=%s\n" "$publish_pypi"
+            printf "pypi-environment=%s\n" "$pypi_environment"
+          } | tee -a "$GITHUB_OUTPUT"
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
@@ -209,21 +233,24 @@ jobs:
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
       # dry-run mode skips all uploads but runs all logic
-      dry-run: ${{ inputs.dry-run || 'false' }}
+      dry-run: ${{ steps.resolve-vars.outputs.dry-run }}
       # registry-refresh-only skips connector image/package publishing but still publishes registry artifacts
-      registry-refresh-only: ${{ inputs.registry-refresh-only || 'false' }}
+      registry-refresh-only: ${{ steps.resolve-vars.outputs.registry-refresh-only }}
       # registry-refresh-only is validated to exactly one connector, so this is safe to pass to scoped registry compile.
       registry-refresh-connector-name: ${{ fromJson(steps.list-connectors-manual.outputs.connectors-to-publish || '{"connector":[""]}').connector[0] }}
       connector-count: ${{ steps.count-connectors.outputs.connector-count }}
+      publish-pypi: ${{ steps.resolve-vars.outputs.publish-pypi }}
+      pypi-environment: ${{ steps.resolve-vars.outputs.pypi-environment }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
     if: needs.publish_options.outputs.connector-count != '0'
     runs-on: ubuntu-24.04
+    environment: ${{ needs.publish_options.outputs.pypi-environment }}
     permissions:
       contents: read
-      id-token: write
       pull-requests: read
+      id-token: write
     strategy:
       matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
@@ -406,21 +433,49 @@ jobs:
             echo "blocked=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Resolve Variables
+        id: resolve-vars
+        shell: bash
+        env:
+          PUBLISH_PYPI: ${{ needs.publish_options.outputs.publish-pypi }}
+          RELEASE_BLOCKED: ${{ steps.check-release-block.outputs.blocked }}
+          CONNECTOR_LANGUAGE: ${{ steps.connector-metadata.outputs.connector-language }}
+          METADATA_FILE: airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml
+        run: |
+          set -euo pipefail
+          publish_pypi=false
+          if [[ "$PUBLISH_PYPI" == "true" && "$RELEASE_BLOCKED" != "true" && "$CONNECTOR_LANGUAGE" == "python" ]] \
+            && [[ "$(yq eval '.data.remoteRegistries.pypi.enabled' "$METADATA_FILE")" == "true" ]]; then
+            publish_pypi=true
+          fi
+          echo "publish-pypi=${publish_pypi}" | tee -a "$GITHUB_OUTPUT"
+
+      # Exchanges the job's OIDC token for a short-lived PyPI upload token (PyPI Trusted Publishing):
+      # https://docs.pypi.org/trusted-publishers/using-a-publisher/#the-manual-way
+      - name: Mint PyPI token via Trusted Publishing
+        id: mint-pypi-token
+        if: steps.resolve-vars.outputs.publish-pypi == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          audience=$(curl -fsS https://pypi.org/_/oidc/audience | jq -r '.audience')
+          oidc_token=$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" | jq -r '.value')
+          pypi_token=$(jq -n --arg token "$oidc_token" '{token: $token}' \
+            | curl -fsS -X POST https://pypi.org/_/oidc/mint-token -d @- | jq -r '.token')
+          echo "::add-mask::${pypi_token}"
+          echo "pypi-token=${pypi_token}" >> "$GITHUB_OUTPUT"
+
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: >
-          steps.check-release-block.outputs.blocked != 'true' &&
-          steps.connector-metadata.outputs.connector-language == 'python' &&
-          needs.publish_options.outputs.dry-run != 'true' &&
-          needs.publish_options.outputs.with-semver-suffix == 'none' &&
-          needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: steps.resolve-vars.outputs.publish-pypi == 'true'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
-          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: Build and publish JVM connectors images
