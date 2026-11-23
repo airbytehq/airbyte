@@ -491,7 +491,8 @@ jobs:
         if: steps.resolve-vars.outputs.publish-pypi == 'true'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
+          set -o pipefail
+          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" 2>&1 | tee "$RUNNER_TEMP/pypi-publish.log"
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -503,9 +504,13 @@ jobs:
         shell: bash
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
+          PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
         run: |
           package_name=$(yq eval '.data.remoteRegistries.pypi.packageName' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
-          message="PyPI publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}). Check the publish step logs and publisher settings: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
+          body=$(sed -n '/HTTP Error [0-9][0-9][0-9]:/p' "$RUNNER_TEMP/pypi-publish.log")
+          [[ -n "$body" ]] || body=$(sed '/^[[:space:]]*$/d' "$RUNNER_TEMP/pypi-publish.log" | tail -5)
+          [[ -z "$PYTHON_REGISTRY_TOKEN" ]] || body=${body//"$PYTHON_REGISTRY_TOKEN"/[REDACTED]}
+          message="PyPI publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}). Response: ${body}. Check publisher settings: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
           message=${message//'%'/'%25'}
           message=${message//$'\r'/'%0D'}
           message=${message//$'\n'/'%0A'}
