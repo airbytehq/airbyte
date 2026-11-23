@@ -2,26 +2,30 @@ name: Slash Command Dispatch
 on:
   issue_comment:
     types: [created]
+permissions:
+  contents: read
+
 jobs:
   slashCommandDispatch:
     name: Dispatch
     if: startsWith(github.event.comment.body, '/')
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-24.04
     steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: get-app-token
+      - name: Get Octo STS token
+        uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05 # v1.1.1
+        id: octo-sts
         with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          scope: airbytehq/airbyte
+          identity: slash-commands
 
       - name: Get PR repo and ref
         if: ${{ github.event.issue.pull_request }}
         id: getref
         env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
           PR_URL: ${{ github.event.issue.pull_request.url }}
         run: |
           set -euo pipefail
@@ -51,7 +55,7 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@f996d7b7aae9059759ac55e978cff76d91853301 # v3.0.2
         with:
-          token: ${{ steps.get-app-token.outputs.token }}
+          token: ${{ steps.octo-sts.outputs.token }}
           permission: write
           dispatch-type: workflow
           issue-type: both
@@ -100,6 +104,7 @@ jobs:
         if: steps.scd.outputs.error-message
         uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
+          token: ${{ steps.octo-sts.outputs.token }}
           comment-id: ${{ github.event.comment.id }}
           body: |
             > Error: ${{ steps.scd.outputs.error-message }}
