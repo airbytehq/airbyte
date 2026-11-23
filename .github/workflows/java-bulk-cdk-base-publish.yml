@@ -42,7 +42,7 @@ jobs:
         id: docker-hub-oidc
         uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
         with:
-          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_READ_ONLY_CONNECTION_ID }}
           expires-in: 1800
 
       - name: Docker login
