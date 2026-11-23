@@ -53,6 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.76 | 2026-11-17 | [93277](https://github.com/airbytehq/airbyte/pull/93277) | Update dependencies |
 | 0.0.75 | 2026-11-10 | [90335](https://github.com/airbytehq/airbyte/pull/90335) | Consolidate duplicated error handling into a single shared handler with no behavior change |
 | 0.0.74 | 2026-11-10 | [91630](https://github.com/airbytehq/airbyte/pull/91630) | Update dependencies |
 | 0.0.73 | 2026-11-03 | [90658](https://github.com/airbytehq/airbyte/pull/90658) | Update dependencies |

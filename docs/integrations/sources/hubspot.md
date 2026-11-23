@@ -519,6 +519,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------------ | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6.14.3 | 2026-11-17 | [91554](https://github.com/airbytehq/airbyte/pull/91554) | Update dependencies |
 | 6.14.2 | 2026-11-10 | [91806](https://github.com/airbytehq/airbyte/pull/91806) | Fix `deals` silently missing records in Full Refresh: read `deals` from the list endpoint when there is no state. |
 | 6.14.1 | 2026-11-04 | [90854](https://github.com/airbytehq/airbyte/pull/90854) | Fix `contacts` silently missing records: CRM Search now pages by record ID, and Full Refresh reads `contacts` from the list endpoint. |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |

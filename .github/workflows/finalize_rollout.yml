@@ -175,33 +175,38 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
-          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
           --store "coral:prod"
           --outcome promoted
-          --version "${{ steps.resolve-vars.outputs.version }}"
+          --version "${STEP_RESOLVE_VARS_VERSION}"
 
       - name: Mark progressive rollout aborted
         if: steps.resolve-vars.outputs.action == 'rollback'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
-          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
           --store "coral:prod"
           --outcome aborted
-          --version "${{ steps.resolve-vars.outputs.version }}"
+          --version "${STEP_RESOLVE_VARS_VERSION}"
 
       - name: "Recompile registry for ${{ steps.resolve-vars.outputs.connector_name }} v${{ steps.resolve-vars.outputs.version }}"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: >
           airbyte-ops registry store compile
           --store "coral:prod"
-          --connector-name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --connector-name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
 
       # --- PR Creation (promote + repo version contains -rc only) ---
 
@@ -265,12 +270,13 @@ jobs:
         shell: bash
         env:
           CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: >
           airbyte-ops local connector changelog add
           --connector-name "${CONNECTOR_NAME}"
           --repo-path "${{ github.workspace }}"
           --message "Promoted release candidate to GA"
-          --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
+          --pr-number "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
 
       - name: "Push changelog to PR"
         if: steps.create-pr.outputs.pull-request-number
@@ -285,7 +291,8 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr ready "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
 
       - name: Authenticate as GitHub App (Admin)
         if: steps.create-pr.outputs.pull-request-number
@@ -301,8 +308,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: >
-          gh pr review "${{ steps.create-pr.outputs.pull-request-number }}"
+          gh pr review "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
           --repo "${{ github.repository }}"
           --approve
           --body "Auto-approved by finalize_rollout workflow."
@@ -311,8 +319,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: |
-          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+          gh pr merge "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" \
             --repo "${{ github.repository }}" \
             --squash \
             --admin

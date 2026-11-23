@@ -51,8 +51,10 @@ jobs:
       - name: Validate connector
         id: validate-connector
         shell: bash
+        env:
+          EVENT_INPUTS_CONNECTOR: ${{ github.event.inputs.connector }}
         run: |
-          connector_path="airbyte-integrations/connectors/${{ github.event.inputs.connector }}"
+          connector_path="airbyte-integrations/connectors/${EVENT_INPUTS_CONNECTOR}"
           if [ ! -d "$connector_path" ]; then
           echo "error=Connector directory not found: $connector_path" | tee -a $GITHUB_OUTPUT
           exit 1
@@ -80,7 +82,9 @@ jobs:
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
 
       - name: Run CDK upgrade
-        run: ./gradlew ":airbyte-integrations:connectors:${{ github.event.inputs.connector }}:upgradeCdk"
+        env:
+          EVENT_INPUTS_CONNECTOR: ${{ github.event.inputs.connector }}
+        run: ./gradlew ":airbyte-integrations:connectors:${EVENT_INPUTS_CONNECTOR}:upgradeCdk"
 
       - name: Check for changes
         id: git-diff
@@ -90,11 +94,13 @@ jobs:
 
       - name: Commit changes
         if: steps.git-diff.outputs.changes == 'true'
+        env:
+          EVENT_INPUTS_CONNECTOR: ${{ github.event.inputs.connector }}
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
           git add .
-          git commit -m "Bump ${{ github.event.inputs.connector }} cdk version"
+          git commit -m "Bump ${EVENT_INPUTS_CONNECTOR} cdk version"
           git push
 
       - name: Append success comment

@@ -542,6 +542,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 7.0.5 | 2026-11-17 | [90445](https://github.com/airbytehq/airbyte/pull/90445) | Update dependencies |
 | 7.0.4 | 2026-11-16 | [92536](https://github.com/airbytehq/airbyte/pull/92536) | Fix date parsing for the Seller Feedback report when Amazon returns 4-digit years. |
 | 7.0.3 | 2026-11-13 | [77742](https://github.com/airbytehq/airbyte/pull/77742) | Add `createdBefore` to the `VendorOrdersStatus` schema so it matches the stream's cursor, unblocking `Incremental \| Append + Deduped`. |
 | 7.0.2 | 2026-11-11 | [89626](https://github.com/airbytehq/airbyte/pull/89626) | Retry rate-limited (429) report document lookups for longer (30 retries / 1 hour) so report downloads no longer fail when Amazon throttles `getReportDocument`; other errors keep 5 retries / 10 minutes. |
