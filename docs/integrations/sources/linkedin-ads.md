@@ -255,7 +255,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 6.3.0 | 2026-11-23 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | `videos`: add `post_urn`, the post each video record was resolved from, to join videos to creatives |
+| 6.3.0 | 2026-11-23 | [94041](https://github.com/airbytehq/airbyte/pull/94041) | `videos`: add `post_urn`, the post each video record was resolved from, to join videos to creatives |
 | 6.2.13 | 2026-11-17 | [93265](https://github.com/airbytehq/airbyte/pull/93265) | Update dependencies |
 | 6.2.12 | 2026-11-13 | [92988](https://github.com/airbytehq/airbyte/pull/92988) | Run connection checks without custom connector code. |
 | 6.2.11 | 2026-11-10 | [86483](https://github.com/airbytehq/airbyte/pull/86483) | Replace YAML anchors with declarative `$ref` for the shared analytics property list (no functional change) |
