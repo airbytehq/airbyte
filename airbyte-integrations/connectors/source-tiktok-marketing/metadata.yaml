@@ -26,6 +26,9 @@ data:
     - title: API version timelines
       url: https://business-api.tiktok.com/portal/docs/timelines/v1.3
       type: api_deprecations
+    - title: Sandbox account retirement
+      url: https://business-api.tiktok.com/portal/docs/sandbox-accounts/v1.3
+      type: api_deprecations
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: ELv2
