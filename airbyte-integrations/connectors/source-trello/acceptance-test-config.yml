@@ -5,9 +5,13 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
+      # 1.4.0 moves the top-level `key` and `token` into the required `credentials` object and replaces the
+      # OAuth 1.0 outputs (`key`, `token`) with OAuth 2.0 ones. The config migration in manifest.yaml copies saved
+      # configs into `credentials` and keeps the top-level fields, so the check against 1.3.12, the version
+      # published before this one (#94046), is waived.
       - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
-          disable_for_version: 0.2.0
+          disable_for_version: "1.3.12"
   connection:
     tests:
       - config_path: "secrets/config.json"
