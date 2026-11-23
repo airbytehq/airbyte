@@ -723,13 +723,21 @@ jobs:
         run: echo "::notice::Immediate release requested for ${CONNECTOR}, but progressive rollout is not enabled; metadata.yaml remains unchanged."
 
       # --- Registry artifact generation and publishing ---
+      - name: Authenticate to Google Cloud
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.dry-run != 'true'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_SERVICE_ACCOUNT }}
+
       - name: Generate Registry Artifacts
         id: generate-registry-artifacts
         if: >
           steps.check-release-block.outputs.blocked != 'true'
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
@@ -771,7 +779,6 @@ jobs:
           steps.generate-registry-artifacts.outcome == 'success'
         shell: bash
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           STEP_RESOLVE_DOCKER_IMAGE_TAG_DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
@@ -861,6 +868,9 @@ jobs:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
     if: needs.publish_options.outputs.dry-run != 'true'
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
       pr: ${{ inputs.pr }}
