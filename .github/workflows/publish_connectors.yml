@@ -80,6 +80,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
   # `production` for real publishes (master push, or a `none`/`rc` release that is not a dry run);
@@ -109,6 +112,9 @@ jobs:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+      - name: Resolve connector source commit
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" | tee -a "$GITHUB_OUTPUT"
       - name: List connectors to publish [manual]
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch'
@@ -211,20 +217,22 @@ jobs:
           REGISTRY_REFRESH_ONLY: ${{ inputs.registry-refresh-only || 'false' }}
         run: |
           set -euo pipefail
-          # Production PyPI uploads run in the master-restricted environment
-          # that each connector package's PyPI Trusted Publisher requires.
+          # Production uploads use separate master-restricted environments.
           publish_pypi=false
           pypi_environment=""
+          dockerhub_environment=""
           if [[ "$GITHUB_REF" == "refs/heads/master" && "$SEMVER_SUFFIX" == "none" \
             && "$DRY_RUN" != "true" && "$REGISTRY_REFRESH_ONLY" != "true" ]]; then
             publish_pypi=true
             pypi_environment="PyPI Connector Publishing"
+            dockerhub_environment="DockerHub Connector Publishing"
           fi
           {
             printf "dry-run=%s\n" "$DRY_RUN"
             printf "registry-refresh-only=%s\n" "$REGISTRY_REFRESH_ONLY"
             printf "publish-pypi=%s\n" "$publish_pypi"
             printf "pypi-environment=%s\n" "$pypi_environment"
+            printf "dockerhub-environment=%s\n" "$dockerhub_environment"
           } | tee -a "$GITHUB_OUTPUT"
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
@@ -241,10 +249,15 @@ jobs:
       connector-count: ${{ steps.count-connectors.outputs.connector-count }}
       publish-pypi: ${{ steps.resolve-vars.outputs.publish-pypi }}
       pypi-environment: ${{ steps.resolve-vars.outputs.pypi-environment }}
+      dockerhub-environment: ${{ steps.resolve-vars.outputs.dockerhub-environment }}
+      source-sha: ${{ steps.source.outputs.sha }}
   publish_connectors:
     name: Publish connectors
-    needs: [publish_options]
-    if: needs.publish_options.outputs.connector-count != '0'
+    needs: [publish_options, publish_connector_images]
+    if: >-
+      !cancelled() &&
+      needs.publish_options.result == 'success' &&
+      needs.publish_options.outputs.connector-count != '0'
     runs-on: ubuntu-24.04
     environment: ${{ needs.publish_options.outputs.pypi-environment }}
     permissions:
@@ -256,10 +269,31 @@ jobs:
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
-    outputs:
-      docker-image-tag: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
     steps:
-      - name: Authenticate as GitHub App
+      - &checkout-connector-source
+        name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ needs.publish_options.outputs.source-sha }}
+          fetch-depth: 2
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      # A matrix dependency reports one aggregate result. Check the matching row so
+      # a failed image cannot publish metadata or block other successful rows.
+      - name: Download connector image result
+        if: &require-image-result >-
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: connector-image-result-${{ matrix.connector }}
+
+      - name: Require successful connector image build
+        if: *require-image-result
+        run: test "$(cat connector-image-result.txt)" = success
+
+      - &authenticate-as-github-app
+        name: Authenticate as GitHub App
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
@@ -269,39 +303,16 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
 
-      - name: Checkout Airbyte
-        # v4
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ inputs.gitref || '' }}
-          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-
-      - name: Create docker buildx builder
-        id: create-buildx-builder
-        shell: bash
-        run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
-
-      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+      - &setup-java
+        name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      - name: Get Docker Hub OIDC token
-        id: docker-hub-oidc
-        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
-        with:
-          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
-          expires-in: 21600
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
-        with:
-          username: airbyte
-          password: ${{ steps.docker-hub-oidc.outputs.token }}
-
-      - name: Set up Python
+      - &setup-python
+        name: Set up Python
         # v5
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -309,25 +320,29 @@ jobs:
           check-latest: true
           update-environment: true
 
-      - name: Install the latest version of uv
+      - &setup-uv
+        name: Install the latest version of uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: Install Poetry
+      - &install-poetry
+        name: Install Poetry
         # There are a few uses of `poetry run --directory` in various scripts.
         # If we upgrade to 2.x, those need to be switched to `--project`.
         run: uv tool install poetry==1.8.5
 
-      - name: Install Poe and Ops CLI
+      - &install-poe-and-ops
+        name: Install Poe and Ops CLI
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
           # Install the ops CLI for version resolution:
           uv tool install airbyte-internal-ops
 
-      - name: Get connector metadata
+      - &connector-metadata
+        name: Get connector metadata
         id: connector-metadata
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
@@ -335,7 +350,8 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
 
-      - name: Resolve ephemeral version tag (preview)
+      - &resolve-preview-version
+        name: Resolve ephemeral version tag (preview)
         id: resolve-ephemeral-version
         if: needs.publish_options.outputs.with-semver-suffix == 'preview'
         env:
@@ -349,7 +365,8 @@ jobs:
           )
           echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
 
-      - name: Resolve ephemeral version tag (rc)
+      - &resolve-rc-version
+        name: Resolve ephemeral version tag (rc)
         id: resolve-ephemeral-version-rc
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
         env:
@@ -363,7 +380,8 @@ jobs:
           )
           echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
 
-      - name: Resolve connector version tag
+      - &resolve-connector-version
+        name: Resolve connector version tag
         id: resolve-version
         env:
           CONNECTOR_VERSION_TAG: ${{
@@ -415,7 +433,8 @@ jobs:
       # build and publish steps with a WARNING. Other connectors in the
       # same matrix run are unaffected.
       # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
-      - name: Check for release block
+      - &check-release-block
+        name: Check for release block
         id: check-release-block
         if: needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
@@ -477,21 +496,6 @@ jobs:
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
           PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
-
-      - name: Build and publish JVM connectors images
-        id: build-and-publish-JVM-connectors-images
-        if: >
-          steps.check-release-block.outputs.blocked != 'true' &&
-          steps.connector-metadata.outputs.connector-language == 'java' &&
-          needs.publish_options.outputs.dry-run != 'true' &&
-          needs.publish_options.outputs.registry-refresh-only != 'true'
-        shell: bash
-        env:
-          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
-          MATRIX_CONNECTOR: ${{ matrix.connector }}
-          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
-        run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" --publish
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
@@ -611,14 +615,14 @@ jobs:
           ./gradlew -DciMode=true -PconnectorJarVersion="${JAR_VERSION}"
           ":airbyte-integrations:connectors:${CONNECTOR}:connectorFatJar"
 
-      - name: Build and publish Python and Manifest-Only connectors images
-        id: build-and-publish-python-manifest-only-connectors-images
+      - name: "[DRY-RUN] Build Python and manifest-only connector images"
         if: >
           steps.check-release-block.outputs.blocked != 'true' &&
           steps.connector-metadata.outputs.connector-language != 'java' &&
+          needs.publish_options.outputs.dry-run == 'true' &&
           needs.publish_options.outputs.registry-refresh-only != 'true'
         uses: ./.github/actions/connector-image-build-push
-        with:
+        with: &connector-image-build-inputs
           connector-name: ${{ matrix.connector }}
           tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -863,6 +867,98 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
+    outputs:
+      docker-image-tag: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
+
+  publish_connector_images:
+    name: Publish connector images
+    needs: [publish_options]
+    if: >-
+      needs.publish_options.outputs.connector-count != '0' &&
+      needs.publish_options.outputs.dry-run != 'true' &&
+      needs.publish_options.outputs.registry-refresh-only != 'true'
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.publish_options.outputs.dockerhub-environment }}
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
+      max-parallel: 5
+      fail-fast: false
+    steps:
+      - *checkout-connector-source
+      - *authenticate-as-github-app
+      - *setup-java
+      - *setup-python
+      - *setup-uv
+      - *install-poetry
+      - *install-poe-and-ops
+      - *connector-metadata
+      - *resolve-preview-version
+      - *resolve-rc-version
+      - *resolve-connector-version
+      - *check-release-block
+
+      - name: Create JVM Docker Buildx builder
+        if: &publish-jvm-image >-
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java'
+        run: >
+          docker buildx create --use --driver=docker-container
+          --name builder --platform linux/amd64,linux/arm64
+
+      - name: Get Docker Hub OIDC token
+        if: *publish-jvm-image
+        id: docker-hub-oidc
+        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+        with:
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
+          expires-in: 21600
+
+      - name: Log in to Docker Hub
+        if: *publish-jvm-image
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          username: airbyte
+          password: ${{ steps.docker-hub-oidc.outputs.token }}
+
+      - name: Build and publish JVM connector images
+        if: *publish-jvm-image
+        shell: bash
+        env:
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
+        run: >
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh
+          --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" --publish
+
+      - name: Build and publish Python and manifest-only connector images
+        if: >-
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language != 'java'
+        uses: ./.github/actions/connector-image-build-push
+        with: *connector-image-build-inputs
+
+      - name: Record connector image result
+        if: '!cancelled()'
+        env:
+          IMAGE_RESULT: ${{ job.status }}
+        run: echo "$IMAGE_RESULT" > connector-image-result.txt
+
+      - name: Upload connector image result and JVM distribution
+        if: '!cancelled()'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: connector-image-result-${{ matrix.connector }}
+          path: |
+            connector-image-result.txt
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/distributions/airbyte-app.tar
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
@@ -879,8 +975,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - publish_connectors
+      - publish_connector_images
       - publish_options
-    if: ${{ always() && needs.publish_connectors.result == 'failure' }}
+    if: >-
+      always() &&
+      (needs.publish_connectors.result == 'failure' ||
+      needs.publish_connector_images.result == 'failure')
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
