@@ -105,7 +105,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
-| 0.4.5 | 2026-11-20 | [94025](https://github.com/airbytehq/airbyte/pull/94025) | Update base image to java-connector-base 2.0.5 |
+| 0.4.5 | 2026-11-20 | [94025](https://github.com/airbytehq/airbyte/pull/94025) | Update base image to java-connector-base 2.0.6 |
 | 0.4.4 | 2026-11-04 | [91018](https://github.com/airbytehq/airbyte/pull/91018) | Update Java CDK, Kafka/Confluent libraries and security dependencies. |
 | 0.4.3 | 2026-11-04 | [90996](https://github.com/airbytehq/airbyte/pull/90996) | Enable on Airbyte Cloud with TLS-only Kafka broker connections; avoid logging SASL credentials. |
 | 0.4.2 | 2025-07-10 | [62919](https://github.com/airbytehq/airbyte/pull/62919) | Convert to new gradle build flow |
