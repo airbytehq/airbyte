@@ -178,7 +178,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                   |
 |:-----------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 2.2.26 | 2026-11-20 | [94030](https://github.com/airbytehq/airbyte/pull/94030) | Update base image to java-connector-base 2.0.5. Keep the TLS cipher suites and handshake signature algorithms the connector accepted on the previous base, and log the negotiated TLS protocol and cipher suite. |
+| 2.2.26 | 2026-11-20 | [94030](https://github.com/airbytehq/airbyte/pull/94030) | Update base image to java-connector-base 2.0.6. Keep the TLS cipher suites and handshake signature algorithms the connector accepted on the previous base, and log the negotiated TLS protocol and cipher suite. |
 | 2.2.25 | 2026-11-16 | [93022](https://github.com/airbytehq/airbyte/pull/93022) | Upgrade to Bulk CDK 1.1.11: fix speed mode (SOCKET) syncs failing when records arrive before the stream finishes initializing. |
 | 2.2.24 | 2026-10-22 | [89656](https://github.com/airbytehq/airbyte/pull/89656) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; mssql-jdbc 12.10.2. |
 | 2.2.23 | 2026-10-01 | [87618](https://github.com/airbytehq/airbyte/pull/87618) | Upgrade to Bulk CDK 1.1.1. |
