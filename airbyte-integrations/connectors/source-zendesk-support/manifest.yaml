@@ -53,6 +53,13 @@ definitions:
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
+    # Zendesk Marketplace headers on the token refresh. The values are set in Airbyte Cloud only (see
+    # MarketplaceHeaders in components.py); a header that evaluates to None is not sent. `tojson` keeps the numeric
+    # ids strings: without the quotes it adds, interpolation turns "5102" into an integer and `requests` rejects it.
+    refresh_request_headers:
+      X-Zendesk-Marketplace-Name: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-Name'] | tojson if config.get('__marketplace_headers') else None }}"
+      X-Zendesk-Marketplace-Organization-Id: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-Organization-Id'] | tojson if config.get('__marketplace_headers') else None }}"
+      X-Zendesk-Marketplace-App-Id: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-App-Id'] | tojson if config.get('__marketplace_headers') else None }}"
     refresh_token_updater:
       refresh_token_name: refresh_token
       access_token_config_path:
@@ -80,6 +87,10 @@ definitions:
       type: HttpRequester
       url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
       http_method: GET
+      # Zendesk Marketplace headers on every data request. The mapping is set in Airbyte Cloud only (see
+      # MarketplaceHeaders in components.py) and is empty elsewhere. A requester that does not `$ref` this one
+      # (the article attachments `file_uploader` below) has to repeat the line.
+      request_headers: "{{ config.get('__marketplace_headers', {}) }}"
       authenticator:
         type: SelectiveAuthenticator
         authenticator_selection_path: ["credentials", "credentials"]
@@ -415,6 +426,8 @@ definitions:
         type: HttpRequester
         url_base: "{{download_target}}"
         http_method: GET
+        # This requester does not inherit from `#/definitions/retriever/requester`, so it repeats the headers.
+        request_headers: "{{ config.get('__marketplace_headers', {}) }}"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path: ["credentials", "credentials"]
@@ -1879,6 +1892,16 @@ spec:
         scopes:
           - scope: read
         access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
+        # Zendesk Marketplace headers on the authorization code exchange. The platform makes that request, not the
+        # connector, and the spec is the same in every edition, so self-managed deployments send them on this one
+        # request too. A non-empty `access_token_headers` replaces the platform's default headers, so `Content-Type`
+        # and `Accept` repeat them. The three Marketplace values must match MARKETPLACE_HEADERS in components.py.
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+          Accept: application/json
+          X-Zendesk-Marketplace-Name: Airbyte
+          X-Zendesk-Marketplace-Organization-Id: "5102"
+          X-Zendesk-Marketplace-App-Id: "1319815"
         extract_output:
           - access_token
           - refresh_token
@@ -1900,6 +1923,11 @@ spec:
                 value: "2"
                 value_type: integer
             condition: "{{ config.get('num_workers', 4) < 2 }}"
+    transformations:
+      # Not a migration: the result is derived on every run. It sets `__marketplace_headers` in Airbyte Cloud,
+      # which the requesters and the OAuth token refresh read, and removes it elsewhere.
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.MarketplaceHeaders
 
 schemas:
   article_attachments:

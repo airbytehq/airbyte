@@ -332,12 +332,10 @@ jobs:
         if: success() && steps.resolve-vars.outputs.action == 'rollback'
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_FAILURES }} # #connector-publish-failures
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
               "text": "↩️ Successfully rolled back RC for `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -345,12 +343,10 @@ jobs:
         if: success() && steps.resolve-vars.outputs.action == 'promote' && steps.resolve-vars.outputs.needs_pr == 'false'
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled (no PR needed):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -358,12 +354,10 @@ jobs:
         if: success() && steps.create-pr.outputs.pull-request-number
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -371,11 +365,9 @@ jobs:
         if: failure()
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_FAILURES }} # #connector-publish-failures
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
               "text": "🚨 Finalize rollout failed for `${{ steps.resolve-vars.outputs.connector_name }}` (${{ steps.resolve-vars.outputs.action }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }

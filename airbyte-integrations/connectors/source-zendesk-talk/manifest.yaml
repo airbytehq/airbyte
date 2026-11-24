@@ -486,6 +486,16 @@ definitions:
     authenticator:
       type: CustomAuthenticator
       class_name: source_declarative_manifest.components.ZendeskTalkAuthenticator
+      # Zendesk Marketplace headers that identify Airbyte's integration. In Airbyte Cloud the authenticator adds them
+      # to every request to Zendesk, including the OAuth token refresh. Self-managed deployments do not send them on
+      # these requests; the authorization code exchange in `advanced_auth` is the exception.
+      # https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/
+      # The Organization-Id and the App-Id come from the Zendesk Marketplace portal. Keep them quoted: `requests`
+      # rejects a header value that is not a string.
+      marketplace_headers:
+        X-Zendesk-Marketplace-Name: Airbyte
+        X-Zendesk-Marketplace-Organization-Id: "5102"
+        X-Zendesk-Marketplace-App-Id: "1319815"
       legacy_basic_auth:
         type: BasicHttpAuthenticator
         password: "{{ config['access_token'] }}"
@@ -789,6 +799,16 @@ spec:
         scopes:
           - scope: read
         access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
+        # Zendesk Marketplace headers on the authorization code exchange. The platform makes that request, not the
+        # connector, and the spec is the same in every edition, so self-managed deployments send them on this one
+        # request too. A non-empty `access_token_headers` replaces the platform's default headers, so `Content-Type`
+        # and `Accept` repeat them. The three Marketplace values must match `marketplace_headers` on the authenticator.
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+          Accept: application/json
+          X-Zendesk-Marketplace-Name: Airbyte
+          X-Zendesk-Marketplace-Organization-Id: "5102"
+          X-Zendesk-Marketplace-App-Id: "1319815"
         extract_output:
           - access_token
           - refresh_token
