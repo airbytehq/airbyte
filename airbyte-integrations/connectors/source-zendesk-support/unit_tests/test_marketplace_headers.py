@@ -2,7 +2,8 @@
 
 """
 In Airbyte Cloud every request to Zendesk carries the Zendesk Marketplace headers: data requests, article attachment
-downloads and the OAuth token refresh, for every authentication option. Outside Cloud none of them does.
+downloads and the OAuth token refresh, for every authentication option. Outside Cloud none of them does. The OAuth
+authorization code exchange, which the platform makes from the spec, carries them in every edition.
 """
 
 import copy
@@ -239,6 +240,25 @@ def test_every_oauth_authenticator_sends_the_marketplace_headers_on_refresh():
             name: "{{ config['__marketplace_headers']['" + name + "'] | tojson if config.get('__marketplace_headers') else None }}"
             for name in MARKETPLACE_HEADERS
         }
+
+
+@pytest.mark.parametrize("edition", ["CLOUD", *_NOT_CLOUD])
+def test_authorization_code_exchange_sends_the_marketplace_headers_in_every_edition(monkeypatch, edition):
+    """
+    The platform, not the connector, exchanges the authorization code for tokens, with the headers listed under
+    `access_token_headers` in the spec. The spec is the same in every edition. A non-empty `access_token_headers`
+    replaces the platform's default headers, so `Content-Type` and `Accept` must stay next to the Marketplace headers.
+    """
+    _set_edition(monkeypatch, edition)
+
+    spec = get_source(config=copy.deepcopy(_API_TOKEN_CONFIG)).spec(logging.getLogger("airbyte"))
+
+    oauth_input = spec.advanced_auth.oauth_config_specification.oauth_connector_input_specification
+    assert oauth_input.access_token_headers == {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        **MARKETPLACE_HEADERS,
+    }
 
 
 def test_marketplace_headers_are_the_three_zendesk_asks_for():
