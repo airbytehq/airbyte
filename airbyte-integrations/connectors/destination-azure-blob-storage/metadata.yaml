@@ -4,7 +4,7 @@ data:
     sl: 200
     requireVersionIncrementsInPullRequests: false
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.5@sha256:5235dec53f998568bf6644776efd76a2411bebb71a1e82b43c679888b23dbed3
+    baseImage: docker.io/airbyte/java-connector-base:2.0.6@sha256:9cee8a7a66b4a8240c0a33f9666c82704fded89b33bbe8fa462a3a2ade25f667
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
