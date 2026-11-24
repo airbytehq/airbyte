@@ -149,8 +149,8 @@ class TestTicketMetricsIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
         # The stateful ticket_metrics stream derives its `_ab_updated_at` cursor from the parent's
-        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent cursor
-        # serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
+        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent
+        # `updated_at` cursor serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
         state_dict = output.most_recent_state.stream_state.__dict__
 
         assert state_dict["lookback_window"] == 0
@@ -158,7 +158,44 @@ class TestTicketMetricsIncremental(TestCase):
         assert "_ab_updated_at" in state_dict["state"]
         assert len(state_dict["states"]) == 1
 
-        assert state_dict["parent_state"]["tickets"] == {"generated_timestamp": str(int(parent_cursor_value.timestamp()))}
+        assert state_dict["parent_state"]["tickets"] == {"updated_at": str(int(parent_cursor_value.timestamp()))}
+
+    @HttpMocker()
+    def test_given_5_x_parent_state_when_read_stateful_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker):
+        """`parent_state` written by 5.x carries the parent's old `generated_timestamp` cursor. The tickets
+        state migration also runs on it: rewound by one hour onto `updated_at`, so a ticket updated shortly
+        before the saved cursor is read again on the per-ticket path."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        previous = int(ab_datetime_now().subtract(timedelta(days=3)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "ticket_metrics",
+                {
+                    "use_global_cursor": False,
+                    "state": {"_ab_updated_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                },
+            )
+            .build()
+        )
+        ticket_updated_at = ab_datetime_parse(previous - 1800)
+        ticket = given_tickets_with_state(http_mocker, ticket_updated_at, ticket_updated_at, api_token_authenticator).build()
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
+            TicketMetricsResponseBuilder.stateful_ticket_metrics_response()
+            .with_record(TicketMetricsRecordBuilder.stateful_ticket_metrics_record().with_field(FieldPath("ticket_id"), ticket["id"]))
+            .build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+
+        assert len(output.errors) == 0
+        assert len(output.records) == 1
+        state_dict = output.most_recent_state.stream_state.__dict__
+        # The parent cursor moves on to the re-read ticket, which is newer than the migrated value.
+        assert state_dict["parent_state"]["tickets"] == {"updated_at": str(previous - 1800)}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -365,9 +402,7 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
         for ticket_builder in ticket_builders:
             tickets_response_builder = tickets_response_builder.with_record(ticket_builder)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN))
-            .with_start_time(int(state_cursor.timestamp()))
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN)).build(),
             tickets_response_builder.build(),
         )
 
