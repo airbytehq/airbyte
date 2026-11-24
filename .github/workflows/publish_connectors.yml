@@ -680,10 +680,12 @@ jobs:
           steps.check-release-block.outputs.blocked != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          DOCKER_IMAGE_TAG: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$FORCE_RELEASE_IMMEDIATELY" == "true" ]]; then
+          # Release candidates keep their progressive rollout even when forced.
+          if [[ "$FORCE_RELEASE_IMMEDIATELY" == "true" && "$DOCKER_IMAGE_TAG" != *-rc* ]]; then
             echo "::notice::FORCE_RELEASE_IMMEDIATELY is set; releasing immediately regardless of the PR checkbox."
             echo "checked=true" | tee -a "$GITHUB_OUTPUT"
             exit 0
