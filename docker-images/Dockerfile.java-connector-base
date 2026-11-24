@@ -35,9 +35,6 @@ RUN groupadd --gid 1000 airbyte && \
     done && \
     chown -R airbyte:airbyte /tmp
 
-# The arbitrary UID has no passwd entry, so nothing else sets HOME.
-ENV HOME=/home/airbyte
-
 # Set environment variables that the Java connector bootstrap script will expect
 ENV AIRBYTE_SPEC_CMD="/airbyte/javabase.sh --spec"
 ENV AIRBYTE_CHECK_CMD="/airbyte/javabase.sh --check"
@@ -54,4 +51,12 @@ ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f1016444
     /airbyte/javabase.sh
 
 RUN chown airbyte:0 /airbyte/base.sh /airbyte/javabase.sh && \
-    chmod 755 /airbyte/base.sh /airbyte/javabase.sh
+    chmod 755 /airbyte/base.sh /airbyte/javabase.sh && \
+    rm -rf /root/.cache /home/airbyte/.cache
+
+# The arbitrary UID has no passwd entry, so nothing else sets HOME.
+#
+# Keep this below the last RUN. When the amd64 image is built under emulation on Apple Silicon,
+# Rosetta creates $HOME/.cache/rosetta in every RUN step, as root. With HOME already set, that
+# directory lands in /home/airbyte and the connector user cannot write to ~/.cache.
+ENV HOME=/home/airbyte
