@@ -85,6 +85,9 @@ permissions:
 
 env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
+  # Temporary: rollout Autopilot and finalize are down, so every GA publish releases immediately.
+  # Set back to "false" once progressive rollouts can advance again.
+  FORCE_RELEASE_IMMEDIATELY: "true"
   # `production` for real publishes (master push, or a `none`/`rc` release that is not a dry run);
   # `gitops-prod` for prerelease and dry-run publishes.
   SENTRY_ENVIRONMENT: >-
@@ -680,6 +683,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "$FORCE_RELEASE_IMMEDIATELY" == "true" ]]; then
+            echo "::notice::FORCE_RELEASE_IMMEDIATELY is set; releasing immediately regardless of the PR checkbox."
+            echo "checked=true" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
           body_file="${RUNNER_TEMP}/merged-pr-body.md"
           gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].body // ""' > "$body_file" || {
             echo "::warning::Could not read the merged pull request body; using the safe default of progressive rollout enabled."
