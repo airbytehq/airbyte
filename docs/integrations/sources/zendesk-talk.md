@@ -117,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
-| 2.0.37 | 2026-11-16 | [93026](https://github.com/airbytehq/airbyte/pull/93026) | Airbyte Cloud: send the Zendesk Marketplace request headers on every request to Zendesk |
+| 2.0.37 | 2026-11-16 | [93026](https://github.com/airbytehq/airbyte/pull/93026) | Airbyte Cloud: send the Zendesk Marketplace request headers on every request to Zendesk. Self-managed Airbyte sends them only on the OAuth authorization code exchange from the setup form |
 | 2.0.36 | 2026-11-10 | [91795](https://github.com/airbytehq/airbyte/pull/91795) | Update dependencies |
 | 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
 | 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |

@@ -1,6 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Tests for the Zendesk Marketplace headers, which the connector sends on every request to Zendesk in Airbyte Cloud only."""
+"""
+Tests for the Zendesk Marketplace headers, which the connector sends on every request to Zendesk in Airbyte Cloud only.
+The OAuth authorization code exchange, which the platform makes from the spec, carries them in every edition.
+"""
 
 import logging
 from copy import deepcopy
@@ -165,3 +168,22 @@ def test_cloud_sends_the_headers_on_check_and_on_every_stream(monkeypatch: pytes
     assert len(requested_paths) >= len(stream_names) - 2, requested_paths
     for request in history:
         assert _marketplace_headers(request) == MARKETPLACE_HEADERS, request.url
+
+
+@pytest.mark.parametrize("edition", ["CLOUD", "COMMUNITY", "ENTERPRISE", "", None])
+def test_authorization_code_exchange_sends_the_headers_in_every_edition(monkeypatch: pytest.MonkeyPatch, edition: str | None) -> None:
+    """
+    The platform, not the connector, exchanges the authorization code for tokens, with the headers listed under
+    `access_token_headers` in the spec. The spec is the same in every edition. A non-empty `access_token_headers`
+    replaces the platform's default headers, so `Content-Type` and `Accept` must stay next to the Marketplace headers.
+    """
+    _set_edition(monkeypatch, edition)
+
+    spec = get_source(deepcopy(OAUTH_REFRESH_CONFIG)).spec(LOGGER)
+
+    oauth_input = spec.advanced_auth.oauth_config_specification.oauth_connector_input_specification
+    assert oauth_input.access_token_headers == {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        **MARKETPLACE_HEADERS,
+    }
