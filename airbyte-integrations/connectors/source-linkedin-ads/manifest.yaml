@@ -731,17 +731,16 @@ definitions:
             - type: ParentStreamConfig
               parent_key: content/media/id
               partition_field: video_urn
-              # The post URN keys each record to the post (and so to the creatives) it was resolved from.
-              extra_fields:
-                - - id
               stream:
                 $ref: "#/definitions/streams/videos_creative_posts"
       transformations:
+        # post_urn is the creative's content.reference the post was requested with (not the id the Posts API
+        # returns), so it always matches the creatives it joins to.
         - type: AddFields
           fields:
             - path:
                 - post_urn
-              value: "{{ stream_slice.extra_fields['id'] }}"
+              value: "{{ stream_slice.parent_slice.post_urn }}"
               value_type: string
       schema_loader:
         type: InlineSchemaLoader
@@ -3455,7 +3454,9 @@ schemas:
     title: "Videos"
     description: |
       Videos referenced by the sponsored accounts' ad creatives, including their duration and other media metadata.
-      One record per (video, referencing post): join to the creatives stream on post_urn = creative.content.reference.
+      One record per creative reference: a video is emitted once for each creative whose post embeds it, so several
+      creatives on the same post yield identical (id, post_urn) records. Join to the creatives stream on
+      post_urn = creative.content.reference, and deduplicate on (id, post_urn) for one row per video and post.
       For details: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
     additionalProperties: true
     properties:
@@ -3464,7 +3465,7 @@ schemas:
         type:
           - string
       post_urn:
-        description: URN of the post the video was resolved from (urn:li:share or urn:li:ugcPost), as referenced by creative.content.reference.
+        description: URN of the post the video was resolved from (urn:li:share or urn:li:ugcPost), exactly as referenced by creative.content.reference.
         type:
           - "null"
           - string

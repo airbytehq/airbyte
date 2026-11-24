@@ -228,11 +228,11 @@ The **Lead forms** and **Lead form responses** streams support Full Refresh sync
 
 ### Videos
 
-The **Videos** stream returns the videos referenced by each sponsored account's ad creatives, including the video `duration` (in milliseconds). For every creative, the connector resolves the sponsored-content post the creative references and then fetches the video that post embeds, so the stream covers the videos actually used in ads and can be joined with the **Creatives** stream through the creative's `content.reference`. It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering.
+The **Videos** stream returns the videos referenced by each sponsored account's ad creatives, including the video `duration` (in milliseconds). For every creative, the connector resolves the sponsored-content post the creative references and then fetches the video that post embeds, so the stream covers the videos actually used in ads. Each record carries `post_urn`, the post it was resolved from, so it can be joined with the **Creatives** stream on `post_urn` = the creative's `content.reference`. It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering.
 
 Keep in mind the following limitations:
 
-- A video used by several creatives or posts is emitted once per reference; deduplicate on the primary key `id` if you need one row per video.
+- A video used by several creatives or posts is emitted once per creative reference, so several creatives on the same post yield identical records. Deduplicate on (`id`, `post_urn`) for one row per video and post, or on `id` alone for one row per video (this drops all but one `post_urn`). The stream's primary key is `id`, so destinations in deduplication mode keep one `post_urn` per video.
 - Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
 - Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
 - Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
