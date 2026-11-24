@@ -79,7 +79,7 @@ For large or recurring event exports, PostHog recommends [batch exports](https:/
 
 ### PostHog event storage changes
 
-PostHog is changing how it stores events. The change starts at the end of November 2026. PostHog moves each organization separately and sends an email before it moves your organization. For details, see PostHog's [event storage changes](https://posthog.com/blog/changing-event-storage).
+PostHog is changing how it stores events. The change starts on November 30, 2026. PostHog moves each organization separately and sends an email before it moves your organization. For details, see PostHog's [event storage changes](https://posthog.com/blog/changing-event-storage).
 
 After PostHog moves your organization, the `events` stream changes as follows:
 
@@ -88,7 +88,7 @@ After PostHog moves your organization, the `events` stream changes as follows:
 - **Removed properties:** PostHog stops storing the feature flag payload properties, such as `$feature_flag_payloads`, and some other deprecated properties. Use the `$feature/<flag>` properties instead of `$active_feature_flags`.
 - **Changed values:** PostHog leaves out top-level `null` values and empty objects. Numbers in some built-in text properties, such as `$browser_version`, become text.
 
-These changes do not change the records that the connector already wrote to your destination. A refresh or a backfill after the move returns the data that PostHog still keeps. If you need this data, sync the `events` stream before PostHog moves your organization, and do not refresh the stream after the move. To export feature flag calls, use a PostHog [batch export](https://posthog.com/docs/data-pipelines/batch-exports) of `posthog.flag_evaluations`.
+These changes do not change the records that the connector already wrote to your destination. A refresh or a backfill after the move returns the data that PostHog still keeps. If you need this data, sync the `events` stream before PostHog moves your organization, and do not refresh the stream after the move. To export feature flag calls, use a PostHog [batch export](https://posthog.com/docs/data-pipelines/batch-exports) of `posthog.flag_evaluations`. This export uses the SQL query model, which is in closed beta. Ask PostHog support to turn it on for your organization.
 
 ### PostHog event retention
 
@@ -102,7 +102,7 @@ PostHog Cloud deletes events that are older than the retention period of your pl
 | Scale | 2 years | 5 years |
 | Enterprise | 2 years | 7 years |
 
-Organizations that had a paid plan before November 5, 2026 keep 7 years of events while they stay on the same plan. PostHog deletes expired events in batches, so an expired event can stay available for some time. Self-hosted instances do not have this retention. For details, see PostHog's [events retention](https://posthog.com/docs/data/events-retention) documentation.
+Organizations that had a paid plan before November 5, 2026 keep 7 years of events. They keep this retention when they move to a higher platform package. They lose it when they move to the Free plan or to a lower platform package. PostHog deletes expired events in batches, so an expired event can stay available for some time. Self-hosted instances do not have this retention. For details, see PostHog's [events retention](https://posthog.com/docs/data/events-retention) documentation.
 
 ### Rate limiting
 
