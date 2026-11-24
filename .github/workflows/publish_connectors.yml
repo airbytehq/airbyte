@@ -456,13 +456,40 @@ jobs:
         id: mint-pypi-token
         if: steps.resolve-vars.outputs.publish-pypi == 'true'
         shell: bash
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
           set -euo pipefail
-          audience=$(curl -fsS https://pypi.org/_/oidc/audience | jq -r '.audience')
+          package_name=$(yq eval '.data.remoteRegistries.pypi.packageName' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
+          response_file=$(mktemp)
+          trap 'rm -f "$response_file"' EXIT
+          endpoint=audience
+          status=unavailable
+          oidc_token=''
+          report_mint_failure() {
+            body=$(jq -c 'del(.token)' "$response_file" 2>/dev/null || cat "$response_file")
+            [[ -z "$oidc_token" ]] || body=${body//"$oidc_token"/[REDACTED]}
+            message="PyPI Trusted Publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}) at ${endpoint} (HTTP ${status}). Response: ${body}. Log in to PyPI, then check or register the Trusted Publisher in the package's Publishing settings, or for a new package at https://pypi.org/manage/account/publishing/ (pending publisher). Verify the current workflow filename and environment name, since both can change. Runbook: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
+            message=${message//'%'/'%25'}
+            message=${message//$'\r'/'%0D'}
+            message=${message//$'\n'/'%0A'}
+            printf '::error::%s\n' "$message"
+          }
+          trap report_mint_failure ERR
+          status=$(curl -sS -w '%{http_code}' -o "$response_file" https://pypi.org/_/oidc/audience)
+          [[ "$status" == 2?? ]]
+          audience=$(jq -er '.audience | select(type == "string" and length > 0)' "$response_file")
+          : > "$response_file"
+          endpoint='GitHub OIDC token request'
+          status=unavailable
           oidc_token=$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" | jq -r '.value')
-          pypi_token=$(jq -n --arg token "$oidc_token" '{token: $token}' \
-            | curl -fsS -X POST https://pypi.org/_/oidc/mint-token -d @- | jq -r '.token')
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" | jq -er '.value | select(type == "string" and length > 0)')
+          echo "::add-mask::${oidc_token}"
+          endpoint=mint-token
+          status=$(jq -n --arg token "$oidc_token" '{token: $token}' \
+            | curl -sS -w '%{http_code}' -o "$response_file" -X POST https://pypi.org/_/oidc/mint-token -d @-)
+          [[ "$status" == 2?? ]]
+          pypi_token=$(jq -er '.token | select(type == "string" and length > 0)' "$response_file")
           echo "::add-mask::${pypi_token}"
           echo "pypi-token=${pypi_token}" >> "$GITHUB_OUTPUT"
 
@@ -471,12 +498,30 @@ jobs:
         if: steps.resolve-vars.outputs.publish-pypi == 'true'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}"
+          set -o pipefail
+          ./poe-tasks/publish-python-registry.sh --name "${MATRIX_CONNECTOR}" --with-semver-suffix "${NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX}" 2>&1 | tee "$RUNNER_TEMP/pypi-publish.log"
         env:
           MATRIX_CONNECTOR: ${{ matrix.connector }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
           PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
+
+      - name: Report Python Registry publishing failure
+        if: failure() && steps.publish-python-registry.outcome == 'failure'
+        shell: bash
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          PYTHON_REGISTRY_TOKEN: ${{ steps.mint-pypi-token.outputs.pypi-token }}
+        run: |
+          package_name=$(yq eval '.data.remoteRegistries.pypi.packageName' "airbyte-integrations/connectors/${MATRIX_CONNECTOR}/metadata.yaml")
+          body=$(sed -n '/HTTP Error [0-9][0-9][0-9]:/p' "$RUNNER_TEMP/pypi-publish.log")
+          [[ -n "$body" ]] || body=$(sed '/^[[:space:]]*$/d' "$RUNNER_TEMP/pypi-publish.log" | tail -5)
+          [[ -z "$PYTHON_REGISTRY_TOKEN" ]] || body=${body//"$PYTHON_REGISTRY_TOKEN"/[REDACTED]}
+          message="PyPI publishing failed for connector ${MATRIX_CONNECTOR} (package ${package_name}). Response: ${body}. Check publisher settings: https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/pypi-trusted-publishing"
+          message=${message//'%'/'%25'}
+          message=${message//$'\r'/'%0D'}
+          message=${message//$'\n'/'%0A'}
+          printf '::error::%s\n' "$message"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
