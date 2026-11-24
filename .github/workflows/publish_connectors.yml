@@ -80,6 +80,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
   # `production` for real publishes (master push, or a `none`/`rc` release that is not a dry run);
@@ -259,16 +262,6 @@ jobs:
     outputs:
       docker-image-tag: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
     steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
-          repositories: ${{ github.event.repository.name }}
-          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
-
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -312,8 +305,7 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
-          # We pass a token with dedicated GH rate limit
-          github-token: ${{ steps.get-app-token.outputs.token }}
+          github-token: ${{ github.token }}
 
       - name: Install Poetry
         # There are a few uses of `poetry run --directory` in various scripts.
@@ -381,7 +373,7 @@ jobs:
           DO_NOT_TRACK: "1"
           # `airbyte-ops registry connector-version next` fetches metadata.yaml from
           # master via the GitHub API; without a token it hits the anonymous rate limit.
-          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           STEP_CONNECTOR_METADATA_CONNECTOR_VERSION: ${{ steps.connector-metadata.outputs.connector-version }}
           NEEDS_PUBLISH_OPTIONS_WITH_SEMVER_SUFFIX: ${{ needs.publish_options.outputs.with-semver-suffix }}
           MATRIX_CONNECTOR: ${{ matrix.connector }}
@@ -682,7 +674,7 @@ jobs:
           needs.publish_options.outputs.with-semver-suffix == 'none' &&
           steps.check-release-block.outputs.blocked != 'true'
         env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -881,16 +873,6 @@ jobs:
       - publish_options
     if: ${{ always() && needs.publish_connectors.result == 'failure' }}
     steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
-          repositories: ${{ github.event.repository.name }}
-          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
-
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -903,7 +885,7 @@ jobs:
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-          GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          GITHUB_API_TOKEN: ${{ github.token }}
       - name: Build notification context
         id: context
         env:
