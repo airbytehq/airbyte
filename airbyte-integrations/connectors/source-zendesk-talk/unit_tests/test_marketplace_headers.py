@@ -21,8 +21,8 @@ VOICE_API = "https://example.zendesk.com/api/v2/channels/voice"
 TOKEN_URL = "https://example.zendesk.com/oauth/tokens"
 MARKETPLACE_HEADERS = {
     "X-Zendesk-Marketplace-Name": "Airbyte",
-    "X-Zendesk-Marketplace-Organization-Id": "REPLACE_WITH_ZENDESK_MARKETPLACE_ORGANIZATION_ID",
-    "X-Zendesk-Marketplace-App-Id": "REPLACE_WITH_ZENDESK_MARKETPLACE_APP_ID",
+    "X-Zendesk-Marketplace-Organization-Id": "5102",
+    "X-Zendesk-Marketplace-App-Id": "1319815",
 }
 OAUTH_REFRESH_CONFIG = {
     "subdomain": "example",
