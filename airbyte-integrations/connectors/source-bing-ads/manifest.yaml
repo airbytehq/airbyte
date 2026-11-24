@@ -2590,13 +2590,10 @@ definitions:
           DownloadEntities: '{{ parameters["DownloadEntities"] }}'
           DownloadFileType: Csv
           FormatVersion: "'6.0'"
-          # Typically, you request a full download the first time you call the operation by setting this element to null.
-          # If you set a date and time that is more than 30 days ago, an error will be returned.
-          # ref: https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest#request-body
           LastSyncTimeInUTC: >-
             {%- set _start_date = stream_interval.get('start_time') -%}
-            {%- set min_available_date = format_datetime(now_utc() - duration('P30D'), '%Y-%m-%d') -%}
-            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and format_datetime(_start_date, '%Y-%m-%d') >= min_available_date else "" }}
+            {%- set min_available_datetime = now_utc() - duration('P30D') + duration('PT5M') -%}
+            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and str_to_datetime(_start_date) >= min_available_datetime else "" }}
           CompressionType: GZip
     transformations:
       - type: AddFields
@@ -2622,6 +2619,16 @@ definitions:
         failure_type: transient_error
         error_message_contains: "Signature not valid in the specified time frame"
         error_message: "Bing Ads file download URL is expired."
+
+  # Reporting faults arrive as HTTP 400 with the cause in OperationErrors[].Code. A filter matches when any one of
+  # http_codes, predicate or error_message_contains matches, so this one sets the predicate only.
+  # ref: https://learn.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
+  report_account_not_authorized_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    predicate: "{{ 2003 in ((response.get('OperationErrors') or []) | map(attribute='Code') | list) }}"
+    error_message: "The authenticated Bing Ads user lacks access to at least one account in the report request (error 2003, AccountNotAuthorized). Grant that user access to the account in Microsoft Advertising."
 
   # base retrievers
   basic_async_retriever:
@@ -2689,6 +2696,10 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - $ref: "#/definitions/report_account_not_authorized_filter"
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -6411,6 +6422,7 @@ dynamic_streams:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - $ref: "#/definitions/report_account_not_authorized_filter"
               - type: HttpResponseFilter
                 action: FAIL
                 failure_type: config_error

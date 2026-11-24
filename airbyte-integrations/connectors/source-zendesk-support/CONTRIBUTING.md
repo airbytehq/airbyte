@@ -57,6 +57,12 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
 
+## 8. Zendesk Marketplace Headers
+
+In Airbyte Cloud every request to Zendesk carries the Zendesk Marketplace headers (`X-Zendesk-Marketplace-Name`, `X-Zendesk-Marketplace-Organization-Id`, `X-Zendesk-Marketplace-App-Id`): data requests, article attachment downloads and the OAuth token refresh. `MarketplaceHeaders` in `components.py` puts them into `config['__marketplace_headers']` when `AIRBYTE_EDITION` is `CLOUD`, and the shared requester, the `file_uploader` requester and `oauth_refresh_authenticator` read them from there. Self-managed deployments send none, except on the OAuth authorization code exchange: the platform makes that request with `access_token_headers` from the spec, which is the same in every edition.
+
+**Why this matters:** a requester that does not `$ref` `#/definitions/retriever/requester` has to repeat the `request_headers` line, and a stream must not set its own `request_headers` next to the `$ref`, because that replaces the shared value. A unit test walks the resolved manifest and fails in both cases. The IDs are in `MARKETPLACE_HEADERS` and in `access_token_headers`; change them together.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

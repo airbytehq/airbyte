@@ -234,18 +234,9 @@ definitions:
     type: HttpRequester
     url_base: https://app.retently.com/api/v2/
     authenticator:
-      type: CustomAuthenticator
-      class_name: source_declarative_manifest.components.AuthenticatorRetently
-      api_auth:
-        type: ApiKeyAuthenticator
-        header: Authorization
-        api_token: api_key={{ config['credentials']['api_key']  }}
-      oauth:
-        type: OAuthAuthenticator
-        token_refresh_endpoint: https://app.retently.com/api/oauth/token
-        client_id: "{{ config['credentials']['client_id'] }}"
-        client_secret: "{{ config['credentials']['client_secret'] }}"
-        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+      type: ApiKeyAuthenticator
+      header: Authorization
+      api_token: api_key={{ config['credentials']['api_key'] }}
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
@@ -269,34 +260,6 @@ spec:
         description: Choose how to authenticate to Retently
         title: Authentication Mechanism
         oneOf:
-          - type: object
-            title: Authenticate via Retently (OAuth)
-            required:
-              - client_id
-              - client_secret
-              - refresh_token
-            additionalProperties: true
-            properties:
-              auth_type:
-                type: string
-                const: Client
-                order: 0
-              client_id:
-                type: string
-                description: The Client ID of your Retently developer application.
-                title: Client ID
-              client_secret:
-                type: string
-                description: The Client Secret of your Retently developer application.
-                title: Client Secret
-                airbyte_secret: true
-              refresh_token:
-                type: string
-                description: >-
-                  Retently Refresh Token which can be used to fetch new Bearer
-                  Tokens when the current one expires.
-                title: Refresh Token
-                airbyte_secret: true
           - type: object
             title: Authenticate with API Token
             required:

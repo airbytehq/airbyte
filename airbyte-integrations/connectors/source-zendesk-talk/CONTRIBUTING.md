@@ -6,6 +6,12 @@ Zendesk Talk's OAuth implementation issues single-use refresh tokens. Every time
 
 **Why this matters:** If a token refresh succeeds but the new refresh token fails to persist (e.g., due to a crash or network issue between the exchange and the config update), the connection becomes permanently broken and requires re-authentication. Standard OAuth connectors can retry with the same refresh token, but Zendesk Talk cannot.
 
+## 2. Zendesk Marketplace Headers
+
+In Airbyte Cloud every request to Zendesk carries the Zendesk Marketplace headers (`X-Zendesk-Marketplace-Name`, `X-Zendesk-Marketplace-Organization-Id`, `X-Zendesk-Marketplace-App-Id`): data requests and the OAuth token refresh. `ZendeskTalkAuthenticator` in `components.py` adds `marketplace_headers` from the authenticator in `definitions.base_requester` when `AIRBYTE_EDITION` is `CLOUD`. Self-managed deployments send none, except on the OAuth authorization code exchange: the platform makes that request with `access_token_headers` from the spec, which is the same in every edition.
+
+**Why this matters:** a stream must not set its own `authenticator` next to the `$ref` to `#/definitions/base_requester`, because the shared authenticator is what adds the headers. The IDs are in `marketplace_headers` and in `access_token_headers`; change them together.
+
 ## Incremental Stream Considerations
 
 The Zendesk Talk API supports incremental exports for high-volume call-related endpoints. The connector already uses `DatetimeBasedCursor` for `call_legs` and `calls` streams. The remaining FR parent streams are stats/overview endpoints and config lookups (addresses, greetings, IVR menus, etc.) that return aggregate data or small config sets without date-based filtering.

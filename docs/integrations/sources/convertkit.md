@@ -103,6 +103,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.3.8 | 2026-11-17 | [93129](https://github.com/airbytehq/airbyte/pull/93129) | Update dependencies |
 | 0.3.7 | 2026-11-10 | [91329](https://github.com/airbytehq/airbyte/pull/91329) | Upgrade to source-declarative-manifest base image 7.47.0. |
 | 0.3.6 | 2026-11-04 | [90942](https://github.com/airbytehq/airbyte/pull/90942) | Simplify purchases error handling without changing authentication errors or retries. |
 | 0.3.5 | 2026-10-13 | [78649](https://github.com/airbytehq/airbyte/pull/78649) | Update dependencies |

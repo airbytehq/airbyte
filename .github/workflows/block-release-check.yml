@@ -43,7 +43,7 @@ jobs:
         run: |
           # Get list of modified connector directories in this PR
           MODIFIED_CONNECTORS=$(
-            git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD" \
               | grep -oP '^airbyte-integrations/connectors/\K[^/]+' \
               | sort -u
           )

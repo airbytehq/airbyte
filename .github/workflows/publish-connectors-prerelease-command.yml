@@ -71,22 +71,26 @@ jobs:
 
       - name: Get job variables
         id: job-vars
+        env:
+          IN_PR: ${{ inputs.pr }}
         run: |
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID"
           # Append ?pr=N for "Back to pull request" link in GitHub Actions UI
-          if [[ -n "${{ inputs.pr }}" ]]; then
-            RUN_URL="${RUN_URL}?pr=${{ inputs.pr }}"
+          if [[ -n "${IN_PR}" ]]; then
+            RUN_URL="${RUN_URL}?pr=${IN_PR}"
           fi
           echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
-          echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
+          echo "pr-number=${IN_PR}" >> $GITHUB_OUTPUT
 
       - name: Resolve connector name
         id: resolve-connector
+        env:
+          IN_CONNECTOR: ${{ inputs.connector }}
         run: |
           set -euo pipefail
-          if [[ -n "${{ inputs.connector }}" ]]; then
-            echo "Connector explicitly provided: ${{ inputs.connector }}"
-            echo "connector-name=${{ inputs.connector }}" >> "$GITHUB_OUTPUT"
+          if [[ -n "${IN_CONNECTOR}" ]]; then
+            echo "Connector explicitly provided: ${IN_CONNECTOR}"
+            echo "connector-name=${IN_CONNECTOR}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -113,9 +117,11 @@ jobs:
 
       - name: Determine connector version
         id: connector-version
+        env:
+          STEP_RESOLVE_CONNECTOR_CONNECTOR_NAME: ${{ steps.resolve-connector.outputs.connector-name }}
         run: |
           set -euo pipefail
-          CONNECTOR_NAME="${{ steps.resolve-connector.outputs.connector-name }}"
+          CONNECTOR_NAME="${STEP_RESOLVE_CONNECTOR_CONNECTOR_NAME}"
           CONNECTOR_DIR="airbyte-integrations/connectors/$CONNECTOR_NAME"
           VERSION=""
           if [[ -f "$CONNECTOR_DIR/manifest.yaml" ]]; then
@@ -148,6 +154,11 @@ jobs:
   publish:
     name: Publish Pre-release
     needs: [init]
+    # Reusable-workflow callers must grant every permission the called jobs request.
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
     uses: ./.github/workflows/publish_connectors.yml
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
@@ -182,10 +193,13 @@ jobs:
       - name: Prepare message variables
         id: message-vars
         if: needs.publish.result == 'success'
+        env:
+          NEEDS_INIT_CONNECTOR_NAME: ${{ needs.init.outputs.connector-name }}
+          NEEDS_PUBLISH_DOCKER_IMAGE_TAG: ${{ needs.publish.outputs.docker-image-tag }}
         run: |
-          CONNECTOR_NAME="${{ needs.init.outputs.connector-name }}"
+          CONNECTOR_NAME="${NEEDS_INIT_CONNECTOR_NAME}"
           # Use the actual docker-image-tag from the publish workflow output
-          DOCKER_TAG="${{ needs.publish.outputs.docker-image-tag }}"
+          DOCKER_TAG="${NEEDS_PUBLISH_DOCKER_IMAGE_TAG}"
 
           if [[ -z "$DOCKER_TAG" ]]; then
             echo "::error::docker-image-tag output is missing from publish workflow. This is unexpected."

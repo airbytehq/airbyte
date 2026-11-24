@@ -58,17 +58,20 @@ jobs:
 
       - name: Resolve Vars
         id: vars
+        env:
+          IN_CONNECTOR: ${{ inputs.connector }}
+          EXPR_1: ${{ inputs.pr || github.event.pull_request.number }}
         run: |
           set -eu
           # Detect connector root directory:
-          CONNECTOR_ROOT="airbyte-integrations/connectors/${{ inputs.connector }}"
+          CONNECTOR_ROOT="airbyte-integrations/connectors/${IN_CONNECTOR}"
           echo "connector-root=$CONNECTOR_ROOT" | tee -a $GITHUB_OUTPUT
           cd $CONNECTOR_ROOT
           # Read connector language and base image:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
-          PR_NUMBER=${{ inputs.pr || github.event.pull_request.number }}
-          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
+          PR_NUMBER=${EXPR_1}
+          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${IN_CONNECTOR}:draft-pr-${PR_NUMBER}"
           echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
           echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
           echo "image-build-num-tag=${IMAGE_PR_NUM_TAG}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
@@ -91,8 +94,10 @@ jobs:
 
       - name: Build Connector Tarball
         if: ${{ steps.vars.outputs.connector-language == 'java' }}
+        env:
+          IN_CONNECTOR: ${{ inputs.connector }}
         run: |
-          ./gradlew :airbyte-integrations:connectors:${{ inputs.connector }}:distTar
+          ./gradlew ":airbyte-integrations:connectors:${IN_CONNECTOR}:distTar"
 
       - name: Log in to GHCR
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
@@ -120,10 +125,12 @@ jobs:
           push: true
 
       - name: Run `spec` Image Test
+        env:
+          STEP_VARS_IMAGE_BUILD_NUM_TAG: ${{ steps.vars.outputs.image-build-num-tag }}
         run: |
           docker run \
             --rm \
-            ${{ steps.vars.outputs.image-build-num-tag }} \
+            "${STEP_VARS_IMAGE_BUILD_NUM_TAG}" \
             spec
 
       - name: Run ${{ inputs.connector }} Image Vulnerability Scan

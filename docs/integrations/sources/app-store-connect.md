@@ -208,6 +208,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.11 | 2026-11-17 | [93063](https://github.com/airbytehq/airbyte/pull/93063) | Update dependencies |
 | 0.0.10 | 2026-11-11 | [91545](https://github.com/airbytehq/airbyte/pull/91545) | Request 200 records per page for apps and analytics report listings, and declare the analytics segment fields in the segments stream schemas |
 | 0.0.9 | 2026-11-10 | [91343](https://github.com/airbytehq/airbyte/pull/91343) | Update dependencies |
 | 0.0.8 | 2026-11-03 | [90446](https://github.com/airbytehq/airbyte/pull/90446) | Update dependencies |
