@@ -92,6 +92,21 @@ How it is built, and why:
 
 **Why this matters:** a new requester that is written out instead of `$ref`'d, or a custom component that makes its own HTTP call, silently sends no Marketplace headers. The IDs live in `MARKETPLACE_HEADERS` in `components.py` and again under `access_token_headers` in the spec, pinned by `test_marketplace_ids_are_the_ones_zendesk_assigned` and `test_authorization_code_exchange_sends_the_marketplace_headers_in_every_edition`; change both together. They are strings, because `requests` rejects a header value that is not `str`.
 
+## 9. The Spec Hides `API Token` and `OAuth2.0 (Legacy)` From the Setup Form, and Nothing Rejects Them
+
+Zendesk deactivates all API tokens on April 30, 2027, and the legacy OAuth option stores an access token that cannot be refreshed. So the `api_token` and `oauth2.0` options of `credentials` carry `airbyte_hidden: true` in `manifest.yaml`, and the setup form offers only `OAuth2.0 with Refresh Token`.
+
+How it is built, and why:
+
+1. **The flag is plain YAML and applies in every edition.** Cloud and self-managed Airbyte get the same spec. There is no edition check and no code in `components.py` for this. source-zendesk-talk hides the same two options the same way.
+2. **`airbyte_hidden` is a form hint only.** The options stay in the schema, so stored configs on a hidden option still validate and keep passing check, discover and read. The Airbyte API and Terraform are not affected. Do not add a validator that rejects the hidden options, and do not delete them from `oneOf`: either breaks existing sources.
+3. **`OAuth2.0 with Refresh Token` stays first in `oneOf`.** The form preselects the first option for a new source, so a hidden option in first place would be selected without being shown.
+4. **`advanced_auth.predicate_value` is `oauth2_refresh`**, the visible option, so the OAuth button stays tied to the only option the form shows.
+
+In the web form (the platform webapp's `ConditionSection.tsx`, read at its 2026-11-17 master, not exercised in a browser), a source whose stored option is hidden renders the `Authentication` field with no option selected and without the stored option's fields. Saving other settings keeps the stored credentials, because the form's validation schema is built from every `oneOf` option, hidden or not.
+
+**Why this matters:** `unit_tests/test_spec.py` pins the option order, the hidden set and that stored configs on each option still validate and read. When Zendesk has deactivated the tokens and no source uses these options, removing them from the schema is a breaking change and needs its own release.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
