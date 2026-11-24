@@ -13,7 +13,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 import pytest
 import requests_mock
 import yaml
-from components import MARKETPLACE_HEADERS, MARKETPLACE_HEADERS_CONFIG_KEY, MARKETPLACE_ID_PLACEHOLDER_PREFIX, MarketplaceHeaders
+from components import MARKETPLACE_HEADERS, MARKETPLACE_HEADERS_CONFIG_KEY, MarketplaceHeaders
 
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
@@ -236,7 +236,8 @@ def test_every_oauth_authenticator_sends_the_marketplace_headers_on_refresh():
     assert authenticators
     for authenticator in authenticators:
         assert authenticator.get("refresh_request_headers") == {
-            name: "{{ config.get('__marketplace_headers', {}).get('" + name + "') }}" for name in MARKETPLACE_HEADERS
+            name: "{{ config['__marketplace_headers']['" + name + "'] | tojson if config.get('__marketplace_headers') else None }}"
+            for name in MARKETPLACE_HEADERS
         }
 
 
@@ -251,14 +252,16 @@ def test_marketplace_headers_are_the_three_zendesk_asks_for():
     assert MARKETPLACE_HEADERS_CONFIG_KEY == "__marketplace_headers"
 
 
-def test_marketplace_ids_are_not_placeholders():
+def test_marketplace_ids_are_the_ones_zendesk_assigned():
     """
-    Fails on purpose until Zendesk has assigned the Marketplace Organization-Id and App-Id and both are filled in
-    in components.py. This version must not be released with the placeholders.
+    The Organization-Id is on the Organization page of the Zendesk Marketplace portal and the App-Id is on the
+    Airbyte app listing there. Zendesk attributes the traffic by these two values.
     """
-    placeholders = {name: value for name, value in MARKETPLACE_HEADERS.items() if value.startswith(MARKETPLACE_ID_PLACEHOLDER_PREFIX)}
-
-    assert not placeholders, f"Replace the placeholder Marketplace IDs in components.py before release: {placeholders}"
+    assert MARKETPLACE_HEADERS == {
+        "X-Zendesk-Marketplace-Name": "Airbyte",
+        "X-Zendesk-Marketplace-Organization-Id": "5102",
+        "X-Zendesk-Marketplace-App-Id": "1319815",
+    }
 
 
 def test_transformation_sets_only_the_marketplace_headers_in_cloud(monkeypatch):

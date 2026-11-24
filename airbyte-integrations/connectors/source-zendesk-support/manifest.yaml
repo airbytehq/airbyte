@@ -54,11 +54,12 @@ definitions:
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
     # Zendesk Marketplace headers on the token refresh. The values are set in Airbyte Cloud only (see
-    # MarketplaceHeaders in components.py); a header that evaluates to None is not sent.
+    # MarketplaceHeaders in components.py); a header that evaluates to None is not sent. `tojson` keeps the numeric
+    # ids strings: without the quotes it adds, interpolation turns "5102" into an integer and `requests` rejects it.
     refresh_request_headers:
-      X-Zendesk-Marketplace-Name: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-Name') }}"
-      X-Zendesk-Marketplace-Organization-Id: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-Organization-Id') }}"
-      X-Zendesk-Marketplace-App-Id: "{{ config.get('__marketplace_headers', {}).get('X-Zendesk-Marketplace-App-Id') }}"
+      X-Zendesk-Marketplace-Name: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-Name'] | tojson if config.get('__marketplace_headers') else None }}"
+      X-Zendesk-Marketplace-Organization-Id: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-Organization-Id'] | tojson if config.get('__marketplace_headers') else None }}"
+      X-Zendesk-Marketplace-App-Id: "{{ config['__marketplace_headers']['X-Zendesk-Marketplace-App-Id'] | tojson if config.get('__marketplace_headers') else None }}"
     refresh_token_updater:
       refresh_token_name: refresh_token
       access_token_config_path:

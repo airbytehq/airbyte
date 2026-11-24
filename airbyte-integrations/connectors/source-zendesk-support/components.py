@@ -15,14 +15,12 @@ from airbyte_cdk.sources.declarative.transformations.config_transformations.conf
 # Zendesk Marketplace identification headers, see
 # https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/
 #
-# BLOCKER: the Organization-Id and the App-Id below are placeholders. Zendesk assigns the real values in the
-# Marketplace portal, and they do not exist yet. Do not release this connector version until both are replaced;
-# `test_marketplace_ids_are_not_placeholders` fails until then.
-MARKETPLACE_ID_PLACEHOLDER_PREFIX = "PLACEHOLDER_"
+# The Organization-Id is the id of Airbyte's organization in the Zendesk Marketplace portal, and the App-Id is the
+# id of the Airbyte app listing there. Both are strings: `requests` rejects a header value that is not `str`.
 MARKETPLACE_HEADERS: Mapping[str, str] = {
     "X-Zendesk-Marketplace-Name": "Airbyte",
-    "X-Zendesk-Marketplace-Organization-Id": "PLACEHOLDER_MARKETPLACE_ORGANIZATION_ID",
-    "X-Zendesk-Marketplace-App-Id": "PLACEHOLDER_MARKETPLACE_APP_ID",
+    "X-Zendesk-Marketplace-Organization-Id": "5102",
+    "X-Zendesk-Marketplace-App-Id": "1319815",
 }
 
 # Config key the manifest reads the headers from. It is derived on every run and is not part of the spec.
