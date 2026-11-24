@@ -87,7 +87,7 @@ env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
   # Temporary: rollout Autopilot and finalize are down, so every GA publish releases immediately.
   # Set back to "false" once progressive rollouts can advance again.
-  FORCE_RELEASE_IMMEDIATELY: "true"
+  BYPASS_AUTO_PROGRESSIVE_ROLLOUTS: "true"
   # `production` for real publishes (master push, or a `none`/`rc` release that is not a dry run);
   # `gitops-prod` for prerelease and dry-run publishes.
   SENTRY_ENVIRONMENT: >-
@@ -685,8 +685,8 @@ jobs:
         run: |
           set -euo pipefail
           # Release candidates keep their progressive rollout even when forced.
-          if [[ "$FORCE_RELEASE_IMMEDIATELY" == "true" && "$DOCKER_IMAGE_TAG" != *-rc* ]]; then
-            echo "::notice::FORCE_RELEASE_IMMEDIATELY is set; releasing immediately regardless of the PR checkbox."
+          if [[ "$BYPASS_AUTO_PROGRESSIVE_ROLLOUTS" == "true" && "$DOCKER_IMAGE_TAG" != *-rc* ]]; then
+            echo "::notice::BYPASS_AUTO_PROGRESSIVE_ROLLOUTS is set; releasing immediately regardless of the PR checkbox."
             echo "checked=true" | tee -a "$GITHUB_OUTPUT"
             exit 0
           fi
