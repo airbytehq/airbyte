@@ -317,7 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.13.3 | 2026-11-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Docker image security bump |
+| 0.13.3 | 2026-11-25 | [94065](https://github.com/airbytehq/airbyte/pull/94065) | Docker image security bump |
 | 0.13.2 | 2026-11-17 | [93208](https://github.com/airbytehq/airbyte/pull/93208) | Update dependencies |
 | 0.13.1 | 2026-11-10 | [91589](https://github.com/airbytehq/airbyte/pull/91589) | Update dependencies |
 | 0.13.0 | 2026-10-30 | [90237](https://github.com/airbytehq/airbyte/pull/90237) | Declare the sections of the stepped setup form (Connect spreadsheet, Review & set up) in the spec; the CDK's section-aware CHECK runs the declared check for the first section |
