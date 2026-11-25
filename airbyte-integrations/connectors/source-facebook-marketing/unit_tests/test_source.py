@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
+    FailureType,
     Status,
     SyncMode,
 )
@@ -138,6 +139,46 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
+
+    def test_check_section_connection_of_the_account_section_runs_the_full_check(self, api_find_account, config, logger_mock, fb_marketing):
+        """The account section holds every field the connector validates, so its check reaches the ad account."""
+        section_config = {key: config[key] for key in ("account_ids", "credentials")}
+
+        ok, error_msg = fb_marketing.check_section_connection(logger_mock, "account", section_config)
+
+        assert ok
+        assert not error_msg
+        api_find_account.assert_called_once_with(config["account_ids"][0])
+
+    def test_check_section_connection_of_the_account_section_reports_api_errors(self, requests_mock, config, logger_mock, fb_marketing):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+            status_code=400,
+            json={"error": {"message": "Invalid OAuth access token.", "type": "OAuthException", "code": 190}},
+        )
+        section_config = {key: config[key] for key in ("account_ids", "credentials")}
+
+        ok, error_msg = fb_marketing.check_section_connection(logger_mock, "account", section_config)
+
+        assert not ok
+        assert error_msg.startswith("The access token for this connection is invalid or corrupted.")
+
+    def test_check_section_connection_of_the_account_section_validates_the_data_filters(self, api, config, logger_mock, fb_marketing):
+        section_config = {**config, "start_date": "2020-10-10T00:00:00Z", "end_date": "2019-10-10T00:00:00Z"}
+
+        ok, error_msg = fb_marketing.check_section_connection(logger_mock, "account", section_config)
+
+        assert not ok
+        assert error_msg == "End date must be equal or after start date."
+
+    def test_check_section_connection_of_an_unknown_section_is_a_config_error(self, api, config, logger_mock, fb_marketing):
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            fb_marketing.check_section_connection(logger_mock, "review", config)
+
+        assert exc_info.value.failure_type == FailureType.config_error
+        assert exc_info.value.message == "Section 'review' has no section check."
+        api.assert_not_called()
 
     def test_check_connection_exception(self, api, config, logger_mock, fb_marketing):
         api.side_effect = RuntimeError("Something went wrong!")
