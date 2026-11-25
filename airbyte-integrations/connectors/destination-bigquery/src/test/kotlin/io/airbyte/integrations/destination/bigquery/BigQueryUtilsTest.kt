@@ -3,12 +3,23 @@
  */
 package io.airbyte.integrations.destination.bigquery
 
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
+import com.google.cloud.bigquery.Schema
+import com.google.cloud.bigquery.TableId
+import com.google.cloud.bigquery.TableInfo
 import com.google.common.collect.ImmutableMap
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getDatasetId
 import io.airbyte.protocol.models.Jsons.jsonNode
+import io.mockk.every
+import io.mockk.mockk
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -56,6 +67,63 @@ class BigQueryUtilsTest {
             Assertions.assertThrows(IllegalArgumentException::class.java) { getDatasetId(config) }
 
         Assertions.assertEquals(expected, exception.message)
+    }
+
+    @Test
+    fun `InterruptedException wrapped in BigQueryException from getTable is caught and rethrown with message`() {
+        val interruptedException = InterruptedException("thread was interrupted")
+        val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
+        val bq: BigQuery = mockk { every { getTable(any<TableId>()) } throws bigQueryException }
+
+        val thrown =
+            assertThrows<RuntimeException> {
+                BigQueryUtils.createPartitionedTableIfNotExists(
+                    bq,
+                    TableId.of("dataset", "table"),
+                    Schema.of(),
+                )
+            }
+        assertEquals(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, thrown.message)
+        assertTrue(thrown.cause is BigQueryException)
+        assertTrue(thrown.cause?.cause is InterruptedException)
+    }
+
+    @Test
+    fun `InterruptedException wrapped in BigQueryException from create in createPartitionedTable is caught`() {
+        val interruptedException = InterruptedException("thread was interrupted")
+        val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
+        val bq: BigQuery = mockk {
+            every { getTable(any<TableId>()) } returns null
+            every { create(any<TableInfo>()) } throws bigQueryException
+        }
+
+        val thrown =
+            assertThrows<RuntimeException> {
+                BigQueryUtils.createPartitionedTableIfNotExists(
+                    bq,
+                    TableId.of("dataset", "table"),
+                    Schema.of(),
+                )
+            }
+        assertEquals(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, thrown.message)
+        assertTrue(thrown.cause is BigQueryException)
+        assertTrue(thrown.cause?.cause is InterruptedException)
+    }
+
+    @Test
+    fun `non-interrupt BigQueryException from getTable is rethrown as-is`() {
+        val bigQueryException = BigQueryException(500, "server error")
+        val bq: BigQuery = mockk { every { getTable(any<TableId>()) } throws bigQueryException }
+
+        val thrown =
+            assertThrows<BigQueryException> {
+                BigQueryUtils.createPartitionedTableIfNotExists(
+                    bq,
+                    TableId.of("dataset", "table"),
+                    Schema.of(),
+                )
+            }
+        assertEquals("server error", thrown.message)
     }
 
     companion object {
