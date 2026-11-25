@@ -2,8 +2,8 @@
 
 """Unit tests for the Hugging Face Datasets source connector."""
 
+import base64
 import importlib.util
-import io
 import json
 import logging
 from datetime import datetime
@@ -377,14 +377,27 @@ class TestRead:
 
     def test_read_reads_file_columns_as_bytes(self, source, config, logger):
         """Test that image and audio columns are read as file bytes, not as decoded objects."""
-        from PIL import Image
 
-        png_bytes = io.BytesIO()
-        Image.new("RGB", (2, 2)).save(png_bytes, format="PNG")
-        dataset = datasets.Dataset.from_dict(
-            {"image": [{"bytes": png_bytes.getvalue(), "path": "a.png"}]},
-            features=datasets.Features({"image": datasets.Image()}),
-        )
+        class _Dataset:
+            """Stand in for a loaded dataset, with only what a read touches.
+
+            A real dataset with an image column cannot be built here: encoding one needs Pillow,
+            which the connector does not depend on.
+            """
+
+            def __init__(self, records, features):
+                self.records = records
+                self.features = features
+                self.casts = []
+
+            def cast_column(self, column, feature):
+                self.casts.append((column, type(feature).__name__, feature.decode))
+                return self
+
+            def __iter__(self):
+                return iter(self.records)
+
+        dataset = _Dataset([{"image": {"bytes": b"png-bytes", "path": "a.png"}}], {"image": datasets.Image()})
 
         with (
             patch("datasets.get_dataset_config_names") as mock_get_configs,
@@ -398,8 +411,9 @@ class TestRead:
             messages = list(source.read(logger, config, make_catalog("squad__default__train")))
             record = next(m for m in messages if m.type == Type.RECORD).record.data
 
+            assert dataset.casts == [("image", "Image", False)]
             assert record["image"]["path"] == "a.png"
-            assert record["image"]["bytes"].startswith("iVBOR")  # the original PNG bytes, base64 encoded
+            assert base64.b64decode(record["image"]["bytes"]) == b"png-bytes"
 
 
 class TestRecordSerialization:
@@ -435,15 +449,22 @@ class TestRecordSerialization:
         assert converted == expected
         orjson.dumps(converted)  # must not raise
 
-    def test_to_json_safe_encodes_pil_images(self, source):
-        """Test that decoded images become base64 file bytes."""
-        from PIL import Image
+    def test_to_json_safe_encodes_decoded_images(self, source):
+        """Test that an image which was decoded anyway becomes base64 file bytes."""
 
-        image = Image.new("RGB", (2, 2))
-        converted = source._to_json_safe(image)
+        class _PILikeImage:
+            """A decoded image column is a PIL image: it has a size and saves itself."""
+
+            size = (2, 2)
+
+            def save(self, buffer, format=None):
+                buffer.write(b"png-bytes")
+
+        converted = source._to_json_safe(_PILikeImage())
 
         assert set(converted) == {"bytes", "path"}
-        assert converted["bytes"].startswith("iVBOR")  # base64 encoded PNG
+        assert base64.b64decode(converted["bytes"]) == b"png-bytes"
+        assert converted["path"] is None
 
     def test_records_of_a_full_sync_are_json_serializable(self, source, logger):
         """Test that the whole record pipeline survives orjson serialization, as the CDK does."""

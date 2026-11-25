@@ -305,7 +305,7 @@ class SourceHuggingFaceDatasets(Source):
             return self._to_json_safe(value.tolist())
         if hasattr(value, "save") and hasattr(value, "size"):  # PIL images that were not read as bytes
             buffer = io.BytesIO()
-            value.save(buffer, format=value.format or "PNG")
+            value.save(buffer, format=getattr(value, "format", None) or "PNG")
             return {"bytes": base64.b64encode(buffer.getvalue()).decode("ascii"), "path": getattr(value, "filename", None)}
         # Any other custom object: keep its string form rather than failing the whole sync.
         return str(value)
