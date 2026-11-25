@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 5.2.2
+  dockerImageTag: 5.2.3
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -23,7 +23,7 @@ data:
         - SOCKET
         - STDIO
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+    baseImage: docker.io/airbyte/java-connector-base:2.0.6@sha256:9cee8a7a66b4a8240c0a33f9666c82704fded89b33bbe8fa462a3a2ade25f667
   registryOverrides:
     cloud:
       enabled: true
