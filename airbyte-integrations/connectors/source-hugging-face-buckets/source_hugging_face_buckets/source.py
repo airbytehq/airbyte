@@ -2,10 +2,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import json
 import logging
+import math
 import time
 import traceback
+from datetime import date, datetime, timedelta
+from datetime import time as time_type
+from decimal import Decimal
 from typing import Any, Iterable, Iterator, Mapping, MutableMapping
 
 import pandas as pd
@@ -211,7 +216,7 @@ class SourceHuggingFaceBuckets(Source):
                     logger.error(traceback.format_exc())
                     yield stream_status_as_airbyte_message(airbyte_stream, AirbyteStreamStatus.INCOMPLETE)
                     raise AirbyteTracedException(
-                        message=f"Failed to read {stream_name}: {str(e)}", internal_message=str(e), failure_type=FailureType.read_error
+                        message=f"Failed to read {stream_name}: {str(e)}", internal_message=str(e), failure_type=FailureType.transient_error
                     )
 
                 logger.info(f"Read {record_count} records from {stream_name}")
@@ -263,16 +268,37 @@ class SourceHuggingFaceBuckets(Source):
 
                 # Yield DataFrame records
                 for _, row in df.iterrows():
-                    record = row.to_dict()
-                    # Handle NaN values
-                    for k, v in record.items():
-                        if pd.isna(v):
-                            record[k] = None
-                    yield record
+                    yield self._to_json_safe(row.to_dict())
 
         except Exception as e:
             logger.error(f"Failed to read hf://{file_path}: {str(e)}")
             raise
+
+    @staticmethod
+    def _to_json_safe(value: Any) -> Any:
+        """Convert a value read from a file into something the Airbyte protocol can serialize as JSON.
+
+        Pandas hands back numpy scalars and NaN, which are not valid JSON values.
+        """
+        if value is None or isinstance(value, (bool, int, str)):
+            return value
+        if isinstance(value, float):
+            return value if math.isfinite(value) else None
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            return base64.b64encode(bytes(value)).decode("ascii")
+        if isinstance(value, Mapping):
+            return {str(key): SourceHuggingFaceBuckets._to_json_safe(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple, set)):
+            return [SourceHuggingFaceBuckets._to_json_safe(item) for item in value]
+        if isinstance(value, (datetime, date, time_type, timedelta)):
+            return value.isoformat()
+        if isinstance(value, Decimal):
+            return float(value)
+        if hasattr(value, "tolist"):  # numpy scalars and arrays
+            return SourceHuggingFaceBuckets._to_json_safe(value.tolist())
+        if pd.isna(value):
+            return None
+        return str(value)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Discover available streams (files) in the bucket."""
@@ -308,15 +334,10 @@ class SourceHuggingFaceBuckets(Source):
                         streams.append(AirbyteStream(name=stream_name, json_schema=schema, supported_sync_modes=[SyncMode.full_refresh]))
                     except Exception as e:
                         logger.warning(f"Failed to infer schema for {file_name}: {str(e)}")
-                        # Create a basic schema
                         streams.append(
                             AirbyteStream(
                                 name=stream_name,
-                                json_schema={
-                                    "$schema": "http://json-schema.org/draft-07/schema#",
-                                    "type": "object",
-                                    "properties": {"_airbyte_data": {"type": ["string", "null"]}},
-                                },
+                                json_schema=self._permissive_schema(),
                                 supported_sync_modes=[SyncMode.full_refresh],
                             )
                         )
@@ -365,17 +386,14 @@ class SourceHuggingFaceBuckets(Source):
                     return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties}
 
             else:
-                # For JSON/JSONL, return a generic schema
-                return {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "properties": {"_airbyte_data": {"type": ["string", "null"]}},
-                }
+                # The shape of JSON and JSONL files is only known per record, so any object is accepted.
+                return self._permissive_schema()
 
         except Exception as e:
             logger.warning(f"Failed to infer schema for {file_path}: {str(e)}")
-            return {
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "properties": {"_airbyte_data": {"type": ["string", "null"]}},
-            }
+            return self._permissive_schema()
+
+    @staticmethod
+    def _permissive_schema() -> dict:
+        """Schema of a file whose columns are not known upfront: any object is accepted."""
+        return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True}

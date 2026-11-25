@@ -1,24 +1,39 @@
-metadataSpecVersion: "1.2"
+metadataSpecVersion: "1.0"
 data:
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/hugging-face-buckets
+  allowedHosts:
+    hosts:
+      - huggingface.co
+      - "*.huggingface.co"
+      - hf.co
+      - "*.hf.co"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorType: destination
-  definitionId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-  dockerImageTag: "0.1.0"
+  definitionId: 65ce6d55-93a4-4eee-bca7-bacc12415713
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-hugging-face-buckets
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/hugging-face-buckets
+  externalDocumentationUrls:
+    - title: Hugging Face Buckets documentation
+      url: https://huggingface.co/docs/hub/storage-buckets
+      type: api_reference
   githubIssueLabel: destination-hugging-face-buckets
   icon: icon.svg
   license: ELv2
-  name: Hugging Face Buckets
+  name: Hugging Face - Buckets
   registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-destination-hugging-face-buckets
+  releaseDate: 2026-11-25
   releaseStage: alpha
   supportLevel: community
   tags:

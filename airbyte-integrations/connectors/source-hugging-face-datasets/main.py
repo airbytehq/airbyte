@@ -3,8 +3,8 @@
 
 """Entry point for the Hugging Face Datasets source connector."""
 
-from source_hugging_face_datasets.run import main
+from source_hugging_face_datasets.run import run
 
 
 if __name__ == "__main__":
-    main()
+    run()

@@ -1,24 +1,39 @@
-metadataSpecVersion: "1.2"
+metadataSpecVersion: "1.0"
 data:
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/hugging-face-datasets
+  allowedHosts:
+    hosts:
+      - huggingface.co
+      - "*.huggingface.co"
+      - hf.co
+      - "*.hf.co"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorType: destination
-  definitionId: d1c2d3e4-f5a6-7890-bcde-f12345678902
-  dockerImageTag: "0.1.0"
+  definitionId: 2a98d12a-e62e-4572-a9b8-0befb09c8eef
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-hugging-face-datasets
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/hugging-face-datasets
+  externalDocumentationUrls:
+    - title: Hugging Face Datasets documentation
+      url: https://huggingface.co/docs/datasets/
+      type: api_reference
   githubIssueLabel: destination-hugging-face-datasets
   icon: icon.svg
   license: ELv2
-  name: Hugging Face Datasets (Destination)
+  name: Hugging Face - Datasets
   registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-destination-hugging-face-datasets
+  releaseDate: 2026-11-25
   releaseStage: alpha
   supportLevel: community
   tags:
