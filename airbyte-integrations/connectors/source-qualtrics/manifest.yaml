@@ -1,0 +1,470 @@
+version: 7.49.0
+
+type: DeclarativeSource
+
+description: >-
+  Syncs the surveys of a Qualtrics brand, each survey's full definition and each survey's response
+  schema from the Qualtrics API v3.
+
+check:
+  type: CheckStream
+  stream_names:
+    - surveys
+
+definitions:
+  linked:
+    # Two ways in: a personal API token, or an OAuth client with the Client Credentials grant.
+    # Both are documented by Qualtrics; the OAuth token lasts one hour and is refreshed before that.
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        api_token:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['credentials']['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-API-TOKEN
+            inject_into: header
+        client_credentials:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url: "https://{{ config['datacenter'] }}.qualtrics.com/oauth2/token"
+            http_method: POST
+            authenticator:
+              type: BasicHttpAuthenticator
+              username: "{{ config['credentials']['client_id'] }}"
+              password: "{{ config['credentials']['client_secret'] }}"
+            request_body:
+              type: RequestBodyUrlEncodedForm
+              value:
+                grant_type: client_credentials
+                # Qualtrics grants only the scopes named here, never the client's full set.
+                scope: "{{ config['credentials'].get('scope') or 'read:surveys read:survey_responses' }}"
+            error_handler:
+              type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 400
+                    - 401
+                  action: FAIL
+                  failure_type: config_error
+                  error_message: >-
+                    Qualtrics rejected the client ID or client secret. Check both values in the Qualtrics
+                    OAuth Client Manager, that the client uses the Client Credentials grant, that it has
+                    the requested scopes, and that Datacenter ID matches the datacenter the client was
+                    created in.
+          session_token_path:
+            - access_token
+          expiration_duration: PT59M
+          request_authentication:
+            type: Bearer
+
+    request_headers:
+      Accept: application/json
+
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Qualtrics rejected the credentials for this request. Check the API token, or that the OAuth
+            client has the read:surveys and read:survey_responses scopes and that Datacenter ID matches
+            the datacenter the credentials belong to.
+
+    # Qualtrics returns the next page as a full URL in `result.nextPage` (null on the last page).
+    next_page_paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response.get('result', {}).get('nextPage') }}"
+        stop_condition: "{{ not response.get('result', {}).get('nextPage') }}"
+
+    elements_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - result
+          - elements
+
+    result_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - result
+
+    surveys_partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: "#/definitions/streams/surveys"
+          parent_key: id
+          partition_field: survey_id
+
+  streams:
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: "https://{{ config['datacenter'] }}.qualtrics.com/API/v3/surveys"
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/authenticator"
+          request_headers:
+            $ref: "#/definitions/linked/request_headers"
+          error_handler:
+            $ref: "#/definitions/linked/error_handler"
+        paginator:
+          $ref: "#/definitions/linked/next_page_paginator"
+        record_selector:
+          $ref: "#/definitions/linked/elements_selector"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+
+streams:
+  - $ref: "#/definitions/streams/surveys"
+
+  - type: DeclarativeStream
+    name: survey_details
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://{{ config['datacenter'] }}.qualtrics.com/API/v3/surveys/{{ stream_partition.survey_id }}"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/request_headers"
+        error_handler:
+          $ref: "#/definitions/linked/error_handler"
+      record_selector:
+        $ref: "#/definitions/linked/result_selector"
+      partition_router:
+        $ref: "#/definitions/linked/surveys_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/survey_details"
+
+  - type: DeclarativeStream
+    name: survey_response_schemas
+    primary_key:
+      - survey_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://{{ config['datacenter'] }}.qualtrics.com/API/v3/surveys/{{ stream_partition.survey_id }}/response-schema"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/request_headers"
+        error_handler:
+          $ref: "#/definitions/linked/error_handler"
+      record_selector:
+        $ref: "#/definitions/linked/result_selector"
+      partition_router:
+        $ref: "#/definitions/linked/surveys_partition_router"
+    transformations:
+      # The schema document does not name its survey; add the parent id so rows can be joined.
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - survey_id
+            value: "{{ stream_partition.survey_id }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/survey_response_schemas"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/qualtrics
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - datacenter
+      - credentials
+    properties:
+      datacenter:
+        type: string
+        title: Datacenter ID
+        description: >-
+          The Qualtrics datacenter that hosts your brand, for example yul1, iad1, fra1 or ca1. It is the
+          first part of your Qualtrics URL (https://<datacenter>.qualtrics.com) and is shown under
+          Account Settings > Qualtrics IDs.
+        examples:
+          - iad1
+          - fra1
+          - yul1
+        pattern: ^[a-z0-9-]+$
+        order: 0
+      credentials:
+        type: object
+        title: Authentication
+        order: 1
+        oneOf:
+          - type: object
+            title: OAuth Client Credentials
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: client_credentials
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: Client ID of an OAuth client created in Qualtrics with the Client Credentials grant.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: Client secret of that OAuth client.
+                airbyte_secret: true
+                order: 2
+              scope:
+                type: string
+                title: Scopes
+                description: >-
+                  Space-separated scopes to request. The client must have them. The default covers the
+                  three streams.
+                default: read:surveys read:survey_responses
+                order: 3
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+                order: 0
+              api_token:
+                type: string
+                title: API Token
+                description: Personal API token from Account Settings > Qualtrics IDs. Sent in the X-API-TOKEN header.
+                airbyte_secret: true
+                order: 1
+    additionalProperties: true
+
+schemas:
+  surveys:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      ownerId:
+        type:
+          - "null"
+          - string
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      isActive:
+        type:
+          - "null"
+          - boolean
+
+  survey_details:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      ownerId:
+        type:
+          - "null"
+          - string
+      organizationId:
+        type:
+          - "null"
+          - string
+      isActive:
+        type:
+          - "null"
+          - boolean
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModifiedDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      expiration:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          startDate:
+            type:
+              - "null"
+              - string
+          endDate:
+            type:
+              - "null"
+              - string
+      questions:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      exportColumnMap:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      blocks:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      flow:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      embeddedData:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      comments:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      loopAndMerge:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      responseCounts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          auditable:
+            type:
+              - "null"
+              - integer
+          generated:
+            type:
+              - "null"
+              - integer
+          deleted:
+            type:
+              - "null"
+              - integer
+
+  survey_response_schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      survey_id:
+        type: string
+      $schema:
+        type:
+          - "null"
+          - string
+      $id:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      required:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      properties:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
