@@ -10,6 +10,12 @@ This page contains the setup guide and reference information for the [Hugging Fa
 
 This source connector allows you to read data files (Parquet, CSV, JSON, JSONL) from Hugging Face Buckets (file storage on Hugging Face Hub). Hugging Face Buckets provide persistent object storage accessible via the `hf://` protocol.
 
+### Streams and records
+
+The connector lists the files of the configured path, at one level, and reads each of them as its own stream. A stream is named after its file, relative to the configured path, with the characters a stream name cannot hold folded into underscores, for example `train.parquet` becomes the stream `train_parquet`.
+
+The columns of a Parquet or CSV file give the schema of its stream. The shape of a JSON, JSONL or text file is only known once it is read, so the stream of such a file accepts any object. A file of an unknown extension is read as text, as a single `content` field.
+
 ## Prerequisites
 
 - A Hugging Face account with read access to the bucket

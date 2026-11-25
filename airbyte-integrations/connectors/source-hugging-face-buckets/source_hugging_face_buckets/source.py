@@ -6,6 +6,7 @@ import base64
 import json
 import logging
 import math
+import re
 import time
 import traceback
 from datetime import date, datetime, timedelta
@@ -15,6 +16,7 @@ from typing import Any, Iterable, Iterator, Mapping, MutableMapping
 
 import pandas as pd
 import pyarrow.parquet as pq
+import pyarrow.types as pa_types
 from huggingface_hub import HfFileSystem
 
 from airbyte_cdk.models import (
@@ -100,6 +102,43 @@ class SourceHuggingFaceBuckets(Source):
             supported_destination_sync_modes=[DestinationSyncMode.append, DestinationSyncMode.overwrite],
         )
 
+    @staticmethod
+    def _parse_reader_options(config: Mapping[str, Any]) -> dict:
+        """Read the extra reader options, which the UI holds as a JSON string."""
+        raw = config.get("reader_options") or "{}"
+        try:
+            options = json.loads(raw)
+        except json.JSONDecodeError:
+            logging.warning(f"Ignoring the reader options: {raw!r} is not valid JSON")
+            return {}
+        return options if isinstance(options, dict) else {}
+
+    @staticmethod
+    def _list_files(fs: HfFileSystem, bucket_path: str) -> list[str]:
+        """List the files of a bucket path, sorted and without the hidden ones."""
+        entries = fs.ls(bucket_path, detail=True)
+        files = [entry["name"] for entry in entries if entry.get("type") == "file" and not entry["name"].rsplit("/", 1)[-1].startswith(".")]
+        return sorted(files)
+
+    def _files_by_stream_name(self, fs: HfFileSystem, bucket_path: str) -> dict:
+        """Map the stream name of every file of the bucket to its path.
+
+        A stream is named after its file, relative to the configured path, because that is the part
+        of the path the user reads as the name of a file. Files are listed sorted, and discover names
+        them the same way, so a stream keeps its name from one sync to the next.
+        """
+        prefix = f"{bucket_path.rstrip('/')}/"
+        used: dict = {}
+        files_by_stream: dict = {}
+        for file_path in self._list_files(fs, bucket_path):
+            relative = file_path[len(prefix) :] if file_path.startswith(prefix) else file_path.rsplit("/", 1)[-1]
+            name = re.sub(r"[^a-zA-Z0-9_-]+", "_", relative)
+            used[name] = used.get(name, 0) + 1
+            if used[name] > 1:  # two file names can sanitize to the same stream name
+                name = f"{name}__{used[name]}"
+            files_by_stream[name] = file_path
+        return files_by_stream
+
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Test the connection by checking if we can list files in the bucket."""
         try:
@@ -136,13 +175,7 @@ class SourceHuggingFaceBuckets(Source):
             bucket_path = config.get("bucket_path", "")
             file_format = config.get("file_format", "parquet")
             token = config.get("token", None)
-            reader_options_raw = config.get("reader_options", "{}")
-
-            # Parse reader options
-            try:
-                reader_options = json.loads(reader_options_raw) if reader_options_raw else {}
-            except json.JSONDecodeError:
-                reader_options = {}
+            reader_options = self._parse_reader_options(config)
 
             # Get the configured streams
             if not catalog or not catalog.streams:
@@ -166,28 +199,14 @@ class SourceHuggingFaceBuckets(Source):
 
             fs = HfFileSystem(token=token)
 
-            # List all files in the bucket
-            files = fs.ls(bucket_path)
+            # The stream names are the ones discovery advertised, so the bucket is listed the same way
+            files_by_stream = self._files_by_stream_name(fs, bucket_path)
 
-            # Process only configured streams
-            for file_info in files:
-                if file_info["type"] != "file":
+            for stream_name, airbyte_stream in configured_streams.items():
+                file_path = files_by_stream.get(stream_name)
+                if file_path is None:
+                    logger.warning(f"Stream {stream_name} has no file in hf://{bucket_path}: skipping")
                     continue
-
-                file_name = file_info["name"].split("/")[-1]
-                file_path = file_info["name"]
-
-                # Skip hidden files
-                if file_name.startswith("."):
-                    continue
-
-                # Use the same stream name as discover
-                stream_name = f"{file_name}_{file_path.replace('/', '_').replace('.', '_')}"
-
-                if stream_name not in configured_streams:
-                    continue
-
-                airbyte_stream = configured_streams[stream_name]
 
                 logger.info(f"Reading stream: {stream_name} from hf://{file_path}")
 
@@ -202,7 +221,7 @@ class SourceHuggingFaceBuckets(Source):
                             record=AirbyteRecordMessage(
                                 stream=stream_name,
                                 data=record,
-                                emitted_at=int(time.time() * 1000),  # Use logger creation time
+                                emitted_at=int(time.time() * 1000),
                             ),
                         )
                         record_count += 1
@@ -316,31 +335,16 @@ class SourceHuggingFaceBuckets(Source):
                 bucket_path = bucket_path[:-1]
 
             fs = HfFileSystem(token=token)
+            reader_options = self._parse_reader_options(config)
 
-            # List all files in the bucket
-            files = fs.ls(bucket_path, detail=True)
-
-            streams = []
-            for file_info in files:
-                if file_info.get("type") == "file":
-                    file_path = file_info.get("name", "")
-                    # Extract filename without path
-                    file_name = file_path.split("/")[-1]
-                    stream_name = f"{file_name}_{file_path.replace('/', '_').replace('.', '_')}"
-
-                    # Infer schema from file
-                    try:
-                        schema = self._infer_schema(file_name, file_format, logger, fs)
-                        streams.append(AirbyteStream(name=stream_name, json_schema=schema, supported_sync_modes=[SyncMode.full_refresh]))
-                    except Exception as e:
-                        logger.warning(f"Failed to infer schema for {file_name}: {str(e)}")
-                        streams.append(
-                            AirbyteStream(
-                                name=stream_name,
-                                json_schema=self._permissive_schema(),
-                                supported_sync_modes=[SyncMode.full_refresh],
-                            )
-                        )
+            streams = [
+                AirbyteStream(
+                    name=stream_name,
+                    json_schema=self._infer_schema(file_path, file_format, reader_options, logger, fs),
+                    supported_sync_modes=[SyncMode.full_refresh],
+                )
+                for stream_name, file_path in self._files_by_stream_name(fs, bucket_path).items()
+            ]
 
             return AirbyteCatalog(streams=streams)
 
@@ -348,29 +352,17 @@ class SourceHuggingFaceBuckets(Source):
             logger.error(f"Failed to discover streams: {str(e)}")
             raise
 
-    def _infer_schema(self, file_path: str, file_format: str, logger: logging.Logger, fs: HfFileSystem) -> dict:
+    def _infer_schema(self, file_path: str, file_format: str, reader_options: dict, logger: logging.Logger, fs: HfFileSystem) -> dict:
         """Infer schema from a file."""
         try:
             if file_format == "parquet":
                 with fs.open(file_path, "rb") as f:
-                    schema = pq.read_schema(f)
-                    properties = {}
-                    for col in schema:
-                        dtype = str(schema.field(col).type)
-                        if "int" in dtype:
-                            properties[col] = {"type": ["integer", "null"]}
-                        elif "float" in dtype or "double" in dtype:
-                            properties[col] = {"type": ["number", "null"]}
-                        elif "bool" in dtype:
-                            properties[col] = {"type": ["boolean", "null"]}
-                        else:
-                            properties[col] = {"type": ["string", "null"]}
-
+                    properties = {field.name: self._json_schema_for(field.type) for field in pq.read_schema(f)}
                     return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties}
 
             elif file_format == "csv":
                 with fs.open(file_path, "rb") as f:
-                    df = pd.read_csv(f, nrows=10)
+                    df = pd.read_csv(f, nrows=10, **reader_options)
                     properties = {}
                     for col in df.columns:
                         dtype = str(df[col].dtype)
@@ -392,6 +384,22 @@ class SourceHuggingFaceBuckets(Source):
         except Exception as e:
             logger.warning(f"Failed to infer schema for {file_path}: {str(e)}")
             return self._permissive_schema()
+
+    @staticmethod
+    def _json_schema_for(arrow_type: Any) -> dict:
+        """Map the type of a Parquet column to the type its records hold once serialized."""
+        if pa_types.is_signed_integer(arrow_type) or pa_types.is_unsigned_integer(arrow_type):
+            return {"type": ["integer", "null"]}
+        if pa_types.is_floating(arrow_type) or pa_types.is_decimal(arrow_type):
+            return {"type": ["number", "null"]}
+        if pa_types.is_boolean(arrow_type):
+            return {"type": ["boolean", "null"]}
+        if pa_types.is_list(arrow_type) or pa_types.is_large_list(arrow_type) or pa_types.is_fixed_size_list(arrow_type):
+            return {"type": ["array", "null"], "items": {}}
+        if pa_types.is_struct(arrow_type) or pa_types.is_map(arrow_type):
+            return {"type": ["object", "null"]}
+        # Strings, dates, timestamps and binary data (base64 encoded) travel as strings.
+        return {"type": ["string", "null"]}
 
     @staticmethod
     def _permissive_schema() -> dict:
