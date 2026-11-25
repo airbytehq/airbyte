@@ -151,6 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.1.1 | 2026-11-25 | — | Republish the connector with the OAuth-only setup form and Zendesk Marketplace header updates |
 | 2.1.0 | 2026-11-16 | [93024](https://github.com/airbytehq/airbyte/pull/93024) | The setup form offers only OAuth 2.0 authentication. Sources that use an API token or legacy OAuth keep working. Re-authenticate API token sources with OAuth before April 30, 2027 |
 | 2.0.37 | 2026-11-16 | [93026](https://github.com/airbytehq/airbyte/pull/93026) | Airbyte Cloud: send the Zendesk Marketplace request headers on every request to Zendesk. Self-managed Airbyte sends them only on the OAuth authorization code exchange from the setup form |
 | 2.0.36 | 2026-11-10 | [91795](https://github.com/airbytehq/airbyte/pull/91795) | Update dependencies |
