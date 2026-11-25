@@ -603,8 +603,9 @@ spec:
       credentials:
         type: object
         description: >-
-          Zendesk allows three authentication methods. We recommend using `OAuth2.0`
-          for Airbyte Cloud users and `API token` for Airbyte Open Source users.
+          Authenticate with `OAuth2.0`. Sources that already use an API token or the
+          legacy OAuth option keep working. Zendesk deactivates all API tokens on April 30,
+          2027, so re-authenticate those sources with OAuth before then.
         title: Authentication
         order: 1
         oneOf:
@@ -654,8 +655,11 @@ spec:
                   rotating refresh tokens - each refresh will return a new refresh token and
                   invalidate the previous one.
                 airbyte_secret: true
+          # `airbyte_hidden` removes the option from the setup form only. It stays in the schema, so sources that
+          # already use it keep working. Zendesk deactivates all API tokens on April 30, 2027.
           - type: object
             title: API Token
+            airbyte_hidden: true
             required:
               - email
               - api_token
@@ -676,8 +680,10 @@ spec:
                   for more information.
                 title: API Token
                 airbyte_secret: true
+          # Hidden from the setup form as well: this option stores an access token with no refresh token.
           - type: object
             title: OAuth2.0 (Legacy)
+            airbyte_hidden: true
             required:
               - access_token
             additionalProperties: true
