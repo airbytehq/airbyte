@@ -38,6 +38,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -344,6 +346,232 @@ class PostgresSourceJdbcPartitionFactoryTest {
         // Last partition gets the remainder
         assertEquals(Ctid(18, 1), bounds[3].first)
         assertNull(bounds[3].second)
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // split(partition, numPartitions): CTID page ranges from an explicit count. The count no
+    // longer comes from the sampled rows, so it is not capped at table-sample-size (1024).
+    // ---------------------------------------------------------------------------------------
+
+    private fun snapshotStream(syncMode: ConfiguredSyncMode): Stream =
+        Stream(
+            id =
+                StreamIdentifier.from(
+                    StreamDescriptor().withNamespace("public").withName("events"),
+                ),
+            schema = setOf(idField),
+            configuredSyncMode = syncMode,
+            configuredPrimaryKey = listOf(idField),
+            configuredCursor = null,
+        )
+
+    /** A factory whose DB-backed collaborators are never called by the four-argument split. */
+    private fun splitFactory(): PostgresSourceJdbcPartitionFactory =
+        PostgresSourceJdbcPartitionFactory(
+            sharedState = mockk<DefaultJdbcSharedState>(relaxed = true),
+            selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
+            config = cdcConfig,
+            handler = mockk<CatalogValidationFailureHandler>(),
+            connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(),
+        )
+
+    private fun PostgresSourceJdbcPartitionFactory.snapshotState(): PostgresSourceJdbcStreamState =
+        streamState(streamFeedBootstrap(snapshotStream(ConfiguredSyncMode.FULL_REFRESH), null))
+
+    private fun ctidText(page: Long, tuple: Long): JsonNode =
+        Jsons.textNode(Ctid(page, tuple).toString())
+
+    @Test
+    fun `split cuts the page range into the requested count and keeps the filenode`() {
+        val factory = splitFactory()
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotPartition(
+                factory.selectQueryGenerator,
+                factory.snapshotState(),
+                lowerBound = null,
+                upperBound = null,
+                filenode = 777L,
+                isLowerBoundIncluded = true,
+            )
+
+        val partitions =
+            factory.split(unsplit, 4, relationSize = 32 * testBlockSize, blockSize = testBlockSize)
+
+        assertEquals(4, partitions.size)
+        val snapshots = partitions.map {
+            assertInstanceOf(PostgresSourceJdbcSplittableSnapshotPartition::class.java, it)
+        }
+        assertEquals(
+            listOf(ctidText(0, 0), ctidText(8, 1), ctidText(16, 1), ctidText(24, 1)),
+            snapshots.map { it.lowerBound },
+        )
+        assertEquals(
+            listOf(ctidText(8, 1), ctidText(16, 1), ctidText(24, 1), null),
+            snapshots.map { it.upperBound },
+        )
+        assertEquals(listOf(true, false, false, false), snapshots.map { it.isLowerBoundIncluded })
+        assertEquals(List(4) { 777L }, snapshots.map { it.filenode })
+    }
+
+    @Test
+    fun `split is not capped at the sample size`() {
+        val factory = splitFactory()
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotPartition(
+                factory.selectQueryGenerator,
+                factory.snapshotState(),
+                lowerBound = null,
+                upperBound = null,
+                filenode = 1L,
+                isLowerBoundIncluded = true,
+            )
+        // 4 TiB of 8 KiB pages, cut into 5000 ranges of 107 pages each.
+        val relationSize = 4L * 1024 * 1024 * 1024 * 1024
+
+        val partitions = factory.split(unsplit, 5000, relationSize, testBlockSize)
+
+        assertEquals(5000, partitions.size)
+        val snapshots = partitions.map { it as PostgresSourceJdbcSplittableSnapshotPartition }
+        assertEquals(ctidText(0, 0), snapshots.first().lowerBound)
+        assertNull(snapshots.last().upperBound)
+        // Consecutive ranges share their boundary.
+        snapshots.zipWithNext().forEach { (a, b) -> assertEquals(a.upperBound, b.lowerBound) }
+    }
+
+    @Test
+    fun `split resumes from the saved ctid lower bound`() {
+        val factory = splitFactory()
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotPartition(
+                factory.selectQueryGenerator,
+                factory.snapshotState(),
+                lowerBound = ctidText(100, 1),
+                upperBound = null,
+                filenode = 5L,
+                isLowerBoundIncluded = true,
+            )
+
+        val partitions =
+            factory.split(unsplit, 4, relationSize = 132 * testBlockSize, blockSize = testBlockSize)
+
+        val snapshots = partitions.map { it as PostgresSourceJdbcSplittableSnapshotPartition }
+        assertEquals(
+            listOf(ctidText(100, 1), ctidText(108, 1), ctidText(116, 1), ctidText(124, 1)),
+            snapshots.map { it.lowerBound },
+        )
+        assertEquals(
+            listOf(ctidText(108, 1), ctidText(116, 1), ctidText(124, 1), null),
+            snapshots.map { it.upperBound },
+        )
+        assertTrue(snapshots.first().isLowerBoundIncluded)
+    }
+
+    @Test
+    fun `split carries the cursor upper bound and filenode into every cursor partition`() {
+        val factory = splitFactory()
+        val cursorUpperBound = Jsons.numberNode(1000)
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+                factory.selectQueryGenerator,
+                factory.streamState(
+                    streamFeedBootstrap(snapshotStream(ConfiguredSyncMode.INCREMENTAL), null),
+                ),
+                lowerBound = null,
+                upperBound = null,
+                cursor = idField,
+                cursorUpperBound = cursorUpperBound,
+                filenode = 42L,
+                isLowerBoundIncluded = true,
+            )
+
+        val partitions =
+            factory.split(unsplit, 3, relationSize = 30 * testBlockSize, blockSize = testBlockSize)
+
+        assertEquals(3, partitions.size)
+        partitions.forEach {
+            val p =
+                assertInstanceOf(
+                    PostgresSourceJdbcSplittableSnapshotWithCursorPartition::class.java,
+                    it,
+                )
+            assertEquals(idField, p.cursor)
+            assertEquals(cursorUpperBound, p.cursorUpperBound)
+            assertEquals(42L, p.filenode)
+        }
+    }
+
+    @Test
+    fun `split carries the xmin upper bound and filenode into every xmin partition`() {
+        val factory = splitFactory()
+        val xminUpperBound = Jsons.numberNode(123456)
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotWithXminPartition(
+                factory.selectQueryGenerator,
+                factory.streamState(
+                    streamFeedBootstrap(snapshotStream(ConfiguredSyncMode.INCREMENTAL), null),
+                ),
+                lowerBound = null,
+                upperBound = null,
+                xminUpperBound = xminUpperBound,
+                filenode = 9L,
+                isLowerBoundIncluded = true,
+            )
+
+        val partitions =
+            factory.split(unsplit, 2, relationSize = 20 * testBlockSize, blockSize = testBlockSize)
+
+        assertEquals(2, partitions.size)
+        partitions.forEach {
+            val p =
+                assertInstanceOf(
+                    PostgresSourceJdbcSplittableSnapshotWithXminPartition::class.java,
+                    it,
+                )
+            assertEquals(xminUpperBound, p.cursorUpperBound)
+            assertEquals(9L, p.filenode)
+        }
+    }
+
+    @Test
+    fun `split with a count of one returns the partition unchanged without querying the database`() {
+        val factory = splitFactory()
+        val unsplit =
+            PostgresSourceJdbcSplittableSnapshotPartition(
+                factory.selectQueryGenerator,
+                factory.snapshotState(),
+                lowerBound = null,
+                upperBound = null,
+                filenode = 1L,
+                isLowerBoundIncluded = true,
+            )
+
+        // The strict connection factory mock would fail on any pg_relation_size or block_size
+        // query.
+        val partitions = factory.split(unsplit, 1)
+
+        assertEquals(1, partitions.size)
+        assertSame(unsplit, partitions.single())
+    }
+
+    @Test
+    fun `split leaves a cursor incremental partition unchanged`() {
+        val factory = splitFactory()
+        val unsplit =
+            PostgresSourceJdbcCursorIncrementalPartition(
+                factory.selectQueryGenerator,
+                factory.streamState(
+                    streamFeedBootstrap(snapshotStream(ConfiguredSyncMode.INCREMENTAL), null),
+                ),
+                cursor = idField,
+                cursorLowerBound = Jsons.numberNode(1),
+                isLowerBoundIncluded = false,
+                cursorUpperBound = Jsons.numberNode(10),
+            )
+
+        val partitions =
+            factory.split(unsplit, 8, relationSize = 80 * testBlockSize, blockSize = testBlockSize)
+
+        assertSame(unsplit, partitions.single())
     }
 
     // ---------------------------------------------------------------------------------------
