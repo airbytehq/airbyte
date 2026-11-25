@@ -75,7 +75,7 @@ Each sync pushes the records of a stream as a [config](https://huggingface.co/do
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-07-29 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Initial release |
+| 0.1.0 | 2026-11-25 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Initial release |
 
 </details>
 

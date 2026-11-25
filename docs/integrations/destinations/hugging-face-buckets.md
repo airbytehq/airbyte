@@ -63,7 +63,7 @@ Each sync rewrites the files of the selected streams: a stream is written to a s
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-07-29 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Initial release |
+| 0.1.0 | 2026-11-25 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Initial release |
 
 </details>
 
