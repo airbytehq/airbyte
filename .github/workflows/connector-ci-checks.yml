@@ -702,8 +702,8 @@ jobs:
   # connector whose version changes on master. A pin is therefore allowed, with a
   # warning annotation, when:
   #   - the connector version is unchanged, so merging publishes nothing; or
-  #   - the new version is a release candidate (`-rc.N`), so merging publishes it
-  #     through a progressive rollout to a small part of the fleet first.
+  #   - the new version is a semver prerelease (any `-` suffix, e.g. `-rc.N`,
+  #     `-dev.N`, `-hotfix.N`), so merging does not publish it as GA.
   # Otherwise the job fails, as merging would release the pin to every connection.
   #
   # Like 'connector-qa-checks', this job has no draft-PR guard, so that the
@@ -809,10 +809,10 @@ jobs:
 
           if [[ "${HEAD_VERSION}" == "${BASE_VERSION}" ]]; then
             echo "::warning ${annotation}::${CONNECTOR} is pinned to a Python CDK prerelease. Its version is unchanged, so merging this PR does not publish it. Replace the pin with a released CDK version before the next release of this connector."
-          elif [[ "${HEAD_VERSION}" == *-rc.* ]]; then
-            echo "::warning ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease. Merging this PR publishes this release candidate through a progressive rollout. Replace the pin with a released CDK version before the rollout is finalized, and do not check 'Release immediately' in the PR description, which would publish it to every connection at once."
+          elif [[ "${HEAD_VERSION}" == *-* ]]; then
+            echo "::warning ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease. Merging this PR publishes this prerelease version, not a GA version. Replace the pin with a released CDK version before the GA release, and do not check 'Release immediately' in the PR description, which would publish it to every connection at once."
           else
-            echo "::error ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease, and merging this PR would publish it to every connection at once. Replace the pin with a released CDK version, or bump to a release candidate with the /bump-progressive-rollout-version command."
+            echo "::error ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease, and merging this PR would publish it to every connection at once. Replace the pin with a released CDK version, or bump to a prerelease version (e.g. a release candidate with the /bump-progressive-rollout-version command)."
             exit 1
           fi
 
