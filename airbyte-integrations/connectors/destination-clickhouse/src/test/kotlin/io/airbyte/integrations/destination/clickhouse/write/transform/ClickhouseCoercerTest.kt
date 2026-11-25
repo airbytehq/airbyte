@@ -74,7 +74,7 @@ class ClickhouseCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -98,7 +98,7 @@ class ClickhouseCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -124,14 +124,14 @@ class ClickhouseCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
     @ParameterizedTest
     @MethodSource("validDates")
     fun `validate and coerces timestamps with timezones - valid values are left unchanged`(
-        value: Long
+        value: Long,
     ) {
         val timestamp = value.toAirbyteTimestampWithTimezoneValue()
         val input = Fixtures.mockCoercedValue(timestamp)
@@ -152,14 +152,14 @@ class ClickhouseCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
     @ParameterizedTest
     @MethodSource("validDates")
     fun `validate and coerces timestamps without timezones - valid values are left unchanged`(
-        value: Long
+        value: Long,
     ) {
         val timestamp = value.toAirbyteTimestampWithoutTimezoneValue()
         val input = Fixtures.mockCoercedValue(timestamp)
@@ -172,7 +172,7 @@ class ClickhouseCoercerTest {
     @ParameterizedTest
     @MethodSource("invalidDates")
     fun `validate and coerces timestamps without timezones - invalid values are nulled`(
-        value: Long
+        value: Long,
     ) {
         val timestamp = value.toAirbyteTimestampWithoutTimezoneValue()
         val input = Fixtures.mockCoercedValue(timestamp)
@@ -182,7 +182,7 @@ class ClickhouseCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -300,8 +300,8 @@ class ClickhouseCoercerTest {
                 Arguments.of(StringValue("this should just stay the same")),
                 Arguments.of(
                     ObjectValue(
-                        linkedMapOf("cat" to StringValue("dog"), "bird" to StringValue("dog"))
-                    )
+                        linkedMapOf("cat" to StringValue("dog"), "bird" to StringValue("dog")),
+                    ),
                 ),
                 Arguments.of(ArrayValue(listOf(StringValue("cat"), StringValue("dog")))),
                 Arguments.of(BooleanValue(true)),
@@ -323,12 +323,13 @@ class ClickhouseCoercerTest {
 
         fun Long.toAirbyteTimestampWithTimezoneValue() =
             TimestampWithTimezoneValue(
-                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX).atOffset(ZoneOffset.UTC)
+                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX)
+                    .atOffset(ZoneOffset.UTC),
             )
 
         fun Long.toAirbyteTimestampWithoutTimezoneValue() =
             TimestampWithoutTimezoneValue(
-                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX)
+                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX),
             )
 
         fun mockCoercedValue(value: AirbyteValue) =

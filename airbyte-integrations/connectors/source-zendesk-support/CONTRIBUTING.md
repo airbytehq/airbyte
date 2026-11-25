@@ -33,6 +33,42 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 **Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
 
+## 5. OAuth Completion Must Extract `expires_in` to Persist Token Expiry
+
+Zendesk OAuth uses **rotating, single-use refresh tokens** — each refresh returns a new refresh token and invalidates the previous one. The connector authenticates with `DeclarativeSingleUseRefreshTokenOauth2Authenticator` (via `refresh_token_updater`), which decides whether to refresh by comparing `credentials.token_expiry_date` against now. When that field is empty/absent, the CDK treats the token as already expired (`now - 1 day`) and refreshes on the very first `check`.
+
+Because of this, the `oauth_connector_input_specification.extract_output` list **must include `expires_in`**. The platform's declarative OAuth handler only converts the token response into a persisted `token_expiry_date` when `expires_in` is among the extracted fields. Without it, `token_expiry_date` is never written to the config, so every `check`/`discover`/`read` triggers an immediate refresh — consuming the freshly minted single-use refresh token and (in setup/check lifecycles that don't persist the rotated token) leaving the stored config holding an already-invalidated token, which fails with `invalid_grant`.
+
+The authorization-code exchange (`access_token_url`) **must also request `expires_in=172800` explicitly**. Per Zendesk's docs, passing `expires_in` on token creation is what causes a refresh token to be issued at all, so requesting it makes the field's presence in the response a guarantee rather than an assumption — `DeclarativeOAuthSpecHandler.processOAuthOutput` throws `Missing '<key>' field in the OAuth Output` for any `extract_output` field absent from the response. It also pins the access-token lifetime at 48h (matching `refresh_request_body.expires_in` in `oauth_refresh_authenticator`) instead of Zendesk's ~30-minute default for clients created on/after 2026-04-30, closing the setup-time window where a user takes longer than the token lifetime between authorizing and saving the source.
+
+**Why this matters:** Removing `expires_in` from `extract_output` (or from the `access_token_url` request) reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
+
+## 6. `num_workers` Minimum Is 2 — One Thread Leaves No Sibling to Beat the Heartbeat
+
+The `num_workers` spec field has `minimum: 2`, a config migration in `spec.config_normalization_rules` raises any stored value of `1` to `2`, and `concurrency_level.default_concurrency` clamps the interpolated value at 2. The clamp is needed because the CDK builds the concurrency level from the pre-migration config, so without it a stored `1` would still run one worker on the first sync after upgrading.
+
+With a single worker thread the concurrent framework runs one stream at a time, and `tickets` is a single unsliced partition against an endpoint capped at 10 requests per minute. The concurrent cursor only emits state when the partition closes, so nothing is emitted for the length of that walk — no records from a sibling stream, no state message — and the platform can cancel the attempt on the heartbeat timeout. Since the partition never closes, no cursor is saved and every retry repeats the same walk, so the connection stays wedged instead of making partial progress. A second thread lets another stream keep the heartbeat alive.
+
+**Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
+
+## 7. `ticket_audits_per_ticket` Reads Archived Tickets' Audits
+
+`ticket_audits` reads `GET /api/v2/ticket_audits`, which Zendesk documents as excluding archived tickets. The `ticket_audits_per_ticket` stream reads `GET /api/v2/tickets/{ticket_id}/audits.json` for each ticket the `tickets` incremental export returns, which includes archived tickets, at the cost of one request per created or updated ticket. It is always discovered but not listed in `suggestedStreams`, so users opt in by selecting it. It uses a global substream cursor on `_ab_updated_at` (the parent ticket's `generated_timestamp`), skips `403`/`404` per ticket, and, like the per-ticket `ticket_metrics` calls, has no `api_budget` policy: it relies on Zendesk's `429` responses and the `Retry-After` header.
+
+**Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
+
+## 8. Zendesk Marketplace Headers
+
+In Airbyte Cloud every request to Zendesk carries the Zendesk Marketplace headers (`X-Zendesk-Marketplace-Name`, `X-Zendesk-Marketplace-Organization-Id`, `X-Zendesk-Marketplace-App-Id`): data requests, article attachment downloads and the OAuth token refresh. `MarketplaceHeaders` in `components.py` puts them into `config['__marketplace_headers']` when `AIRBYTE_EDITION` is `CLOUD`, and the shared requester, the `file_uploader` requester and `oauth_refresh_authenticator` read them from there. Self-managed deployments send none, except on the OAuth authorization code exchange: the platform makes that request with `access_token_headers` from the spec, which is the same in every edition.
+
+**Why this matters:** a requester that does not `$ref` `#/definitions/retriever/requester` has to repeat the `request_headers` line, and a stream must not set its own `request_headers` next to the `$ref`, because that replaces the shared value. A unit test walks the resolved manifest and fails in both cases. The IDs are in `MARKETPLACE_HEADERS` and in `access_token_headers`; change them together.
+
+## 9. The Spec Hides `API Token` and `OAuth2.0 (Legacy)` From the Setup Form
+
+The `api_token` and `oauth2.0` options of `credentials` carry `airbyte_hidden: true` in `manifest.yaml`, so the setup form offers only `OAuth2.0 with Refresh Token`. This applies in every edition; there is no edition check and no code in `components.py` for it.
+
+**Why this matters:** hiding is a form hint. Do not delete the hidden options from `oneOf` and do not add a validator that rejects them: existing sources on a hidden option must keep passing check, discover and read. Keep `OAuth2.0 with Refresh Token` first in `oneOf`, because the form preselects the first option.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

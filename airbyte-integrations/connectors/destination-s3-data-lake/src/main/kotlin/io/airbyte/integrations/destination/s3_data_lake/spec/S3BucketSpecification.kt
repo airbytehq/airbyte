@@ -47,7 +47,7 @@ enum class S3BucketRegion(@get:JsonValue val region: String) {
     `us-gov-east-1`("us-gov-east-1"),
     `us-gov-west-1`("us-gov-west-1"),
     `us-west-1`("us-west-1"),
-    `us-west-2`("us-west-2")
+    `us-west-2`("us-west-2"),
 }
 
 /**
@@ -59,7 +59,7 @@ enum class S3BucketRegion(@get:JsonValue val region: String) {
 interface S3BucketSpecification {
     @get:JsonSchemaTitle("S3 Bucket Name")
     @get:JsonPropertyDescription(
-        "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>."
+        "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
     )
     @get:JsonProperty("s3_bucket_name")
     @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"]}""")
@@ -67,7 +67,7 @@ interface S3BucketSpecification {
 
     @get:JsonSchemaTitle("S3 Bucket Region")
     @get:JsonPropertyDescription(
-        "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes."
+        "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
     )
     @get:JsonProperty("s3_bucket_region", defaultValue = "")
     @get:JsonSchemaInject(json = """{"examples":["us-east-1"]}""")
@@ -75,7 +75,7 @@ interface S3BucketSpecification {
 
     @get:JsonSchemaTitle("S3 Endpoint")
     @get:JsonPropertyDescription(
-        "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>"
+        "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
     )
     @get:JsonProperty("s3_endpoint", defaultValue = "", required = false)
     @get:JsonSchemaInject(json = """{"examples":["http://localhost:9000"]}""")
@@ -89,7 +89,7 @@ interface S3BucketSpecification {
 data class S3BucketConfiguration(
     val s3BucketName: String,
     val s3BucketRegion: String?,
-    val s3Endpoint: String?
+    val s3Endpoint: String?,
 )
 
 interface S3BucketConfigurationProvider {

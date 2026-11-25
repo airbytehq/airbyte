@@ -44,7 +44,7 @@ class S3StreamingUpload(
                 CompletedPart {
                     this.partNumber = index
                     this.eTag = uploadResponse.eTag
-                }
+                },
             )
         } catch (e: Exception) {
             log.error(e) {

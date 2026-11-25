@@ -1,3 +1,9 @@
 {
-  "api_key": "1234567890abcdefghijk"
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "1234567890abcdefghijk",
+    "client_secret": "secret",
+    "refresh_token": "refresh-token"
+  },
+  "num_workers": 2
 }

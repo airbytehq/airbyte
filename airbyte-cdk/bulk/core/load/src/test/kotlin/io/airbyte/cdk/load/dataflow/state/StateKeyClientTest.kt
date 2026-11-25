@@ -51,7 +51,7 @@ class StateKeyClientTest {
             listOf(
                 PartitionKey("partition-1"),
                 PartitionKey("partition-2"),
-                PartitionKey("partition-3")
+                PartitionKey("partition-3"),
             )
         assertEquals(StateKey(42L, expectedPartitions), result)
     }
@@ -145,7 +145,7 @@ class StateKeyClientTest {
         // Then
         assertEquals(
             StateKey(1L, listOf(PartitionKey("namespace-users-1"), PartitionKey("products-1"))),
-            result
+            result,
         )
     }
 
@@ -162,7 +162,7 @@ class StateKeyClientTest {
         // Then
         assertEquals(
             StateKey(1L, listOf(PartitionKey("namespace-users-1"), PartitionKey("products-1"))),
-            result
+            result,
         )
     }
 
@@ -188,11 +188,11 @@ class StateKeyClientTest {
         assertEquals(PartitionKey("namespace-users-1"), partitionKey1) // Initial value
         assertEquals(
             StateKey(1L, listOf(PartitionKey("namespace-users-1"))),
-            stateKey1
+            stateKey1,
         ) // Uses counter 1, then increments
         assertEquals(
             PartitionKey("namespace-users-2"),
-            partitionKey2
+            partitionKey2,
         ) // Current value after increment
     }
 

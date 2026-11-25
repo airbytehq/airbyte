@@ -4,12 +4,25 @@ plugins {
 
 repositories {
     // Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-    gradlePluginPortal()
+    // buildSrc is a separate build that resolves before the root build, so it needs its own mirror
+    // indirection. It inherits -P and ORG_GRADLE_PROJECT_* overrides but NOT the root
+    // gradle.properties, hence the fallback to the plugin portal shorthand.
+    def pluginPortalUrl = findProperty('airbyte.dependencies.maven.gradlePluginPortal')?.toString()?.trim()
+    if (pluginPortalUrl) {
+        maven {
+            name 'gradle-plugin-portal'
+            url pluginPortalUrl
+        }
+    } else {
+        gradlePluginPortal()
+    }
 }
 
 dependencies {
     // Note this dependency version needs to line up with the generateJsonSchema2Pojo plugin used in the project.
     implementation 'org.yaml:snakeyaml:1.33'
+    // ShadowJar for the connector fat jar (airbyte-connector-fat-jar). The 8.3 line supports Gradle 8; 9.x needs Gradle 9.
+    implementation 'com.gradleup.shadow:shadow-gradle-plugin:8.3.9'
 }
 
 tasks.withType(Jar).configureEach {

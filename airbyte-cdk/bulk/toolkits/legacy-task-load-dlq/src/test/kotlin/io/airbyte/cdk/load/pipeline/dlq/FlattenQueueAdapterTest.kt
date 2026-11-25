@@ -43,7 +43,7 @@ class FlattenQueueAdapterTest {
 
         override suspend fun publish(
             value: PipelineEvent<StreamKey, DestinationRecordRaw>,
-            partition: Int
+            partition: Int,
         ) {
             published.add(value)
         }
@@ -90,7 +90,7 @@ class FlattenQueueAdapterTest {
                     postProcessingCallback = null,
                     context = pipelineContext,
                 ),
-                0
+                0,
             )
         }
 
@@ -153,8 +153,8 @@ class FlattenQueueAdapterTest {
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
-                            AirbyteRecordMessage().withData(Jsons.deserialize("""{"id":"$id"}"""))
-                        )
+                            AirbyteRecordMessage().withData(Jsons.deserialize("""{"id":"$id"}""")),
+                        ),
                 ),
             serializedSizeBytes = 1,
             checkpointId = null,

@@ -10,12 +10,18 @@ on:
   schedule:
     - cron: "0 */2 * * *" # Run every 2 hours
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions:
   contents: read
 
 jobs:
   generate-connector-registries:
     name: Generate Connector Registries
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/generate-connector-registries.yml
     secrets: inherit
 

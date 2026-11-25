@@ -6,7 +6,7 @@
         "last_edited_time": "2099-10-10T04:40:00.000Z"
       },
       "stream_descriptor": {
-        "name": "databases"
+        "name": "data_sources"
       }
     }
   },

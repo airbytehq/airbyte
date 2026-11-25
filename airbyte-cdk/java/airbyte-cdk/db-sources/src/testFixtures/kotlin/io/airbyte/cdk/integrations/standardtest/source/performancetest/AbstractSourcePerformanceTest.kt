@@ -66,7 +66,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         schemaName: String?,
         numberOfDummyRecords: Int,
         numberOfColumns: Int,
-        numberOfStreams: Int
+        numberOfStreams: Int,
     ) {
         setupDatabase(dbName)
 
@@ -90,7 +90,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
 
     protected fun prepareMapWithExpectedRecords(
         streamNumber: Int,
-        expectedRecordsNumberInEachStream: Int
+        expectedRecordsNumberInEachStream: Int,
     ): MutableMap<String, Int> {
         val resultMap: MutableMap<String, Int> = HashMap() // streamName&expected records in stream
 
@@ -109,7 +109,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
     protected fun getConfiguredCatalog(
         nameSpace: String?,
         numberOfStreams: Int,
-        numberOfColumns: Int
+        numberOfColumns: Int,
     ): ConfiguredAirbyteCatalog {
         val streams: MutableList<ConfiguredAirbyteStream> = ArrayList()
 
@@ -127,16 +127,16 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
                 CatalogHelpers.createAirbyteStream(
                         String.format(testStreamNameTemplate, currentStream),
                         nameSpace,
-                        fields
+                        fields,
                     )
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(
                         java.util.List.of<List<String>>(
-                            java.util.List.of<String>(this.idColumnName)
-                        )
+                            java.util.List.of<String>(this.idColumnName),
+                        ),
                     )
                     .withSupportedSyncModes(
-                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                     )
 
             val configuredAirbyteStream =

@@ -25,9 +25,9 @@ class StreamStateManagerTest {
                         .withStreamDescriptor(
                             StreamDescriptor()
                                 .withName(StateTestConstants.STREAM_NAME1)
-                                .withNamespace(StateTestConstants.NAMESPACE)
+                                .withNamespace(StateTestConstants.NAMESPACE),
                         )
-                        .withStreamState(Jsons.jsonNode("Not a state object"))
+                        .withStreamState(Jsons.jsonNode("Not a state object")),
                 )
         val catalog = Mockito.mock(ConfiguredAirbyteCatalog::class.java)
 
@@ -47,8 +47,8 @@ class StreamStateManagerTest {
                 StateTestConstants.NAMESPACE,
                 java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                 StateTestConstants.CURSOR,
-                0L
-            )
+                0L,
+            ),
         )
         state.add(
             createStreamState(
@@ -56,8 +56,8 @@ class StreamStateManagerTest {
                 StateTestConstants.NAMESPACE,
                 listOf<String>(),
                 null,
-                0L
-            )
+                0L,
+            ),
         )
 
         val catalog =
@@ -70,8 +70,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
@@ -80,46 +80,46 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
-                            )
-                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
+                            ),
+                    ),
                 )
 
         val stateManager: StateManager = StreamStateManager(state, catalog)
 
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
 
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
     }
 
@@ -135,8 +135,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
@@ -145,8 +145,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
@@ -155,10 +155,10 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
-                            )
-                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
+                            ),
+                    ),
                 )
 
         val stateManager: StateManager = StreamStateManager(createDefaultState(), catalog)
@@ -172,20 +172,20 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                                 .withCursorField(
-                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1)
+                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                                 )
                                 .withCursor("a"),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                                 .withCursorField(
-                                    java.util.List.of(StateTestConstants.CURSOR_FIELD2)
+                                    java.util.List.of(StateTestConstants.CURSOR_FIELD2),
                                 ),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName }),
                 )
         val expectedFirstEmission =
             createStreamState(
@@ -193,7 +193,7 @@ class StreamStateManagerTest {
                     StateTestConstants.NAMESPACE,
                     java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                     "a",
-                    0L
+                    0L,
                 )
                 .withData(Jsons.jsonNode(expectedFirstDbState))
 
@@ -211,22 +211,22 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                                 .withCursorField(
-                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1)
+                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                                 )
                                 .withCursor("a"),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                                 .withCursorField(
-                                    java.util.List.of(StateTestConstants.CURSOR_FIELD2)
+                                    java.util.List.of(StateTestConstants.CURSOR_FIELD2),
                                 )
                                 .withCursor("b")
                                 .withCursorRecordCount(expectedRecordCount),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName }),
                 )
         val expectedSecondEmission =
             createStreamState(
@@ -234,7 +234,7 @@ class StreamStateManagerTest {
                     StateTestConstants.NAMESPACE,
                     java.util.List.of(StateTestConstants.CURSOR_FIELD2),
                     "b",
-                    expectedRecordCount
+                    expectedRecordCount,
                 )
                 .withData(Jsons.jsonNode(expectedSecondDbState))
 
@@ -242,7 +242,7 @@ class StreamStateManagerTest {
             stateManager.updateAndEmit(
                 StateTestConstants.NAME_NAMESPACE_PAIR2,
                 "b",
-                expectedRecordCount
+                expectedRecordCount,
             )
         Assertions.assertEquals(expectedSecondEmission, actualSecondEmission)
     }
@@ -259,8 +259,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
@@ -269,8 +269,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
@@ -279,10 +279,10 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
-                            )
-                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
+                            ),
+                    ),
                 )
         val airbyteStreamNameNamespacePair = AirbyteStreamNameNamespacePair("other", "other")
 
@@ -291,7 +291,7 @@ class StreamStateManagerTest {
         Assertions.assertNotNull(airbyteStateMessage)
         Assertions.assertEquals(
             AirbyteStateMessage.AirbyteStateType.STREAM,
-            airbyteStateMessage.type
+            airbyteStateMessage.type,
         )
         Assertions.assertNotNull(airbyteStateMessage.stream)
     }
@@ -308,8 +308,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
@@ -318,8 +318,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
@@ -328,10 +328,10 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
-                            )
-                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
+                            ),
+                    ),
                 )
 
         val stateManager: StateManager = StreamStateManager(createDefaultState(), catalog)
@@ -339,7 +339,7 @@ class StreamStateManagerTest {
         Assertions.assertNotNull(airbyteStateMessage)
         Assertions.assertEquals(
             AirbyteStateMessage.AirbyteStateType.STREAM,
-            airbyteStateMessage.type
+            airbyteStateMessage.type,
         )
         Assertions.assertNotNull(airbyteStateMessage.stream)
         Assertions.assertNull(airbyteStateMessage.stream.streamState)
@@ -357,8 +357,8 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
                             )
                             .withCursorField(java.util.List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
@@ -367,10 +367,10 @@ class StreamStateManagerTest {
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList(SyncMode.FULL_REFRESH)
-                                    )
-                            )
-                    )
+                                        Lists.newArrayList(SyncMode.FULL_REFRESH),
+                                    ),
+                            ),
+                    ),
                 )
         val stateManager: StateManager = StreamStateManager(createDefaultState(), catalog)
 
@@ -383,14 +383,14 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                                 .withCursorField(
-                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1)
+                                    java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                                 )
                                 .withCursor("a"),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName }),
                 )
 
         val expectedFirstEmission =
@@ -399,7 +399,7 @@ class StreamStateManagerTest {
                     StateTestConstants.NAMESPACE,
                     java.util.List.of(StateTestConstants.CURSOR_FIELD1),
                     "a",
-                    0L
+                    0L,
                 )
                 .withData(Jsons.jsonNode(expectedFirstDbState))
         val actualFirstEmission =
@@ -415,9 +415,9 @@ class StreamStateManagerTest {
                 java.util.List.of(
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(AirbyteStreamState())
+                        .withStream(AirbyteStreamState()),
                 ),
-                catalog
+                catalog,
             )
         Assertions.assertThrows(UnsupportedOperationException::class.java) {
             stateManager.cdcStateManager
@@ -428,7 +428,7 @@ class StreamStateManagerTest {
         return java.util.List.of(
             AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(AirbyteStreamState())
+                .withStream(AirbyteStreamState()),
         )
     }
 
@@ -437,7 +437,7 @@ class StreamStateManagerTest {
         namespace: String?,
         cursorFields: List<String>?,
         cursorValue: String?,
-        cursorRecordCount: Long
+        cursorRecordCount: Long,
     ): AirbyteStateMessage {
         val dbStreamState = DbStreamState().withStreamName(name).withStreamNamespace(namespace)
 
@@ -458,9 +458,9 @@ class StreamStateManagerTest {
             .withStream(
                 AirbyteStreamState()
                     .withStreamDescriptor(
-                        StreamDescriptor().withName(name).withNamespace(namespace)
+                        StreamDescriptor().withName(name).withNamespace(namespace),
                     )
-                    .withStreamState(Jsons.jsonNode(dbStreamState))
+                    .withStreamState(Jsons.jsonNode(dbStreamState)),
             )
     }
 }

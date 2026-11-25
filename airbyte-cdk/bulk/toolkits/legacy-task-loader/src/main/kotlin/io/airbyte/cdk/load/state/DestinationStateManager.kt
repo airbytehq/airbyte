@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -14,13 +13,10 @@ interface DestinationState
 
 interface DestinationStateManager<T : DestinationState> {
     suspend fun getState(stream: DestinationStream): T
+
     suspend fun persistState(stream: DestinationStream)
 }
 
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "state is guaranteed to be non-null by Kotlin's type system"
-)
 @Singleton
 @Secondary
 class DefaultDestinationStateManager<T : DestinationState>(
@@ -39,5 +35,6 @@ class DefaultDestinationStateManager<T : DestinationState>(
 
 interface DestinationStatePersister<T : DestinationState> {
     suspend fun load(stream: DestinationStream): T
+
     suspend fun persist(stream: DestinationStream, state: T)
 }

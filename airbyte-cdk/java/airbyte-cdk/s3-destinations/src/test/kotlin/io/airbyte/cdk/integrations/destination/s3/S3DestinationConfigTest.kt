@@ -55,7 +55,7 @@ internal class S3DestinationConfigTest {
   "s3_bucket_region": "paste-bucket-region-here",
   "access_key_id": "paste-access-key-id-here",
   "secret_access_key": "paste-secret-access-key-here"
-}"""
+}""",
             )
 
         val result = getS3DestinationConfig(s3config, StorageProvider.AWS_S3)
@@ -86,7 +86,7 @@ internal class S3DestinationConfigTest {
   "access_key_id": "paste-access-key-id-here",
   "secret_access_key": "paste-secret-access-key-here"
 }
-"""
+""",
             )
 
         val result = getS3DestinationConfig(s3config, StorageProvider.CF_R2)

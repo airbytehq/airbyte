@@ -1,0 +1,961 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  OpenAI organization and ChatGPT Enterprise compliance source. Syncs
+  organization members and pending invites from the OpenAI Admin API, daily
+  completion usage aggregated by project, user, and model, and ChatGPT workspace
+  user rosters (current and historical). For Enterprise workspaces, also syncs
+  compliance conversation log metadata and message-level events from JSONL
+  export files. Requires an OpenAI organization API key with admin access.
+  ChatGPT Enterprise compliance streams also need a compliance API token and
+  workspace ID. Supports incremental sync on
+  usage and compliance log streams using a configurable start and end date
+  (YYYY-MM-DD).
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    conversation_messages:
+      type: DeclarativeStream
+      name: conversation_messages
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.last_end_time }}"
+            stop_condition: "{{ response.has_more is false or not response.last_end_time }}"
+        requester:
+          type: HttpRequester
+          url: >-
+            https://api.chatgpt.com/v1/compliance/workspaces/{{
+            config['workspace_id'] }}/logs
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/ComplianceAuthenticator"
+          error_handler:
+            $ref: "#/definitions/linked/HttpRequester/error_handler"
+          request_parameters:
+            after: >-
+              {{ next_page_token['next_page_token'] if next_page_token else
+              stream_interval['start_time'] }}
+            event_type: CONVERSATION_MESSAGE
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+            - snapshot_date
+          properties:
+            id:
+              type: string
+            end_time:
+              type:
+                - string
+                - "null"
+            file_name:
+              type:
+                - string
+                - "null"
+            file_size:
+              type:
+                - number
+                - "null"
+            event_type:
+              type:
+                - string
+                - "null"
+            file_sha256:
+              type:
+                - string
+                - "null"
+            snapshot_date:
+              type: string
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - snapshot_date
+              value: "{{ stream_interval['start_time'] }}"
+              value_type: string
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: snapshot_date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime((config['end_time'] if config['end_time'] else
+            now_utc().strftime('%Y-%m-%d')), '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: before
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['openai_token'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 500
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 502
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 503
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+      request_headers:
+        Content-Type: application/json
+        OpenAI-Organization: "{{ config['openai_organization'] }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 20
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+    CompliancePaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 1000
+        cursor_value: "{{ response.last_id }}"
+        stop_condition: "{{ response.has_more is false }}"
+    ComplianceHistoricalPaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 100
+        cursor_value: "{{ response.last_id }}"
+        stop_condition: "{{ response.has_more is false }}"
+    ComplianceAuthenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['openai_compliance_token'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/users
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          added_at:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/streams/conversation_messages"
+  - type: DeclarativeStream
+    name: conversation_messages_log
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/compliance/workspaces/{{
+          config['workspace_id'] }}/logs/{{ stream_partition.log_file_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/ComplianceAuthenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/streams/conversation_messages"
+            parent_key: id
+            extra_fields:
+              - - snapshot_date
+            partition_field: log_file_id
+            incremental_dependency: true
+    primary_key:
+      - event_id
+      - snapshot_date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - event_id
+          - snapshot_date
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          actor_type:
+            type:
+              - string
+              - "null"
+          actor_user_id:
+            type:
+              - string
+              - "null"
+          actor_user_email:
+            type:
+              - string
+              - "null"
+          event_id:
+            type: string
+          principal_type:
+            type:
+              - string
+              - "null"
+          principal_id:
+            type:
+              - string
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+          message_id:
+            type:
+              - string
+              - "null"
+          log_file_id:
+            type:
+              - string
+              - "null"
+          snapshot_date:
+            type: string
+          author_type:
+            type:
+              - string
+              - "null"
+          author_client_type:
+            type:
+              - string
+              - "null"
+          author_skills_used:
+            type:
+              - string
+              - "null"
+          author_tools_used:
+            type:
+              - string
+              - "null"
+          message_content_value:
+            type:
+              - string
+              - "null"
+          conversation_title:
+            type:
+              - string
+              - "null"
+          conversation_id:
+            type:
+              - string
+              - "null"
+          conversation_mode:
+            type:
+              - string
+              - "null"
+          message_created_at:
+            type:
+              - string
+              - "null"
+          previous_message_id:
+            type:
+              - string
+              - "null"
+          conversation_is_pinned:
+            type:
+              - boolean
+              - "null"
+          conversation_created_at:
+            type:
+              - string
+              - "null"
+          conversation_is_temporary_chat:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: false
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - message
+              - author
+              - skills_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('skills_used')
+              | string if record.get('message', {}).get('author',
+              {}).get('skills_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - message
+              - author
+              - tools_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('tools_used') |
+              string if record.get('message', {}).get('author',
+              {}).get('tools_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - message
+              - content
+              - value
+            value: >-
+              {{ record.get('message', {}).get('content', {}).get('value') |
+              string if record.get('message', {}).get('content', {}).get('value')
+              is not none else '' }}
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - actor_type
+            value: "{{ record.get('actor', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_id
+            value: "{{ record.get('actor', {}).get('user_id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_email
+            value: "{{ record.get('actor', {}).get('user_email') }}"
+          - type: AddedFieldDefinition
+            path:
+              - principal_type
+            value: "{{ record.get('principal', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - principal_id
+            value: "{{ record.get('principal', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - log_file_id
+            value: "{{ stream_partition.log_file_id }}"
+          - type: AddedFieldDefinition
+            path:
+              - message_id
+            value: "{{ record.get('message', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - message_created_at
+            value: "{{ record.get('message', {}).get('created_at') }}"
+          - type: AddedFieldDefinition
+            path:
+              - author_type
+            value: "{{ record.get('message', {}).get('author', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - author_client_type
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('client_type')
+              }}
+          - type: AddedFieldDefinition
+            path:
+              - author_skills_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('skills_used')
+              | string if record.get('message', {}).get('author',
+              {}).get('skills_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - author_tools_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('tools_used') |
+              string if record.get('message', {}).get('author',
+              {}).get('tools_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - message_content_value
+            value: >-
+              {{ record.get('message', {}).get('content', {}).get('value') |
+              string if record.get('message', {}).get('content', {}).get('value')
+              is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - conversation_id
+            value: "{{ record.get('conversation', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_title
+            value: "{{ record.get('conversation', {}).get('title') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_mode
+            value: "{{ record.get('conversation', {}).get('mode') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_created_at
+            value: "{{ record.get('conversation', {}).get('created_at') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_is_pinned
+            value: "{{ record.get('conversation', {}).get('is_pinned') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_is_temporary_chat
+            value: >-
+              {{ record.get('conversation', {}).get('is_temporary_chat') }}
+          - type: AddedFieldDefinition
+            path:
+              - snapshot_date
+            value: "{{ stream_slice.extra_fields.snapshot_date }}"
+      - type: RemoveFields
+        field_pointers:
+          - - message
+          - - conversation
+          - - actor
+          - - principal
+          - - skills_used
+          - - tools_used
+    incremental_sync:
+      type: DatetimeBasedCursor
+      global_substream_cursor: true
+      cursor_field: snapshot_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime((config['end_time'] if config['end_time'] else
+          now_utc().strftime('%Y-%m-%d')), '%Y-%m-%dT%H:%M:%SZ') }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: invites
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/invites
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          email:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          expires_at:
+            type:
+              - number
+              - "null"
+          accepted_at:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: completions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 31
+          cursor_value: "{{ response.next_page }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/usage/completions
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          group_by: project_id,user_id,model
+          bucket_width: 1d
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+          record_expander:
+            type: RecordExpander
+            on_no_records: skip
+            remain_original_record: true
+            expand_records_from_field:
+              - results
+    primary_key:
+      - snapshot_date
+      - project_id
+      - user_id
+      - model
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - snapshot_date
+          - project_id
+          - user_id
+          - model
+          - start_time
+        properties:
+          model:
+            type: string
+          user_id:
+            type: string
+          end_time:
+            type:
+              - string
+              - "null"
+          project_id:
+            type: string
+          start_time:
+            type: string
+          snapshot_date:
+            type: string
+          num_model_requests:
+            type:
+              - number
+              - "null"
+          input_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+          input_cached_tokens:
+            type:
+              - number
+              - "null"
+          input_audio_tokens:
+            type:
+              - number
+              - "null"
+          output_audio_tokens:
+            type:
+              - number
+              - "null"
+          api_key_id:
+            type:
+              - string
+              - "null"
+          batch:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - start_time
+            value: >-
+              {{ record.get('start_time') or (record.get('original_record') or
+              {}).get('start_time') }}
+          - type: AddedFieldDefinition
+            path:
+              - end_time
+            value: >-
+              {{ record.get('end_time') or (record.get('original_record') or
+              {}).get('end_time') }}
+          - type: AddedFieldDefinition
+            path:
+              - snapshot_date
+            value: >-
+              {{ format_datetime((record.get('start_time') or
+              (record.get('original_record') or {}).get('start_time')) | int,
+              '%Y-%m-%d') }}
+          - type: AddedFieldDefinition
+            path:
+              - project_id
+            value: "{{ record.get('project_id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - model
+            value: "{{ record.get('model') }}"
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record.get('user_id') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - original_record
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P31D
+      cursor_field: start_time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime((config['end_time'] or
+          today_utc().strftime('%Y-%m-%d')), '%s') }}
+        datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_time'], '%s') }}"
+        datetime_format: "%s"
+      datetime_format: "%s"
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%s"
+  - type: DeclarativeStream
+    name: current_users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/CompliancePaginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/manage/workspaces/{{ config['workspace_id']
+          }}/users
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/ComplianceAuthenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          seat_type:
+            type:
+              - string
+              - "null"
+          is_scim_managed:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: historical_users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/ComplianceHistoricalPaginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/compliance/workspaces/{{
+          config['workspace_id'] }}/users
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/ComplianceAuthenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          is_scim_managed:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - openai_organization
+      - openai_token
+      - start_time
+    properties:
+      end_time:
+        type: string
+        description: >-
+          The end time for querying the API in YYYY-MM-DD (defaults to today if
+          omitted). The end date is exclusive at midnight UTC, so the current
+          calendar day is not included until the next sync after that day ends.
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 3
+        title: End Time
+      start_time:
+        type: string
+        description: The start time for querying the API in YYYY-MM-DD
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 2
+        title: Start time
+      openai_token:
+        type: string
+        description: The API key token used for authorizing API requests
+        order: 1
+        title: OpenAI-token
+        airbyte_secret: true
+      workspace_id:
+        type: string
+        description: >-
+          ChatGPT workspace ID. Required for compliance streams
+          (conversation_messages, conversation_messages_log, current_users,
+          historical_users). The connection check does not validate this field.
+        order: 5
+        title: Workspace ID
+      openai_organization:
+        type: string
+        description: The organization (organization_id) associated with the request
+        order: 0
+        title: OpenAI-Organization
+      openai_compliance_token:
+        type: string
+        description: >-
+          API token for ChatGPT compliance and workspace management endpoints.
+          Required for compliance streams (conversation_messages,
+          conversation_messages_log, current_users, historical_users). The
+          connection check only reads the users stream, so an invalid compliance
+          token is reported when those streams sync, not during setup test.
+        order: 4
+        title: OpenAI-compliance-token
+        airbyte_secret: true
+    additionalProperties: true

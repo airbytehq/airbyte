@@ -47,14 +47,14 @@ class MSSQLCsvRowGenerator {
                         StringValue(
                             (value.abValue as TimestampWithTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                         )
                 is TimestampTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
                             (value.abValue as TimestampWithoutTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_DATE_TIME)
+                                .format(DateTimeFormatter.ISO_DATE_TIME),
                         )
                 else -> {}
             }

@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import Tabs from '@theme/Tabs';
@@ -118,7 +118,6 @@ global:
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
-      projectId: <project-id>
       credentialsJsonSecretKey: gcp.json
 ```
 

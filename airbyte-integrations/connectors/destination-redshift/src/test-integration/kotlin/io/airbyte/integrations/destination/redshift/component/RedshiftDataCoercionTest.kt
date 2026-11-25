@@ -68,7 +68,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#numbers"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#numbers",
     )
     override fun `handle number values`(
         inputValue: AirbyteValue,
@@ -80,7 +80,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timestampTz"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timestampTz",
     )
     override fun `handle timestamptz values`(
         inputValue: AirbyteValue,
@@ -92,7 +92,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timestampNtz"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timestampNtz",
     )
     override fun `handle timestampntz values`(
         inputValue: AirbyteValue,
@@ -104,7 +104,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timetz"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timetz",
     )
     override fun `handle timetz values`(
         inputValue: AirbyteValue,
@@ -116,7 +116,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timentz"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#timentz",
     )
     override fun `handle timentz values`(
         inputValue: AirbyteValue,
@@ -128,7 +128,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#date"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#date",
     )
     override fun `handle date values`(
         inputValue: AirbyteValue,
@@ -145,7 +145,7 @@ class RedshiftDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#string"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#string",
     )
     override fun `handle string values`(
         inputValue: AirbyteValue,
@@ -224,7 +224,7 @@ class RedshiftDataCoercionTest(
      */
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#unknown"
+        "io.airbyte.integrations.destination.redshift.component.RedshiftDataCoercionTest#unknown",
     )
     override fun `handle unknown values`(
         inputValue: AirbyteValue,

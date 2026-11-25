@@ -37,7 +37,7 @@ data class Sql(val transactions: List<List<String>>) {
                     builder.append(statement)
                     // No semicolon - statements already end with a semicolon
                     builder.append("\n")
-                }
+                },
             )
             builder.append(commit)
             builder.append(";\n")
@@ -52,7 +52,7 @@ data class Sql(val transactions: List<List<String>>) {
                 require(!transaction.any { it.isNullOrEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
-            }
+            },
         )
     }
 
@@ -116,7 +116,7 @@ data class Sql(val transactions: List<List<String>>) {
                                 statement
                             }
                     }
-                    .filter { transaction: List<String> -> !transaction.isEmpty() }
+                    .filter { transaction: List<String> -> !transaction.isEmpty() },
             )
         }
     }

@@ -1,30 +1,21 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-from pytest import fixture
+from pathlib import Path
 
+import pytest
 
-@fixture(name="config")
-def config_fixture():
-    return {"credentials": {"personal_access_token": "TOKEN"}}
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
-@fixture(name="mock_response")
-def mock_response():
-    return {
-        "data": [{"gid": "gid", "resource_type": "resource_type", "name": "name"}],
-        "next_page": {"offset": "offset", "path": "path", "uri": "uri"},
-    }
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 
-@fixture(name="mock_stream")
-def mock_stream_fixture(requests_mock):
-    def _mock_stream(path, response=None):
-        if response is None:
-            response = {}
+def get_source(config: dict, state: list | None = None) -> YamlDeclarativeSource:
+    ci_path = Path("/airbyte/integration_code/source_declarative_manifest/manifest.yaml")
+    manifest = ci_path if ci_path.exists() else Path(__file__).parent.parent / "manifest.yaml"
+    return YamlDeclarativeSource(path_to_yaml=str(manifest), config=config, state=state)
 
-        url = f"https://app.asana.com/api/1.0/{path}"
-        requests_mock.get(url, json=response)
 
-    return _mock_stream
+@pytest.fixture(autouse=True)
+def isolated_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("REQUEST_CACHE_PATH", str(tmp_path))

@@ -21,12 +21,10 @@ definitions:
           path: addresses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -58,12 +56,10 @@ definitions:
           path: /stats/agents_activity
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -93,12 +89,10 @@ definitions:
           path: /stats/agents_overview
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,12 +121,10 @@ definitions:
           path: /greeting_categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -162,12 +154,10 @@ definitions:
           path: /greetings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -199,12 +189,10 @@ definitions:
           path: phone_numbers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -234,12 +222,10 @@ definitions:
           path: /stats/incremental/legs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -292,12 +278,10 @@ definitions:
           path: /stats/incremental/calls
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -350,12 +334,10 @@ definitions:
           path: /stats/current_queue_activity
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -382,12 +364,10 @@ definitions:
           path: /stats/account_overview
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -416,12 +396,10 @@ definitions:
           path: /ivr
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -450,12 +428,10 @@ definitions:
           path: /ivr
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -483,12 +459,10 @@ definitions:
           path: /ivr
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -512,6 +486,16 @@ definitions:
     authenticator:
       type: CustomAuthenticator
       class_name: source_declarative_manifest.components.ZendeskTalkAuthenticator
+      # Zendesk Marketplace headers that identify Airbyte's integration. In Airbyte Cloud the authenticator adds them
+      # to every request to Zendesk, including the OAuth token refresh. Self-managed deployments do not send them on
+      # these requests; the authorization code exchange in `advanced_auth` is the exception.
+      # https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/request-header-requirements-for-marketplace-apps/
+      # The Organization-Id and the App-Id come from the Zendesk Marketplace portal. Keep them quoted: `requests`
+      # rejects a header value that is not a string.
+      marketplace_headers:
+        X-Zendesk-Marketplace-Name: Airbyte
+        X-Zendesk-Marketplace-Organization-Id: "5102"
+        X-Zendesk-Marketplace-App-Id: "1319815"
       legacy_basic_auth:
         type: BasicHttpAuthenticator
         password: "{{ config['access_token'] }}"
@@ -619,8 +603,9 @@ spec:
       credentials:
         type: object
         description: >-
-          Zendesk allows three authentication methods. We recommend using `OAuth2.0`
-          for Airbyte Cloud users and `API token` for Airbyte Open Source users.
+          Authenticate with `OAuth2.0`. Sources that already use an API token or the
+          legacy OAuth option keep working. Zendesk deactivates all API tokens on April 30,
+          2027, so re-authenticate those sources with OAuth before then.
         title: Authentication
         order: 1
         oneOf:
@@ -670,8 +655,11 @@ spec:
                   rotating refresh tokens - each refresh will return a new refresh token and
                   invalidate the previous one.
                 airbyte_secret: true
+          # `airbyte_hidden` removes the option from the setup form only. It stays in the schema, so sources that
+          # already use it keep working. Zendesk deactivates all API tokens on April 30, 2027.
           - type: object
             title: API Token
+            airbyte_hidden: true
             required:
               - email
               - api_token
@@ -692,8 +680,10 @@ spec:
                   for more information.
                 title: API Token
                 airbyte_secret: true
+          # Hidden from the setup form as well: this option stores an access token with no refresh token.
           - type: object
             title: OAuth2.0 (Legacy)
+            airbyte_hidden: true
             required:
               - access_token
             additionalProperties: true
@@ -814,10 +804,21 @@ spec:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
         scopes:
           - scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
+        # Zendesk Marketplace headers on the authorization code exchange. The platform makes that request, not the
+        # connector, and the spec is the same in every edition, so self-managed deployments send them on this one
+        # request too. A non-empty `access_token_headers` replaces the platform's default headers, so `Content-Type`
+        # and `Accept` repeat them. The three Marketplace values must match `marketplace_headers` on the authenticator.
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+          Accept: application/json
+          X-Zendesk-Marketplace-Name: Airbyte
+          X-Zendesk-Marketplace-Organization-Id: "5102"
+          X-Zendesk-Marketplace-App-Id: "1319815"
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
 
 metadata:
   autoImportSchema:

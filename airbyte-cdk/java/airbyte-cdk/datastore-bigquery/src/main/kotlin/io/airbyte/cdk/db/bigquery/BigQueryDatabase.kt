@@ -29,7 +29,7 @@ class BigQueryDatabase
 constructor(
     projectId: String?,
     jsonCreds: String?,
-    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations()
+    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations(),
 ) : SqlDatabase() {
     var bigQuery: BigQuery
     private var sourceOperations: BigQuerySourceOperations? = null
@@ -42,7 +42,7 @@ constructor(
             if (!jsonCreds.isNullOrEmpty()) {
                 credentials =
                     GoogleCredentials.fromStream(
-                        ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8))
+                        ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8)),
                     )
             }
             bigQuery =
@@ -50,7 +50,7 @@ constructor(
                     .setProjectId(projectId)
                     .setCredentials(
                         if (!Objects.isNull(credentials)) credentials
-                        else GoogleCredentials.getApplicationDefault()
+                        else GoogleCredentials.getApplicationDefault(),
                     )
                     .setHeaderProvider {
                         ImmutableMap.of("user-agent", getUserAgentHeader(connectorVersion))
@@ -60,7 +60,7 @@ constructor(
                             .setMaxAttempts(10)
                             .setRetryDelayMultiplier(1.5)
                             .setTotalTimeout(Duration.ofMinutes(60))
-                            .build()
+                            .build(),
                     )
                     .build()
                     .service
@@ -85,7 +85,7 @@ constructor(
         val result = executeQuery(bigQuery, getQueryConfig(sql, emptyList()))
         if (result.getLeft() == null) {
             throw SQLException(
-                "BigQuery request is failed with error: ${result.getRight()}. SQL: $sql"
+                "BigQuery request is failed with error: ${result.getRight()}. SQL: $sql",
             )
         }
         LOGGER.info { "BigQuery successfully finished execution SQL: $sql" }
@@ -98,13 +98,12 @@ constructor(
 
     @Throws(Exception::class)
     override fun unsafeQuery(sql: String?, vararg params: String): Stream<JsonNode> {
-        val parameterValueList =
-            params.map { param: String ->
-                QueryParameterValue.newBuilder()
-                    .setValue(param)
-                    .setType(StandardSQLTypeName.STRING)
-                    .build()
-            }
+        val parameterValueList = params.map { param: String ->
+            QueryParameterValue.newBuilder()
+                .setValue(param)
+                .setType(StandardSQLTypeName.STRING)
+                .build()
+        }
 
         return query(sql, parameterValueList)
     }
@@ -126,7 +125,7 @@ constructor(
                     sql +
                     (if (!params.isNullOrEmpty()) " with params $params" else "") +
                     ". Error: " +
-                    result.getRight()
+                    result.getRight(),
             )
     }
 
@@ -139,7 +138,7 @@ constructor(
 
     fun executeQuery(
         bigquery: BigQuery,
-        queryConfig: QueryJobConfiguration?
+        queryConfig: QueryJobConfiguration?,
     ): ImmutablePair<Job?, String?> {
         val jobId = JobId.of(UUID.randomUUID().toString())
         val queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build())
@@ -165,9 +164,9 @@ constructor(
                         .forEach(
                             Consumer { table: Table ->
                                 tableList.add(bigQuery.getTable(table.tableId))
-                            }
+                            },
                         )
-                }
+                },
             )
         return tableList
     }

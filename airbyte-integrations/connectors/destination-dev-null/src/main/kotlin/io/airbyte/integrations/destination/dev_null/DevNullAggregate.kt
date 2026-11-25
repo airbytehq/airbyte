@@ -11,12 +11,23 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 class DevNullAggregateFactory(
     private val config: DevNullConfiguration,
 ) : AggregateFactory {
     private val log = KotlinLogging.logger {}
+
+    /**
+     * The CDK creates a new [Aggregate] for every batch it flushes, so counters must live here,
+     * keyed by stream, for "first N" / "fail after N" to mean N per stream rather than N per batch.
+     */
+    private val streamCounters = ConcurrentHashMap<StoreKey, StreamCounters>()
+
+    internal fun countersFor(key: StoreKey): StreamCounters =
+        streamCounters.computeIfAbsent(key) { StreamCounters() }
 
     override fun create(key: StoreKey): Aggregate {
         return when (val type = config.type) {
@@ -27,7 +38,8 @@ class DevNullAggregateFactory(
                     streamDescriptor = key,
                     maxLogCount = type.maxEntryCount,
                     sampleRate = type.sampleRate,
-                    seed = type.seed
+                    seed = type.seed,
+                    counters = countersFor(key),
                 )
             }
             is Silent -> {
@@ -40,10 +52,16 @@ class DevNullAggregateFactory(
             }
             is Failing -> {
                 log.info { "Creating FailingAggregate for type=FAILING" }
-                FailingAggregate(key, type.numMessages)
+                FailingAggregate(key, type.numMessages, countersFor(key))
             }
         }
     }
+}
+
+/** Per-stream record/log counters shared by all aggregates of one stream. */
+class StreamCounters {
+    val recordCount = AtomicLong(0L)
+    val logCount = AtomicLong(0L)
 }
 
 class LoggingAggregate(
@@ -51,24 +69,24 @@ class LoggingAggregate(
     private val streamDescriptor: DestinationStream.Descriptor,
     private val maxLogCount: Int = 1000,
     private val sampleRate: Double = 1.0,
-    seed: Long? = null
+    seed: Long? = null,
+    private val counters: StreamCounters = StreamCounters(),
 ) : Aggregate {
     private val log = KotlinLogging.logger {}
-    private var recordCount: Long = 0L
-    private var logCount: Long = 0L
     private val random = seed?.let { kotlin.random.Random(it) } ?: kotlin.random.Random.Default
 
     override fun accept(record: RecordDTO) {
-        if (recordCount % logEveryN == 0L) {
+        val recordIndex = counters.recordCount.getAndIncrement()
+        if (recordIndex % logEveryN == 0L) {
             if (sampleRate == 1.0 || random.nextDouble() < sampleRate) {
-                if (++logCount <= maxLogCount) {
+                val logEntry = counters.logCount.incrementAndGet()
+                if (logEntry <= maxLogCount) {
                     log.info {
-                        "Logging Destination(stream=$streamDescriptor, recordIndex=$recordCount, logEntry=$logCount/$maxLogCount): ${record.fields}"
+                        "Logging Destination(stream=$streamDescriptor, recordIndex=$recordIndex, logEntry=$logEntry/$maxLogCount): ${record.fields}"
                     }
                 }
             }
         }
-        recordCount++
     }
 
     override suspend fun flush() {
@@ -98,19 +116,19 @@ class ThrottledAggregate(private val millisPerRecord: Long) : Aggregate {
 
 class FailingAggregate(
     private val streamDescriptor: DestinationStream.Descriptor,
-    private val failAfter: Int
+    private val failAfter: Int,
+    private val counters: StreamCounters = StreamCounters(),
 ) : Aggregate {
     private val log = KotlinLogging.logger {}
-    private var recordCount: Long = 0L
 
     override fun accept(record: RecordDTO) {
-        if (recordCount > failAfter) {
+        val recordCount = counters.recordCount.incrementAndGet()
+        if (recordCount >= failAfter) {
             val message =
                 "Failing Destination(stream=$streamDescriptor, failAfter=$failAfter: failing at record $recordCount)"
             log.info { message }
             throw RuntimeException(message)
         }
-        recordCount++
     }
 
     override suspend fun flush() {

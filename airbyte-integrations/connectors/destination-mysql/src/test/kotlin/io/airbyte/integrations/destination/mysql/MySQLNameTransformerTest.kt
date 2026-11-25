@@ -12,7 +12,7 @@ internal class MySQLNameTransformerTest {
     fun testGetIdentifier() {
         Assertions.assertEquals(
             "very_very_very_long_n__mysql_identifier_size",
-            NAME_TRANSFORMER.getIdentifier(LONG_NAME)
+            NAME_TRANSFORMER.getIdentifier(LONG_NAME),
         )
     }
 
@@ -21,7 +21,7 @@ internal class MySQLNameTransformerTest {
         val tmpTableName = NAME_TRANSFORMER.getTmpTableName(LONG_NAME)
         Assertions.assertEquals(
             MySQLNameTransformer.TRUNCATION_MAX_NAME_LENGTH,
-            tmpTableName.length
+            tmpTableName.length,
         )
         // temp table name: _airbyte_tmp_xxx_very__mysql_identifier_size
         Assertions.assertTrue(tmpTableName.startsWith("_airbyte_tmp_"))
@@ -32,7 +32,7 @@ internal class MySQLNameTransformerTest {
     fun testGetRawTableName() {
         Assertions.assertEquals(
             "_airbyte_raw_very_ver__mysql_identifier_size",
-            NAME_TRANSFORMER.getRawTableName(LONG_NAME)
+            NAME_TRANSFORMER.getRawTableName(LONG_NAME),
         )
     }
 

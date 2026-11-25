@@ -41,7 +41,7 @@ class TypingDedupingStreamLoader(
      * The status of the raw table that "matters" for this sync. Specifically:
      * * For normal syncs / merge refreshes, this is the status of the real raw table)
      * * For truncate refreshes, this is the status of the temp raw table (because we never even
-     * look at the real raw table)
+     *   look at the real raw table)
      */
     private lateinit var initialRawTableStatus: RawTableInitialStatus
 
@@ -84,7 +84,7 @@ class TypingDedupingStreamLoader(
             val tempStageGeneration =
                 rawTableOperations.getRawTableGeneration(
                     tableNames.rawTableName!!,
-                    TMP_TABLE_SUFFIX
+                    TMP_TABLE_SUFFIX,
                 )
             if (tempStageGeneration == null || tempStageGeneration == stream.generationId) {
                 logger.info {
@@ -193,10 +193,8 @@ class TypingDedupingStreamLoader(
                         } else {
                             tempRawTableTimestamp
                         }
-                    }
-                        ?: realRawTableTimestamp
-                }
-                    ?: initialStatus.tempRawTableStatus.maxProcessedTimestamp
+                    } ?: realRawTableTimestamp
+                } ?: initialStatus.tempRawTableStatus.maxProcessedTimestamp
             val updatedStatus =
                 RawTableInitialStatus(
                     hasUnprocessedRecords = hasUnprocessedRecords,
@@ -226,7 +224,7 @@ class TypingDedupingStreamLoader(
                 tableNames.finalTableName!!,
                 columnNameMapping,
                 NO_SUFFIX,
-                replace = false
+                replace = false,
             )
             return NO_SUFFIX
         }
@@ -296,7 +294,7 @@ class TypingDedupingStreamLoader(
                 tableNames.finalTableName!!,
                 columnNameMapping,
                 TMP_TABLE_SUFFIX,
-                replace = true
+                replace = true,
             )
             logger.info {
                 "Using temp final table for table ${stream.mappedDescriptor.toPrettyString()}, this will be overwritten at end of sync"
@@ -372,7 +370,7 @@ class TypingDedupingStreamLoader(
                 tableNames,
                 columnNameMapping,
                 maxProcessedTimestamp = maxProcessedTimestamp,
-                finalTableSuffix = finalTmpTableSuffix
+                finalTableSuffix = finalTmpTableSuffix,
             )
         }
 
@@ -386,7 +384,7 @@ class TypingDedupingStreamLoader(
             finalTableOperations.overwriteFinalTable(
                 stream,
                 tableNames.finalTableName!!,
-                finalTableSuffix = finalTmpTableSuffix
+                finalTableSuffix = finalTmpTableSuffix,
             )
         } else {
             logger.info {

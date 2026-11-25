@@ -146,7 +146,7 @@ class DiscoveredPropertyTest {
             matchingKeyPredicate,
             availabilityPredicate,
             requiredPredicate,
-            typeMapper
+            typeMapper,
         )
     }
 }

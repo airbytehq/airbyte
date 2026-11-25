@@ -4,11 +4,32 @@
 
 This page contains the setup guide and reference information for the [Hugging Face Datasets](https://docs.airbyte.com/integrations/sources/hugging-face-datasets) source connector.
 
+The connector reads datasets with the [Hugging Face `datasets` library](https://huggingface.co/docs/datasets), so it is not limited to datasets that publish a [Parquet export](https://huggingface.co/docs/dataset-viewer/en/parquet) on the Hub. Public datasets work without credentials. Private and gated datasets require a Hugging Face token with access to the dataset, and a token is also recommended for large syncs because anonymous requests are [rate limited per IP address](https://huggingface.co/docs/hub/en/rate-limits).
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `dataset_name` | `string` | Dataset name. The dataset identifier on the Hub, for example `nyu-mll/glue`. |  |
+| `dataset_subsets` | `array` | Dataset subsets. Subsets (configs) to import. All of them are imported if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details). |  |
+| `dataset_splits` | `array` | Dataset splits. Splits to import, for example `train`. All of them are imported if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details). |  |
+| `token` | `string` | Hugging Face token. Optional for public datasets, required for private or gated datasets, and recommended to avoid anonymous per-IP rate limits (see https://huggingface.co/docs/hub/en/rate-limits). Create one at https://huggingface.co/settings/tokens. The legacy `api_token` setting is still read when `token` is empty. |  |
+| `streaming` | `boolean` | Streaming mode. When enabled, records are read from the Hub on the fly instead of being downloaded and cached to disk. Slower, but it handles datasets larger than the available disk. | `false` |
+
+
 </HideInUI>
 
 ## Overview
 
 This source connector allows you to read datasets from [Hugging Face Hub](https://huggingface.co/datasets) using the [datasets](https://huggingface.co/docs/datasets) library. You can access public and private datasets, configure subsets (configs), and specify splits (train, test, validation).
+
+### Streams and records
+
+The connector discovers one stream per dataset subset and split, named `{dataset}__{subset}__{split}`, for example `nyu-mll/glue__mrpc__train`. Each record holds the columns of one dataset row, and the stream schema is read from the [dataset features](https://huggingface.co/docs/datasets/about_dataset_features).
+
+Image, audio and video columns are synced as `{"bytes": ..., "path": ...}` objects, `bytes` being the base64 encoded original file. These files can be large, so deselect those columns if your destination cannot store them.
+
+Connections created before 0.1.0 read the `rows` and `splits` streams instead. See the [migration guide](./hugging-face-datasets-migrations.md#upgrading-to-010) before upgrading.
 
 ## Prerequisites
 
@@ -72,9 +93,81 @@ The Hugging Face Datasets source connector supports the following [sync modes](h
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.1.0 | 2026-07-29 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Initial release |
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-11-25 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Rewrite on the `datasets` library: datasets are read from the Hub instead of through the dataset viewer API, so non-Parquet datasets and untruncated cells are supported. Replaces the `rows` and `splits` streams with one stream per dataset subset and split, and renames the `api_token` setting to `token`. See the [migration guide](./hugging-face-datasets-migrations.md#upgrading-to-010). |
+| 0.0.72 | 2026-11-17 | [93217](https://github.com/airbytehq/airbyte/pull/93217) | Update dependencies |
+| 0.0.71 | 2026-11-10 | [91558](https://github.com/airbytehq/airbyte/pull/91558) | Update dependencies |
+| 0.0.70 | 2026-11-03 | [90599](https://github.com/airbytehq/airbyte/pull/90599) | Update dependencies |
+| 0.0.69 | 2026-10-27 | [89948](https://github.com/airbytehq/airbyte/pull/89948) | Update dependencies |
+| 0.0.68 | 2026-10-20 | [89269](https://github.com/airbytehq/airbyte/pull/89269) | Update dependencies |
+| 0.0.67 | 2026-10-13 | [88676](https://github.com/airbytehq/airbyte/pull/88676) | Update dependencies |
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88272) | Add optional Hugging Face API token, honor rate-limit headers with longer 429 backoff, and surface clear 401/404 errors |
+| 0.0.65 | 2026-10-06 | [87904](https://github.com/airbytehq/airbyte/pull/87904) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87224](https://github.com/airbytehq/airbyte/pull/87224) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86680](https://github.com/airbytehq/airbyte/pull/86680) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [86089](https://github.com/airbytehq/airbyte/pull/86089) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85544](https://github.com/airbytehq/airbyte/pull/85544) | Update dependencies |
+| 0.0.60 | 2026-08-18 | [84611](https://github.com/airbytehq/airbyte/pull/84611) | Update dependencies |
+| 0.0.59 | 2026-08-11 | [83976](https://github.com/airbytehq/airbyte/pull/83976) | Update dependencies |
+| 0.0.58 | 2026-08-04 | [83490](https://github.com/airbytehq/airbyte/pull/83490) | Update dependencies |
+| 0.0.57 | 2026-07-28 | [82964](https://github.com/airbytehq/airbyte/pull/82964) | Update dependencies |
+| 0.0.56 | 2026-07-21 | [82457](https://github.com/airbytehq/airbyte/pull/82457) | Update dependencies |
+| 0.0.55 | 2026-07-14 | [81860](https://github.com/airbytehq/airbyte/pull/81860) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81111](https://github.com/airbytehq/airbyte/pull/81111) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80530](https://github.com/airbytehq/airbyte/pull/80530) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [79903](https://github.com/airbytehq/airbyte/pull/79903) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79343](https://github.com/airbytehq/airbyte/pull/79343) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78783](https://github.com/airbytehq/airbyte/pull/78783) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77280](https://github.com/airbytehq/airbyte/pull/77280) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76633](https://github.com/airbytehq/airbyte/pull/76633) | Update dependencies |
+| 0.0.47 | 2026-03-31 | [75656](https://github.com/airbytehq/airbyte/pull/75656) | Update dependencies |
+| 0.0.46 | 2026-03-17 | [74523](https://github.com/airbytehq/airbyte/pull/74523) | Update dependencies |
+| 0.0.45 | 2026-03-03 | [73521](https://github.com/airbytehq/airbyte/pull/73521) | Update dependencies |
+| 0.0.44 | 2026-02-10 | [73049](https://github.com/airbytehq/airbyte/pull/73049) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [71918](https://github.com/airbytehq/airbyte/pull/71918) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71724](https://github.com/airbytehq/airbyte/pull/71724) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70468](https://github.com/airbytehq/airbyte/pull/70468) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70018](https://github.com/airbytehq/airbyte/pull/70018) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69378](https://github.com/airbytehq/airbyte/pull/69378) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68799](https://github.com/airbytehq/airbyte/pull/68799) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68218](https://github.com/airbytehq/airbyte/pull/68218) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67867](https://github.com/airbytehq/airbyte/pull/67867) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67407](https://github.com/airbytehq/airbyte/pull/67407) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66397](https://github.com/airbytehq/airbyte/pull/66397) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [66054](https://github.com/airbytehq/airbyte/pull/66054) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65368](https://github.com/airbytehq/airbyte/pull/65368) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64600](https://github.com/airbytehq/airbyte/pull/64600) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64206](https://github.com/airbytehq/airbyte/pull/64206) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63917](https://github.com/airbytehq/airbyte/pull/63917) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63503](https://github.com/airbytehq/airbyte/pull/63503) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63096](https://github.com/airbytehq/airbyte/pull/63096) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62652](https://github.com/airbytehq/airbyte/pull/62652) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61825](https://github.com/airbytehq/airbyte/pull/61825) | Update dependencies |
+| 0.0.24 | 2025-06-14 | [61131](https://github.com/airbytehq/airbyte/pull/61131) | Update dependencies |
+| 0.0.23 | 2025-05-24 | [60604](https://github.com/airbytehq/airbyte/pull/60604) | Update dependencies |
+| 0.0.22 | 2025-05-10 | [59877](https://github.com/airbytehq/airbyte/pull/59877) | Update dependencies |
+| 0.0.21 | 2025-05-03 | [59255](https://github.com/airbytehq/airbyte/pull/59255) | Update dependencies |
+| 0.0.20 | 2025-04-26 | [58760](https://github.com/airbytehq/airbyte/pull/58760) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [57716](https://github.com/airbytehq/airbyte/pull/57716) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57037](https://github.com/airbytehq/airbyte/pull/57037) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56694](https://github.com/airbytehq/airbyte/pull/56694) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56059](https://github.com/airbytehq/airbyte/pull/56059) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55433](https://github.com/airbytehq/airbyte/pull/55433) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54762](https://github.com/airbytehq/airbyte/pull/54762) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54324](https://github.com/airbytehq/airbyte/pull/54324) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53812](https://github.com/airbytehq/airbyte/pull/53812) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53292](https://github.com/airbytehq/airbyte/pull/53292) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [52789](https://github.com/airbytehq/airbyte/pull/52789) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52244](https://github.com/airbytehq/airbyte/pull/52244) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51820](https://github.com/airbytehq/airbyte/pull/51820) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51202](https://github.com/airbytehq/airbyte/pull/51202) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50621](https://github.com/airbytehq/airbyte/pull/50621) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50079](https://github.com/airbytehq/airbyte/pull/50079) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49609](https://github.com/airbytehq/airbyte/pull/49609) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49233](https://github.com/airbytehq/airbyte/pull/49233) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [48911](https://github.com/airbytehq/airbyte/pull/48911) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.1 | 2024-11-28 | | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder |
 
 </details>
 

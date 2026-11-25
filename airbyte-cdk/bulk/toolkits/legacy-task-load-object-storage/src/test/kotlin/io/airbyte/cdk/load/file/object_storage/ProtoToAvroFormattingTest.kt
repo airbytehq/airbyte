@@ -133,8 +133,8 @@ class ProtoToAvroFormattingTest : ProtoFixtures(false) {
 
         assertTrue(
             ex.message!!.contains(
-                "java.lang.NullPointerException: null value for (non-nullable) long at dummy.int_col"
-            )
+                "java.lang.NullPointerException: null value for (non-nullable) long at dummy.int_col",
+            ),
         )
     }
 

@@ -27,7 +27,7 @@ class MySqlTestDataComparator : AdvancedTestDataComparator() {
 
     override fun compareBooleanValues(
         firstBooleanValue: String,
-        secondBooleanValue: String
+        secondBooleanValue: String,
     ): Boolean {
         return if (
             secondBooleanValue.equals("true", ignoreCase = true) ||

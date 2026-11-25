@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Factory class that creates [StateManager] instances based on the provided state. */
 object StateManagerFactory {
 
@@ -21,16 +22,16 @@ object StateManagerFactory {
      *
      * @param supportedStateType The type of state supported by the connector.
      * @param initialState The deserialized initial state that will be provided to the selected
-     * [StateManager].
+     *   [StateManager].
      * @param catalog The [ConfiguredAirbyteCatalog] for the connector that will utilize the state
-     * manager.
+     *   manager.
      * @return A newly created [StateManager] implementation based on the provided state.
      */
     @JvmStatic
     fun createStateManager(
         supportedStateType: AirbyteStateMessage.AirbyteStateType?,
         initialState: List<AirbyteStateMessage>?,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): StateManager {
         if (initialState != null && !initialState.isEmpty()) {
             val airbyteStateMessage = initialState[0]
@@ -43,7 +44,7 @@ object StateManagerFactory {
                     val retVal: StateManager =
                         LegacyStateManager(
                             Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!,
-                            catalog
+                            catalog,
                         )
                     return retVal
                 }
@@ -68,7 +69,7 @@ object StateManagerFactory {
             }
         } else {
             throw IllegalArgumentException(
-                "Failed to create state manager due to empty state list."
+                "Failed to create state manager due to empty state list.",
             )
         }
     }
@@ -84,7 +85,7 @@ object StateManagerFactory {
      * @param airbyteStateMessage The current state that is to be converted to global state.
      * @return The converted state message.
      * @throws IllegalArgumentException if unable to convert between the given state type and
-     * global.
+     *   global.
      */
     private fun generateGlobalState(airbyteStateMessage: AirbyteStateMessage): AirbyteStateMessage {
         var globalStateMessage = airbyteStateMessage
@@ -92,7 +93,7 @@ object StateManagerFactory {
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.STREAM ->
                 throw ConfigErrorException(
-                    "You've changed replication modes - please reset the streams in this connector"
+                    "You've changed replication modes - please reset the streams in this connector",
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                 globalStateMessage =
@@ -116,7 +117,7 @@ object StateManagerFactory {
      * @param states The list of current states.
      * @return The converted state messages.
      * @throws IllegalArgumentException if unable to convert between the given state type and
-     * stream.
+     *   stream.
      */
     private fun generateStreamState(states: List<AirbyteStateMessage>): List<AirbyteStateMessage> {
         val airbyteStateMessage = states[0]
@@ -124,11 +125,11 @@ object StateManagerFactory {
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                 throw ConfigErrorException(
-                    "You've changed replication modes - please reset the streams in this connector"
+                    "You've changed replication modes - please reset the streams in this connector",
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY ->
                 streamStates.addAll(
-                    StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage)
+                    StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage),
                 )
             AirbyteStateMessage.AirbyteStateType.STREAM -> streamStates.addAll(states)
             else -> streamStates.addAll(states)

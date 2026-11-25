@@ -3,18 +3,16 @@
 connector_image: airbyte/source-pardot:dev
 acceptance_tests:
   spec:
-    - spec_path: "manifest.yaml"
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - bypass_reason: "No test config in GSM for this connector"
   discovery:
-    - config_path: "secrets/config.json"
+    bypass_reason: "No test config in GSM for this connector"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+    bypass_reason: "No test config in GSM for this connector"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "No test config in GSM for this connector"

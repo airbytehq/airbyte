@@ -16,7 +16,9 @@ runs:
     - name: Create local image cache directory
       id: create-dagger-engine-image-cache-dir
       shell: bash
-      run: mkdir -p ${{ inputs.path_to_dagger_engine_image_cache }}
+      env:
+        IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE: ${{ inputs.path_to_dagger_engine_image_cache }}
+      run: mkdir -p "${IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE}"
 
     - name: Restore dagger engine image cache
       id: dagger-engine-image-cache-restore
@@ -30,10 +32,13 @@ runs:
       id: pull-dagger-engine-image
       if: steps.dagger-engine-image-cache-restore.outputs.cache-hit != 'true'
       shell: bash
+      env:
+        IN_DAGGER_ENGINE_IMAGE: ${{ inputs.dagger_engine_image }}
+        IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE: ${{ inputs.path_to_dagger_engine_image_cache }}
       run: |
         set -x
-        docker pull ${{ inputs.dagger_engine_image }}
-        docker save -o ${{ inputs.path_to_dagger_engine_image_cache }}/image.tar ${{ inputs.dagger_engine_image }}
+        docker pull "${IN_DAGGER_ENGINE_IMAGE}"
+        docker save -o "${IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE}/image.tar" "${IN_DAGGER_ENGINE_IMAGE}"
 
     # If no GitHub Action  cache hit, save the path to the image cache directory to the Github Action cache
     - name: Save dagger engine image cache
@@ -48,6 +53,8 @@ runs:
     - name: Load dagger engine image from cache
       if: steps.dagger-engine-image-cache-restore.outputs.cache-hit == 'true'
       shell: bash
+      env:
+        IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE: ${{ inputs.path_to_dagger_engine_image_cache }}
       run: |
         set -x
-        docker load -i ${{ inputs.path_to_dagger_engine_image_cache }}/image.tar
+        docker load -i "${IN_PATH_TO_DAGGER_ENGINE_IMAGE_CACHE}/image.tar"

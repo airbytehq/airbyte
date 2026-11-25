@@ -22,6 +22,9 @@ on:
           `--connectors-filter=source-github,source-stripe` (multiple by name),
           `--certified-only --connector-type=destination` (custom query).
         default: ""
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 jobs:
   generate_matrix:
     name: Generate matrix
@@ -47,9 +50,11 @@ jobs:
       - name: Resolve batch offset from cron schedule
         id: resolve-batch
         if: github.event_name == 'schedule'
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: |
           BATCH_LIMIT=200
-          case "${{ github.event.schedule }}" in
+          case "${EVENT_SCHEDULE}" in
             "0 3 * * 2") BATCH_OFFSET=0   ;;
             "0 5 * * 2") BATCH_OFFSET=200 ;;
             "0 7 * * 2") BATCH_OFFSET=400 ;;
@@ -119,14 +124,17 @@ jobs:
         env:
           BATCH_OFFSET: ${{ steps.resolve-batch.outputs.batch_offset }}
           BATCH_LIMIT: ${{ steps.resolve-batch.outputs.batch_limit }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+          STEP_LIST_SOURCES_SOURCES: ${{ steps.list-sources.outputs.sources }}
+          STEP_LIST_DESTINATIONS_DESTINATIONS: ${{ steps.list-destinations.outputs.destinations }}
         run: |
           BATCH_ARGS=""
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${GH_EVENT_NAME}" = "schedule" ]; then
             BATCH_ARGS="--sort-by=name --offset=$BATCH_OFFSET --limit=$BATCH_LIMIT"
           fi
           airbyte-ops local connector list \
             --repo-path "$GITHUB_WORKSPACE" \
-            --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
+            --connectors-filter="${STEP_LIST_SOURCES_SOURCES},${STEP_LIST_DESTINATIONS_DESTINATIONS}" \
             $BATCH_ARGS \
             --output-format=json-gh-matrix \
             > "$RUNNER_TEMP/matrix.json"
@@ -171,6 +179,7 @@ jobs:
       pull-requests: write
       contents: write
       actions: read
+      id-token: write
     env:
       CONNECTOR_NAME: ${{ matrix.connector }}
       CONNECTOR_DIR: ${{ matrix.connector_dir }}
@@ -201,12 +210,16 @@ jobs:
         id: get-user-id
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: echo "user-id=$(gh api "/users/${{ steps.get-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+          STEP_GET_APP_TOKEN_APP_SLUG: ${{ steps.get-app-token.outputs.app-slug }}
+        run: echo "user-id=$(gh api "/users/${STEP_GET_APP_TOKEN_APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
 
       - name: Configure git author
+        env:
+          STEP_GET_USER_ID_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
+          STEP_GET_APP_TOKEN_APP_SLUG: ${{ steps.get-app-token.outputs.app-slug }}
         run: |
-          git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
-          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          git config --global user.name "${STEP_GET_APP_TOKEN_APP_SLUG}[bot]"
+          git config --global user.email "${STEP_GET_USER_ID_USER_ID}+${STEP_GET_APP_TOKEN_APP_SLUG}[bot]@users.noreply.github.com"
 
       - name: Install uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
@@ -214,11 +227,18 @@ jobs:
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Get Docker Hub OIDC token
+        id: docker-hub-oidc
+        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+        with:
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_READ_ONLY_CONNECTION_ID }}
+          expires-in: 21600
+
       - name: Docker login
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          username: airbyte
+          password: ${{ steps.docker-hub-oidc.outputs.token }}
 
       # --- Step 1: Set up Python + Poetry ---
       # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
@@ -227,10 +247,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
-        with:
-          version: 2.3.3
+      - name: Install Poetry
+        run: uv tool install poetry==2.3.3
 
       # --- Step 2: Bump dependencies (CDK + external) ---
       - name: Bump dependencies
@@ -250,6 +268,9 @@ jobs:
       # --- Step 3: Update base image ---
       - name: Update base image in metadata.yaml
         id: bump-base-image
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
           BUMP_IMAGE_OUTPUT=$(
             airbyte-ops local connector bump-base-image \

@@ -1,5 +1,3 @@
-def kotlinCoroutinesVersion = "1.10.2"
-
 dependencies {
     // Needed for Micronaut annotations and logging
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
@@ -19,10 +17,12 @@ dependencies {
     }
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet')
 
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinCoroutinesVersion"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    // KGP >= 2.0.10 (KT-68278): test no longer inherits testFixturesImplementation deps.
+    testImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro"))

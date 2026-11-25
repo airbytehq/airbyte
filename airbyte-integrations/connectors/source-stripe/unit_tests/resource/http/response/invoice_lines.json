@@ -1,0 +1,23 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "il_1OEiWvEcXtiJtvvh0uxUZGRW",
+      "object": "line_item",
+      "amount": 1000,
+      "currency": "usd",
+      "description": "line item description",
+      "discountable": true,
+      "livemode": false,
+      "period": {
+        "end": 1700529213,
+        "start": 1700529213
+      },
+      "proration": false,
+      "quantity": 1,
+      "type": "invoiceitem"
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/invoices/in_1OEiWvEcXtiJtvvh/lines"
+}

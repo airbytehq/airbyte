@@ -35,7 +35,7 @@ data class DefaultJdbcStreamStateValue(
                     Jsons.valueToTree(
                         DefaultJdbcStreamStateValue(
                             primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                        )
+                        ),
                     )
             }
 
@@ -53,7 +53,7 @@ data class DefaultJdbcStreamStateValue(
                         DefaultJdbcStreamStateValue(
                             primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
                             cursors = mapOf(cursor.id to cursorUpperBound),
-                        )
+                        ),
                     )
             }
 
@@ -68,7 +68,7 @@ data class DefaultJdbcStreamStateValue(
                     Jsons.valueToTree(
                         DefaultJdbcStreamStateValue(
                             cursors = mapOf(cursor.id to cursorCheckpoint),
-                        )
+                        ),
                     )
             }
     }

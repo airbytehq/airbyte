@@ -25,12 +25,11 @@ object DatabricksAvroSchemaBuilder {
 
     /** Builds an Avro record schema from Databricks column types. */
     fun buildAvroSchema(columnSchema: Map<String, ColumnType>): Schema {
-        val fields =
-            columnSchema.map { (name, colType) ->
-                val baseType = databricksTypeToAvro(colType.type)
-                val fieldSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), baseType)
-                Schema.Field(name, fieldSchema, null, null as Any?)
-            }
+        val fields = columnSchema.map { (name, colType) ->
+            val baseType = databricksTypeToAvro(colType.type)
+            val fieldSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), baseType)
+            Schema.Field(name, fieldSchema, null, null as Any?)
+        }
         return Schema.createRecord("record", null, null, false, fields)
     }
 

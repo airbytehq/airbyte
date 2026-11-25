@@ -4,27 +4,39 @@
 
 - A Zendesk account on a plan that includes the [Zendesk Talk](https://www.zendesk.com/service/voice/) add-on
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
-- One of the following authentication methods:
-  - **API Token**: A Zendesk API token and the email address associated with the token
-  - **OAuth 2.0**: A Zendesk OAuth client with a client ID, client secret, and refresh token
+- OAuth 2.0 credentials. In Airbyte Cloud, you authenticate from the Airbyte UI. In self-managed Airbyte, you need a Zendesk OAuth client with a client ID and client secret.
+
+The setup form offers only **OAuth2.0**. Sources that already use an API token or legacy OAuth keep working. See [Existing sources that use an API token or legacy OAuth](#existing-sources-that-use-an-api-token-or-legacy-oauth).
 
 ## Setup guide
 
 ### Step 1: Set up Zendesk
 
-Choose one of the following authentication methods:
+<!-- env:oss -->
 
-**API Token**
+Register an OAuth client in your Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**, and note the client's unique identifier and secret. In the client's **Redirect URLs**, add the redirect URL that the Airbyte setup form shows under **Authentication**. It's your Airbyte URL followed by `/auth_flow`. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) in the Zendesk documentation.
 
-Generate an API token in your Zendesk Admin Center under **Apps and integrations > APIs > Zendesk API**. For details, see [Generating a new API token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-) in the Zendesk documentation. We recommend creating a token specifically for Airbyte access.
+:::caution
+Zendesk refresh tokens are single-use. Every refresh returns a new refresh token and invalidates the previous one, so only one source can use a refresh token. Don't copy the same value into a second source or a second Airbyte deployment.
+:::
 
-**OAuth 2.0**
-
-Register an OAuth client in your Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) in the Zendesk documentation. Zendesk uses rotating refresh tokens, so each token refresh returns a new refresh token and invalidates the previous one.
+<!-- /env:oss -->
 
 <!-- env:cloud -->
 
+Airbyte Cloud runs the OAuth flow for you. You need a Zendesk user who can authorize access to your account.
+
+<!-- /env:cloud -->
+
+### OAuth token lifetimes
+
+For the OAuth 2.0 refresh-token flow, the connector requests access tokens with `expires_in=172800` (2 days), both during authorization and when refreshing a token. Zendesk's [grant-type token API](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/) supports refresh-token lifetimes from 7 to 90 days, with a default of 30 days. The connector does not set `refresh_token_expires_in`, so it uses that default when requesting tokens.
+
+Each refresh invalidates the previous access token and refresh token. If your refresh token expires, obtain new OAuth credentials before resuming syncs.
+
 ### Step 2: Set up the Zendesk Talk connector in Airbyte
+
+<!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
@@ -32,11 +44,43 @@ Register an OAuth client in your Zendesk Admin Center under **Apps and integrati
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
-5. Choose your **Authentication** method (API Token or OAuth 2.0) and enter the required credentials.
+5. Under **Authentication**, authenticate with **OAuth 2.0**.
 6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
 7. Click **Set up source**.
 
 <!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Select **Zendesk Talk** from the Source type dropdown.
+4. Enter your **Subdomain**.
+5. Under **Authentication**, enter the **Client ID** and **Client Secret** from step 1. Click **Authenticate your Zendesk Talk account** and approve access in Zendesk.
+6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
+7. Click **Set up source**.
+
+Zendesk accepts only `https` redirect URLs, except for `localhost` and `127.0.0.1`. If your Airbyte URL doesn't meet that rule, click **Set up manually** in step 5 and enter the tokens yourself:
+
+1. Complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires.
+2. Enter the **Refresh Token** and the **Access Token** from the token response.
+3. Set **Token Expiry Date** to the time of the token response plus `expires_in` seconds, for example `2027-01-15T10:00:00Z`.
+
+:::caution
+Enter all three values. If you leave **Access Token** or **Token Expiry Date** empty, the connection test exchanges the refresh token for a new one. Airbyte versions that test the connection before they create the source don't save the new refresh token, and the source then fails on its first sync because Zendesk has already invalidated the one you entered.
+:::
+
+<!-- /env:oss -->
+
+### Existing sources that use an API token or legacy OAuth
+
+Sources that already use **API Token** or **OAuth2.0 (Legacy)** authentication keep syncing, and you can still change their other settings. The setup form no longer lists these two options, so **Authentication** shows no selected option and the stored credentials aren't displayed. The source keeps its stored credentials until you select **OAuth2.0** and authenticate again. After you switch a source to OAuth 2.0, you can't switch it back in the setup form.
+
+:::caution
+Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Since October 27, 2026, Zendesk accounts can't create new API tokens. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Re-authenticate every source that uses an API token with OAuth 2.0 before April 30, 2027.
+:::
 
 ## Supported sync modes
 
@@ -50,7 +94,7 @@ The **Zendesk Talk** source connector supports the following [sync modes](https:
 This connector syncs the following streams:
 
 - [Account Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-account-overview)
-- [Addresses](https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers)
+- [Addresses](https://developer.zendesk.com/api-reference/voice/talk-api/addresses/#list-addresses)
 - [Agents Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#list-agents-activity)
 - [Agents Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-agents-overview)
 - [Calls](https://developer.zendesk.com/api-reference/voice/talk-api/incremental_exports/#incremental-calls-export) (Incremental)
@@ -75,6 +119,18 @@ The connector respects the [Zendesk Talk API rate limits](https://developer.zend
 
 The connector automatically handles rate limiting by respecting `429` responses and the `Retry-After` header. Under normal usage, you should not encounter rate limit issues. If you do, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
+### Subscription plan
+
+Set **Subscription Plan/Tier** to match your Zendesk plan. If you are unsure, leave the default, **Team**, for the most conservative limit. The connector configures its request budget as follows:
+
+- **Team**: 200 requests per minute
+- **Growth**: 400 requests per minute
+- **Professional**: 400 requests per minute
+- **Enterprise**: 700 requests per minute
+- **Enterprise Plus**: 2,500 requests per minute
+
+These are the connector's configured budgets, not a guarantee of available API capacity. The [Zendesk Support API limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) also apply to Talk API requests, in addition to the endpoint limits above.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -95,6 +151,22 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.1.0 | 2026-11-16 | [93024](https://github.com/airbytehq/airbyte/pull/93024) | The setup form offers only OAuth 2.0 authentication. Sources that use an API token or legacy OAuth keep working. Re-authenticate API token sources with OAuth before April 30, 2027 |
+| 2.0.37 | 2026-11-16 | [93026](https://github.com/airbytehq/airbyte/pull/93026) | Airbyte Cloud: send the Zendesk Marketplace request headers on every request to Zendesk. Self-managed Airbyte sends them only on the OAuth authorization code exchange from the setup form |
+| 2.0.36 | 2026-11-10 | [91795](https://github.com/airbytehq/airbyte/pull/91795) | Update dependencies |
+| 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
+| 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |
+| 2.0.33 | 2026-10-27 | [90071](https://github.com/airbytehq/airbyte/pull/90071) | Update dependencies |
+| 2.0.32 | 2026-10-20 | [89478](https://github.com/airbytehq/airbyte/pull/89478) | Update dependencies |
+| 2.0.31 | 2026-10-13 | [88855](https://github.com/airbytehq/airbyte/pull/88855) | Update dependencies |
+| 2.0.30 | 2026-10-06 | [88101](https://github.com/airbytehq/airbyte/pull/88101) | Update dependencies |
+| 2.0.29 | 2026-09-29 | [87435](https://github.com/airbytehq/airbyte/pull/87435) | Update dependencies |
+| 2.0.28 | 2026-09-22 | [86870](https://github.com/airbytehq/airbyte/pull/86870) | Update dependencies |
+| 2.0.27 | 2026-09-15 | [86299](https://github.com/airbytehq/airbyte/pull/86299) | Update dependencies |
+| 2.0.26 | 2026-09-08 | [85734](https://github.com/airbytehq/airbyte/pull/85734) | Update dependencies |
+| 2.0.25 | 2026-08-18 | [84810](https://github.com/airbytehq/airbyte/pull/84810) | Update dependencies |
+| 2.0.24 | 2026-08-11 | [83814](https://github.com/airbytehq/airbyte/pull/83814) | Persist OAuth token expiry on initial authentication so the first sync no longer refreshes and rotates away the single-use refresh token |
+| 2.0.23 | 2026-08-11 | [84187](https://github.com/airbytehq/airbyte/pull/84187) | Update dependencies |
 | 2.0.22 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.0.21 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.0.19 — 2.0.20 is built on SDM 7.23.7, which breaks bundled custom components |
 | 2.0.20 | 2026-07-28 | [83181](https://github.com/airbytehq/airbyte/pull/83181) | Update dependencies |

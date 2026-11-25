@@ -49,6 +49,9 @@ on:
         type: boolean
         default: false
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: read
 
@@ -72,41 +75,33 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: Resolve workflow variables
-        env:
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector-name }}
-          INPUT_UNYANK: ${{ inputs.unyank }}
-        run: |
-          echo "INPUT_CONNECTOR_NAME=$INPUT_CONNECTOR_NAME" | tee -a "$GITHUB_ENV"
-
-          if [ "$INPUT_UNYANK" = "true" ]; then
-            echo "REGISTRY_ACTION=unyank" | tee -a "$GITHUB_ENV"
-          else
-            echo "REGISTRY_ACTION=yank" | tee -a "$GITHUB_ENV"
-          fi
-
-      - name: Resolve approval URL
-        env:
-          INPUT_APPROVAL_URL: ${{ inputs.approval-url }}
-          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
-          INPUT_PR: ${{ inputs.pr }}
-          INPUT_REPOSITORY: ${{ github.repository }}
-        run: |
-          if [ -n "$INPUT_APPROVAL_URL" ]; then
-            echo "APPROVAL_URL=$INPUT_APPROVAL_URL" | tee -a "$GITHUB_ENV"
-          elif [ -n "$INPUT_COMMENT_ID" ] && [ -n "$INPUT_PR" ]; then
-            echo "APPROVAL_URL=https://github.com/$INPUT_REPOSITORY/pull/$INPUT_PR#issuecomment-$INPUT_COMMENT_ID" | tee -a "$GITHUB_ENV"
-          else
-            echo "APPROVAL_URL=" | tee -a "$GITHUB_ENV"
-          fi
-
       - name: Update connector version yank marker
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_STORE: ${{ inputs.store }}
           INPUT_REASON: ${{ inputs.reason }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector-name }}
+          INPUT_UNYANK: ${{ inputs.unyank }}
+          INPUT_APPROVAL_URL: ${{ inputs.approval-url }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          INPUT_PR: ${{ inputs.pr }}
+          INPUT_REPOSITORY: ${{ github.repository }}
         run: |
+          if [ "$INPUT_UNYANK" = "true" ]; then
+            REGISTRY_ACTION=unyank
+          else
+            REGISTRY_ACTION=yank
+          fi
+
+          if [ -n "$INPUT_APPROVAL_URL" ]; then
+            APPROVAL_URL="$INPUT_APPROVAL_URL"
+          elif [ -n "$INPUT_COMMENT_ID" ] && [ -n "$INPUT_PR" ]; then
+            APPROVAL_URL="https://github.com/$INPUT_REPOSITORY/pull/$INPUT_PR#issuecomment-$INPUT_COMMENT_ID"
+          else
+            APPROVAL_URL=""
+          fi
+
           args=(
             --name "$INPUT_CONNECTOR_NAME"
             --version "$INPUT_VERSION"
@@ -123,6 +118,9 @@ jobs:
   compile-registry:
     name: Compile registry
     needs: yank-version
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
       connector-name: ${{ inputs.connector-name }}

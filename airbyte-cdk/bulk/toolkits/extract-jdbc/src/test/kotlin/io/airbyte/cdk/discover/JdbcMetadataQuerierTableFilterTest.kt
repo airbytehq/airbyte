@@ -29,7 +29,7 @@ class JdbcMetadataQuerierTableFilterTest {
             // Create tables in each schema
             tableNames.forEach { tableName ->
                 h2.execute(
-                    "CREATE TABLE $schemaName.$tableName (ID INT PRIMARY KEY, NAME VARCHAR(255))"
+                    "CREATE TABLE $schemaName.$tableName (ID INT PRIMARY KEY, NAME VARCHAR(255))",
                 )
             }
         }
@@ -135,7 +135,7 @@ class JdbcMetadataQuerierTableFilterTest {
             Assertions.assertEquals(
                 setOf("CUSTOMERS", "ORDERS"),
                 schema1Tables,
-                "SCHEMA1 should have only filtered tables (CUSTOMERS, ORDERS)"
+                "SCHEMA1 should have only filtered tables (CUSTOMERS, ORDERS)",
             )
 
             // Verify SCHEMA2 (without filter) has ALL tables
@@ -145,7 +145,7 @@ class JdbcMetadataQuerierTableFilterTest {
             Assertions.assertEquals(
                 tableNames.toSet(),
                 schema2Tables,
-                "SCHEMA2 (without filter) should have ALL tables"
+                "SCHEMA2 (without filter) should have ALL tables",
             )
         }
     }

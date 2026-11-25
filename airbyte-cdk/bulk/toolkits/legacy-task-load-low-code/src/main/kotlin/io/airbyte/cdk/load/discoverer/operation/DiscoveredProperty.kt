@@ -40,7 +40,7 @@ class DiscoveredProperty(
     fun getType(): FieldType {
         return FieldType(
             typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType"),
-            nullable = true
+            nullable = true,
         )
     }
 

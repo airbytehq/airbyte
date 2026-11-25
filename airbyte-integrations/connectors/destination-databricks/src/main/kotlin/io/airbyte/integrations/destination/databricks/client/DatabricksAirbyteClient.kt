@@ -185,6 +185,11 @@ class DatabricksAirbyteClient(
         stagingVolumeCache.add(tableName)
     }
 
+    fun dropStagingVolume(tableName: TableName) {
+        execute(sqlGenerator.dropStagingVolume(tableName))
+        stagingVolumeCache.remove(tableName)
+    }
+
     /** Uploads a file to a Unity Catalog Volume path. */
     fun uploadToVolume(stagedFilePath: String, inputStream: InputStream) {
         log.info { "Uploading staged file: $stagedFilePath" }

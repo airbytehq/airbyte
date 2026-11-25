@@ -39,6 +39,7 @@ import java.io.OutputStream
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage
+
     fun asProtobuf(): AirbyteMessageProtobuf =
         AirbyteMessageProtobuf.newBuilder()
             .setAirbyteProtocolMessage(asProtocolMessage().serializeToString())
@@ -46,7 +47,7 @@ sealed interface InputMessage {
 
     fun writeProtocolMessage(
         dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ) {
         when (dataChannelFormat) {
             DataChannelFormat.JSONL ->
@@ -84,7 +85,7 @@ data class InputRecord(
         meta = Meta(changes),
         serialized = data,
         checkpointId,
-        unknownFieldNames
+        unknownFieldNames,
     )
 
     override fun asProtobuf(): AirbyteMessageProtobuf {
@@ -104,15 +105,15 @@ data class InputRecord(
                                 .setField(it.field)
                                 .setChange(
                                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType
-                                        .valueOf(it.change.name)
+                                        .valueOf(it.change.name),
                                 )
                                 .setReason(
                                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                        .valueOf(it.reason.name)
+                                        .valueOf(it.reason.name),
                                 )
                                 .build()
-                        }
-                    )
+                        },
+                    ),
             )
         }
         val orderedSchema = stream.airbyteValueProxyFieldAccessors
@@ -124,8 +125,7 @@ data class InputRecord(
                         AirbyteValueProtobuf.newBuilder()
                             .setJson(ByteString.copyFrom(it.toJson().serializeToJsonBytes()))
                             .build()
-                    }
-                        ?: toProtobuf(NullValue, field.type)
+                    } ?: toProtobuf(NullValue, field.type)
                 } else {
                     toProtobuf(data.values[field.name] ?: NullValue, field.type)
                 }
@@ -154,7 +154,7 @@ data class InputRecord(
                         if (checkpointId != null) {
                             it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
                         }
-                    }
+                    },
             )
 }
 
@@ -173,15 +173,16 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
             Checkpoint(
                 unmappedNamespace = unmappedNamespace,
                 unmappedName = unmappedName,
-                state = blob.deserializeToNode()
+                state = blob.deserializeToNode(),
             ),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
             0L,
             checkpointKey,
-        )
+        ),
     )
+
     override fun asProtocolMessage(): AirbyteMessage = checkpoint.asProtocolMessage()
 }
 
@@ -200,7 +201,7 @@ data class InputGlobalCheckpoint(
                     .withGlobal(
                         AirbyteGlobalState()
                             .withSharedState(sharedState)
-                            .withStreamStates(streamStates.map { it.asProtocolObject() })
+                            .withStreamStates(streamStates.map { it.asProtocolObject() }),
                     )
                     .also {
                         if (checkpointKey != null) {
@@ -213,7 +214,7 @@ data class InputGlobalCheckpoint(
                             it.sourceStats =
                                 AirbyteStateStats().withRecordCount(sourceRecordCount.toDouble())
                         }
-                    }
+                    },
             )
 }
 

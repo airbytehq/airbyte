@@ -122,7 +122,7 @@ class ClickhouseTableSchemaEvolutionTest(
                     "union" to ColumnType(ClickhouseSqlTypes.STRING, true),
                     "legacy_union" to ColumnType(ClickhouseSqlTypes.STRING, true),
                     "unknown" to ColumnType(ClickhouseSqlTypes.STRING, true),
-                )
+                ),
             )
     }
 }

@@ -10,5 +10,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class TypesMap(
     @JsonProperty("type") val type: String = "TypesMap",
     @JsonProperty("api_type") val apiType: List<String>,
-    @JsonProperty("airbyte_type") val airbyteType: List<AirbyteType>
+    @JsonProperty("airbyte_type") val airbyteType: List<AirbyteType>,
 )

@@ -31,7 +31,7 @@ class ClientSocket(
             totalWaitMs += connectWaitDelayMs
             if (totalWaitMs > connectTimeoutMs) {
                 throw IllegalStateException(
-                    "Socket file $socketPath not created after $connectTimeoutMs ms"
+                    "Socket file $socketPath not created after $connectTimeoutMs ms",
                 )
             }
         }
@@ -69,7 +69,7 @@ class ClientSocket(
             totalWaitMs += connectWaitDelayMs
             if (totalWaitMs > connectTimeoutMs) {
                 throw IllegalStateException(
-                    "Socket file $socketPath not created after $connectTimeoutMs ms"
+                    "Socket file $socketPath not created after $connectTimeoutMs ms",
                 )
             }
         }

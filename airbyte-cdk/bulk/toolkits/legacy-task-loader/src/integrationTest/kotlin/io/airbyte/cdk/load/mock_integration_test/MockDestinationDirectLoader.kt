@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
 class MockDestinationDirectLoaderFactory(
-    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat,
 ) : DirectLoaderFactory<MockDestinationDirectLoader> {
     override fun create(streamDescriptor: DestinationStream.Descriptor, part: Int) =
         MockDestinationDirectLoader(dataChannelFormat)
@@ -51,9 +51,10 @@ class MockDestinationDirectLoader(
                 record.stream.generationId,
                 recordAirbyteValue.data as ObjectValue,
                 OutputRecord.Meta(
-                    changes = (recordAirbyteValue.meta?.changes
-                            ?: listOf()) + dataChannelFormatInducedChanges,
-                    syncId = record.stream.syncId
+                    changes =
+                        (recordAirbyteValue.meta?.changes ?: listOf()) +
+                            dataChannelFormatInducedChanges,
+                    syncId = record.stream.syncId,
                 ),
             )
         // blind insert into the staging area. We'll dedupe on commit.
