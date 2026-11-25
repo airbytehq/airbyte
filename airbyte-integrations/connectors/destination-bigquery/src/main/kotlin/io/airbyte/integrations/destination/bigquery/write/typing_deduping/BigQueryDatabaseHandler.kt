@@ -184,6 +184,13 @@ class BigQueryDatabaseHandler(
     private fun wrapWithConfigExceptionIfNeeded(e: Exception): Exception {
         when (e) {
             is BigQueryException -> {
+                val accessDeniedError = e.errors.firstOrNull { it.reason == "accessDenied" }
+                if (accessDeniedError != null) {
+                    return ConfigErrorException(
+                        "The BigQuery service account is missing a required permission. ${accessDeniedError.message} Grant the service account the BigQuery Data Editor role on the dataset named above, then retry the sync.",
+                        e,
+                    )
+                }
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
