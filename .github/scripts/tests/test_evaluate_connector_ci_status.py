@@ -138,7 +138,6 @@ CDK_PRERELEASE_ENV = {
     "CONNECTOR": "source-example",
     "BASE_VERSION": "1.2.3",
     "HEAD_VERSION": "1.2.4",
-    "PROGRESSIVE_ROLLOUT": "false",
 }
 
 
@@ -156,11 +155,12 @@ def test_cdk_prerelease_pin_with_unchanged_version_warns():
     assert "does not publish it" in completed.stdout
 
 
-def test_cdk_prerelease_pin_with_progressive_rollout_warns():
-    completed = run_cdk_prerelease_check(PROGRESSIVE_ROLLOUT="true")
+@pytest.mark.parametrize("head_version", ["1.3.0-rc.1", "1.2.4-dev.1", "1.2.4-hotfix.1"])
+def test_cdk_prerelease_pin_with_prerelease_version_warns(head_version):
+    completed = run_cdk_prerelease_check(HEAD_VERSION=head_version)
     assert completed.returncode == 0
     assert completed.stdout.startswith("::warning ")
-    assert "progressive rollout" in completed.stdout
+    assert "not a GA version" in completed.stdout
 
 
 @pytest.mark.parametrize("base_version", ["1.2.3", ""], ids=["version-bump", "new-connector"])
@@ -171,11 +171,6 @@ def test_cdk_prerelease_pin_published_to_every_connection_fails(base_version):
         "::error file=airbyte-integrations/connectors/source-example/pyproject.toml,title=Python CDK prerelease pin::"
     )
     assert "every connection at once" in completed.stdout
-
-
-def test_cdk_prerelease_pin_with_progressive_rollout_unset_fails():
-    # 'Read Release Settings' reads an unset flag as 'false', like publish_connectors.yml.
-    assert run_cdk_prerelease_check(PROGRESSIVE_ROLLOUT="").returncode == 1
 
 
 def test_cdk_prerelease_script_does_not_interpolate_expressions():
