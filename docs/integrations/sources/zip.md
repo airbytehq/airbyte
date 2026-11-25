@@ -111,6 +111,6 @@ The connector retries `429` and `5xx` responses with exponential backoff, up to 
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | ------- | ---------- | --------------------------------------------------------- | --------------------------------------------- |
-| 0.0.1   | 2026-11-25 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)  | Initial release by [@MercureTony](https://github.com/MercureTony) |
+| 0.0.1   | 2026-11-25 | [94067](https://github.com/airbytehq/airbyte/pull/94067)  | Initial release by [@MercureTony](https://github.com/MercureTony) |
 
 </details>
