@@ -285,6 +285,71 @@ class TestUpdateInBatch:
         for b in batches:
             b.execute.assert_called_once()
 
+    def test_malformed_batch_response_is_swallowed(self, api, started_job, batch):
+        """AttributeError from batch.execute() (malformed FB response) must not propagate.
+
+        When the Facebook Batch API returns a non-JSON body (HTML error page,
+        truncated response), the SDK raises AttributeError inside execute().
+        update_in_batch runs on a polling loop, so the next cycle will re-poll
+        the same jobs safely.
+        """
+        jobs = [started_job for _ in range(5)]
+        batch.execute.side_effect = AttributeError("'str' object has no attribute 'get'")
+
+        # Must not raise
+        update_in_batch(api=api, jobs=jobs)
+
+    def test_malformed_batch_response_mid_batch_is_swallowed(self, api, started_job, mocker):
+        """AttributeError during the intermediate batch (size-cap flush) must not propagate."""
+        batch1 = FacebookAdsApiBatch(api=api)
+        batch2 = FacebookAdsApiBatch(api=api)
+        mocker.patch.object(batch1, "execute", side_effect=AttributeError("'str' object has no attribute 'get'"))
+        mocker.patch.object(batch2, "execute", return_value=None)
+        api.new_batch.side_effect = [batch1, batch2]
+
+        jobs = [started_job for _ in range(55)]
+
+        # Must not raise — the mid-batch AttributeError is swallowed, the
+        # remainder batch still executes normally.
+        update_in_batch(api=api, jobs=jobs)
+
+    def test_non_attribute_error_still_propagates(self, api, started_job, batch):
+        """Other exceptions from batch.execute() must still propagate normally."""
+        jobs = [started_job for _ in range(5)]
+        batch.execute.side_effect = RuntimeError("unexpected SDK error")
+
+        with pytest.raises(RuntimeError, match="unexpected SDK error"):
+            update_in_batch(api=api, jobs=jobs)
+
+    @pytest.mark.parametrize("job_count", [1, 50])
+    @pytest.mark.parametrize("wrap_in_parent", [False, True])
+    def test_persistent_malformed_batch_response_times_out(self, api, started_job, api_limit, job_count, wrap_in_parent):
+        api.new_batch.side_effect = lambda: FacebookAdsApiBatch(api=api)
+        api.call.return_value.json.return_value = "<html>Bad Gateway</html>"
+        jobs = [started_job] * job_count
+        if wrap_in_parent:
+            jobs = [ParentAsyncJob(api=api, jobs=jobs, interval=started_job.interval)]
+
+        with freezegun.freeze_time(ab_datetime_now()) as clock:
+            for _ in range(2):
+                clock.tick(timedelta(minutes=10))
+                update_in_batch(api=api, jobs=jobs)
+                assert started_job.started
+                assert api_limit.inflight == 1
+
+            clock.tick(timedelta(minutes=61))
+            update_in_batch(api=api, jobs=jobs)
+
+        assert not started_job.started
+        assert not started_job.completed
+        assert not started_job.failed
+        assert started_job.attempt_number == 1
+        assert api_limit.inflight == 0
+
+        started_job.start(api_limit)
+        assert started_job.started
+        assert started_job.attempt_number == 2
+
 
 class TestInsightAsyncJob:
     """Test InsightAsyncJob class"""
