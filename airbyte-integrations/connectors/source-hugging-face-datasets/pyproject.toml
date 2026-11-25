@@ -19,8 +19,6 @@ include = "source_hugging_face_datasets"
 python = "^3.10,<3.14"
 airbyte-cdk = "^7"
 datasets = ">=4.0.0"
-pandas = ">=2.0.0"
-pyyaml = ">=6.0.0"
 
 [tool.poetry.scripts]
 source-hugging-face-datasets = "source_hugging_face_datasets.run:run"

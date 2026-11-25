@@ -18,7 +18,7 @@ include = "source_hugging_face_buckets"
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
 airbyte-cdk = "^7"
-huggingface_hub = ">=0.20.0"
+huggingface_hub = ">=1.22.0"  # bucket support (hf://buckets/) was added in 1.x
 pandas = ">=2.0.0"
 pyarrow = ">=14.0.0"
 
