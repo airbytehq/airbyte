@@ -50,7 +50,8 @@ This source connector allows you to read data files (Parquet, CSV, JSON, JSONL) 
 
 1. For **Bucket Path**, enter the _path_ to the Hugging Face Bucket. Format: `hf://buckets/{username}/{bucket}/{path}/`
 2. For **File Format**, select the _format_ of files in the bucket (Parquet, CSV, JSON, or JSONL).
-3. For **Hugging Face Token**, enter your _token_ for authentication. Required for private buckets.
+3. For **Reader Options**, optionally enter a _JSON string_ of extra options passed to the CSV, JSON and JSONL readers, for example `{"sep": ";", "encoding": "utf-8"}`.
+4. For **Hugging Face Token**, enter your _token_ for authentication. Required for private buckets.
 
 ### Step 2: Select the streams and configure sync modes
 

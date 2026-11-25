@@ -36,10 +36,9 @@ This destination writes data files (Parquet, JSONL) to Hugging Face Buckets (fil
 
 ### Step 1: Configure connection settings
 
-1. For **Bucket Path**, enter the _path_ to the Hugging Face Bucket. Format: `hf://buckets/{username}/{bucket}/{path}/`
+1. For **Destination Path**, enter the _path_ to the Hugging Face Bucket where data will be written. Format: `hf://buckets/{username}/{bucket}/{path}/`
 2. For **File Format**, select the _format_ to write (Parquet or JSONL).
-3. For **Bucket Mode** (Optional), select the _mode_ for bucket access (public, read-only, or write).
-4. For **Hugging Face Token** (Optional), enter your _token_ for authentication. This is required for private buckets.
+3. For **Hugging Face Token**, enter your _token_ for authentication. This is required to write to a bucket.
 
 ### Step 2: Complete the setup
 
@@ -52,8 +51,10 @@ The Hugging Face Buckets destination connector supports the following [sync mode
 | Sync mode | Supported? |
 | --- | --- |
 | Full Refresh - Overwrite | Yes |
-| Full Refresh - Append | Yes |
-| Incremental Sync - Append | Yes |
+| Full Refresh - Append | No |
+| Incremental Sync - Append | No |
+
+Each sync rewrites the files of the selected streams: a stream is written to a single `{stream}.parquet` or `{stream}.jsonl` file at the configured path. Append and incremental modes would replace the file with the records of the last sync, so they are not supported.
 
 ## Changelog
 

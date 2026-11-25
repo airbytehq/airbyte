@@ -63,8 +63,10 @@ The Hugging Face Datasets destination connector supports the following [sync mod
 | Feature | Supported? |
 | --- | --- |
 | Full Refresh - Overwrite | Yes |
-| Full Refresh - Append | Yes |
-| Incremental Sync - Append | Yes |
+| Full Refresh - Append | No |
+| Incremental Sync - Append | No |
+
+Each sync pushes the records of a stream as a [config](https://huggingface.co/docs/datasets/repository_structure) named after the stream, which replaces the data of that config. Append and incremental modes would replace the previous records with the ones of the last sync, so they are not supported.
 
 ## Changelog
 
