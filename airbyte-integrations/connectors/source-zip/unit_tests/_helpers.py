@@ -33,7 +33,7 @@ CONFIG = {
     "start_date": START_DATE,
 }
 
-# Every stream shares the same cursor and filter shape; only the query parameter name differs.
+# Every stream shares the same cursor shape; only the filter name and the page size differ.
 STREAMS = {
     "requests": {"url": REQUESTS_URL, "path": REQUESTS_PATH, "filter": "last_updated_after", "page_size": "30"},
     "purchase_orders": {"url": PURCHASE_ORDERS_URL, "path": PURCHASE_ORDERS_PATH, "filter": "last_updated_after", "page_size": "50"},
@@ -105,6 +105,39 @@ def record(record_id: str, updated_at: int, **extra) -> dict:
     }
     base.update(extra)
     return base
+
+
+def config_without(*keys: str) -> dict:
+    """CONFIG with the given keys removed, to test the manifest's defaults."""
+    return {key: value for key, value in CONFIG.items() if key not in keys}
+
+
+def sync_url(stream_name: str, cursor: str) -> str:
+    """The stream's URL with the filter parameter every sync request carries."""
+    stream = STREAMS[stream_name]
+    return f"{stream['url']}?{stream['filter']}={cursor}"
+
+
+def sync_requests(request_history, stream_name: str) -> list:
+    """Recorded requests to the stream's endpoint that carry the incremental filter (the sync)."""
+    stream = STREAMS[stream_name]
+    return [request for request in requests_to(request_history, stream["path"]) if stream["filter"] in query_params(request)]
+
+
+def schema_requests(request_history, stream_name: str) -> list:
+    """Recorded requests to the stream's endpoint without the filter (the schema loader's read)."""
+    stream = STREAMS[stream_name]
+    return [request for request in requests_to(request_history, stream["path"]) if stream["filter"] not in query_params(request)]
+
+
+def mock_schema_read(mocker, stream_name: str) -> None:
+    """Serve the schema loader's unfiltered read with one record."""
+    mocker.get(STREAMS[stream_name]["url"], json=page([record("schema-1", 1718000500)]))
+
+
+def stream_schema(stream_name: str, config: dict = CONFIG) -> dict:
+    """The merged JSON schema the connector declares for a stream."""
+    return next(stream for stream in get_source(config).streams(config) if stream.name == stream_name).get_json_schema()
 
 
 def query_params(request) -> dict:

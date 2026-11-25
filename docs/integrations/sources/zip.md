@@ -13,9 +13,9 @@ The Zip source syncs purchase requests, purchase orders and invoices from [Zip](
 
 1. In Zip, go to **Settings** > **API Keys**.
 2. Create a key with read access to requests, purchase orders and invoices. A restricted, read-only key is enough.
-3. Copy the key. Zip shows it once.
+3. Copy the key.
 
-Zip's API reference at [developer.zip.com](https://developer.zip.com) is only readable with a Zip login.
+Zip's API reference at [developer.ziphq.com](https://developer.ziphq.com) is only readable with a Zip login.
 
 <HideInUI>
 
@@ -42,7 +42,7 @@ Zip's API reference at [developer.zip.com](https://developer.zip.com) is only re
 
 ### Start Date
 
-On the first sync, every stream reads only records whose `updated_at` is on or after this date. Later syncs use the saved cursor instead. Enter the date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds are accepted. Values with a numeric offset are rejected.
+On the first sync, every stream reads records whose `updated_at` is on or after this date. For purchase orders, Zip matches on last activity, so some records with an older `updated_at` also come back (see below). Later syncs use the saved cursor instead. Enter the date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds are accepted. Values with a numeric offset are rejected.
 
 ### Connection test
 
@@ -59,10 +59,10 @@ The Zip source connector supports the following [sync modes](https://docs.airbyt
 
 All three streams support incremental syncs on `updated_at`.
 
-- **Incremental syncs filter on the server.** The connector sends the saved cursor as a query parameter. Zip names that parameter differently per endpoint: `updated_after` on `/invoices`, and `last_updated_after` on `/requests` and `/purchase_orders`. The connector handles this for you.
+- **Incremental syncs filter on the server.** The connector sends the saved cursor as a query parameter. Zip names that parameter differently per endpoint: `updated_after` on `/invoices`, and `last_updated_after` on `/requests` and `/purchase_orders`.
 - **Records at the cursor boundary are read again.** Zip's filter includes records whose `updated_at` equals the given value, so the next sync re-emits the records at the saved cursor. Use **Incremental - Append + Deduped** to keep one row per `id`.
 - **`purchase_orders` also returns records with an older `updated_at`.** On `/purchase_orders`, Zip's `last_updated_after` filter matches on the purchase order's `last_activity_at`, not on `updated_at`. A purchase order with recent activity (for example a new invoice matched to it) is returned even when its `updated_at` is older than the cursor. The connector emits these records as Zip returns them and the cursor still advances on `updated_at`. With **Append + Deduped**, the destination keeps one row per `id`. On `/requests` and `/invoices`, every returned record had an `updated_at` inside the window.
-- **Timestamps are Unix epoch seconds.** `updated_at`, `created_at` and the other `*_at` fields hold integers such as `1718000500`, not ISO 8601 strings. The connector declares `updated_at` as an integer and leaves the others as strings.
+- **Timestamps are Unix epoch seconds.** `updated_at`, `created_at` and the other `*_at` fields hold integers such as `1718000500`, not ISO 8601 strings. The connector declares `updated_at` as an integer and declares the others as strings.
 
 ## Supported streams
 
@@ -78,9 +78,9 @@ Every request asks Zip to include the account's custom fields (`include_attribut
 
 The connector does not ship a fixed list of columns. Each stream declares two fields itself, `id` (string) and `updated_at` (integer), and discovers the rest at runtime:
 
-- When Airbyte discovers the schema, and once more at the start of each sync, the connector reads the first page of the endpoint, sorted newest first, and declares every top-level key of the **first record** as a nullable string. Zip returns every key on every record (null when unset), so the first record carries the full field set.
-- Nested objects and arrays, such as `vendor`, `line_items`, `approvals` and `attributes`, are declared as strings and land as JSON text. Parse them in your destination, for example with your warehouse's JSON functions.
-- Numbers, booleans and epoch timestamps other than `updated_at` also land as strings. Cast them downstream.
+- When Airbyte discovers the schema, and once more at the start of each sync, the connector reads the first page of the endpoint, sorted newest first, and declares every top-level key of the **first record** as a nullable string. In all the data seen so far, Zip returns every key on every record (null when unset), so the first record carries the full field set.
+- Nested objects and arrays, such as `vendor`, `line_items`, `approvals` and `attributes`, are declared as strings. The connector emits them as Zip returns them, and typed destinations store them as JSON text. Parse them in your destination, for example with your warehouse's JSON functions.
+- Numbers, booleans and epoch timestamps other than `updated_at` are declared as strings too. Cast them downstream.
 - When Zip adds a field, it appears on the next schema refresh in Airbyte. No connector update is needed.
 - If an endpoint returns no records when the schema is read, the stream declares only `id` and `updated_at`. The schema does not forbid other fields, so the records themselves are still complete, but typed destinations may not create columns for the undeclared fields until you refresh the schema after data exists.
 
@@ -92,7 +92,7 @@ This uses the Airbyte CDK's `DynamicSchemaLoader`, which the CDK marks as experi
 
 - **Three streams.** Zip's API exposes more objects (vendors, users, accounting codes and others). They are not included yet.
 - **One schema read per stream per sync.** The runtime schema read above costs one extra request per stream on each sync.
-- **Incremental syncs rely on a Zip fix from August 2026.** Before it, Zip's pagination cursor did not tie-break on `updated_at`, so records sharing one timestamp could be skipped under the date filters (Zip support ticket 110091). Zip deployed the fix for `/invoices` and `/purchase_orders` on 2026-08-07 and for `/requests` on 2026-08-25. If you suspect skipped records from before those dates, run a full refresh.
+- **Incremental syncs rely on a Zip fix from August 2026.** Before it, Zip's pagination cursor did not tie-break on `updated_at`, so records sharing one timestamp could be skipped under the date filters. Zip deployed the fix for `/invoices` and `/purchase_orders` on 2026-08-07 and for `/requests` on 2026-08-25.
 - **Private API documentation.** Zip's developer portal requires a Zip login, so this page cannot link to the reference for each endpoint.
 
 ### Errors
@@ -100,9 +100,9 @@ This uses the Airbyte CDK's `DynamicSchemaLoader`, which the CDK marks as experi
 | Error | Cause | Fix |
 | --- | --- | --- |
 | `Zip rejected the API key` | Zip returned `401` or `403`. | Check the key under **Settings** > **API Keys** in Zip, that it has read access to the three objects, and that **API Version** is one Zip still supports. |
-| `400` with `INVALID_PARAM` | Zip rejected a query parameter. The connector sends each endpoint's own filter name, so this usually means the API version changed what the endpoint accepts. | Check the **API Version** setting. |
+| `400` with `INVALID_PARAM` | Zip rejected a query parameter. | Check the **API Version** setting. |
 
-The connector retries `429` and `5xx` responses with exponential backoff, up to five times.
+The connector retries `429`, server errors (`5xx`) and timeouts with exponential backoff, up to five times.
 
 ## Changelog
 

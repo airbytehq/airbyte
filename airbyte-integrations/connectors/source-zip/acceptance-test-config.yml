@@ -6,12 +6,14 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behaviour is covered by unit_tests/."
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behaviour is covered by unit_tests/."
+    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
   basic_read:
-    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behaviour is covered by unit_tests/."
+    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
   incremental:
-    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behaviour is covered by unit_tests/."
+    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
   full_refresh:
-    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behaviour is covered by unit_tests/."
+    bypass_reason: "No Zip credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."

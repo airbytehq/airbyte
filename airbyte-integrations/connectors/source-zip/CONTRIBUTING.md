@@ -10,10 +10,12 @@ This is a manifest-only connector: all behavior lives in `manifest.yaml`. It rea
 1. **Every field except `id` and `updated_at` is discovered at runtime and typed as a nullable string.**
    Each stream lists two schema loaders: an `InlineSchemaLoader` that pins `id` (string) and `updated_at`
    (integer), then a `DynamicSchemaLoader` that reads the first record of the endpoint and declares each of
-   its top-level keys as `["null", "string"]`. The inline loader comes first so its types win. Zip returns
-   every key on every record (null when unset), so the first record carries the full field set. Nested
-   objects and arrays land as JSON strings; parse them downstream. `DynamicSchemaLoader` is marked
-   experimental in the CDK.
+   its top-level keys as `["null", "string"]`. The inline loader comes first so its types win. In all the
+   data seen so far, Zip returns every key on every record (null when unset), so the first record carries
+   the full field set. Nested objects and arrays are declared as strings; the connector emits them as Zip
+   returns them, and typed destinations store them as JSON text. `DynamicSchemaLoader` is marked
+   experimental in the CDK, and the empty `key_pointer` relies on the loader iterating over the record's
+   keys when `schema_pointer` is empty, so re-check this on CDK upgrades.
 2. **The incremental filter has a different name per endpoint.** `/invoices` filters on `updated_after`;
    `/requests` and `/purchase_orders` filter on `last_updated_after`. Sending the other name returns
    HTTP 400 `INVALID_PARAM`. Keep the per-stream `start_time_option`.
@@ -23,15 +25,15 @@ This is a manifest-only connector: all behavior lives in `manifest.yaml`. It rea
    like `{"updated_at": "1718000000"}`. Zip's filter is inclusive, so the record at the cursor is re-read.
 5. **Custom fields need `include_attributes=true`.** Without that parameter the `attributes` array is empty.
    Records are requested newest first (`sort_by=updated_at&sort_order=desc`) so schema discovery sees the
-   most recently written record.
+   most recently updated record.
 6. **On `/purchase_orders`, `last_updated_after` matches `last_activity_at`, not `updated_at`.** A read from a
    given cursor returns purchase orders with an older `updated_at` whenever they had activity after the
    cursor. The connector passes them through; the cursor still advances on `updated_at`. `/requests` and
    `/invoices` bound `updated_at` as expected.
 7. **Incremental reads were only safe after Zip fixed its pagination.** Zip's cursor did not tie-break on
-   `updated_at`, so records sharing one timestamp fell through page boundaries under the date filters
-   (Zip support ticket 110091). Zip deployed the fix for `/invoices` and `/purchase_orders` on
-   2026-08-07 and for `/requests` on 2026-08-25.
+   `updated_at`, so records sharing one timestamp fell through page boundaries under the date filters.
+   Zip deployed the fix for `/invoices` and `/purchase_orders` on 2026-08-07 and for `/requests` on
+   2026-08-25 (Zip support ticket 110091, visible only to the reporting customer).
 
 ## Testing
 
@@ -41,5 +43,5 @@ This is a manifest-only connector: all behavior lives in `manifest.yaml`. It rea
   cd unit_tests && poetry install --no-root && poetry run pytest -q
   ```
 
-- Zip's API reference is only readable with a Zip login (https://developer.zip.com), so the behaviors
+- Zip's API reference is only readable with a Zip login (https://developer.ziphq.com), so the behaviors
   above were confirmed against the live API rather than public documentation.
