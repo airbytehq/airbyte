@@ -1,6 +1,6 @@
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
-# Hugging Face Datasets Migration Guide
+# Hugging Face - Datasets Migration Guide
 
 ## Upgrading to 0.1.0
 

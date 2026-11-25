@@ -45,6 +45,7 @@ data:
           [migration guide](https://docs.airbyte.com/integrations/sources/hugging-face-datasets-migrations)
           for the full steps.
         upgradeDeadline: "2026-12-22"
+        deadlineAction: "auto_upgrade"
   remoteRegistries:
     pypi:
       enabled: false
