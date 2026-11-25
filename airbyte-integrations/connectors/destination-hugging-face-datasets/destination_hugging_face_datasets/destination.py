@@ -83,30 +83,38 @@ class DestinationHuggingFaceDatasets(Destination):
             # Write all buffered data to Hugging Face Datasets
             for stream_name, records in stream_buffers.items():
                 if records:
-                    df = pd.DataFrame(records)
-                    self._push_to_hub(dataset_name, stream_name, df, token)
+                    self._push_to_hub(dataset_name, stream_name, self._dataset_from_records(records), token)
 
         except Exception as e:
             logging.error(f"Write failed: {str(e)}")
             raise
 
-    def _push_to_hub(self, dataset_name: str, stream_name: str, df: pd.DataFrame, token: Optional[str]):
+    @staticmethod
+    def _dataset_from_records(records: list) -> Dataset:
+        """Build a dataset from records, keeping nested values as they are.
+
+        `datasets` infers the schema from the records directly. The pandas round trip is only used
+        as a fallback because it turns nested values into Python objects Arrow rejects.
+        """
+        try:
+            return Dataset.from_list(records)
+        except Exception as error:
+            logging.warning(f"Could not infer a schema from the records, falling back on pandas: {error}")
+            return Dataset.from_pandas(pd.DataFrame(records))
+
+    def _push_to_hub(self, dataset_name: str, stream_name: str, dataset: Dataset, token: Optional[str]):
         """Push data to Hugging Face Hub as a dataset.
 
         Args:
             dataset_name: Base dataset name.
             stream_name: Stream name to use as subset.
-            df: DataFrame containing the records.
+            dataset: The records to push.
             token: Hugging Face token.
         """
-
-        # Create dataset from dataframe
-        dataset = Dataset.from_pandas(df)
-
         try:
             # Push to HF Hub - writes Parquet files under the hood
             dataset.push_to_hub(dataset_name, stream_name, token=token)
-            logging.info(f"Successfully pushed {stream_name} to {dataset_name} with config {stream_name}")
+            logging.info(f"Successfully pushed {len(dataset)} records of {stream_name} to {dataset_name}")
 
         except Exception as e:
             logging.error(f"Failed to push {stream_name} to Hub: {str(e)}")
@@ -135,10 +143,16 @@ class DestinationHuggingFaceDatasets(Destination):
             # If we can create a branch then we can write to the dataset
             branch = f"_airbyte_check_{uuid.uuid4().hex}"
             api = HfApi(token=token)
-            api.create_branch(dataset_name, branch=branch, repo_type="dataset")
-
-            # Clean up
-            api.delete_branch(dataset_name, branch=branch, repo_type="dataset")
+            try:
+                api.create_branch(dataset_name, branch=branch, repo_type="dataset")
+                api.delete_branch(dataset_name, branch=branch, repo_type="dataset")
+            except Exception as branch_error:
+                # The dataset is created by the first sync, so a dataset that does not exist yet
+                # is a valid configuration as long as it can be created with this token.
+                try:
+                    api.create_repo(dataset_name, repo_type="dataset", exist_ok=True)
+                except Exception:
+                    raise branch_error
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 

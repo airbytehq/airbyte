@@ -44,6 +44,7 @@ class TestDestinationHuggingFaceDatasetsCheck(unittest.TestCase):
         mock_instance = MagicMock()
         mock_api.return_value = mock_instance
         mock_instance.create_branch.side_effect = Exception("Invalid token")
+        mock_instance.create_repo.side_effect = Exception("Invalid token")
 
         config = {
             "dataset_name": "test/dataset",
@@ -52,6 +53,52 @@ class TestDestinationHuggingFaceDatasetsCheck(unittest.TestCase):
 
         result = self.destination.check(MagicMock(), config)
         self.assertEqual(result.status, Status.FAILED)
+        self.assertIn("Invalid token", result.message)
+
+    @patch("destination_hugging_face_datasets.destination.HfApi")
+    def test_check_creates_a_dataset_that_does_not_exist_yet(self, mock_api):
+        """Test that a dataset created by the first sync is a valid configuration."""
+        mock_instance = MagicMock()
+        mock_api.return_value = mock_instance
+        mock_instance.create_branch.side_effect = Exception("401 Client Error: Repository not found")
+
+        config = {
+            "dataset_name": "test/dataset",
+            "token": "hf_test",
+        }
+
+        result = self.destination.check(MagicMock(), config)
+        self.assertEqual(result.status, Status.SUCCEEDED)
+        mock_instance.create_repo.assert_called_once_with("test/dataset", repo_type="dataset", exist_ok=True)
+
+
+class TestDestinationHuggingFaceDatasetsRecords(unittest.TestCase):
+    """Tests for the record to dataset conversion."""
+
+    def setUp(self):
+        self.destination = DestinationHuggingFaceDatasets()
+
+    def test_records_keep_nested_values(self):
+        """Test that nested records are converted without the pandas round trip."""
+        records = [
+            {"col1": "a", "nested": {"x": 1}, "items": [1, 2]},
+            {"col1": "b", "nested": {"x": 2}, "items": []},
+        ]
+
+        dataset = self.destination._dataset_from_records(records)
+
+        self.assertEqual(len(dataset), 2)
+        self.assertEqual(dataset[0]["nested"], {"x": 1})
+        self.assertEqual(dataset[1]["items"], [])
+
+    @patch("destination_hugging_face_datasets.destination.Dataset")
+    def test_falls_back_on_pandas(self, mock_dataset):
+        """Test that a record Arrow cannot infer still gets written through pandas."""
+        mock_dataset.from_list.side_effect = Exception("ArrowInvalid")
+
+        self.destination._dataset_from_records([{"col1": object()}])
+
+        mock_dataset.from_pandas.assert_called_once()
 
 
 class TestDestinationHuggingFaceDatasetsWrite(unittest.TestCase):
@@ -76,7 +123,7 @@ class TestDestinationHuggingFaceDatasetsWrite(unittest.TestCase):
         """Test successful push to Hub."""
         # Mock Dataset
         mock_dataset_instance = MagicMock()
-        mock_dataset.from_pandas.return_value = mock_dataset_instance
+        mock_dataset.from_list.return_value = mock_dataset_instance
 
         # Create mock messages
         from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type

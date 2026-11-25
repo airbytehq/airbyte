@@ -17,9 +17,11 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     ConfiguredAirbyteCatalog,
+    FailureType,
     Status,
     Type,
 )
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class DestinationHuggingFaceBuckets(Destination):
@@ -96,12 +98,21 @@ class DestinationHuggingFaceBuckets(Destination):
                     continue
 
         finally:
-            # Close all open writers
+            # Close all open writers. A writer uploads on close, so a failing close means
+            # the records of that file never landed and must fail the sync.
+            failures: list[Exception] = []
             for file_path, writer in active_writers.items():
                 try:
                     writer.close()
                 except Exception as e:
-                    logging.error(f"{type(e).__name__} ({writer.file_path}): {e}")
+                    logging.error(f"Failed to write {file_path}: {type(e).__name__}: {e}")
+                    failures.append(e)
+            if failures:
+                raise AirbyteTracedException(
+                    message=f"Failed to write {len(failures)} file(s) to the bucket: {failures[0]}",
+                    internal_message=str(failures[0]),
+                    failure_type=FailureType.transient_error,
+                )
 
     def _open_writer(self, file_path: str, file_format: str, fs: HfFileSystem):
         """Open a file writer for the given path and format.
@@ -186,21 +197,31 @@ class _ParquetWriter:
 
     def close(self):
         """Flush and close the file."""
-        if self._buffers:
-            # Convert all buffered records to a PyArrow table
-            df = pd.DataFrame(self._buffers)
-            table = pa.Table.from_pandas(df)
+        if not self._buffers:
+            return
 
-            # Write to HF bucket
-            with self.fs.open(self.file_path, "wb") as f:
-                pq.write_table(
-                    table,
-                    f,
-                    write_page_index=True,
-                    use_content_defined_chunking=True,
-                )
+        # Upload the whole file at once: buckets have no append mode.
+        records, self._buffers = self._buffers, []
+        with self.fs.open(self.file_path, "wb") as f:
+            pq.write_table(
+                self._table_from_records(records),
+                f,
+                write_page_index=True,
+                use_content_defined_chunking=True,
+            )
 
-            self._buffers = []
+    @staticmethod
+    def _table_from_records(records: list) -> pa.Table:
+        """Build a Parquet table from records, keeping nested values as they are.
+
+        PyArrow infers the schema from the records directly. The pandas round trip is only used
+        as a fallback because it turns nested values into Python objects PyArrow rejects.
+        """
+        try:
+            return pa.Table.from_pylist(records)
+        except Exception as error:
+            logging.warning(f"Could not infer a Parquet schema from the records, falling back on pandas: {error}")
+            return pa.Table.from_pandas(pd.DataFrame(records))
 
 
 class _JsonlWriter:
