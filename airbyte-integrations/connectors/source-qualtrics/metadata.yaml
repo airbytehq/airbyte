@@ -20,6 +20,7 @@ data:
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-qualtrics
   githubIssueLabel: source-qualtrics
+  maxSecondsBetweenMessages: 3600
   icon: icon.svg
   license: ELv2
   name: Qualtrics

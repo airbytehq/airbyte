@@ -14,7 +14,7 @@ check:
 definitions:
   linked:
     # Two ways in: a personal API token, or an OAuth client with the Client Credentials grant.
-    # Both are documented by Qualtrics; the OAuth token lasts one hour and is refreshed before that.
+    # Both are documented by Qualtrics; the OAuth token lasts one hour and a new one is requested after 59 minutes.
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path:
@@ -43,7 +43,7 @@ definitions:
               value:
                 grant_type: client_credentials
                 # Qualtrics grants only the scopes named here, never the client's full set.
-                scope: "{{ config['credentials'].get('scope') or 'read:surveys read:survey_responses' }}"
+                scope: "{{ config['credentials'].get('scope') or 'read:survey_responses' }}"
             error_handler:
               type: DefaultErrorHandler
               max_retries: 5
@@ -85,8 +85,35 @@ definitions:
           failure_type: config_error
           error_message: >-
             Qualtrics rejected the credentials for this request. Check the API token, or that the OAuth
-            client has the read:surveys and read:survey_responses scopes and that Datacenter ID matches
-            the datacenter the credentials belong to.
+            client has the read:survey_responses scope and that Datacenter ID matches the datacenter the
+            credentials belong to.
+
+    # Per-survey streams: a survey deleted between the list call and the detail call returns 404.
+    # Skip it instead of failing the sync. Everything else follows the shared handler.
+    child_error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 404
+          action: IGNORE
+          error_message: Survey not found; it was probably deleted after the survey list was read. Skipping it.
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Qualtrics rejected the credentials for this request. Check the API token, or that the OAuth
+            client has the read:survey_responses scope and that Datacenter ID matches the datacenter the
+            credentials belong to.
 
     # Qualtrics returns the next page as a full URL in `result.nextPage` (null on the last page).
     next_page_paginator:
@@ -167,7 +194,7 @@ streams:
         request_headers:
           $ref: "#/definitions/linked/request_headers"
         error_handler:
-          $ref: "#/definitions/linked/error_handler"
+          $ref: "#/definitions/linked/child_error_handler"
       record_selector:
         $ref: "#/definitions/linked/result_selector"
       partition_router:
@@ -192,13 +219,13 @@ streams:
         request_headers:
           $ref: "#/definitions/linked/request_headers"
         error_handler:
-          $ref: "#/definitions/linked/error_handler"
+          $ref: "#/definitions/linked/child_error_handler"
       record_selector:
         $ref: "#/definitions/linked/result_selector"
       partition_router:
         $ref: "#/definitions/linked/surveys_partition_router"
     transformations:
-      # The schema document does not name its survey; add the parent id so rows can be joined.
+      # The schema document carries the survey id only inside its `$id` URL; add it as a plain field.
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -210,6 +237,24 @@ streams:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/survey_response_schemas"
+
+# Qualtrics allows 60 requests per minute per brand on GET /surveys/{id}/response-schema. Stay under it
+# instead of relying on 429 retries. The other endpoints allow 3000 per minute.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 55
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: /response-schema$
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
 
 spec:
   type: Spec
@@ -225,9 +270,8 @@ spec:
         type: string
         title: Datacenter ID
         description: >-
-          The Qualtrics datacenter that hosts your brand, for example yul1, iad1, fra1 or ca1. It is the
-          first part of your Qualtrics URL (https://<datacenter>.qualtrics.com) and is shown under
-          Account Settings > Qualtrics IDs.
+          The Qualtrics datacenter that hosts your brand, for example iad1, fra1, ca1 or yul1. It is shown
+          under Account Settings > Qualtrics IDs, in the User box.
         examples:
           - iad1
           - fra1
@@ -266,9 +310,9 @@ spec:
                 type: string
                 title: Scopes
                 description: >-
-                  Space-separated scopes to request. The client must have them. The default covers the
-                  three streams.
-                default: read:surveys read:survey_responses
+                  Space-separated scopes to request. The client must be authorized for every scope named
+                  here, or the token request fails. The default is enough for the three streams.
+                default: read:survey_responses
                 order: 3
           - type: object
             title: API Token

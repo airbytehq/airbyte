@@ -21,8 +21,8 @@ TOKEN_PATH = "/oauth2/token"
 SURVEYS_PATH = "/API/v3/surveys"
 
 ACCESS_TOKEN = "test-access-token"
-TOKEN_RESPONSE = {"access_token": ACCESS_TOKEN, "token_type": "Bearer", "expires_in": 3599, "scope": "read:surveys read:survey_responses"}
-DEFAULT_SCOPE = "read:surveys read:survey_responses"
+TOKEN_RESPONSE = {"access_token": ACCESS_TOKEN, "token_type": "Bearer", "expires_in": 3599, "scope": "read:survey_responses"}
+DEFAULT_SCOPE = "read:survey_responses"
 
 OAUTH_CONFIG = {
     "datacenter": DATACENTER,

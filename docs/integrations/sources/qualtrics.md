@@ -4,26 +4,26 @@ The Qualtrics source syncs the surveys of a Qualtrics brand, each survey's full 
 
 ## Prerequisites
 
-- A Qualtrics account with API access. Listing surveys requires a user who can see them, typically a brand administrator or the survey owner.
-- Your **Datacenter ID**, the first part of your Qualtrics URL (for example `iad1` in `https://iad1.qualtrics.com`). It is also shown under **Account Settings** > **Qualtrics IDs**.
+- A Qualtrics account with API access. The `surveys` stream returns the surveys the authenticating user owns or that are shared with them or their groups.
+- Your **Datacenter ID**, shown under **Account Settings** > **Qualtrics IDs** in the User box (for example `iad1`).
 - One of:
-  - an OAuth client created in Qualtrics with the **Client Credentials** grant and the `read:surveys` and `read:survey_responses` scopes, or
+  - an OAuth client created in Qualtrics with the **Client Credentials** grant and the `read:survey_responses` scope, or
   - a personal **API token** from **Account Settings** > **Qualtrics IDs**.
 
 ## Setup guide
 
 ### Set up Qualtrics
 
-Qualtrics supports two ways to authenticate. The OAuth client is the better fit for an integration, because it is not tied to one person's login.
+Qualtrics supports two ways to authenticate. The OAuth client is the better fit for an integration: its scopes are explicit and its secret can be rotated. It still acts as the user who created it, so that user must be able to see the surveys.
 
 **OAuth client (recommended)**
 
 1. In Qualtrics, open **Account Settings** > **Qualtrics IDs** and note your Datacenter ID.
-2. Open the **OAuth Client Manager** and create a client. Choose the **Client Credentials** grant. The grant type selector is only visible to brand administrators, and Client Credentials is the default.
-3. Give the client the `read:surveys` and `read:survey_responses` scopes.
+2. Open the **OAuth Client Manager** and create a client. Choose the **Client Credentials** grant. Qualtrics' [OAuth guide](https://developer-docs.qualtrics.com/docs/public-api/instructions/oauth-authentication-authorization-code/) notes that the grant type selector is only visible to brand administrators and that Client Credentials is the default.
+3. Give the client the `read:survey_responses` scope. Qualtrics' scope table lists `read:surveys` for the survey endpoints, but a client with only `read:survey_responses` could read all three streams in testing. Add `read:surveys` to the client and to the **Scopes** setting if your brand enforces it.
 4. Copy the client ID and client secret.
 
-Qualtrics grants only the scopes named in each token request, never the client's full set. The connector requests `read:surveys read:survey_responses` by default; change the **Scopes** setting if your client uses different ones.
+Qualtrics grants only the scopes named in each token request, and rejects the request if the client is not authorized for one of them. The connector requests `read:survey_responses` by default; change the **Scopes** setting if your client uses different ones.
 
 **API token**
 
@@ -50,11 +50,11 @@ See Qualtrics' [OAuth client credentials guide](https://developer-docs.qualtrics
 
 | Input | Type | Description | Default |
 | --- | --- | --- | --- |
-| `datacenter` | `string` | Datacenter that hosts your brand, such as `iad1`, `fra1` or `yul1`. Tokens and API calls must go to the same datacenter. | |
+| `datacenter` | `string` | Datacenter that hosts your brand, such as `iad1`, `fra1` or `yul1`, as shown in Qualtrics IDs. | |
 | `credentials.auth_type` | `string` | `client_credentials` or `api_token`. | |
 | `credentials.client_id` | `string` | OAuth client ID (Client Credentials grant). | |
 | `credentials.client_secret` | `string` | OAuth client secret. | |
-| `credentials.scope` | `string` | Space-separated scopes to request. | `read:surveys read:survey_responses` |
+| `credentials.scope` | `string` | Space-separated scopes to request. The client must be authorized for each one. | `read:survey_responses` |
 | `credentials.api_token` | `string` | Personal API token, sent in the `X-API-TOKEN` header. | |
 
 ### Connection test
@@ -78,15 +78,15 @@ No stream is incremental. The `surveys` list endpoint has no filter on `lastModi
 | `survey_details` | `GET /API/v3/surveys/{id}` | `id` | `surveys` | The full survey definition: questions, blocks, flow, embedded data, export column map, response counts. |
 | `survey_response_schemas` | `GET /API/v3/surveys/{id}/response-schema` | `survey_id` | `surveys` | The JSON Schema that describes a response to the survey, with the parent `survey_id` added. |
 
-`survey_details` and `survey_response_schemas` make one request per survey on every sync.
+`survey_details` and `survey_response_schemas` make one request per survey on every sync. A survey that returns `404` because it was deleted after the list was read is skipped with a log line.
 
 ### Schemas
 
-`surveys` and the scalar fields of `survey_details` are typed, and the date fields carry the `date-time` format. The nested parts of a survey definition (`questions`, `blocks`, `flow`, `exportColumnMap`, `embeddedData`, `comments`, `loopAndMerge`) are declared as open objects or arrays, because their shape depends on the survey. Typed destinations store them as JSON. The response schema record keeps the JSON Schema document's top-level keys (`$schema`, `$id`, `title`, `description`, `type`, `required`, `properties`).
+`surveys` and the scalar fields of `survey_details` are typed, and the date fields carry the `date-time` format. The nested parts of a survey definition (`questions`, `blocks`, `flow`, `exportColumnMap`, `embeddedData`, `comments`, `loopAndMerge`) are declared as open objects or arrays, because their shape depends on the survey. Destinations store them as JSON or string columns, depending on the destination. The response schema record keeps the JSON Schema document's top-level keys (`$schema`, `$id`, `title`, `description`, `type`, `required`, `properties`). `$schema` and `$id` become column names, and some destinations quote or rename them.
 
 ## Performance considerations
 
-Qualtrics allows 3000 API requests per minute per brand, with lower limits on some endpoints: `GET /surveys/{id}/response-schema` allows 60 per minute. A brand with many surveys therefore spends most of a sync of `survey_response_schemas` waiting. The connector honors the `Retry-After` header on `429` responses, falls back to exponential backoff, and retries up to five times. See Qualtrics' [limits page](https://developer-docs.qualtrics.com/docs/public-api/instructions/limits/).
+Qualtrics' [limits page](https://developer-docs.qualtrics.com/docs/public-api/instructions/limits/) allows 3000 API requests per minute per brand, with lower limits on some endpoints: `GET /surveys/{id}/response-schema` allows 60 per minute. The connector keeps itself under 55 requests per minute on that endpoint and reads one stream at a time, so a brand with more than 55 surveys spends at least one minute per 55 surveys on `survey_response_schemas`. On `429`, it waits on the `Retry-After` header if Qualtrics sends one, otherwise backs off exponentially, and gives up after five retries.
 
 OAuth access tokens last one hour. The connector requests a new one after 59 minutes.
 
@@ -102,8 +102,9 @@ OAuth access tokens last one hour. The connector requests a new one after 59 min
 
 | Error | Cause | Fix |
 | --- | --- | --- |
-| `Qualtrics rejected the client ID or client secret` | The token request returned `400` or `401`. | Check the client ID and secret, that the client uses the Client Credentials grant and has the requested scopes, and that **Datacenter ID** is the datacenter the client was created in. |
-| `Qualtrics rejected the credentials for this request` | A data request returned `401` or `403`. | For an API token, generate a new one. For OAuth, check the scopes and the datacenter. Tokens from one datacenter are rejected by another. |
+| `Qualtrics rejected the client ID or client secret` | The token request returned `400` or `401`. A `400` with `unauthorized_client` means the client is not authorized for one of the requested scopes. | Check the client ID and secret, that the client uses the Client Credentials grant, that **Scopes** names only scopes the client has, and that **Datacenter ID** is the datacenter the client was created in. |
+| `Qualtrics rejected the credentials for this request` | A data request returned `401` or `403`. | For an API token, generate a new one. For OAuth, check the scope and that **Datacenter ID** is the one shown in Qualtrics IDs. |
+| `Survey not found` in the logs | `GET /surveys/{id}` or the response schema returned `404`, usually because the survey was deleted after the list was read. | Nothing. The survey is skipped and the sync continues. |
 
 ## Changelog
 
