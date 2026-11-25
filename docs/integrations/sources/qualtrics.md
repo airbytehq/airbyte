@@ -113,6 +113,6 @@ OAuth access tokens last one hour. The connector requests a new one after 59 min
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | ------- | ---------- | --------------------------------------------------------- | --------------------------------------------- |
-| 0.0.1   | 2026-11-25 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)  | Initial release by [@MercureTony](https://github.com/MercureTony) |
+| 0.0.1   | 2026-11-25 | [94068](https://github.com/airbytehq/airbyte/pull/94068)  | Initial release by [@MercureTony](https://github.com/MercureTony) |
 
 </details>
