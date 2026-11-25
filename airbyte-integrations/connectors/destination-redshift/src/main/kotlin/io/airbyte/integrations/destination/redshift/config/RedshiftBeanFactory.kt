@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.redshift.connect.S3Connect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.services.s3.S3Client
 
 /** Micronaut Factory for creating and wiring Redshift destination beans. */
@@ -37,11 +38,18 @@ class RedshiftBeanFactory {
         return redshiftConnect.createDataSource()
     }
 
+    /** Creates the AWS credentials provider (OIDC web identity, falling back to static keys) */
+    @Singleton
+    @Requires(property = Operation.PROPERTY, notEquals = "spec")
+    fun awsCredentialsProvider(s3Connect: S3Connect): AwsCredentialsProvider {
+        return s3Connect.createCredentialsProvider()
+    }
+
     /** Creates the S3 client for staging operations */
     @Singleton
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
-    fun s3Client(s3Connect: S3Connect): S3Client {
-        return s3Connect.createS3Client()
+    fun s3Client(s3Connect: S3Connect, credentialsProvider: AwsCredentialsProvider): S3Client {
+        return s3Connect.createS3Client(credentialsProvider)
     }
 
     /** Generates deterministic temp table names for staging during dedup/truncate syncs. */
