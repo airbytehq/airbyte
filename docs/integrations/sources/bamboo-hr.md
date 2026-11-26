@@ -90,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.10.1 | 2026-11-17 | [78609](https://github.com/airbytehq/airbyte/pull/78609) | Update dependencies |
 | 0.10.0 | 2026-11-10 | [91540](https://github.com/airbytehq/airbyte/pull/91540) | Expand declared fields and improve timesheet and time-off incremental sync reliability. |
 | 0.9.4 | 2026-11-10 | [91320](https://github.com/airbytehq/airbyte/pull/91320) | Upgrade base image to source-declarative-manifest 7.47.0 |
 | 0.9.3 | 2025-05-24 | [60660](https://github.com/airbytehq/airbyte/pull/60660) | Update dependencies |
