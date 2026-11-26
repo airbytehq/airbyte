@@ -15,13 +15,15 @@ from source_netsuite.constraints import (
     MAX_NETSUITE_UTC_OFFSET_HOURS,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
+    RECORD_PATH,
+    SCHEMA_HEADERS,
     SLICE_DATE_FORMAT,
 )
 from source_netsuite.errors import DateFormatExeption
 from source_netsuite.streams import IncrementalNetsuiteStream, NetsuiteStream
 
 from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -290,7 +292,8 @@ def _make_base_stream(object_name: str = "journalentry") -> NetsuiteStream:
     stream._user_error_skipped = 0
     stream.index_datetime_format = 0
     stream.raise_on_http_errors = True
-    stream._session = MagicMock()
+    stream._schema_session = MagicMock()
+    stream._http_client = MagicMock()
     return stream
 
 
@@ -370,38 +373,59 @@ def test_track_skipped_record_malformed_json():
 def test_fetch_record_yields_on_200():
     stream = _make_base_stream()
     ok_resp = _make_response(200, {"id": "42", "type": "journalentry"})
-    stream._send_request = MagicMock(return_value=ok_resp)
+    stream._http_client.send_request.return_value = (MagicMock(), ok_resp)
+    url = "https://test/record/42"
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/42"}]}, {}))
+    results = list(stream.fetch_record({"links": [{"href": url}]}, {}))
 
     assert len(results) == 1
     assert results[0]["id"] == "42"
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 0
+    stream._http_client.send_request.assert_called_once_with(
+        http_method="GET",
+        url=url,
+        request_kwargs={},
+        params={"expandSubResources": True},
+    )
 
 
 def test_fetch_record_skips_and_tracks_user_error():
     stream = _make_base_stream()
     err_resp = _make_response(400, _USER_ERROR_JSON)
-    stream._send_request = MagicMock(return_value=err_resp)
+    stream._http_client.send_request.return_value = (MagicMock(), err_resp)
+    url = "https://test/record/99"
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/99"}]}, {}))
+    results = list(stream.fetch_record({"links": [{"href": url}]}, {}))
 
     assert results == []
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 1
+    stream._http_client.send_request.assert_called_once_with(
+        http_method="GET",
+        url=url,
+        request_kwargs={},
+        params={"expandSubResources": True},
+    )
 
 
 def test_fetch_record_does_not_track_non_400():
     stream = _make_base_stream()
     resp_500 = _make_response(500, {})
-    stream._send_request = MagicMock(return_value=resp_500)
+    stream._http_client.send_request.return_value = (MagicMock(), resp_500)
+    url = "https://test/record/1"
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/1"}]}, {}))
+    results = list(stream.fetch_record({"links": [{"href": url}]}, {}))
 
     assert results == []
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 0
+    stream._http_client.send_request.assert_called_once_with(
+        http_method="GET",
+        url=url,
+        request_kwargs={},
+        params={"expandSubResources": True},
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -469,6 +493,24 @@ def test_should_retry_user_error_corrected_spelling(caplog):
     assert "occured" not in error_msgs[0]
 
 
+@pytest.mark.parametrize(
+    "status_code, json_data, expected",
+    [
+        (429, {}, True),
+        (500, {}, True),
+        (503, {}, True),
+        (404, {}, False),
+        (401, {}, False),
+        (400, {"o:errorDetails": [{"o:errorCode": "SOME_OTHER"}]}, False),
+        (403, {"o:errorDetails": "unexpected"}, False),
+    ],
+)
+def test_should_retry_default_fallback(status_code, json_data, expected):
+    stream = _make_base_stream()
+
+    assert stream.should_retry(_make_response(status_code, json_data)) is expected
+
+
 # ---------------------------------------------------------------------------
 # Integration: mixed OK and USER_ERROR across multiple records
 # ---------------------------------------------------------------------------
@@ -480,12 +522,12 @@ def test_fetch_record_accumulation_mixed_responses():
     err_resp = _make_response(400, _USER_ERROR_JSON)
     call_count = 0
 
-    def mock_send_request(prep_req, kwargs):
+    def mock_send_request(**kwargs):
         nonlocal call_count
         call_count += 1
-        return ok_resp if call_count % 2 == 1 else err_resp
+        return MagicMock(), ok_resp if call_count % 2 == 1 else err_resp
 
-    stream._send_request = mock_send_request
+    stream._http_client.send_request.side_effect = mock_send_request
 
     all_results = []
     for i in range(6):
@@ -494,3 +536,123 @@ def test_fetch_record_accumulation_mixed_responses():
     assert stream._records_attempted == 6
     assert stream._user_error_skipped == 3
     assert len(all_results) == 3
+
+
+def _make_real_stream(stream_class=NetsuiteStream):
+    return stream_class(
+        auth=None,
+        object_name="journalentry",
+        base_url="https://1234.suitetalk.api.netsuite.com",
+        start_datetime="2026-01-01T00:00:00Z",
+        window_in_days=30,
+    )
+
+
+def _record_url(record_id):
+    return f"https://1234.suitetalk.api.netsuite.com{RECORD_PATH}journalentry/{record_id}"
+
+
+def test_full_refresh_reads_successful_record_and_skips_one_user_error(requests_mock):
+    stream = _make_real_stream()
+    collection_url = f"{stream.url_base}{RECORD_PATH}journalentry"
+    requests_mock.get(
+        collection_url,
+        json={
+            "items": [
+                {"links": [{"href": _record_url(1)}]},
+                {"links": [{"href": _record_url(2)}]},
+            ],
+            "hasMore": False,
+        },
+    )
+    requests_mock.get(_record_url(1), json={"id": "1", "type": "journalentry"})
+    requests_mock.get(_record_url(2), status_code=400, json=_USER_ERROR_JSON)
+
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None))
+
+    assert records == [{"id": "1", "type": "journalentry"}]
+    assert stream._records_attempted == 2
+    assert stream._user_error_skipped == 1
+    record_requests = [request for request in requests_mock.request_history if request.url.startswith(_record_url(""))]
+    assert [request.qs["expandsubresources"] for request in record_requests] == [["true"], ["true"]]
+
+
+def test_full_refresh_fails_when_all_records_have_user_errors(requests_mock):
+    stream = _make_real_stream()
+    collection_url = f"{stream.url_base}{RECORD_PATH}journalentry"
+    requests_mock.get(
+        collection_url,
+        json={
+            "items": [
+                {"links": [{"href": _record_url(1)}]},
+                {"links": [{"href": _record_url(2)}]},
+            ],
+            "hasMore": False,
+        },
+    )
+    requests_mock.get(_record_url(1), status_code=400, json=_USER_ERROR_JSON)
+    requests_mock.get(_record_url(2), status_code=400, json=_USER_ERROR_JSON)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None))
+
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert stream._records_attempted == 2
+    assert stream._user_error_skipped == 2
+
+
+def test_incremental_retries_rejected_date_format_on_same_slice(requests_mock):
+    stream = _make_real_stream(IncrementalNetsuiteStream)
+    collection_url = f"{stream.url_base}{RECORD_PATH}journalentry"
+    date_error = {
+        "o:errorDetails": [
+            {
+                "o:errorCode": "INVALID_PARAMETER",
+                "detail": 'Parse of date/time "03/14/2026" failed with date format "M/d/yy" in time zone America/Los_Angeles',
+            }
+        ]
+    }
+    requests_mock.get(
+        collection_url,
+        response_list=[
+            {"status_code": 400, "json": date_error},
+            {
+                "status_code": 200,
+                "json": {"items": [{"links": [{"href": _record_url(1)}]}], "hasMore": False},
+            },
+        ],
+    )
+    requests_mock.get(_record_url(1), json={"id": "1", "lastModifiedDate": "2026-03-15T04:15:00Z"})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"start": "2026-03-14", "end": "2026-03-15"},
+        )
+    )
+
+    expected_queries = [
+        'lastmodifieddate after "03/14/2026" and lastmodifieddate before "03/15/2026"',
+        'lastmodifieddate after "2026-03-14" and lastmodifieddate before "2026-03-15"',
+    ]
+    collection_requests = [
+        request for request in requests_mock.request_history if request.path_url.startswith(f"{RECORD_PATH}journalentry?")
+    ]
+    assert records == [{"id": "1", "lastModifiedDate": "2026-03-15T04:15:00Z"}]
+    assert [request.qs["q"][0] for request in collection_requests] == expected_queries
+
+
+@pytest.mark.parametrize(
+    "status_code, body, expected",
+    [
+        (404, None, {"title": "/missing-schema", "type": "string"}),
+        (200, {"title": "journalentry", "type": "object"}, {"title": "journalentry", "type": "object"}),
+    ],
+)
+def test_get_schema_uses_schema_headers(requests_mock, status_code, body, expected):
+    stream = _make_real_stream()
+    ref = "/missing-schema" if status_code == 404 else "/journalentry-schema"
+    requests_mock.get(f"{stream.url_base}{ref}", status_code=status_code, json=body)
+
+    assert stream.get_schema(ref) == expected
+    assert requests_mock.last_request.headers["Accept"] == SCHEMA_HEADERS["Accept"]
