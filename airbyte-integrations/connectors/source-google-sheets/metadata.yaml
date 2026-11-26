@@ -17,8 +17,8 @@ data:
     - title: Google Workspace developer release notes
       url: https://developers.google.com/workspace/release-notes
       type: api_release_history
-    - title: Release notes
-      url: https://developers.google.com/sheets/docs/release-notes
+    - title: Google Sheets API release notes
+      url: https://developers.google.com/workspace/sheets/release-notes
       type: api_release_history
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
