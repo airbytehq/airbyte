@@ -90,14 +90,14 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: invoices
+          path: invoices.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - invoices.json
+              - invoices
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -161,7 +161,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: transaction
+          path: transactions.json
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -169,7 +169,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - "*"
-              - transactions.json
+              - transaction
         paginator:
           type: DefaultPaginator
           page_token_option:
