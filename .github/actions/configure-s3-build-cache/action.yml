@@ -1,0 +1,56 @@
+name: Configure S3 build cache
+description: Assume the cache role without replacing AWS credentials used by other steps
+inputs:
+  read-role:
+    description: ARN of the read-only cache role
+    required: false
+  write-role:
+    description: ARN of the cache writer role for trusted master builds
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Select the cache role
+      id: role
+      if: >-
+        github.repository == 'airbytehq/airbyte' &&
+        ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+         (github.event_name != 'pull_request' && (github.ref == 'refs/heads/master')))
+      shell: bash
+      env:
+        READ_ROLE: ${{ inputs.read-role }}
+        WRITE_ROLE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && inputs.write-role || '' }}
+      run: |
+        if [[ -n "$WRITE_ROLE" ]]; then
+          role="$WRITE_ROLE"
+          push=true
+        elif [[ -n "$READ_ROLE" ]]; then
+          role="$READ_ROLE"
+          push=false
+        else
+          exit 0
+        fi
+        : "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:?The S3 build cache requires GitHub OIDC}"
+        printf 'arn=%s\npush=%s\n' "$role" "$push" >> "$GITHUB_OUTPUT"
+
+    - name: Assume the S3 build cache role
+      if: steps.role.outputs.arn != ''
+      id: aws
+      uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
+      with:
+        role-to-assume: ${{ steps.role.outputs.arn }}
+        aws-region: us-west-2
+        output-credentials: true
+        output-env-credentials: false
+
+    - name: Export cache-only session credentials
+      if: steps.aws.outcome == 'success'
+      shell: bash
+      env:
+        ACCESS_KEY_ID: ${{ steps.aws.outputs.aws-access-key-id }}
+        SECRET_KEY: ${{ steps.aws.outputs.aws-secret-access-key }}
+        SESSION_TOKEN: ${{ steps.aws.outputs.aws-session-token }}
+        CACHE_PUSH: ${{ steps.role.outputs.push }}
+      run: |
+        printf 'S3_BUILD_CACHE_ACCESS_KEY_ID=%s\nS3_BUILD_CACHE_SECRET_KEY=%s\nS3_BUILD_CACHE_SESSION_TOKEN=%s\nS3_BUILD_CACHE_PUSH=%s\n' \
+          "${ACCESS_KEY_ID:?}" "${SECRET_KEY:?}" "${SESSION_TOKEN:?}" "$CACHE_PUSH" >> "$GITHUB_ENV"

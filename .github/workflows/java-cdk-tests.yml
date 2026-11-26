@@ -4,10 +4,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-
 on:
   workflow_dispatch:
   push:
@@ -18,6 +14,10 @@ on:
       - opened
       - reopened
       - synchronize
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   changes:
@@ -76,6 +76,9 @@ jobs:
               - 'airbyte-cdk/bulk/toolkits/legacy-task-load*/**'
 
   run-check-bulk-cdk-version:
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - changes-in-bulk-cdk-packages
     if: |
@@ -93,6 +96,12 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
+      - name: Configure S3 build cache
+        uses: ./.github/actions/configure-s3-build-cache
+        with:
+          read-role: ${{ vars.S3_BUILD_CACHE_READ_ROLE_ARN }}
+          write-role: ${{ vars.S3_BUILD_CACHE_WRITE_ROLE_ARN }}
+
       - name: Check that base CDK version is incremented
         if: needs.changes-in-bulk-cdk-packages.outputs.base == 'true'
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
@@ -125,6 +134,9 @@ jobs:
           arguments: --scan :airbyte-cdk:bulk:checkLoadVersion
 
   run-check:
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - changes
     if: needs.changes.outputs.java == 'true'
@@ -143,6 +155,12 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
+      - name: Configure S3 build cache
+        uses: ./.github/actions/configure-s3-build-cache
+        with:
+          read-role: ${{ vars.S3_BUILD_CACHE_READ_ROLE_ARN }}
+          write-role: ${{ vars.S3_BUILD_CACHE_WRITE_ROLE_ARN }}
+
       - name: Run Java CDK Tests
         uses: burrunan/gradle-cache-action@663fbad34e03c8f12b27f4999ac46e3d90f87eca # v3.0.1
         env:

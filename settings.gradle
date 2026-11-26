@@ -184,8 +184,10 @@ if (isCI) {
             push = true
         }
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
-            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
-            push = true
+            enabled = ["S3_BUILD_CACHE_ACCESS_KEY_ID", "S3_BUILD_CACHE_SECRET_KEY", "S3_BUILD_CACHE_SESSION_TOKEN"].every {
+                System.getenv(it)
+            }
+            push = System.getenv("S3_BUILD_CACHE_PUSH") == "true"
             // The 'us-west-2' region was chosen because it was close to our v0.6 dagger runners
             // we used to maintain in AWS, prior to migrating to v0.9 and to github runners.
             // This may in fact no longer be the best choice, who knows? It's not terrible, at least.
