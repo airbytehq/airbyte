@@ -1,0 +1,21 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.redis.RedisSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = []
+}
+
+dependencies {
+    implementation 'io.lettuce:lettuce-core:7.7.0.RELEASE'
+
+    testFixturesImplementation 'org.testcontainers:testcontainers:1.21.4'
+    testImplementation 'org.testcontainers:testcontainers:1.21.4'
+}
