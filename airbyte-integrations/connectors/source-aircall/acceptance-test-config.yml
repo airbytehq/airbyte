@@ -5,15 +5,25 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # 1.3.0 moves api_id and api_token into credentials; the config migration rewrites configs saved by 1.2.2 and earlier.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.2.2"
+      - spec_path: "manifest.yaml"
+        # Registry latest stays 1.0.0 until the 1.2.2 rollout is promoted; drop this entry then.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -37,6 +47,13 @@ acceptance_tests:
             bypass_reason: "The test account has no SMS templates (checked 2026-11-09); covered by mock-server tests."
           - name: whatsapp_templates
             bypass_reason: "The test account's only number has no WhatsApp capability (checked 2026-11-09); covered by mock-server tests."
+      # OAuth 2.0 against the partner app's account (SECRET_SOURCE-AIRCALL-PROD-OAUTH__CREDS); reads the discovered catalog.
+      - config_path: "secrets/config_oauth.json"
+        empty_streams:
+          - name: webhooks
+            bypass_reason: "With OAuth, Aircall returns only the webhooks created with the OAuth token, and the token created none (checked 2026-11-16)."
+          - name: whatsapp_templates
+            bypass_reason: "The OAuth account's only number is not registered for WhatsApp, so its templates request is ignored (checked 2026-11-16); covered by mock-server tests."
   incremental:
     tests:
       - config_path: "secrets/config.json"
