@@ -1,0 +1,305 @@
+version: 7.49.0
+
+type: DeclarativeSource
+
+description: >-
+  Syncs purchase requests, purchase orders and invoices from the Zip (ziphq.com) procurement platform's
+  public API, incrementally on each record's last update time.
+
+check:
+  type: CheckStream
+  stream_names:
+    - requests
+
+definitions:
+  linked:
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Zip-Api-Key
+        inject_into: header
+
+    request_headers:
+      # Zip versions its API with a date in this header. Every request must send it.
+      Zip-Api-Version: "{{ config.get('api_version', '2024-06-06') }}"
+
+    request_parameters:
+      # Newest records first, so a schema discovery read sees the most recently updated record.
+      sort_by: updated_at
+      sort_order: desc
+      # Returns the account's custom fields under `attributes`; without it that array is empty.
+      include_attributes: "true"
+
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Zip rejected the API key. In Zip, check that the key exists under Settings > API Keys, that
+            it has read access to requests, purchase orders and invoices, and that the API version
+            is one Zip still supports.
+
+    requests_requester:
+      type: HttpRequester
+      url: https://api.ziphq.com/requests
+      http_method: GET
+      authenticator:
+        $ref: "#/definitions/linked/authenticator"
+      request_headers:
+        $ref: "#/definitions/linked/request_headers"
+      request_parameters:
+        $ref: "#/definitions/linked/request_parameters"
+      error_handler:
+        $ref: "#/definitions/linked/error_handler"
+
+    purchase_orders_requester:
+      type: HttpRequester
+      url: https://api.ziphq.com/purchase_orders
+      http_method: GET
+      authenticator:
+        $ref: "#/definitions/linked/authenticator"
+      request_headers:
+        $ref: "#/definitions/linked/request_headers"
+      request_parameters:
+        $ref: "#/definitions/linked/request_parameters"
+      error_handler:
+        $ref: "#/definitions/linked/error_handler"
+
+    invoices_requester:
+      type: HttpRequester
+      url: https://api.ziphq.com/invoices
+      http_method: GET
+      authenticator:
+        $ref: "#/definitions/linked/authenticator"
+      request_headers:
+        $ref: "#/definitions/linked/request_headers"
+      request_parameters:
+        $ref: "#/definitions/linked/request_parameters"
+      error_handler:
+        $ref: "#/definitions/linked/error_handler"
+
+    # Zip returns `{"list": [...], "next_page_token": "...", "size": n, "total": n}` and takes the token
+    # back as `page_token`. The last page carries no token (or a null one), which ends the read.
+    paginator_page_size_50:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: page_size
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: page_token
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 50
+        cursor_value: "{{ response.get('next_page_token') }}"
+        stop_condition: "{{ not response.get('next_page_token') }}"
+
+    # `/requests` caps the page size at 30 and silently ignores anything larger.
+    paginator_page_size_30:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: page_size
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: page_token
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 30
+        cursor_value: "{{ response.get('next_page_token') }}"
+        stop_condition: "{{ not response.get('next_page_token') }}"
+
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - list
+
+    # `updated_at` is Unix epoch seconds on every Zip record. Zip's filter is inclusive, so the record
+    # at the saved cursor is read again on the next sync.
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2020-01-01T00:00:00Z'), '%s') }}"
+        datetime_format: "%s"
+
+    # Pins the two fields the connector relies on. Listed first in each stream's `schema_loader`, so
+    # these types win over the string types the dynamic loader discovers for the same keys.
+    pinned_schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          updated_at:
+            type: integer
+
+    # With an empty `key_pointer` and no `type_pointer`, every top-level key of the first record
+    # becomes a nullable string property. Nested objects and arrays are declared as strings too;
+    # the connector emits them as Zip returns them, and typed destinations store them as JSON text.
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer: []
+
+streams:
+  - type: DeclarativeStream
+    name: requests
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/requests_requester"
+      paginator:
+        $ref: "#/definitions/linked/paginator_page_size_30"
+      record_selector:
+        $ref: "#/definitions/linked/record_selector"
+    incremental_sync:
+      $ref: "#/definitions/linked/incremental_sync"
+      start_time_option:
+        type: RequestOption
+        field_name: last_updated_after
+        inject_into: request_parameter
+    schema_loader:
+      - $ref: "#/definitions/linked/pinned_schema_loader"
+      - type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/linked/requests_requester"
+          paginator:
+            $ref: "#/definitions/linked/paginator_page_size_30"
+          record_selector:
+            $ref: "#/definitions/linked/record_selector"
+        schema_type_identifier:
+          $ref: "#/definitions/linked/schema_type_identifier"
+
+  - type: DeclarativeStream
+    name: purchase_orders
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/purchase_orders_requester"
+      paginator:
+        $ref: "#/definitions/linked/paginator_page_size_50"
+      record_selector:
+        $ref: "#/definitions/linked/record_selector"
+    incremental_sync:
+      $ref: "#/definitions/linked/incremental_sync"
+      start_time_option:
+        type: RequestOption
+        # On this endpoint Zip matches the filter against `last_activity_at`, so purchase orders with
+        # recent activity come back even when their `updated_at` is older than the cursor.
+        field_name: last_updated_after
+        inject_into: request_parameter
+    schema_loader:
+      - $ref: "#/definitions/linked/pinned_schema_loader"
+      - type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/linked/purchase_orders_requester"
+          paginator:
+            $ref: "#/definitions/linked/paginator_page_size_50"
+          record_selector:
+            $ref: "#/definitions/linked/record_selector"
+        schema_type_identifier:
+          $ref: "#/definitions/linked/schema_type_identifier"
+
+  - type: DeclarativeStream
+    name: invoices
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/invoices_requester"
+      paginator:
+        $ref: "#/definitions/linked/paginator_page_size_50"
+      record_selector:
+        $ref: "#/definitions/linked/record_selector"
+    incremental_sync:
+      $ref: "#/definitions/linked/incremental_sync"
+      start_time_option:
+        type: RequestOption
+        # Zip names the filter differently on this endpoint. `last_updated_after` returns HTTP 400 here.
+        field_name: updated_after
+        inject_into: request_parameter
+    schema_loader:
+      - $ref: "#/definitions/linked/pinned_schema_loader"
+      - type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/linked/invoices_requester"
+          paginator:
+            $ref: "#/definitions/linked/paginator_page_size_50"
+          record_selector:
+            $ref: "#/definitions/linked/record_selector"
+        schema_type_identifier:
+          $ref: "#/definitions/linked/schema_type_identifier"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/zip
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          API key created in Zip under Settings > API Keys. It needs read access to requests, purchase
+          orders and invoices.
+        airbyte_secret: true
+        order: 0
+      api_version:
+        type: string
+        title: API Version
+        description: Value sent in the Zip-Api-Version header. Leave the default unless Zip asks you to change it.
+        default: "2024-06-06"
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Only records updated on or after this date are synced on the first sync. Later syncs use the
+          saved cursor instead. Purchase orders with recent activity can also come back with an older
+          updated_at. Use UTC, for example 2024-01-01T00:00:00Z.
+        format: date-time
+        default: "2020-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 2
+    additionalProperties: true
