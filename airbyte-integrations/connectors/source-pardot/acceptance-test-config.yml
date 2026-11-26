@@ -5,6 +5,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          # v5_page_size leaves the spec in 1.1.0; a config migration removes it from saved configs.
+          disable_for_version: "1.0.65"
   connection:
     tests:
       - config_path: "integration_tests/invalid_config.json"
