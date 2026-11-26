@@ -36,6 +36,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -107,6 +108,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -145,6 +147,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -183,6 +186,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -221,6 +225,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -274,6 +279,7 @@ definitions:
               - type: ConstantBackoffStrategy
                 backoff_time_in_seconds: 60
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -360,6 +366,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -400,6 +407,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -445,6 +453,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -523,6 +532,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -594,6 +604,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes:
@@ -669,6 +680,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -747,6 +759,7 @@ definitions:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
+              - $ref: "#/definitions/invalid_token_filter"
               - type: HttpResponseFilter
                 http_codes:
                   - 401
@@ -794,6 +807,21 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tickets"
+  invalid_token_filter:
+    # Intercom answers a revoked or unknown token with HTTP 401 and the body code `unauthorized`
+    # ("Access Token Invalid") or `token_not_found`. The per-stream 401 filters below talk about a
+    # missing permission, which sends users to check scopes that are fine. The predicate reads the
+    # body code only, because HttpResponseFilter ORs `http_codes` with `predicate`. A body without
+    # `errors[0].code` (a record page, a list, an empty body) renders as undefined and does not match.
+    # https://developers.intercom.com/docs/references/rest-api/errors/error-codes
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    predicate: "{{ response['errors'][0]['code'] in ['unauthorized', 'token_not_found'] }}"
+    error_message: >-
+      Intercom rejected the access token: "{{ response['errors'][0].get('message', '') }}".
+      The token is invalid or was revoked, for example because the Airbyte app was uninstalled from
+      the Intercom workspace. Re-authenticate the Intercom source in Airbyte to get a new token.
   base_requester:
     type: HttpRequester
     url_base: https://api.intercom.io/
