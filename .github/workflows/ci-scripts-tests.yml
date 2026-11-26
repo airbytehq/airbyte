@@ -29,6 +29,7 @@ jobs:
               - "poe-tasks/get-modified-connectors.sh"
               - "poe-tasks/build-and-publish-java-connectors-with-tag.sh"
               - "poe-tasks/lib/**"
+              - ".github/workflows/ai-resolve-conflicts-command.yml"
     outputs:
       changed: ${{ steps.ci-script-changes.outputs.ci-scripts }}
 
