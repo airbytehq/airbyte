@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.trackingtime.co"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-trackingtime
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.49.0@sha256:349bbed19f7f62315db4f04d87e2b0b52f9fd4b1131d78d6a981db1681d627ad
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1bfef2c0-39b8-4d2d-b57f-03de11dce611
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-trackingtime
+  githubIssueLabel: source-trackingtime
+  icon: icon.svg
+  license: ELv2
+  name: TrackingTime
+  releaseDate: 2026-11-19
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trackingtime
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
