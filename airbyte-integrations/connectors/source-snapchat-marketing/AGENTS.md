@@ -14,6 +14,16 @@ Known gap: `ads`, `adsquads` and `campaigns` still filter by `start_date` when r
 
 **Why this matters:** Pointing a `ParentStreamConfig` back at `#/definitions/streams/organizations` or `#/definitions/streams/adaccounts` silently empties every stream under them for accounts whose organization or ad accounts weren't edited inside the sync window. When a fix makes hidden parents visible, existing connections pick up the new partitions from the stream's saved state, not from `start_date`, so partly affected connections need a refresh to backfill.
 
+## 2. A 403 below the organizations is skipped, not retried
+
+An organization can list ad accounts the authenticated user has no role in, and Snapchat answers 403 for every request under them. A permission error does not heal, so every stream except `organizations` maps 403 to `IGNORE`: the request is skipped and the rest of the sync completes. A 403 on `organizations` is a `config_error`, because everything else depends on it.
+
+This restores what 0.1.11 ([#20865](https://github.com/airbytehq/airbyte/pull/20865)) introduced. The 1.0.0 low-code migration ([#39507](https://github.com/airbytehq/airbyte/pull/39507)) mapped it to `RETRY`, which exhausts its attempts and fails the stream for the whole connection, while still logging "Skipping ... stream".
+
+The skip message names its stream as a literal, because `{{ parameters.name }}` and `{{ self.name }}` render empty in `HttpResponseFilter.error_message`. The request URL isn't available to that interpolation either, so the message carries Snapchat's `request_id` instead.
+
+**Why this matters:** turning 403 back into `RETRY` or `FAIL` on a child stream fails every connection whose organization contains one ad account the user can't read.
+
 ## Incremental Stream Considerations
 
 The Snapchat Marketing API supports date-based filtering on stats endpoints and `updated_at` ordering on entity endpoints, which the connector already uses for 16 incremental streams. The 4 remaining streams are children partitioned via `SubstreamPartitionRouter` (ad_squad_stats, ad_stats, campaign_stats, organization_stats). No FR parent streams remain.
