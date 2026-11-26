@@ -1,0 +1,9 @@
+{
+  "host": "127.0.0.1",
+  "port": 1,
+  "username": "INVALID_USER",
+  "password": "invalid-password",
+  "schemas": ["SAPHANADB"],
+  "max_retries": 0,
+  "retry_wait_seconds": 0
+}
