@@ -1,27 +1,92 @@
-# Hugging Face - Datasets
-Imports datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
+# Hugging Face Datasets
 
-Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/en/parquet) can be imported with this connector.
+<HideInUI>
 
-The connector reads data through the [Hugging Face dataset viewer API](https://huggingface.co/docs/dataset-viewer/en/quick_start) (`https://datasets-server.huggingface.co`). Anonymous requests are [rate limited per IP address](https://huggingface.co/docs/hub/en/rate-limits), so syncs of larger datasets may fail with `429 Too Many Requests` unless you provide a Hugging Face user token. Private and gated datasets always require a token with access to the dataset.
+This page contains the setup guide and reference information for the [Hugging Face Datasets](https://docs.airbyte.com/integrations/sources/hugging-face-datasets) source connector.
+
+The connector reads datasets with the [Hugging Face `datasets` library](https://huggingface.co/docs/datasets), so it is not limited to datasets that publish a [Parquet export](https://huggingface.co/docs/dataset-viewer/en/parquet) on the Hub. Public datasets work without credentials. Private and gated datasets require a Hugging Face token with access to the dataset, and a token is also recommended for large syncs because anonymous requests are [rate limited per IP address](https://huggingface.co/docs/hub/en/rate-limits).
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `dataset_name` | `string` | Dataset Name.  |  |
-| `dataset_subsets` | `array` | Dataset Subsets. Dataset Subsets to import. Will import all of them if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details) |  |
-| `dataset_splits` | `array` | Dataset Splits. Splits to import. Will import all of them if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details) |  |
-| `api_token` | `string` | Hugging Face API Token. Optional for public datasets, but required for private or gated datasets and strongly recommended to avoid anonymous per-IP rate limits (see https://huggingface.co/docs/hub/en/rate-limits). Create one at https://huggingface.co/settings/tokens. |  |
+| `dataset_name` | `string` | Dataset name. The dataset identifier on the Hub, for example `nyu-mll/glue`. |  |
+| `dataset_subsets` | `array` | Dataset subsets. Subsets (configs) to import. All of them are imported if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details). |  |
+| `dataset_splits` | `array` | Dataset splits. Splits to import, for example `train`. All of them are imported if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details). |  |
+| `token` | `string` | Hugging Face token. Optional for public datasets, required for private or gated datasets, and recommended to avoid anonymous per-IP rate limits (see https://huggingface.co/docs/hub/en/rate-limits). Create one at https://huggingface.co/settings/tokens. The legacy `api_token` setting is still read when `token` is empty. |  |
+| `streaming` | `boolean` | Streaming mode. When enabled, records are read from the Hub on the fly instead of being downloaded and cached to disk. Slower, but it handles datasets larger than the available disk. | `false` |
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| rows |  | DefaultPaginator | ✅ |  ❌  |
-| splits |  | No pagination | ✅ |  ❌  |
 
-## IP allow list
+</HideInUI>
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+## Overview
+
+This source connector allows you to read datasets from [Hugging Face Hub](https://huggingface.co/datasets) using the [datasets](https://huggingface.co/docs/datasets) library. You can access public and private datasets, configure subsets (configs), and specify splits (train, test, validation).
+
+### Streams and records
+
+The connector discovers one stream per dataset subset and split, named `{dataset}__{subset}__{split}`, for example `nyu-mll/glue__mrpc__train`. Each record holds the columns of one dataset row, and the stream schema is read from the [dataset features](https://huggingface.co/docs/datasets/about_dataset_features).
+
+Image, audio and video columns are synced as `{"bytes": ..., "path": ...}` objects, `bytes` being the base64 encoded original file. These files can be large, so deselect those columns if your destination cannot store them.
+
+Connections created before 0.1.0 read the `rows` and `splits` streams instead. See the [migration guide](./hugging-face-datasets-migrations.md#upgrading-to-010) before upgrading.
+
+## Prerequisites
+
+- A Hugging Face account
+- Access to the dataset you want to read (public datasets require no authentication, private datasets require a token with appropriate permissions)
+
+## Setup Guide
+
+<!-- env:cloud -->
+
+### Set up Hugging Face Datasets in Airbyte Cloud
+
+<!-- /env:cloud -->
+
+### Set up the Hugging Face Datasets connector in Airbyte
+
+<!-- env:cloud -->
+
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Hugging Face Datasets from the Source type dropdown.
+4. Enter a name for the Hugging Face Datasets connector.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Hugging Face Datasets from the Source type dropdown.
+4. Enter a name for the Hugging Face Datasets connector.
+<!-- /env:oss -->
+
+### Step 1: Configure connection settings
+
+1. For **Dataset Name**, enter the _name_ of the dataset on Hugging Face (e.g., `glue`, `squad`, `imdb`).
+2. For **Dataset Subsets/Configs** (Optional), enter a _list of configs_ to import. If empty, all configs will be imported.
+3. For **Dataset Splits** (Optional), enter a _list of splits_ to import (e.g., `train`, `test`, `validation`). If empty, all splits will be imported.
+4. For **Hugging Face Token** (Optional), enter your _token_ for private datasets.
+5. For **Streaming Mode** (Optional), set to _true_ to stream datasets on-the-fly without caching to disk. Useful for large datasets where you don't want to fill disk space. Note: streaming mode is slower and less reliable than non-streaming mode.
+
+### Step 2: Select the streams and configure sync modes
+
+1. Click **Set up source** and wait for the tests to complete.
+
+## Supported sync modes
+
+The Hugging Face Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+| Feature | Supported? |
+| --- | --- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | No |
+| Replicate Incremental Deletes | No |
 
 ## Changelog
 
@@ -30,6 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-11-25 | [81357](https://github.com/airbytehq/airbyte/pull/81357) | Rewrite on the `datasets` library: datasets are read from the Hub instead of through the dataset viewer API, so non-Parquet datasets and untruncated cells are supported. Replaces the `rows` and `splits` streams with one stream per dataset subset and split, and renames the `api_token` setting to `token`. See the [migration guide](./hugging-face-datasets-migrations.md#upgrading-to-010). |
 | 0.0.72 | 2026-11-17 | [93217](https://github.com/airbytehq/airbyte/pull/93217) | Update dependencies |
 | 0.0.71 | 2026-11-10 | [91558](https://github.com/airbytehq/airbyte/pull/91558) | Update dependencies |
 | 0.0.70 | 2026-11-03 | [90599](https://github.com/airbytehq/airbyte/pull/90599) | Update dependencies |
@@ -104,3 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.1 | 2024-11-28 | | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder |
 
 </details>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

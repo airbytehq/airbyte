@@ -1,39 +1,58 @@
 metadataSpecVersion: "1.0"
 data:
-  allowedHosts:
-    hosts:
-      - "datasets-server.huggingface.co"
-  registryOverrides:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
-  remoteRegistries:
-    pypi:
-      enabled: false
-      packageName: airbyte-source-hugging-face-datasets
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.49.0@sha256:349bbed19f7f62315db4f04d87e2b0b52f9fd4b1131d78d6a981db1681d627ad
-  connectorSubtype: api
-  connectorType: source
-  definitionId: 38438040-03d9-406d-b10b-af83beadd3ef
-  dockerImageTag: 0.0.72
-  dockerRepository: airbyte/source-hugging-face-datasets
-  githubIssueLabel: source-hugging-face-datasets
-  icon: icon.svg
-  license: ELv2
-  name: Hugging Face - Datasets
-  releaseDate: 2024-11-28
-  releaseStage: alpha
-  supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/hugging-face-datasets
-  tags:
-    - language:manifest-only
-    - cdk:low-code
   ab_internal:
     ql: 100
     sl: 100
+  allowedHosts:
+    hosts:
+      - huggingface.co
+      - "*.huggingface.co"
+      - hf.co
+      - "*.hf.co"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
+  connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorType: source
+  definitionId: 38438040-03d9-406d-b10b-af83beadd3ef
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-hugging-face-datasets
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hugging-face-datasets
   externalDocumentationUrls:
     - title: Hugging Face Datasets documentation
       url: https://huggingface.co/docs/datasets/
       type: api_reference
+  githubIssueLabel: source-hugging-face-datasets
+  icon: icon.svg
+  license: ELv2
+  name: Hugging Face - Datasets
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          This version reads datasets through the Hugging Face `datasets` library instead of the
+          dataset viewer API, which is faster and supports private and gated datasets. The `rows`
+          and `splits` streams are replaced by one stream per dataset subset and split, and records
+          now carry the dataset columns directly instead of the dataset viewer payload. The optional
+          token setting moves from `api_token` to `token` (existing `api_token` values are still
+          read). After upgrading, refresh the source schema and run a full reset. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/hugging-face-datasets-migrations)
+          for the full steps.
+        upgradeDeadline: "2026-12-22"
+        deadlineAction: "auto_upgrade"
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-hugging-face-datasets
+  releaseDate: 2024-11-28
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python

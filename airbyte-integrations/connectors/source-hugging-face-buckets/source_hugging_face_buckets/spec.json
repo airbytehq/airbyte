@@ -1,0 +1,46 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/hugging-face-buckets",
+  "supported_destination_sync_modes": ["append", "overwrite"],
+  "supportsIncremental": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source Hugging Face Buckets",
+    "type": "object",
+    "required": ["bucket_path"],
+    "additionalProperties": false,
+    "properties": {
+      "bucket_path": {
+        "title": "Bucket Path",
+        "type": "string",
+        "description": "The path to the Hugging Face Bucket to read from. Format: hf://buckets/{username}/{bucket}/{path}/",
+        "examples": [
+          "hf://buckets/lhoestq/b/",
+          "hf://buckets/organization/dataset_name/"
+        ],
+        "order": 0
+      },
+      "file_format": {
+        "title": "File Format",
+        "type": "string",
+        "description": "The format of files in the bucket. Used for schema inference.",
+        "enum": ["parquet", "csv", "json", "jsonl"],
+        "default": "parquet",
+        "order": 1
+      },
+      "reader_options": {
+        "title": "Reader Options",
+        "type": "string",
+        "description": "JSON string with reader options (e.g., separators, encoding).",
+        "examples": ["{\"sep\": \",\", \"encoding\": \"utf-8\"}"],
+        "order": 2
+      },
+      "token": {
+        "title": "Hugging Face Token",
+        "type": "string",
+        "description": "Your Hugging Face token for authentication. Required for private buckets.",
+        "airbyte_secret": true,
+        "order": 3
+      }
+    }
+  }
+}

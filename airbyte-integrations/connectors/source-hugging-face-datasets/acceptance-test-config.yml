@@ -1,17 +1,5 @@
-# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
-# for more information about how to configure these tests
-connector_image: airbyte/source-hugging-face-datasets:dev
-acceptance_tests:
-  spec:
-    tests:
-      - spec_path: "manifest.yaml"
-  connection:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
-  discovery:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
-  basic_read:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
-  incremental:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
-  full_refresh:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+# Read by the CDK standard tests (`airbyte-cdk connector test` / `image test`).
+# This connector lists no test config, so the top-level bypass_reason says why.
+bypass_reason: "No test config in GSM for this connector"
+# Empty, so that CDK versions without top-level `bypass_reason` support still load this file.
+acceptance_tests: {}
