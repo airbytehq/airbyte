@@ -35,6 +35,21 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Leadfeeder API documentation
+    - title: Leadfeeder Legacy API documentation
       url: https://docs.leadfeeder.com/api/
       type: api_reference
+    - title: Leadfeeder API documentation (new unified API)
+      url: https://docs.leadfeeder.com/api/public
+      type: api_reference
+    - title: Leadfeeder API OpenAPI specification
+      url: https://api.leadfeeder.com/openapi.yaml
+      type: openapi_spec
+    - title: Leadfeeder API changelog
+      url: https://ideas.leadfeeder.com/changelog
+      type: api_release_history
+    - title: Legacy Leadfeeder API information (migration and phase-out notices)
+      url: https://help.leadfeeder.com/en/articles/13922236-legacy-leadfeeder-api-information
+      type: api_deprecations
+    - title: Leadfeeder API keys and OAuth authentication
+      url: https://help.leadfeeder.com/en/collections/19235577-api
+      type: authentication_guide
