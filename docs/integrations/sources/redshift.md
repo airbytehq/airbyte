@@ -82,6 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.6 | 2026-11-20 | [94020](https://github.com/airbytehq/airbyte/pull/94020) | Update base image to java-connector-base 2.0.6 |
 | 0.5.5 | 2026-06-04 | [74769](https://github.com/airbytehq/airbyte/pull/74769) | Handle timezone-aware timestamps in cursor parsing and fix DST offset in `timestamptz` reads |
 | 0.5.4 | 2025-07-16 | [62922](https://github.com/airbytehq/airbyte/pull/62922) | Convert to new gradle build flow |
 | 0.5.3 | 2024-12-18 | [49893](https://github.com/airbytehq/airbyte/pull/49893) | Use a base image: airbyte/java-connector-base:1.0.0 |
