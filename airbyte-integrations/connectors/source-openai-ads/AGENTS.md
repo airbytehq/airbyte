@@ -2,7 +2,7 @@
 
 ## 1. API-Key Authentication and OAuth Roadmap
 
-The connector currently authenticates with an API key, and each OpenAI Ads API key is scoped to one ad account ([authentication](https://developers.openai.com/ads/api-reference/authentication)). The [OpenAPI security scheme](https://developers.openai.com/ads/openapi.json#/components/securitySchemes/AdsOAuth) declares an OAuth authorization-code flow, but the connector does not implement OAuth yet. OAuth support is tracked as step 1b on the [certification epic](https://github.com/airbytehq/airbyte-internal-issues/issues/18388).
+The connector currently authenticates with an API key, and each OpenAI Ads API key is scoped to one ad account ([authentication](https://developers.openai.com/ads/api-reference/authentication)). The connector sends no `OpenAI-Ad-Account` header, so partner keys and partner OAuth tokens, which select the ad account with that header, are not supported ([bidding & budgets](https://developers.openai.com/ads/bidding-and-budgets)). The [OpenAPI security scheme](https://developers.openai.com/ads/openapi.json#/components/securitySchemes/AdsOAuth) declares an OAuth authorization-code flow, but the connector does not implement OAuth yet. OAuth support is tracked as step 1b on the [certification epic](https://github.com/airbytehq/airbyte-internal-issues/issues/18388).
 
 **Why this matters:** Do not describe the API as inherently API-key-only or add an OAuth configuration without completing the tracked OAuth work.
 
