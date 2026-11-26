@@ -52,7 +52,8 @@ definitions:
             nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
             archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
             canceledAt completedAt createdAt creator { id }
-            customerTicketCount cycle { id } description descriptionState
+            customerTicketCount cycle { id } description documentContent {
+            contentState }
             dueDate estimate identifier integrationSourceType labelIds number
             parent { id } previousIdentifiers priority priorityLabel
             prioritySortOrder project { id } projectMilestone { id }
@@ -218,6 +219,17 @@ definitions:
         field_pointers:
           - - sourceComment
             - id
+      - type: AddFields
+        condition: "{{ (record.get('documentContent') or {}).get('contentState') is not none }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - descriptionState
+            value: "{{ (record.get('documentContent') or {}).get('contentState') }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - documentContent
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -564,7 +576,7 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query CustomerNeeds($after: String, $filter: CustomerNeedFilter, $orderBy: PaginationOrderBy) { customerNeeds(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body bodyData comment { id }
+              query CustomerNeeds($after: String, $filter: CustomerNeedFilter, $orderBy: PaginationOrderBy) { customerNeeds(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body comment { id }
               createdAt creator { id } customer { id } id issue { id } priority
               project { id } updatedAt attachment { id } } pageInfo {
               hasNextPage endCursor } } }
@@ -678,7 +690,8 @@ definitions:
               query Projects($after: String, $filter: ProjectFilter, $orderBy: PaginationOrderBy) { projects(after: $after, first:
               25, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt autoArchivedAt canceledAt color
               completedAt completedIssueCountHistory completedScopeHistory
-              content contentState convertedFromIssue { id } createdAt creator {
+              content documentContent { contentState } convertedFromIssue { id }
+              createdAt creator {
               id } description health healthUpdatedAt icon id
               inProgressScopeHistory issueCountHistory lead { id } name priority
               prioritySortOrder progress projectUpdateRemindersPausedUntilAt
@@ -766,6 +779,17 @@ definitions:
           field_pointers:
             - - teams
               - nodes
+        - type: AddFields
+          condition: "{{ (record.get('documentContent') or {}).get('contentState') is not none }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - contentState
+              value: "{{ (record.get('documentContent') or {}).get('contentState') }}"
+              value_type: string
+        - type: RemoveFields
+          field_pointers:
+            - - documentContent
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -786,7 +810,8 @@ definitions:
           request_body_json:
             query: >-
               query ProjectMilestones($after: String, $filter: ProjectMilestoneFilter, $orderBy: PaginationOrderBy) { projectMilestones(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt description
-              descriptionState id name progress project { id } sortOrder status
+              documentContent { contentState } id name progress project { id }
+              sortOrder status
               targetDate updatedAt } pageInfo { hasNextPage endCursor } } }
             variables:
               orderBy: updatedAt
@@ -828,6 +853,17 @@ definitions:
           field_pointers:
             - - project
               - id
+        - type: AddFields
+          condition: "{{ (record.get('documentContent') or {}).get('contentState') is not none }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - descriptionState
+              value: "{{ (record.get('documentContent') or {}).get('contentState') }}"
+              value_type: string
+        - type: RemoveFields
+          field_pointers:
+            - - documentContent
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1064,7 +1100,7 @@ definitions:
               cyclesEnabled defaultIssueEstimate defaultIssueState { id }
               description groupIssueHistory icon id issueCount
               issueEstimationAllowZero issueEstimationExtended
-              issueEstimationType joinByDefault key
+              issueEstimationType key
               name parent { id }
               requirePriorityToLeaveTriage scimGroupName scimManaged
               setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
