@@ -184,6 +184,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.3 | 2026-11-17 | [93010](https://github.com/airbytehq/airbyte/pull/93010) | Fail fast with clear error messages for invalid deprecated orders API requests. |
 | 3.1.2 | 2026-11-17 | [78923](https://github.com/airbytehq/airbyte/pull/78923) | Update dependencies |
 | 3.1.1 | 2026-11-16 | [93009](https://github.com/airbytehq/airbyte/pull/93009) | Use cursor pagination for the deprecated 2021-01 `orders` API so syncs no longer fail on the 100-page limit |
 | 3.1.0 | 2026-11-11 | [91334](https://github.com/airbytehq/airbyte/pull/91334) | Migrated to manifest-only. Fixed `orders` skipping pages across date slices (2021-01 API) and skipping records at the saved cursor (both API versions); refresh `orders` to recover previously skipped orders. Added a one-hour lookback margin to other incremental streams except `events`. Requests are now paced at 2 per second on 2 threads, and records omit top-level fields whose value is `null`. |
