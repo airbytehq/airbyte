@@ -58,6 +58,7 @@ jobs:
             ai-create-docs-pr
             ai-dev
             ai-docs-review
+            ai-intake
             ai-prove-fix
             ai-ready
             ai-release-watch
