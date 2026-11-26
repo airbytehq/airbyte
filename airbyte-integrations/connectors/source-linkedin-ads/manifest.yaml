@@ -733,6 +733,15 @@ definitions:
               partition_field: video_urn
               stream:
                 $ref: "#/definitions/streams/videos_creative_posts"
+      transformations:
+        # post_urn is the creative's content.reference the post was requested with (not the id the Posts API
+        # returns), so it always matches the creatives it joins to.
+        - type: AddFields
+          fields:
+            - path:
+                - post_urn
+              value: "{{ stream_slice.parent_slice.post_urn }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3445,13 +3454,20 @@ schemas:
     title: "Videos"
     description: |
       Videos referenced by the sponsored accounts' ad creatives, including their duration and other media metadata.
-      Joinable with the creatives stream through the post referenced in creative.content.reference.
+      One record per creative reference: a video is emitted once for each creative whose post embeds it, so several
+      creatives on the same post yield identical (id, post_urn) records. Join to the creatives stream on
+      post_urn = creative.content.reference, and deduplicate on (id, post_urn) for one row per video and post.
       For details: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
     additionalProperties: true
     properties:
       id:
         description: The unique video URN (e.g. urn:li:video:C4E10AQGUkQY7trgh-Q).
         type:
+          - string
+      post_urn:
+        description: URN of the post the video was resolved from (urn:li:share or urn:li:ugcPost), exactly as referenced by creative.content.reference.
+        type:
+          - "null"
           - string
       owner:
         description: URN of the entity that owns this asset. Can be a person or organization URN.
