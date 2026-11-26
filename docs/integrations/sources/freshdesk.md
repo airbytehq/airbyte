@@ -90,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.16 | 2026-11-26 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Check the connection with `tickets` instead of the admin-only `agents` stream |
 | 3.3.15 | 2026-11-17 | [93175](https://github.com/airbytehq/airbyte/pull/93175) | Update dependencies |
 | 3.3.14 | 2026-11-10 | [91495](https://github.com/airbytehq/airbyte/pull/91495) | Update dependencies |
 | 3.3.13 | 2026-11-03 | [90355](https://github.com/airbytehq/airbyte/pull/90355) | Show the stream-specific error message when Freshdesk returns 401 Unauthorized. |
