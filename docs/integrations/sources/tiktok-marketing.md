@@ -180,6 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.2 | 2026-11-16 | [81416](https://github.com/airbytehq/airbyte/pull/81416) | Include Smart+ ads that were previously dropped due to missing `modify_time` cursor field |
 | 5.4.1 | 2026-11-17 | [93058](https://github.com/airbytehq/airbyte/pull/93058) | Promoted release candidate to GA |
 | 5.4.1-rc.1 | 2026-11-13 | [84320](https://github.com/airbytehq/airbyte/pull/84320) | Clarify retry error messages and classify transient API errors as transient errors. |
 | 5.4.0 | 2026-11-04 | [90968](https://github.com/airbytehq/airbyte/pull/90968) | Add website Place an Order metrics (`on_web_order`, `total_on_web_order_value`, `cost_per_on_web_order`, `value_per_on_web_order`, `on_web_order_rate`) to the ad, ad group and campaign daily report streams |
