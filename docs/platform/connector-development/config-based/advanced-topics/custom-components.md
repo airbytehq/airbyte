@@ -22,11 +22,21 @@ class MyPaginationStrategy(PaginationStrategy):
   def __post_init__(self, parameters: Mapping[str, Any]):
     pass
 
-  def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+  @property
+  def initial_token(self) -> Optional[Any]:
+    return None
+
+  def next_page_token(
+    self,
+    response: requests.Response,
+    last_page_size: int,
+    last_record: Optional[Record],
+    last_page_token_value: Optional[Any],
+  ) -> Optional[Any]:
     pass
 
-  def reset(self):
-    pass
+  def get_page_size(self) -> Optional[int]:
+    return None
 ```
 
 This class can then be referred from the yaml file by specifying the type of custom component and using its fully qualified class name:
@@ -38,7 +48,11 @@ pagination_strategy:
   my_field: "hello world"
 ```
 
-### Custom Components that pass fields to child components
+## Custom components are shared between threads
+
+A stream builds its components once and reads all its partitions through them, several partitions at a time on worker threads. A custom component used to read records, such as a retriever, requester, pagination strategy, extractor, filter or transformation, is therefore called from several threads at once. Keep per-read state such as page tokens, counters or recursion depth in local variables or method arguments, not on `self`. For example, `next_page_token` receives the current token as `last_page_token_value` so that a pagination strategy does not have to remember it. Connector Builder test reads run on a single thread, so a component that keeps such state on `self` can pass there and still lose records in a sync.
+
+## Custom Components that pass fields to child components
 
 There are certain scenarios where a child subcomponent might rely on a field defined on a parent component. For regular components, we perform this propagation of fields from the parent component to the child automatically.
 However, custom components do not support this behavior. If you have a child subcomponent of your custom component that falls under this use case, you will see an error message like:
