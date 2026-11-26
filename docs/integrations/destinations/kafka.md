@@ -103,7 +103,17 @@ Airbyte Cloud requires TLS encryption for Kafka broker connections. The **Protoc
 
 On Airbyte Cloud, **SASL JAAS Config** must contain exactly one `org.apache.kafka.common.security.plain.PlainLoginModule` entry. Missing, malformed, or unsupported JAAS configurations are rejected before connecting to Kafka.
 
-Airbyte Open Source continues to support **PLAINTEXT**, **SASL PLAINTEXT**, and **SASL SSL**, without these Cloud-only restrictions. Custom SSL truststore and client-certificate settings are not exposed by this connector.
+Airbyte Open Source supports **PLAINTEXT**, **SASL PLAINTEXT**, **SASL SSL**, and **SSL**, without these Cloud-only restrictions.
+
+#### SSL certificate (mTLS) authentication
+
+On Airbyte Open Source, set **Protocol** to **SSL** to authenticate with a client certificate (mutual TLS). Paste certificates and keys in PEM format:
+
+- **SSL Keystore Certificate Chain** and **SSL Keystore Private Key**: the client certificate and its key, used to authenticate to the brokers. Set **SSL Keystore Password** if the private key is encrypted.
+- **SSL Truststore Certificates**: the CA certificates used to verify the brokers' certificates.
+- **SSL Endpoint Identification Algorithm**: `https` (default) verifies the broker hostname against its certificate; leave it empty to disable hostname verification.
+
+The connector writes the PEM content to temporary files with owner-only permissions and deletes them when the connector exits.
 
 #### Confluent Cloud API-key authentication
 
@@ -131,6 +141,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
+| 0.2.0   | 2026-11-10 | [90980](https://github.com/airbytehq/airbyte/pull/90980) | Add SSL certificate (mTLS) authentication with PEM certificates (Airbyte Open Source). |
 | 0.1.13  | 2026-11-04 | [91019](https://github.com/airbytehq/airbyte/pull/91019) | Update Java CDK, Kafka libraries and security dependencies. |
 | 0.1.12 | 2026-11-04 | [90997](https://github.com/airbytehq/airbyte/pull/90997) | Enable on Airbyte Cloud with TLS-only Kafka broker connections; avoid logging SASL credentials. |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
