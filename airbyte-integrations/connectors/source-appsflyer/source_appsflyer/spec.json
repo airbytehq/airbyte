@@ -27,6 +27,13 @@
         "description": "Time zone in which date times are stored. The project timezone may be found in the App settings in the AppsFlyer console.",
         "default": "UTC",
         "examples": ["US/Pacific", "UTC"]
+      },
+      "raw_data_lookback_window_in_hours": {
+        "type": "integer",
+        "description": "If set to a positive number, during each incremental sync of the raw data streams the connector will re-fetch records from the past N hours before the saved state. This helps capture events that AppsFlyer makes available after a previous sync has already moved past them. Re-fetched records are emitted again, so use this with a deduplicating sync mode. The default value of 0 means no lookback and preserves existing behavior.",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 720
       }
     }
   }
