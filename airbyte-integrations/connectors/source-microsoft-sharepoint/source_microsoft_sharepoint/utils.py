@@ -49,7 +49,7 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
     respects the 'Retry-After' header from the response, if present.
 
     Parameters:
-        obj (object): The object that has the `execute_query` method to be executed.
+        obj (object): The object that has the `execute_query` method to be executed, or a callable that builds a fresh one per attempt.
         max_retries (int): Maximum number of retry attempts. Defaults to 5.
         initial_retry_after (int): Initial waiting time (in seconds) before the first retry. Defaults to 5 seconds.
         max_retry_after (int): Maximum waiting time (in seconds) between retries. Defaults to 300 seconds.
@@ -64,10 +64,11 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
     retries = 0
     start_time = datetime.now()
     retry_after = initial_retry_after
+    get_query = obj if callable(obj) and not hasattr(obj, "execute_query") else lambda: obj
 
     while retries < max_retries:
         try:
-            return obj.execute_query()
+            return get_query().execute_query()
         except Exception as ex:
             if hasattr(ex, "response") and ex.response.status_code in (HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.SERVICE_UNAVAILABLE):
                 current_time = datetime.now()
