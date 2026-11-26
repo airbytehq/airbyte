@@ -11,6 +11,7 @@ New GCS connectors should use `core-load` with the dataflow pipeline, using `loa
 ## Connectors Using This Toolkit
 
 - destination-bigquery
+- destination-gcs
 
 ## Configuration
 
@@ -29,6 +30,21 @@ airbyteBulkConnector {
 - GCS client wrappers
 - GCS upload/download utilities
 - GCS-specific configuration handling
+
+## Authentication
+
+`GcsClientFactory` picks the client from `GcsClientConfiguration.credential`:
+
+| Configuration | Client | API |
+| :--- | :--- | :--- |
+| `GcsHmacKeyConfiguration` | `GcsS3Client` | S3-compatible XML API (`storage.googleapis.com`) |
+| `GcsWorkloadIdentityFederationConfiguration` | `GcsNativeClient` | GCS JSON API |
+
+Workload Identity Federation takes the contents of an `external_account` credential configuration file. Build it with `GcsWorkloadIdentityFederationConfiguration.fromCredentialsJson`, which validates the document without network access. The token exchange needs `sts.googleapis.com`, and service account impersonation also needs `iamcredentials.googleapis.com`, so add them to the connector's `allowedHosts`.
+
+`GcsAuthSpecification` (the spec-side `credential` dropdown) only offers HMAC keys. A connector that offers WIF declares its own credential spec and maps it onto `GcsWorkloadIdentityFederationConfiguration`.
+
+All clients take full object keys (already including the bucket path) and never prepend `GcsClientConfiguration.path`.
 
 ## Migration Path
 
