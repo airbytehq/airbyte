@@ -1,0 +1,62 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.unifygtm.com
+  connectorBuildOptions:
+    # Manifest-only connectors run on the source-declarative-manifest base image,
+    # which contains the CDK runtime. Keep this on the latest published tag and
+    # use the full sha256 to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.3@sha256:60bdf3b1b4384b2599a229445609a3a8f9ff11fefb8a62e3be9c62fc32485310
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3921663d-8fb3-41fc-bd59-f85f5cc94907
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-unify
+  documentationUrl: https://docs.airbyte.com/integrations/sources/unify
+  githubIssueLabel: source-unify
+  icon: icon.svg
+  license: ELv2
+  name: Unify
+  releaseDate: "2026-06-25"
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-unify
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  suggestedStreams:
+    streams:
+      - company
+      - person
+      - opportunity
+      - event
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-UNIFY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Unify Bulk API guide
+      url: https://docs.unifygtm.com/developers/guides/request-data/bulk-api
+      type: api_reference
+    - title: Unify API keys
+      url: https://app.unifygtm.com/dashboard/settings/integrations/api-keys
+      type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+metadataSpecVersion: "1.0"

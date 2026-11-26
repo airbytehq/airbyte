@@ -1,0 +1,8 @@
+{
+  "api_key": "<YOUR_UNIFY_API_KEY>",
+  "base_url": "https://api.unifygtm.com",
+  "start_date": "2024-01-01T00:00:00Z",
+  "page_size": 1000,
+  "poll_timeout_minutes": 60,
+  "num_workers": 2
+}
