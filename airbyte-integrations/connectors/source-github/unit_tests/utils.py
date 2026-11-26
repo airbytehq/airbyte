@@ -68,7 +68,9 @@ def resolve_repositories_and_organizations(source: YamlDeclarativeSource, config
         router = source._constructor.create_component(
             model_type=UnionPartitionRouterModel,
             component_definition=source.resolved_manifest["definitions"][definition_name],
-            config=config,
+            # The normalized config: `requester_base.authenticator` selects on a key that only
+            # `ConfigNormalization` sets.
+            config=source._config,
             stream_name=f"{partition_key}_resolution",
         )
         return sorted({stream_slice.partition[partition_key] for stream_slice in router.stream_slices()})
@@ -89,12 +91,13 @@ def resolve_repositories_and_organizations(source: YamlDeclarativeSource, config
 
 def get_authenticator(source: YamlDeclarativeSource, config: Mapping[str, Any]) -> DeclarativeAuthenticator:
     """Return the manifest's `RateLimitedMultipleTokenAuthenticator` — the same cached
-    instance the manifest streams' requesters use (`ModelToComponentFactory` caches by
-    resolved constructor arguments). `config` must be the normalized config the source was
-    constructed with: a differently resolved config yields a different cached instance."""
+    instance the manifest streams' requesters use for a config that does not refresh its
+    OAuth token (`ModelToComponentFactory` caches by resolved constructor arguments).
+    `config` must be the normalized config the source was constructed with: a differently
+    resolved config yields a different cached instance."""
     return source._constructor.create_component(
         model_type=RateLimitedMultipleTokenAuthenticatorModel,
-        component_definition=source.resolved_manifest["definitions"]["requester_base"]["authenticator"],
+        component_definition=source.resolved_manifest["definitions"]["token_authenticator"],
         config=config,
     )
 

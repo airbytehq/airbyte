@@ -13,58 +13,94 @@ definitions:
   # Hardcoded legacy default; `page_size_for_large_streams` left the spec in 1.0.1. See AGENTS.md "Page sizes" before raising it.
   large_stream_page_size: "10"
 
+  # Signs every request with the stored token(s) and tracks each token's quota. Used unless the config can refresh
+  # its OAuth token. See AGENTS.md "Authentication".
+  token_authenticator:
+    type: RateLimitedMultipleTokenAuthenticator
+    # Token precedence: legacy root-level `access_token` first, then
+    # `credentials.access_token`, then `credentials.personal_access_token` — the
+    # legacy `get_access_token` accepted all three, so the authenticator does too.
+    tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
+    token_delimiter: ","
+    auth_method: "token"
+    header: "Authorization"
+    # `is not none`, not a `.get` default or `or 120`: a null value renders "PTNoneM" and fails every
+    # command, and `check`'s small override must not read as absent.
+    max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
+    quota_status_source:
+      type: QuotaStatusSource
+      url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
+      request_headers:
+        Accept: "application/vnd.github+json"
+        X-GitHub-Api-Version: "2022-11-28"
+      # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
+      # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
+      # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
+      unavailable_status_codes: [404]
+    quotas:
+      - type: TokenQuota
+        name: rest
+        remaining_path: ["resources", "core", "remaining"]
+        reset_path: ["resources", "core", "reset"]
+        limit_path: ["resources", "core", "limit"]
+        # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
+        # See AGENTS.md "Authenticator quota pools".
+        remaining_header: "X-RateLimit-Remaining"
+        reset_header: "X-RateLimit-Reset"
+        limit_header: "X-RateLimit-Limit"
+        # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
+        # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
+        # See AGENTS.md "Authenticator quota pools".
+      - type: TokenQuota
+        name: graphql
+        remaining_path: ["resources", "graphql", "remaining"]
+        reset_path: ["resources", "graphql", "reset"]
+        limit_path: ["resources", "graphql", "limit"]
+        # /graphql answers with the same header names, scoped to the separate GraphQL
+        # point budget, so the pool reconciles the same way as `rest`.
+        remaining_header: "X-RateLimit-Remaining"
+        reset_header: "X-RateLimit-Reset"
+        limit_header: "X-RateLimit-Limit"
+        matchers:
+          - type: HttpRequestRegexMatcher
+            url_path_pattern: "/graphql"
+
+  # For an OAuth app that issues expiring user access tokens (an 8 hour access token and a single-use refresh token).
+  # No quota tracking: rate limits are handled by the backoff strategies only. See AGENTS.md "Refreshing OAuth tokens".
+  refreshing_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://github.com/login/oauth/access_token
+    client_id: "{{ (config.get('credentials') or {}).get('client_id', '') }}"
+    client_secret: "{{ (config.get('credentials') or {}).get('client_secret', '') }}"
+    refresh_token: "{{ (config.get('credentials') or {}).get('refresh_token', '') }}"
+    grant_type: refresh_token
+    # GitHub answers this endpoint form-encoded unless JSON is asked for.
+    refresh_request_headers:
+      Accept: application/json
+    # A wrong client ID or secret is not fixed by signing in again, so it gets its own message.
+    refresh_token_error_messages:
+      incorrect_client_credentials: >-
+        GitHub rejected the client ID or client secret of the OAuth app. Check the OAuth app credentials, then
+        authenticate the source again.
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      # GitHub documents these errors but not their HTTP status; a wrong client ID or secret comes with HTTP 200.
+      refresh_token_error_status_codes: [200, 400, 401]
+      refresh_token_error_key: error
+      refresh_token_error_values: ["bad_refresh_token", "incorrect_client_credentials"]
+
   requester_base:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     authenticator:
-      type: RateLimitedMultipleTokenAuthenticator
-      # Token precedence: legacy root-level `access_token` first, then
-      # `credentials.access_token`, then `credentials.personal_access_token` — the
-      # legacy `get_access_token` accepted all three, so the authenticator does too.
-      tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
-      token_delimiter: ","
-      auth_method: "token"
-      header: "Authorization"
-      # `is not none`, not a `.get` default or `or 120`: a null value renders "PTNoneM" and fails every
-      # command, and `check`'s small override must not read as absent.
-      max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
-      quota_status_source:
-        type: QuotaStatusSource
-        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
-        request_headers:
-          Accept: "application/vnd.github+json"
-          X-GitHub-Api-Version: "2022-11-28"
-        # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
-        # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
-        # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
-        unavailable_status_codes: [404]
-      quotas:
-        - type: TokenQuota
-          name: rest
-          remaining_path: ["resources", "core", "remaining"]
-          reset_path: ["resources", "core", "reset"]
-          limit_path: ["resources", "core", "limit"]
-          # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
-          # See AGENTS.md "Authenticator quota pools".
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
-          # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
-          # See AGENTS.md "Authenticator quota pools".
-        - type: TokenQuota
-          name: graphql
-          remaining_path: ["resources", "graphql", "remaining"]
-          reset_path: ["resources", "graphql", "reset"]
-          limit_path: ["resources", "graphql", "limit"]
-          # /graphql answers with the same header names, scoped to the separate GraphQL
-          # point budget, so the pool reconciles the same way as `rest`.
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          matchers:
-            - type: HttpRequestRegexMatcher
-              url_path_pattern: "/graphql"
+      # `oauth_token_refresh` is set by `components.ConfigNormalization` on every run; it is not a spec field.
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["oauth_token_refresh"]
+      authenticators:
+        disabled:
+          $ref: "#/definitions/token_authenticator"
+        enabled:
+          $ref: "#/definitions/refreshing_oauth_authenticator"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
     error_handler:
@@ -20104,6 +20140,17 @@ spec:
                 title: Client secret
                 description: OAuth Client secret
                 airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: OAuth refresh token. GitHub issues one only when the OAuth app has expiring user access tokens turned on.
+                airbyte_secret: true
+                airbyte_hidden: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date and time when the OAuth access token expires. Set only together with a refresh token.
+                airbyte_hidden: true
           - type: object
             title: Personal Access Token
             required:
@@ -20223,6 +20270,10 @@ spec:
         access_token_url: https://github.com/login/oauth/access_token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
         extract_output:
           - access_token
+        # Returned only by an OAuth app with expiring user access tokens turned on.
+        optional_extract_output:
+          - refresh_token
+          - expires_in
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -20232,6 +20283,16 @@ spec:
             path_in_connector_config:
               - credentials
               - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false

@@ -198,9 +198,21 @@ Things worth knowing before touching either half:
   turned out to define the same test name twice, so only the second body ran — worth grepping
   for that in the other `integration/test_*.py` files before trusting their coverage.
 
-## Authentication: one shared authenticator, always
+## Authentication: one token authenticator instance, always
 
-Every stream now comes from `manifest.yaml`, and the repository/organization resolution the
+`requester_base.authenticator` is a `SelectiveAuthenticator` over two definitions.
+`components.ConfigNormalization` sets `config["oauth_token_refresh"]` on every run, and that key
+picks one of them for every requester:
+
+- `disabled`: `token_authenticator`, the `RateLimitedMultipleTokenAuthenticator` described in
+  this section. Personal access tokens, a legacy root-level `access_token`, an OAuth token
+  without a refresh token and every `api_url` other than github.com use it.
+- `enabled`: `refreshing_oauth_authenticator`, see "Refreshing OAuth tokens" below.
+
+The CDK builds both members before it selects one, so both must construct from any config the
+spec allows.
+
+Every stream comes from `manifest.yaml`, and the repository/organization resolution the
 routers perform issues HTTP too — all of it through the same authenticator
 instance the streams use. `RateLimitedMultipleTokenAuthenticator` tracks each token's remaining
 REST/GraphQL quota in local counters; two instances over the same tokens each believe they own
@@ -208,11 +220,15 @@ the full budget, so the connector plans for twice the quota GitHub grants and ov
 limit.
 
 `unit_tests/utils.py::get_authenticator` gets that instance by asking the manifest's component
-factory for `definitions.requester_base.authenticator`. This reads like it constructs a new
+factory for `definitions.token_authenticator`. This reads like it constructs a new
 one but does not: `ModelToComponentFactory` caches these by resolved constructor arguments
 specifically so every stream shares one set of counters. The cache key is value-based, so pass
 the **transformed** config — a different `api_url`, token list or `max_waiting_time` produces a
-different instance. Do not add a second authenticator.
+different instance. Do not add a second token authenticator.
+
+Any other component a test builds from the manifest reaches `requester_base.authenticator`, so it
+needs the transformed config (`source._config`): the raw one has no `oauth_token_refresh` key and
+the selector raises.
 
 Reactive token rotation is the CDK's job, not the connector's. Each `TokenQuota` pool in the
 manifest declares `remaining_header`/`reset_header`/`limit_header`, so `HttpClient` feeds
@@ -234,6 +250,48 @@ including null and zero.
 Not rotated, deliberately: a secondary rate limit, where the token's counters stay positive.
 GitHub scopes secondary limits per account, so another token of the same account gets rejected
 the same way; the reset wait is the correct response there.
+
+## Refreshing OAuth tokens
+
+GitHub turns on "Expire user access tokens" by default for newly registered OAuth apps. Such an
+app returns an access token that lasts 8 hours and a single-use refresh token that lasts 6
+months. Airbyte Cloud's own app does not expire tokens; an app a customer registers (OAuth
+override credentials, or a self-managed deployment) usually does.
+
+- The fields arrive through `advanced_auth`: `optional_extract_output: [refresh_token,
+  expires_in]`. The platform skips an optional key the token response does not have, and turns
+  `expires_in` into `token_expiry_date`. Both land under `credentials` as hidden spec fields. A
+  platform without `optional_extract_output` support stores only `access_token`, as before.
+- `ConfigNormalization._can_refresh_oauth_token` enables the refresh only when `credentials`
+  has `refresh_token`, `client_id` and `client_secret`, the config has no root-level
+  `access_token` (it outranks `credentials` in the token precedence), and the `api_url` host is
+  `api.github.com`. The refresh endpoint is hard-coded to github.com, so the client secret and
+  refresh token are never sent to a host the config does not name. GitHub Enterprise Server and
+  GitHub Enterprise Cloud with data residency keep the stored token; nobody has tested a refresh
+  against either.
+- No quota tracking when refreshing. `RateLimitedMultipleTokenAuthenticator` takes a fixed token
+  list, so it cannot wrap a token that changes. A refreshing source sends requests until GitHub
+  answers with a rate limit and then waits through `rate_limit_backoff_strategies`. It also sends
+  `Authorization: Bearer`, not `token`; GitHub accepts both.
+- A missing `token_expiry_date` reads as expired, so the first request refreshes.
+- GitHub documents the `bad_refresh_token` error of the refresh endpoint but not its HTTP status,
+  and its other token endpoint errors come with HTTP 200. `refresh_token_error_status_codes`
+  lists 200, 400 and 401 so each ends in a config error that asks the user to authenticate again
+  and leaves the stored tokens untouched.
+- A wrong client ID or client secret comes back as HTTP 200 with `error: incorrect_client_credentials`
+  (checked live). It is in `refresh_token_error_values` too, and `refresh_token_error_messages`
+  tells the user to check the OAuth app credentials, because signing in again does not fix it.
+  Without it, the response has no `access_token` and the sync fails with a system error.
+- The rotated tokens are saved through a `CONNECTOR_CONFIG` control message that carries the
+  whole normalized config. It therefore also holds `api_url` with its default and trailing
+  slash, and `oauth_token_refresh`. Both are recomputed on every run, so a saved value is never
+  trusted. Everything `ConfigNormalization` puts into the config must be JSON-serializable.
+- `check` uses `config_overrides` together with the token updater. The CDK keeps the override
+  out of the saved config.
+- Known gap: when a user turns token expiry off on the app and authenticates the same source
+  again, the new token response has no refresh token, and the source may keep the old hidden
+  `refresh_token`. The connector then tries the old refresh token and fails with the
+  authenticate-again error. Creating a new source avoids it.
 
 ## Organizations must be payload-confirmed, never taken from config text
 
