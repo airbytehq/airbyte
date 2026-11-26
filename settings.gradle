@@ -48,7 +48,7 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.develocity" version "3.19.2"
+    id "com.gradle.develocity" version "4.6.1"
     id 'com.github.burrunan.s3-build-cache' version "1.8.1"
 }
 
