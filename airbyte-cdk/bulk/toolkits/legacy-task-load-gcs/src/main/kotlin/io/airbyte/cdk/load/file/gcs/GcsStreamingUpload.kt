@@ -18,6 +18,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * This class is responsible for uploading individual parts to GCS and composing them at the end.
  *
+ * [key] is the full object name (it already includes the configured bucket path). Parts are
+ * uploaded as temporary objects named `<key>-<timestamp>-<random>-part-<index>` next to it.
+ *
  * /!\ Unlike typical "multipart upload" semantics, each part is visible as a standalone object
  * until it is composed into a final object. That’s usually acceptable for BigQuery usage, but Will
  * be an issue with a dedicated GCS destination as it would probably be a breaking change
@@ -45,7 +48,8 @@ class GcsStreamingUpload(
             "We are attempting to compose more than 32 parts for key $key. " +
                 "GCS is not capable of doing that."
         }
-        val partName = combinePath("$uploadId-part-$index")
+        // [key] is already the full object name, so parts are written next to it.
+        val partName = "$uploadId-part-$index"
         log.info { "Uploading part #$index => $partName" }
 
         val partBlobId = BlobId.of(config.gcsBucketName, partName)
@@ -117,13 +121,5 @@ class GcsStreamingUpload(
     private fun generateUploadId(): String {
         val randomSuffix = (1..8).map { ('a'..'z').random() }.joinToString("")
         return "$key-${System.currentTimeMillis()}-$randomSuffix"
-    }
-
-    private fun combinePath(key: String): String {
-        return if (config.path.isBlank()) {
-            key
-        } else {
-            "${config.path}/$key".replace("//", "/")
-        }
     }
 }

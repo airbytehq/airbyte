@@ -82,8 +82,13 @@ class GcsS3Client(
 }
 
 /**
- * THis client should be used when we finally decide to support native GCP auth. We can then swap
- * over to this client instead of the [GcsS3Client] which will require us to use HMAC auth.
+ * [GcsClient] over the native GCS JSON API. Used for credentials the S3-compatible XML API cannot
+ * carry, such as
+ * [Workload Identity Federation][io.airbyte.cdk.load.command.gcs.GcsWorkloadIdentityFederationConfiguration].
+ *
+ * Like [GcsS3Client], every key is a full object name within [GcsClientConfiguration.gcsBucketName]
+ * and is used as-is: the object-storage pipeline already includes the configured bucket path in the
+ * keys it passes, so this client does not prepend [GcsClientConfiguration.path] again.
  */
 class GcsNativeClient(private val storage: Storage, private val config: GcsClientConfiguration) :
     GcsClient {
@@ -91,8 +96,7 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String): Flow<GcsBlob> = flow {
-        val fullPrefix = combinePath(config.gcsBucketName, prefix)
-        val blobs = storage.list(config.gcsBucketName, Storage.BlobListOption.prefix(fullPrefix))
+        val blobs = storage.list(config.gcsBucketName, Storage.BlobListOption.prefix(prefix))
 
         for (blob in blobs.iterateAll()) {
             emit(GcsBlob(blob.name, config))
@@ -100,11 +104,8 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
     }
 
     override suspend fun move(key: String, toKey: String): GcsBlob {
-        val fullSourceKey = combinePath(config.path, key)
-        val fullTargetKey = combinePath(config.path, toKey)
-
-        val sourceBlobId = BlobId.of(config.gcsBucketName, fullSourceKey)
-        val targetBlobId = BlobId.of(config.gcsBucketName, fullTargetKey)
+        val sourceBlobId = BlobId.of(config.gcsBucketName, key)
+        val targetBlobId = BlobId.of(config.gcsBucketName, toKey)
 
         storage.copy(
             Storage.CopyRequest.newBuilder()
@@ -118,16 +119,22 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
     }
 
     override suspend fun <U> get(key: String, block: (InputStream) -> U): U {
-        val fullKey = combinePath(config.path, key)
-        val blob = storage.get(BlobId.of(config.gcsBucketName, fullKey))
+        val blob =
+            storage.get(BlobId.of(config.gcsBucketName, key))
+                ?: throw NoSuchElementException(
+                    "Object gs://${config.gcsBucketName}/$key not found",
+                )
 
         // Convert ReadChannel to InputStream
         return Channels.newInputStream(blob.reader()).use { inputStream -> block(inputStream) }
     }
 
     override suspend fun getMetadata(key: String): Map<String, String> {
-        val fullKey = combinePath(config.path, key)
-        val blob = storage.get(BlobId.of(config.gcsBucketName, fullKey))
+        val blob =
+            storage.get(BlobId.of(config.gcsBucketName, key))
+                ?: throw NoSuchElementException(
+                    "Object gs://${config.gcsBucketName}/$key not found",
+                )
 
         // Convert Map<String, String?> to Map<String, String> by filtering out null values
         return blob.metadata?.mapNotNull { (key, value) -> value?.let { key to it } }?.toMap()
@@ -135,8 +142,7 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
     }
 
     override suspend fun put(key: String, bytes: ByteArray): GcsBlob {
-        val fullKey = combinePath(config.path, key)
-        val blobId = BlobId.of(config.gcsBucketName, fullKey)
+        val blobId = BlobId.of(config.gcsBucketName, key)
         val blobInfo = BlobInfo.newBuilder(blobId).build()
 
         storage.create(blobInfo, bytes)
@@ -145,8 +151,7 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
     }
 
     override suspend fun delete(key: String) {
-        val fullKey = combinePath(config.path, key)
-        storage.delete(BlobId.of(config.gcsBucketName, fullKey))
+        storage.delete(BlobId.of(config.gcsBucketName, key))
     }
 
     override suspend fun startStreamingUpload(
@@ -170,9 +175,5 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
 
     override suspend fun move(remoteObject: GcsBlob, toKey: String): GcsBlob {
         return move(remoteObject.key, toKey)
-    }
-
-    private fun combinePath(bucketPath: String, key: String): String {
-        return if (bucketPath.isEmpty()) key else "$bucketPath/$key".replace("//", "/")
     }
 }
