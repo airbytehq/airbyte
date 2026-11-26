@@ -89,6 +89,12 @@ Iterable hosts each project in either the US data center (USDC) or the European 
 
 Iterable's Export API limits requests to 4 per minute per project. The connector respects this limit and automatically adjusts the size of date range slices to stay within it. For most other endpoints, Iterable applies a rate limit of 100 requests per second per project. The connector retries rate-limited requests (HTTP 429) with exponential backoff.
 
+### Campaigns and Campaign Metrics
+
+The Campaigns stream requests campaigns from Iterable's `GET /api/campaigns` endpoint 1,000 at a time and continues until a page returns fewer than 1,000 campaigns. Starting in connector version 1.0.2, the connector always sends the `page` and `pageSize` parameters, because Iterable has deprecated returning every campaign in a single unpaginated response. On earlier versions, projects where Iterable doesn't allow unpaginated access receive only the first page of campaigns.
+
+The Campaign Metrics stream reads the same paginated campaign list, then requests metrics for 20 campaigns at a time from `GET /api/campaigns/metrics`. Each request covers the period from your **Start Date** to the time of the sync, so every sync re-reads metrics for the full period. Projects with many campaigns produce many metrics requests.
+
 ### Incremental sync behavior
 
 Streams that support incremental sync use the following approaches:
@@ -134,6 +140,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2026-11-11 | [85908](https://github.com/airbytehq/airbyte/pull/85908) | Paginate `GET /api/campaigns` (the `campaigns` stream and the campaign lookup used by `campaigns_metrics`) using the Iterable API's page and pageSize parameters. |
 | 1.0.1 | 2026-09-16 | [78129](https://github.com/airbytehq/airbyte/pull/78129) | Improve the error message for Iterable Export API response closures after retries. |
 | 1.0.0 | 2026-08-25 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema - standard Iterable fields stay top-level, custom fields move to a `data` object, `itblInternal` flattened to dotted keys, timestamp values (`signupDate`, `profileUpdatedAt`, `itblInternal` document timestamps) normalized to RFC3339 to match their `timestamp_with_timezone` typing, added `itblUserId`, `whatsAppPhoneNumber`, `city`, `region`. See the [migration guide](/integrations/sources/iterable-migrations). |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
@@ -156,17 +163,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.6.40 | 2025-07-05 | [62665](https://github.com/airbytehq/airbyte/pull/62665) | Update dependencies |
 | 0.6.39 | 2025-06-28 | [62174](https://github.com/airbytehq/airbyte/pull/62174) | Update dependencies |
 | 0.6.38 | 2025-06-21 | [61814](https://github.com/airbytehq/airbyte/pull/61814) | Update dependencies |
-| 0.6.37 | 2025-06-14 | [61119](https://github.com/airbytehq/airbyte/pull/61119) | Update dependencies |
+| 0.6.37 | 2025-06-16 | [61119](https://github.com/airbytehq/airbyte/pull/61119) | Update dependencies |
 | 0.6.36 | 2025-05-24 | [58772](https://github.com/airbytehq/airbyte/pull/58772) | Update dependencies |
 | 0.6.35 | 2025-05-22 | [60854](https://github.com/airbytehq/airbyte/pull/60854) | Update dependencies and expected records |
 | 0.6.34 | 2025-04-12 | [57737](https://github.com/airbytehq/airbyte/pull/57737) | Update dependencies |
 | 0.6.33 | 2025-04-05 | [57057](https://github.com/airbytehq/airbyte/pull/57057) | Update dependencies |
 | 0.6.32 | 2025-03-29 | [56655](https://github.com/airbytehq/airbyte/pull/56655) | Update dependencies |
 | 0.6.31 | 2025-03-22 | [56015](https://github.com/airbytehq/airbyte/pull/56015) | Update dependencies |
-| 0.6.30 | 2025-03-08 | [55510](https://github.com/airbytehq/airbyte/pull/55510) | Update dependencies |
+| 0.6.30 | 2025-03-09 | [55510](https://github.com/airbytehq/airbyte/pull/55510) | Update dependencies |
 | 0.6.29 | 2025-03-01 | [54759](https://github.com/airbytehq/airbyte/pull/54759) | Update dependencies |
 | 0.6.28 | 2025-02-22 | [54287](https://github.com/airbytehq/airbyte/pull/54287) | Update dependencies |
-| 0.6.27 | 2025-02-15 | [53814](https://github.com/airbytehq/airbyte/pull/53814) | Update dependencies |
+| 0.6.27 | 2025-02-18 | [53814](https://github.com/airbytehq/airbyte/pull/53814) | Update dependencies |
 | 0.6.26 | 2025-02-01 | [52726](https://github.com/airbytehq/airbyte/pull/52726) | Update dependencies |
 | 0.6.25 | 2025-01-25 | [52277](https://github.com/airbytehq/airbyte/pull/52277) | Update dependencies |
 | 0.6.24 | 2025-01-11 | [51163](https://github.com/airbytehq/airbyte/pull/51163) | Update dependencies |

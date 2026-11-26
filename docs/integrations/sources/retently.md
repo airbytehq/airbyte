@@ -37,10 +37,9 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Setup guide
 
-Retently supports two types of authentication: by API Token or using Retently oAuth application.
+The Retently source authenticates with an API token. You can get the API Token for Retently [here](https://app.retently.com/settings/api/tokens).
 
-You can get the API Token for Retently [here](https://app.retently.com/settings/api/tokens).
-OAuth application is [here](https://app.retently.com/settings/oauth).
+The Retently API no longer supports OAuth applications, so the connector no longer offers OAuth authentication. If your source was set up with OAuth, edit it and enter an API token instead.
 
 ## IP allow list
 
@@ -53,6 +52,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.69 | 2026-11-24 | [94043](https://github.com/airbytehq/airbyte/pull/94043) | Remove OAuth authentication, which the Retently API no longer supports |
+| 0.3.68 | 2026-11-17 | [93349](https://github.com/airbytehq/airbyte/pull/93349) | Update dependencies |
 | 0.3.67 | 2026-11-10 | [91688](https://github.com/airbytehq/airbyte/pull/91688) | Update dependencies |
 | 0.3.66 | 2026-11-03 | [90738](https://github.com/airbytehq/airbyte/pull/90738) | Update dependencies |
 | 0.3.65 | 2026-10-27 | [90045](https://github.com/airbytehq/airbyte/pull/90045) | Update dependencies |

@@ -21,11 +21,7 @@ acceptance_tests:
         empty_streams:
           - name: "add_ons"
             bypass_reason: "Cannot seed this stream with free sandbox account"
-          - name: "billing_infos"
-            bypass_reason: "Cannot seed this stream with free sandbox account"
           - name: "credit_payments"
-            bypass_reason: "Cannot seed this stream with free sandbox account"
-          - name: "shipping_methods"
             bypass_reason: "Cannot seed this stream with free sandbox account"
           - name: plans
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."

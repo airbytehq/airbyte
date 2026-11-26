@@ -422,13 +422,14 @@ jobs:
           PR_NUMBER: ${{ env.PR_NUMBER }}
           ROLLOUT_ACK_CHECKBOX_TEXT: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
           ROLLOUT_COMMENT_URL: ${{ steps.rollout-comment.outputs.url }}
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         with:
           script: |
             const pullNumber = Number(process.env.PR_NUMBER);
             const checkboxText = process.env.ROLLOUT_ACK_CHECKBOX_TEXT;
             const markdown = [
               "> [!IMPORTANT]",
-              "> Active progressive rollout warning for ${{ matrix.connector }}.",
+              `> Active progressive rollout warning for ${process.env.MATRIX_CONNECTOR}.`,
               "",
               `- [ ] ${checkboxText} [here](${process.env.ROLLOUT_COMMENT_URL}).`,
             ].join("\n");
@@ -495,8 +496,10 @@ jobs:
           matrix.connector &&
           steps.rollout-gate-state.outputs.has-active-rollout == 'true' &&
           steps.bypass-state.outputs.approved != 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          echo "::error::${{ matrix.connector }} has an active progressive rollout. Check the bypass box in the PR description to acknowledge and rerun this workflow."
+          echo "::error::${MATRIX_CONNECTOR} has an active progressive rollout. Check the bypass box in the PR description to acknowledge and rerun this workflow."
           exit 1
 
       - name: Fail if master has RC marker and is not acknowledged
@@ -504,8 +507,11 @@ jobs:
           matrix.connector &&
           steps.rollout-gate-state.outputs.has-master-rc-marker == 'true' &&
           steps.bypass-state.outputs.approved != 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
+          STEP_RESOLVE_VARS_MASTER_VERSION: ${{ steps.resolve-vars.outputs.master-version }}
         run: |
-          echo "::error::${{ matrix.connector }} has an RC marker on master (${{ steps.resolve-vars.outputs.master-version }}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
+          echo "::error::${MATRIX_CONNECTOR} has an RC marker on master (${STEP_RESOLVE_VARS_MASTER_VERSION}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
           exit 1
 
   progressive-rollout-gate-summary:

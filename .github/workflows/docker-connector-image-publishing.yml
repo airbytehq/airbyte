@@ -45,6 +45,10 @@ jobs:
     name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.image-type == 'base' }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     environment:
       name: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}
       url: https://${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}/${{ github.event.inputs.connector-type }}-connector-base
@@ -54,12 +58,20 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Get Docker Hub OIDC token
+        if: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' }}
+        id: docker-hub-oidc
+        uses: docker/oidc-action@96ba694c64860c7209bcd1ede7d698c71564ef78 # v1.2.0
+        with:
+          connection-id: ${{ vars.DOCKER_HUB_OIDC_CONNECTOR_PUBLISHING_CONNECTION_ID }}
+          expires-in: 21600
+
       - name: Log in to DockerHub
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         if: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' }}
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          username: airbyte
+          password: ${{ steps.docker-hub-oidc.outputs.token }}
 
       - name: Log in to GHCR
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
@@ -74,16 +86,22 @@ jobs:
 
       - name: Set and debug variables
         id: vars
+        env:
+          EVENT_INPUTS_CONNECTOR_TYPE: ${{ github.event.inputs.connector-type }}
+          EVENT_INPUTS_REPOSITORY_ROOT: ${{ github.event.inputs.repository-root }}
+          EVENT_INPUTS_TAG_OR_VERSION_NUMBER: ${{ github.event.inputs.tag-or-version-number }}
+          EVENT_INPUTS_DRY_RUN: ${{ github.event.inputs.dry-run }}
+          EVENT_INPUTS_REQUIRE_SECURITY_CHECK: ${{ github.event.inputs.require-security-check }}
         run: |
-          DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
-          IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
-          FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}/${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
+          DOCKERFILE=docker-images/Dockerfile.${EVENT_INPUTS_CONNECTOR_TYPE}-connector-base
+          IMAGE_NAME=${EVENT_INPUTS_CONNECTOR_TYPE}-connector-base
+          FULL_IMAGE_REF=${EVENT_INPUTS_REPOSITORY_ROOT}/${IMAGE_NAME}:${EVENT_INPUTS_TAG_OR_VERSION_NUMBER}
           echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "FULL_IMAGE_REF=${FULL_IMAGE_REF}" | tee -a "$GITHUB_OUTPUT"
           # Echo other input variables for debugging and logging purposes
-          echo "dry-run=${{ github.event.inputs.dry-run }}"
-          echo "require-security-check=${{ github.event.inputs.require-security-check }}"
+          echo "dry-run=${EVENT_INPUTS_DRY_RUN}"
+          echo "require-security-check=${EVENT_INPUTS_REQUIRE_SECURITY_CHECK}"
 
       - name: Build Base Image
         id: docker-build-base

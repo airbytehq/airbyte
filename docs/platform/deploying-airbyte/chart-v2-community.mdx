@@ -240,13 +240,12 @@ global:
 
     awsSecretManager:
       region: <aws-region>
-      authenticationType: credentials ## Use "credentials" or "instanceProfile"
       tags: ## Optional - You may add tags to new secrets created by Airbyte.
-      - key: ## e.g. team
+        - key: ## e.g. team
           value: ## e.g. deployments
         - key: business-unit
           value: engineering
-      kms: ## Optional - ARN for KMS Decryption.
+      kmsArn: ## Optional - ARN for KMS Decryption.
 
     # OR
 
@@ -316,7 +315,7 @@ workload-launcher:
       value: type=jobs
 ```
 
-You can specify these values directly without using environment variables, achieving the same effect.
+You can specify most of these values directly, achieving the same effect. Spec jobs have no dedicated V2 key, so use `workloadLauncher.extraEnv` for their node selector.
 
 ```yaml title="values.yaml using Helm chart V2"
 global:
@@ -331,13 +330,13 @@ global:
         discover:
           nodeSelectors:
             type: jobs
-        spec:
-          nodeSelectors:
-            type: jobs
 
 workloadLauncher:
   nodeSelector:
     type: static
+  extraEnv:
+    - name: SPEC_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
 ```
 
 <EnvironmentVarConversion/>

@@ -22,7 +22,7 @@
   "parent_account_id": "synthetic-parent_account_id",
   "primary_domain": "synthetic-primary_domain",
   "subaccount_ids": [],
-  "tags": [],
+  "tags": ["synthetic-priority", "synthetic-support"],
   "type": "synthetic-type",
   "updated_at": "2026-01-10T12:00:00Z"
 }

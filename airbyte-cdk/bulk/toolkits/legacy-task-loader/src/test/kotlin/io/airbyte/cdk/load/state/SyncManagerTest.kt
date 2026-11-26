@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.strea
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.mockk
 import jakarta.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.channels.Channel
@@ -40,6 +41,28 @@ class SyncManagerTest {
 
     // TODO: Don't test getting the stream loader here; A) it's basically just wrapping completable
     //  deferred; B) It should probably move into a writer wrapper.
+
+    @Test
+    fun testRegisterStartedStreamLoaderMarksManagerOnlyOnSuccess() = runTest {
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
+        Assertions.assertFalse(manager1.isLoaderStarted())
+        Assertions.assertFalse(manager2.isLoaderStarted())
+
+        syncManager.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        Assertions.assertTrue(manager1.isLoaderStarted())
+        Assertions.assertFalse(manager2.isLoaderStarted())
+
+        val failure = IllegalStateException("start failed")
+        syncManager.registerStartedStreamLoader(stream2.mappedDescriptor, Result.failure(failure))
+        // A failed start leaves the flag unset so readers fall through to the await and throw
+        Assertions.assertFalse(manager2.isLoaderStarted())
+        val thrown = runCatching {
+            syncManager.getOrAwaitStreamLoader(stream2.mappedDescriptor)
+        }
+            .exceptionOrNull()
+        Assertions.assertSame(failure, thrown)
+    }
 
     @Test
     fun testAwaitAllStreamsProcessedSuccessfully() = runTest {

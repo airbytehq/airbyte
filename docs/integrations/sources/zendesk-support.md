@@ -15,25 +15,15 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ### Set up Zendesk Support
 
-The Zendesk Support source connector supports three authentication methods:
+The setup form offers one authentication method: **OAuth2.0 with Refresh Token**.
 
-- OAuth 2.0 with refresh token (recommended)
-- API token (Zendesk disables new API token creation on October 27, 2026, see the following caution)
-- OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
-
-:::note
-Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/articles/9182123625370) for all customers as of April 30, 2026. Legacy OAuth access tokens don't expire and can't be refreshed, so migrate existing connections to **OAuth 2.0 with Refresh Token**.
-:::
-
-:::caution
-Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Starting October 27, 2026, Zendesk accounts can't create new API tokens, so you can only use **API Token** authentication with an active token you already have. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Set up new sources with **OAuth 2.0 with Refresh Token**, and switch existing API token sources to OAuth before April 30, 2027.
-:::
+Sources that already use **API Token** or **OAuth2.0 (Legacy)** authentication keep working. See [Existing sources that use an API token or legacy OAuth](#existing-sources-that-use-an-api-token-or-legacy-oauth).
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+Airbyte Cloud runs the OAuth flow for you. You need a Zendesk user who can authorize access to your account, and you authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-connector-in-airbyte).
 
 <!-- /env:cloud -->
 
@@ -41,35 +31,16 @@ We highly recommend using OAuth to authenticate your Zendesk Support account, as
 
 **For Airbyte Open Source:**
 
-We recommend using OAuth to authenticate your Zendesk Support account. See [Generate OAuth credentials](#generate-oauth-credentials).
-
-### Generate an API token
-
-:::note
-Zendesk disables API token creation on October 27, 2026. After that date, you can't create a new token with these steps. Tokens created before then keep working until April 30, 2027, when Zendesk deactivates all API tokens. If you can't create a token, [generate OAuth credentials](#generate-oauth-credentials) instead.
-:::
-
-1. Log in to your Zendesk account.
-2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin Center**.
-3. In the left navbar, click **Apps and Integrations**, then select **APIs** > **Zendesk API**.
-4. In the **Settings** tab, toggle the option to enable token access.
-5. Click the **Add API token** button. You may optionally provide a token description.
-
-   :::caution
-   Be sure to copy the token and save it in a secure location. You will not be able to access the token's value after you close the page.
-   :::
-
-6. Click **Save**.
+Register a Zendesk OAuth client first. See [Generate OAuth credentials](#generate-oauth-credentials).
 
 ### Generate OAuth credentials
 
-Airbyte Cloud runs the OAuth flow for you. On self-managed Airbyte, you create the credentials yourself and enter a client ID, client secret, and refresh token.
+On self-managed Airbyte, you register an OAuth client in Zendesk. Then you either authenticate from the Airbyte UI or enter the tokens yourself.
 
 1. Register an OAuth client in Admin Center. See [Registering your application with Zendesk](https://support.zendesk.com/hc/en-us/articles/4408845965210). Note the client's unique identifier and secret.
-2. Complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires, and clients created before April 30, 2026 have no default expiration, so a request without `expires_in` returns a token you can't refresh. The maximum value is `172800` (48 hours), which is what the connector requests in Airbyte Cloud.
-3. Save the `refresh_token` from the response.
-
-When you configure the source, select **OAuth2.0 with Refresh Token** and enter the client ID, client secret, and refresh token. Leave **Access Token** and **Token Expiry Date** empty. The connector exchanges the refresh token for an access token on its first request, then writes the new access token, refresh token, and expiry back to the source configuration.
+2. To authenticate from the Airbyte UI, add the redirect URL `<your Airbyte URL>/auth_flow` to the OAuth client. The setup form shows the exact URL. You don't need the remaining steps.
+3. To enter the tokens yourself instead, complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires, and clients created before April 30, 2026 have no default expiration, so a request without `expires_in` returns a token you can't refresh. The maximum value is `172800` (48 hours), which is what the connector requests when you authenticate from the Airbyte UI.
+4. Save the `access_token`, the `refresh_token` and the `expires_in` value from the response, and note the time of the response.
 
 :::caution
 Zendesk refresh tokens are single-use. Every refresh returns a new refresh token and invalidates the previous one, so a refresh token can only be used by one source. Don't copy the same value into a second source or a second Airbyte deployment.
@@ -96,13 +67,15 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
 <!-- /env:oss -->
-5. You can use OAuth or an API token to authenticate your Zendesk Support account.
+5. Under **Authentication**, authenticate with **OAuth2.0 with Refresh Token**.
 <!-- env:cloud -->
 
-- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+- **For Airbyte Cloud**: Click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
   <!-- /env:cloud -->
   <!-- env:oss -->
-- **For Airbyte Open Source**: To authenticate using OAuth, select **OAuth2.0 with Refresh Token** from the Authentication dropdown and enter the client ID, client secret, and refresh token you generated. To authenticate with an existing API token instead, select **API Token** and enter the token, as well as the email address associated with your Zendesk Support account. API tokens stop working on April 30, 2027.
+- **For Airbyte Open Source**: Enter the **Client ID** and **Client Secret** of your OAuth client, then do one of the following:
+  - Click **Authenticate your Zendesk Support account**. The redirect URL shown in the form must be registered on the OAuth client in Zendesk.
+  - Or click **Set up manually** and enter the **Refresh Token**, the **Access Token** and the **Token Expiry Date** from the same token response. The expiry date is the time of the response plus `expires_in`. With a valid access token, the connection test doesn't use the refresh token.
 <!-- /env:oss -->
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
@@ -112,6 +85,18 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 10. (Optional) For **Tickets Search Lookback Window (days)**, enter the number of days the `tickets_search` stream re-scans on each sync. The default is 0. This setting only affects the opt-in `tickets_search` stream. See [Tickets stream: change tracking](#tickets-stream-change-tracking).
 11. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
+
+### Existing sources that use an API token or legacy OAuth
+
+Sources that already use **API Token** or **OAuth2.0 (Legacy)** authentication keep syncing, and you can still change their other settings. The setup form no longer lists these two options, so **Authentication** shows no selected option and the stored credentials aren't displayed. The source keeps its stored credentials until you select **OAuth2.0 with Refresh Token** and authenticate again. After you switch a source to OAuth, you can't switch it back in the setup form. Sources that you manage through the Airbyte API or Terraform aren't affected.
+
+:::caution
+Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Since October 27, 2026, Zendesk accounts can't create new API tokens. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Re-authenticate every source that uses an API token with OAuth before April 30, 2027.
+:::
+
+:::note
+Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/articles/9182123625370) for all customers as of April 30, 2026. Legacy OAuth access tokens don't expire and can't be refreshed, so migrate existing **OAuth2.0 (Legacy)** sources to **OAuth2.0 with Refresh Token** too.
+:::
 
 <HideInUI>
 
@@ -309,6 +294,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.1 | 2026-11-25 | — | Release the OAuth-only setup form and Zendesk Marketplace header updates to the default registry |
+| 5.8.0 | 2026-11-18 | [93030](https://github.com/airbytehq/airbyte/pull/93030) | The setup form offers only `OAuth2.0 with Refresh Token`. `API Token` and `OAuth2.0 (Legacy)` are hidden from the form but still accepted, so existing sources keep syncing. Re-authenticate API token sources with OAuth before April 30, 2027, when Zendesk deactivates all API tokens |
+| 5.7.1 | 2026-11-16 | [93972](https://github.com/airbytehq/airbyte/pull/93972) | Airbyte Cloud: send the Zendesk Marketplace identification headers (`X-Zendesk-Marketplace-Name`, `X-Zendesk-Marketplace-Organization-Id`, `X-Zendesk-Marketplace-App-Id`) on every request to Zendesk, including attachment downloads and OAuth token refreshes. Self-managed Airbyte sends them only on the OAuth authorization code exchange from the setup form. No change to the data that is synced |
 | 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |

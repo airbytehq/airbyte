@@ -10,9 +10,11 @@ This source is capable of syncing the following streams:
 
 - `items`
   - Provides stats about specific RSS items.
-  - Most fields are simply kept from RSS items as strings if present (`title`, `link`, `description`, `author`, `category`, `comments`, `enclosure`, `guid`).
-  - The date field is handled differently. It's transformed into a UTC datetime in a `published` field for easier use in data warehouses and other destinations.
-  - The RSS feed you're subscribing to must have a valid `pubDate` field for each item for incremental syncs to work properly.
+  - Supports RSS 2.0, RSS 1.0 (RDF), and Atom feeds.
+  - Most fields are kept from feed items as strings if present (`title`, `link`, `description`, `author`, `category`, `comments`, `enclosure`, `guid`). Relative links are resolved against the feed URL, `enclosure` holds the enclosure URL, and `description` contains the HTML exactly as the feed publishes it, without sanitization.
+  - The date field is handled differently. It's transformed into a UTC datetime in a `published` field for easier use in data warehouses and other destinations. The connector reads it from `pubDate`, `published` or `issued` (RSS, in any capitalization), `atom:published`, `dcterms:issued`, `published` or `updated` (Atom), or `dc:date`. Dates are converted using their time zone, including offsets like `-05:00` or `GMT+0530` and US zone abbreviations like `PT`.
+  - Items without a parseable date are skipped instead of failing the sync. Items dated in the future are held back until that date passes.
+  - The connector requests the feed URL exactly as you enter it. If the response isn't an RSS, RDF or Atom feed, or can't be parsed as XML after the connector repairs common errors, the sync reads zero records and logs a warning, and the connection check still passes.
   - Since `guid` is not a required field, there is no primary key for the feed, only a cursor on the published date.
 
 #### Features
@@ -40,8 +42,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                        |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1.1 | 2026-11-17 | [78951](https://github.com/airbytehq/airbyte/pull/78951) | Update dependencies |
+| 1.1.0 | 2026-11-09 | [91337](https://github.com/airbytehq/airbyte/pull/91337) | Migrate to manifest-only. The connector now requests the feed URL exactly as configured (no trailing slash is appended), emits `description` HTML unsanitized, populates `enclosure`, resolves relative links, syncs Atom, RDF and RSS 2.0 items dated only by `updated` or `dc:date`, skips items without a parseable date instead of failing the sync, and holds back items dated in the future until that date passes |
 | 1.0.31 | 2025-02-01 | [51897](https://github.com/airbytehq/airbyte/pull/51897) | Update dependencies |
 | 1.0.30 | 2025-01-11 | [51334](https://github.com/airbytehq/airbyte/pull/51334) | Update dependencies |
 | 1.0.29 | 2025-01-04 | [50935](https://github.com/airbytehq/airbyte/pull/50935) | Update dependencies |
@@ -75,6 +79,5 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.0.1 | 2024-04-30 | [37535](https://github.com/airbytehq/airbyte/pull/37535) | Fix incremental sync |
 | 1.0.0 | 2024-04-20 | [36418](https://github.com/airbytehq/airbyte/pull/36418) | Migrate python cdk to low code |
 | 0.1.0 | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
-
 
 </details>

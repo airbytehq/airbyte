@@ -125,14 +125,18 @@ jobs:
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
+        env:
+          STEP_CDK_CHANGES_JVM_TOOLCHAIN: ${{ steps.cdk-changes.outputs.jvm-toolchain }}
+          EXPR_1: ${{ contains(github.event.pull_request.labels.*.name, 'skip-jvm-toolchain-matrix') }}
+          STEP_CDK_CHANGES_JAVA_CDK: ${{ steps.cdk-changes.outputs.java-cdk }}
         run: |
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
           # A `skip-jvm-toolchain-matrix` label on the PR opts out of the expanded matrices below
           # (labels are read when the run starts: add the label before pushing, or re-run the workflow).
-          toolchain_matrix="${{ steps.cdk-changes.outputs.jvm-toolchain }}"
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-jvm-toolchain-matrix') }}" == "true" ]]; then
+          toolchain_matrix="${STEP_CDK_CHANGES_JVM_TOOLCHAIN}"
+          if [[ "${EXPR_1}" == "true" ]]; then
             echo "skip-jvm-toolchain-matrix label present: not expanding the JVM matrices" >&2
             toolchain_matrix="false"
           fi
@@ -144,7 +148,7 @@ jobs:
           # - otherwise: modified Java connectors
           if [[ "$toolchain_matrix" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
-          elif [[ "${{ steps.cdk-changes.outputs.java-cdk }}" == "true" ]]; then
+          elif [[ "${STEP_CDK_CHANGES_JAVA_CDK}" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
@@ -280,8 +284,10 @@ jobs:
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}" \
             --print-ci-secrets-masks
 
       - name: Resolve connector test policy
@@ -412,8 +418,10 @@ jobs:
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          airbyte-ops secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch "${MATRIX_CONNECTOR}" \
             --print-ci-secrets-masks
 
       - name: Resolve connector test policy
@@ -677,8 +685,10 @@ jobs:
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
+        env:
+          MATRIX_CONNECTOR: ${{ matrix.connector }}
         run: |
-          connector_name=${{ matrix.connector }}
+          connector_name=${MATRIX_CONNECTOR}
           airbyte-ops local connector qa --name ${connector_name%-strict-encrypt}
 
   # Blocking: the result of this job is evaluated by 'connector-ci-checks-summary',
@@ -692,8 +702,8 @@ jobs:
   # connector whose version changes on master. A pin is therefore allowed, with a
   # warning annotation, when:
   #   - the connector version is unchanged, so merging publishes nothing; or
-  #   - progressive rollout is enabled in metadata.yaml, so merging publishes a
-  #     release candidate to a small part of the fleet first.
+  #   - the new version is a semver prerelease (any `-` suffix, e.g. `-rc.N`,
+  #     `-dev.N`, `-hotfix.N`), so merging does not publish it as GA.
   # Otherwise the job fails, as merging would release the pin to every connection.
   #
   # Like 'connector-qa-checks', this job has no draft-PR guard, so that the
@@ -785,8 +795,6 @@ jobs:
           {
             echo "base-version=${base_version}"
             echo "head-version=$(yq -r '.data.dockerImageTag // ""' "${METADATA}")"
-            # Same expression as in 'publish_connectors.yml'.
-            echo "progressive-rollout=$(yq -r '.data.releases.rolloutConfiguration.enableProgressiveRollout // false' "${METADATA}")"
           } | tee -a "$GITHUB_OUTPUT"
 
       - name: Evaluate Python CDK Prerelease Pin
@@ -796,16 +804,15 @@ jobs:
           CONNECTOR: ${{ matrix.connector }}
           BASE_VERSION: ${{ steps.release-settings.outputs.base-version }}
           HEAD_VERSION: ${{ steps.release-settings.outputs.head-version }}
-          PROGRESSIVE_ROLLOUT: ${{ steps.release-settings.outputs.progressive-rollout }}
         run: |
           annotation="file=airbyte-integrations/connectors/${CONNECTOR}/pyproject.toml,title=Python CDK prerelease pin"
 
           if [[ "${HEAD_VERSION}" == "${BASE_VERSION}" ]]; then
             echo "::warning ${annotation}::${CONNECTOR} is pinned to a Python CDK prerelease. Its version is unchanged, so merging this PR does not publish it. Replace the pin with a released CDK version before the next release of this connector."
-          elif [[ "${PROGRESSIVE_ROLLOUT}" == "true" ]]; then
-            echo "::warning ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease. Merging this PR publishes it through a progressive rollout. Replace the pin with a released CDK version before the rollout is finalized, and do not check 'Release immediately' in the PR description, which would publish it to every connection at once."
+          elif [[ "${HEAD_VERSION}" == *-* ]]; then
+            echo "::warning ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease. Merging this PR publishes this prerelease version, not a GA version. Replace the pin with a released CDK version before the GA release, and do not check 'Release immediately' in the PR description, which would publish it to every connection at once."
           else
-            echo "::error ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease, and merging this PR would publish it to every connection at once. Replace the pin with a released CDK version, or enable a progressive rollout with the /bump-progressive-rollout-version command."
+            echo "::error ${annotation}::${CONNECTOR} ${HEAD_VERSION} is pinned to a Python CDK prerelease, and merging this PR would publish it to every connection at once. Replace the pin with a released CDK version, or bump to a prerelease version (e.g. a release candidate with the /bump-progressive-rollout-version command)."
             exit 1
           fi
 
@@ -877,19 +884,22 @@ jobs:
       - name: Build connector Docker image
         if: matrix.connector && steps.connector-metadata.outcome == 'success'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          STEP_CONNECTOR_METADATA_CONNECTOR_VERSION: ${{ steps.connector-metadata.outputs.connector-version }}
         run: >
           airbyte-cdk image build
-          --tag ${{ steps.connector-metadata.outputs.connector-version }}
+          --tag "${STEP_CONNECTOR_METADATA_CONNECTOR_VERSION}"
 
       - name: Generate and Validate Registry Artifacts (ops CLI)
         if: matrix.connector && steps.connector-metadata.outcome == 'success'
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+          STEP_CONNECTOR_METADATA_DOCKER_IMAGE: ${{ steps.connector-metadata.outputs.docker-image }}
         run: >
           airbyte-ops registry connector-version artifacts generate
           --metadata-file "${CONNECTOR_DIR}/metadata.yaml"
-          --docker-image "${{ steps.connector-metadata.outputs.docker-image }}"
+          --docker-image "${STEP_CONNECTOR_METADATA_DOCKER_IMAGE}"
           --output-dir ./registry-artifacts
           --with-validate
 
