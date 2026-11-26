@@ -1,0 +1,752 @@
+# HypeAuditor source: Airbyte low-code (declarative) manifest.
+#
+# Reads HypeAuditor's Campaign Management API v2 (campaigns, their influencers,
+# posts and reports) and the My Network creators endpoint
+# (https://hypeauditor.readme.io). Authentication is the X-Auth-Id and
+# X-Auth-Token header pair from HypeAuditor > Settings > API.
+#
+# Error semantics:
+#   * 401/403 anywhere            -> FAIL the sync (config_error)
+#   * 429 / 5xx / timeouts        -> retry (Retry-After, else exponential)
+#   * campaigns list, other 4xx   -> FAIL (a short campaign list is never "no data")
+#   * per-campaign 400/402/404    -> IGNORE that campaign
+#     (402 = report not available on the account's plan; 400 is returned
+#     sporadically on /influencers for individual campaigns)
+#
+# The API returns `id` where the v2 OpenAPI spec documents `_id`; key fields
+# accept either.
+
+version: 7.48.0
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 4
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['auth_token'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: X-Auth-Token
+
+  retry_strategies:
+    - type: WaitTimeFromHeader
+      header: Retry-After
+    - type: ExponentialBackoffStrategy
+      factor: 2
+
+  auth_failure_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes: [401, 403]
+    error_message: >-
+      HypeAuditor rejected the credentials. Check the Auth ID and Auth Token
+      (HypeAuditor > Settings > API, or support@hypeauditor.com).
+
+  # Campaigns list: any non-retryable error fails the sync.
+  strict_requester:
+    type: HttpRequester
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      X-Auth-Id: "{{ config['auth_id'] }}"
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 6
+      backoff_strategies:
+        $ref: "#/definitions/retry_strategies"
+      response_filters:
+        - $ref: "#/definitions/auth_failure_filter"
+
+  # Per-campaign endpoints: a missing/unavailable resource skips that campaign.
+  per_campaign_requester:
+    type: HttpRequester
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      X-Auth-Id: "{{ config['auth_id'] }}"
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 6
+      backoff_strategies:
+        $ref: "#/definitions/retry_strategies"
+      response_filters:
+        - $ref: "#/definitions/auth_failure_filter"
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [400, 402, 404]
+          error_message: Resource not available for this campaign; skipped.
+
+  # Offset pagination, advancing by the rows returned and stopping on the first
+  # short page. Right for every endpoint except /report/posts (below).
+  offset_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: "{{ parameters.page_size }}"
+
+  # /report/posts pages over meta.total positions, but can drop undeliverable
+  # posts from a page: offset 0 / limit 50 can return 49 rows, and the rest
+  # start at offset 50, not 49. So the offset must advance by the page size, and
+  # a short page doesn't mean the end. Past the end the API returns an empty
+  # page. OffsetIncrement can do neither, so this pages by page number with no
+  # page_size (stop only on an empty page) and the stream sets
+  # offset = page * limit in request_parameters. Streams using it must not have
+  # a `page_size` parameter, which would propagate into the PageIncrement.
+  # Advancing by the rows returned re-reads overlapping rows; stopping on the
+  # short page loses the rest of the report.
+  page_number_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 0
+      inject_on_first_request: false
+
+  campaign_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/streams/campaigns"
+        parent_key: campaign_id
+        partition_field: campaign_id
+
+  add_campaign_id:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: [campaign_id]
+        value: "{{ stream_partition.campaign_id }}"
+        value_type: string
+
+  # One request per campaign to /report/{report}. $ref merges are shallow, so
+  # each report stream sets `retriever: {$ref: report_retriever, record_selector: ...}`.
+  report_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/per_campaign_requester"
+      url: "https://hypeauditor.com/api/v2/campaign-management/campaigns/{{ stream_partition.campaign_id }}/report/{{ parameters.report }}"
+    partition_router:
+      $ref: "#/definitions/campaign_partition_router"
+
+  report_stream_base:
+    type: DeclarativeStream
+    transformations:
+      - $ref: "#/definitions/add_campaign_id"
+
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key: [campaign_id]
+      $parameters:
+        page_size: 100
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/strict_requester"
+          url: "https://hypeauditor.com/api/v2/campaign-management/campaigns"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+        paginator:
+          $ref: "#/definitions/offset_paginator"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [campaign_id]
+              value: "{{ record.get('id') or record.get('_id') }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            id: {type: [string, "null"]}
+            _id: {type: [string, "null"]}
+            title: {type: [string, "null"]}
+            type: {type: [string, "null"]}
+            status: {type: [string, "null"]}
+            currency: {type: [string, "null"]}
+            period: {type: [object, "null"]}
+            budget: {type: [integer, "null"]}
+            budgetSpent: {type: [integer, "null"]}
+            influencerCount: {type: [integer, "null"]}
+            influencerPostedCount: {type: [integer, "null"]}
+            contentPostedCount: {type: [integer, "null"]}
+            contentPlannedCount: {type: [integer, "null"]}
+            labels: {type: [array, "null"]}
+            avatars: {type: [array, "null"]}
+            isPrivate: {type: [boolean, "null"]}
+
+    campaign_influencers:
+      type: DeclarativeStream
+      name: campaign_influencers
+      primary_key: [campaign_id, influencer_id]
+      $parameters:
+        page_size: 100
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_campaign_requester"
+          url: "https://hypeauditor.com/api/v2/campaign-management/campaigns/{{ stream_partition.campaign_id }}/influencers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+        paginator:
+          $ref: "#/definitions/offset_paginator"
+        partition_router:
+          $ref: "#/definitions/campaign_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_campaign_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [influencer_id]
+              value: "{{ record.get('id') or record.get('_id') }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            influencer_id: {type: string}
+            id: {type: [integer, "null"]}
+            _id: {type: [integer, "null"]}
+            avatar: {type: [string, "null"]}
+            firstName: {type: [string, "null"]}
+            lastName: {type: [string, "null"]}
+            slug: {type: [string, "null"]}
+            subscribers: {type: [integer, "null"]}
+            status: {type: [string, "null"]}
+            addedAt: {type: [string, "null"]}
+            accounts: {type: [array, "null"]}
+            proposal: {type: [object, "null"]}
+
+    campaign_posts:
+      type: DeclarativeStream
+      name: campaign_posts
+      primary_key: [campaign_id, post_id]
+      $parameters:
+        page_size: 100
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_campaign_requester"
+          url: "https://hypeauditor.com/api/v2/campaign-management/campaigns/{{ stream_partition.campaign_id }}/posts"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+          record_filter:
+            type: RecordFilter
+            condition: "{{ (record.get('basic') or {}).get('id') is not none }}"
+        paginator:
+          $ref: "#/definitions/offset_paginator"
+        partition_router:
+          $ref: "#/definitions/campaign_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_campaign_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ record['basic']['id'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            post_id: {type: string}
+            _id: {type: [string, "null"]}
+            basic: {type: [object, "null"]}
+            metrics: {type: [object, "null"]}
+            manualMetrics: {type: [object, "null"]}
+            features: {type: [object, "null"]}
+            is_deleted: {type: [boolean, "null"]}
+            time_added: {type: [string, "null"]}
+            time_updated: {type: [string, "null"]}
+
+    campaign_posts_recent:
+      type: DeclarativeStream
+      name: campaign_posts_recent
+      primary_key: [campaign_id, post_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_campaign_requester"
+          url: "https://hypeauditor.com/api/v2/campaign-management/campaigns/{{ stream_partition.campaign_id }}/posts/recent"
+          # One page only: the endpoint has no offset parameter (v2 spec).
+          # Its response time grows with `limit`, and past ~11 s it answers 500.
+          # On campaigns with many candidate posts, 50 is already borderline and
+          # 30 answers in 7-9 s. A 500 that still happens skips that campaign
+          # instead of being retried, since a retry gets the same 500.
+          request_parameters:
+            limit: "30"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 6
+            backoff_strategies:
+              $ref: "#/definitions/retry_strategies"
+            response_filters:
+              - $ref: "#/definitions/auth_failure_filter"
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes: [400, 402, 404, 500]
+                error_message: Recent posts not available for this campaign; skipped.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('id') is not none }}"
+        partition_router:
+          $ref: "#/definitions/campaign_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_campaign_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ record['id'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            post_id: {type: string}
+            id: {type: [string, "null"]}
+            thumbnail: {type: [string, "null"]}
+            text: {type: [string, "null"]}
+            date_posted: {type: [string, "null"]}
+            post_link: {type: [string, "null"]}
+            is_added: {type: [boolean, "null"]}
+            influencer: {type: [object, "null"]}
+
+    campaign_report_posts:
+      type: DeclarativeStream
+      name: campaign_report_posts
+      primary_key: [campaign_id, post_id]
+      $parameters:
+        # Not `page_size`: $parameters propagate by field name, and a page_size
+        # on the PageIncrement would bring back the short-page stop.
+        report_page_limit: 50
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/per_campaign_requester"
+          url: "https://hypeauditor.com/api/v2/campaign-management/campaigns/{{ stream_partition.campaign_id }}/report/posts"
+          request_parameters:
+            limit: "{{ parameters.report_page_limit }}"
+            offset: "{{ (next_page_token or {}).get('next_page_token', 0) * parameters.report_page_limit }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('id') is not none }}"
+        paginator:
+          $ref: "#/definitions/page_number_paginator"
+        partition_router:
+          $ref: "#/definitions/campaign_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_campaign_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [post_id]
+              value: "{{ record['id'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            post_id: {type: string}
+            id: {type: [string, "null"]}
+            socialType: {type: [integer, "null"]}
+            type: {type: [string, "null"]}
+            image: {type: [string, "null"]}
+            description: {type: [string, "null"]}
+            postedDate: {type: [string, "null"]}
+            source: {type: [string, "null"]}
+            influencer: {type: [object, "null"]}
+            account: {type: [object, "null"]}
+            campaign: {type: [object, "null"]}
+            metrics: {type: [object, "null"]}
+            manualMetrics: {type: [object, "null"]}
+
+    # ---- Campaign reports: one request per campaign ----
+
+    campaign_report_overview:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_overview
+      primary_key: [campaign_id, type]
+      $parameters:
+        report: overview
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            type: {type: [string, "null"]}
+            metrics: {type: [object, "null"]}
+            payments: {type: [object, "null"]}
+            revenue: {type: [number, "null"]}
+
+    campaign_report_engagement:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_engagement
+      primary_key: [campaign_id, type]
+      $parameters:
+        report: engagement
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data, engagements]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            type: {type: [string, "null"]}
+            metrics: {type: [object, "null"]}
+            likesHistory: {type: [array, "null"]}
+            commentsHistory: {type: [array, "null"]}
+            viewsHistory: {type: [array, "null"]}
+
+    # The v1 /report/engagement-growth endpoint is /report/overview-engagement in v2.
+    campaign_report_overview_engagement:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_overview_engagement
+      primary_key: [campaign_id, date]
+      $parameters:
+        report: overview-engagement
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data, engagementHistory]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            date: {type: [string, "null"]}
+            value: {type: [number, "null"]}
+            valueDelta: {type: [number, "null"]}
+
+    campaign_report_overview_payments:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_overview_payments
+      primary_key: [campaign_id, date]
+      $parameters:
+        report: overview-engagement
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data, paymentHistory]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            date: {type: [string, "null"]}
+            value: {type: [number, "null"]}
+            postCount: {type: [number, "null"]}
+
+    campaign_report_audience:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_audience
+      primary_key: [campaign_id]
+      $parameters:
+        report: audience
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            metrics: {type: [object, "null"]}
+            audienceByType: {type: [object, "null"]}
+            audienceByAgeGender: {type: [object, "null"]}
+            audienceByLanguages: {type: [array, "null"]}
+            audienceByCountries: {type: [array, "null"]}
+            audienceByCities: {type: [array, "null"]}
+            audienceByRaces: {type: [array, "null"]}
+            audienceByThematics: {type: [array, "null"]}
+
+    campaign_report_ecom:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_ecom
+      primary_key: [campaign_id]
+      $parameters:
+        report: ecom
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            metrics: {type: [object, "null"]}
+
+    campaign_report_spendings:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_spendings
+      primary_key: [campaign_id]
+      $parameters:
+        report: spendings
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            metrics: {type: [object, "null"]}
+            payments: {type: [object, "null"]}
+            cpeHistory: {type: [array, "null"]}
+            paymentHistory: {type: [array, "null"]}
+
+    campaign_report_influencers:
+      $ref: "#/definitions/report_stream_base"
+      name: campaign_report_influencers
+      primary_key: [campaign_id, influencer_id]
+      $parameters:
+        report: influencers
+      retriever:
+        $ref: "#/definitions/report_retriever"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data, influencers]
+      transformations:
+        - $ref: "#/definitions/add_campaign_id"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [influencer_id]
+              value: "{{ record.get('id') or record.get('_id') }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            campaign_id: {type: string}
+            influencer_id: {type: string}
+            id: {type: [integer, "null"]}
+            avatar: {type: [string, "null"]}
+            firstName: {type: [string, "null"]}
+            lastName: {type: [string, "null"]}
+            subscribers: {type: [integer, "null"]}
+            metrics: {type: [object, "null"]}
+            accounts: {type: [array, "null"]}
+
+    # My Network creators (not Campaign Management).
+    creators:
+      type: DeclarativeStream
+      name: creators
+      primary_key: [creator_id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/strict_requester"
+          url: "https://hypeauditor.com/api/method/auditor.creators/"
+          request_parameters:
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [result, creators]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['result']['next_cursor'] }}"
+            stop_condition: "{{ not (response.get('result') or {}).get('next_cursor') }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [creator_id]
+              value: "{{ record['id'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            creator_id: {type: string}
+            id: {type: [integer, "null"]}
+            avatar_url: {type: [string, "null"]}
+            is_favorite: {type: [boolean, "null"]}
+            first_name: {type: [string, "null"]}
+            last_name: {type: [string, "null"]}
+            bio: {type: [string, "null"]}
+            gender: {type: [string, "null"]}
+            language: {type: [string, "null"]}
+            emails: {type: [array, "null"]}
+            phones: {type: [array, "null"]}
+            country: {type: [object, "null"]}
+            city: {type: [object, "null"]}
+            messages: {type: [object, "null"]}
+            network_status: {type: [object, "null"]}
+            payment_status: {type: [object, "null"]}
+            contract_status: {type: [object, "null"]}
+            accounts: {type: [array, "null"]}
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaign_influencers"
+  - $ref: "#/definitions/streams/campaign_posts"
+  - $ref: "#/definitions/streams/campaign_posts_recent"
+  - $ref: "#/definitions/streams/campaign_report_posts"
+  - $ref: "#/definitions/streams/campaign_report_overview"
+  - $ref: "#/definitions/streams/campaign_report_engagement"
+  - $ref: "#/definitions/streams/campaign_report_overview_engagement"
+  - $ref: "#/definitions/streams/campaign_report_overview_payments"
+  - $ref: "#/definitions/streams/campaign_report_audience"
+  - $ref: "#/definitions/streams/campaign_report_ecom"
+  - $ref: "#/definitions/streams/campaign_report_spendings"
+  - $ref: "#/definitions/streams/campaign_report_influencers"
+  - $ref: "#/definitions/streams/creators"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    title: HypeAuditor
+    required:
+      - auth_id
+      - auth_token
+    additionalProperties: true
+    properties:
+      auth_id:
+        type: string
+        title: Auth ID
+        description: >-
+          Your numeric HypeAuditor API client ID, sent as the X-Auth-Id header.
+          Find it in HypeAuditor under Settings > API, or ask support@hypeauditor.com.
+        order: 0
+      auth_token:
+        type: string
+        title: Auth Token
+        description: >-
+          Your HypeAuditor API token, sent as the X-Auth-Token header. It is
+          shown next to the Auth ID under Settings > API.
+        airbyte_secret: true
+        order: 1
