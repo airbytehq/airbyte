@@ -13,6 +13,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.28 | 2026-11-17 | [93491](https://github.com/airbytehq/airbyte/pull/93491) | Update dependencies |
 | 0.3.27 | 2026-11-09 | [91460](https://github.com/airbytehq/airbyte/pull/91460) | Upgrade source-declarative-manifest base image to 7.47.0 |
 | 0.3.26 | 2026-10-07 | [88219](https://github.com/airbytehq/airbyte/pull/88219) | Fail fast with a clear config error on unknown/delisted tickers (HTTP 404) and unsupported interval/range combinations (HTTP 422) |
 | 0.3.25 | 2026-10-06 | [79086](https://github.com/airbytehq/airbyte/pull/79086) | Update dependencies |
