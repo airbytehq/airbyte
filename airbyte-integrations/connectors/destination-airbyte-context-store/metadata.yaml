@@ -1,0 +1,34 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: false
+  connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorType: destination
+  definitionId: 1ed6905b-035f-4d2f-b56e-848722d35bc9
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-airbyte-context-store
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/airbyte-context-store
+  githubIssueLabel: destination-airbyte-context-store
+  icon: icon.svg
+  license: ELv2
+  name: Airbyte Agents Context Store
+  releaseStage: alpha
+  supportLevel: community
+  supportsRefreshes: true
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
