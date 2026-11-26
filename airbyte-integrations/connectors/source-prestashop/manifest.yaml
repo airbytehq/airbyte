@@ -56,9 +56,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -90,9 +87,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -144,9 +138,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -198,9 +189,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -252,9 +240,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -286,9 +271,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -340,9 +322,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -374,9 +353,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -408,9 +384,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -442,9 +415,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -476,9 +446,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -530,9 +497,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -584,9 +548,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -638,9 +599,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -672,9 +630,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -706,9 +661,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -760,9 +712,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -794,9 +743,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -828,9 +774,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -862,9 +805,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -916,9 +856,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -970,9 +907,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1024,9 +958,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1058,9 +989,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1112,9 +1040,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1166,9 +1091,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1220,9 +1142,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1274,9 +1193,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1328,9 +1244,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1362,9 +1275,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1396,9 +1306,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1430,9 +1337,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1464,9 +1368,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1498,9 +1399,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1532,9 +1430,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1566,9 +1461,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1620,9 +1512,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1654,9 +1543,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1688,9 +1574,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1722,9 +1605,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1756,9 +1636,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1790,9 +1667,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1824,9 +1698,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1858,9 +1729,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1892,9 +1760,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1946,9 +1811,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2000,9 +1862,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2054,9 +1913,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2108,9 +1964,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2142,9 +1995,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2176,9 +2026,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2230,9 +2077,6 @@ definitions:
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: PT1S
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2264,9 +2108,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2298,9 +2139,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2332,9 +2170,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2366,9 +2201,6 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.CustomFieldTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
