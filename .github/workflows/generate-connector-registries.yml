@@ -75,6 +75,9 @@ jobs:
     name: Compile Registry
     if: inputs.dry-run != true
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
     env:
       REGISTRY_STORE: ${{ inputs.store || 'coral:prod' }}
 
@@ -91,10 +94,15 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_SERVICE_ACCOUNT }}
+
       - name: Compile Registries
         id: registry-compile
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
           CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
@@ -146,12 +154,10 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "☑️ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}${{ steps.notification-context.outputs.pr-text }}\nReference: <https://connectors.airbyte.com/files/registries/v0/cloud_registry.json|Cloud Registry> · <https://connectors.airbyte.com/files/registries/v0/oss_registry.json|OSS Registry> · <https://console.cloud.google.com/storage/browser/prod-airbyte-cloud-connector-metadata-service/registries/v0|GCS Bucket> · <${{ steps.notification-context.outputs.run-url }}|CI Logs>"
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
 
       - name: Notify Slack on Registry Compile Failure
         if: always() && steps.registry-compile.outcome == 'failure'
@@ -159,12 +165,10 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "❌ *Registry Compile FAILED*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
 
   registry-compile-dryrun:
     name: Compile Registry (Dry-Run)
