@@ -123,12 +123,12 @@ definitions:
                 parent_key: item_info
                 partition_field: item_info
                 stream:
-                  $ref: "#/definitions/streams/items"
+                  $ref: "#/definitions/streams/items_parent"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/listitems"
-    items:
+    items_parent:
       type: DeclarativeStream
       name: items
       retriever:
@@ -165,6 +165,66 @@ definitions:
               partition_field: list
               stream:
                 $ref: "#/definitions/streams/lists"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - item_info
+              value: >-
+                {{ { "list_id": stream_partition.list, "item_id": record.id }
+                }}
+    items:
+      type: DeclarativeStream
+      name: items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
+            }}/items/delta
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RESET_SYNC_TOKEN
+                http_codes:
+                  - 410
+                error_message: The stored Microsoft Graph delta link expired; this list must be resynced from the start.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('@odata.nextLink') }}"
+            stop_condition: "{{ not response.get('@odata.nextLink') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: list
+              stream:
+                $ref: "#/definitions/streams/lists"
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - "@odata.deltaLink"
+        token_option:
+          type: RequestPath
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -218,7 +278,7 @@ definitions:
                 parent_key: item_info
                 partition_field: item_info
                 stream:
-                  $ref: "#/definitions/streams/items"
+                  $ref: "#/definitions/streams/items_parent"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -741,6 +801,15 @@ schemas:
         type:
           - string
           - "null"
+      deleted:
+        type:
+          - object
+          - "null"
+        properties:
+          state:
+            type:
+              - string
+              - "null"
       contentType:
         type:
           - object
