@@ -20,7 +20,7 @@ Airbyte defaults to running syncs in the United States. To change this, or to ch
 | United States | us-west-3    | N/A               | 34.106.218.58  |
 | United States | us-west-3    | N/A               | 34.106.115.240 |
 | United States | us-west-3    | N/A               | 34.106.225.141 |
-| United States | us-central-1 | 34.33.7.0/29      | 34.33.7.[0,8]  |
+| United States | us-central-1 | 34.33.7.0/29      | 34.33.7.0 - 34.33.7.7 |
 
 ## AWS
 
