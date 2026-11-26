@@ -68,43 +68,51 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 <details>
   <summary>Expand to review scopes</summary>
 
+The table includes scope guidance and hints from the connector's HTTP 403 error messages. An error-message hint isn't a verified minimum permission set: schema discovery, associations, and enrichment requests can require additional access. Consult [HubSpot's scope reference](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes) for the endpoints you use, and don't grant unrelated write permissions just to match a diagnostic message.
 
-| Stream                      | Required Scope                                                                                               |
-| :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `campaigns`                 | `content`                                                                                                    |
-| `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.lists.read`                                                                                             |
-| `contacts`                  | `crm.objects.contacts.read`                                                                                  |
+| Stream                         | Scopes and connector hints                                                                                   |
+| :----------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `account_details`              | `oauth`                                                                                                      |
+| `campaigns`                    | `content`; the connector's 403 message currently suggests `crm.lists.read`                                    |
+| `companies`                    | `crm.objects.companies.read`, `crm.schemas.companies.read`; the connector's 403 message also lists `crm.objects.contacts.read` |
+| `companies_property_history`   | `crm.objects.companies.read`                                                                                 |
+| `contact_lists`                | `crm.lists.read`                                                                                             |
+| `contacts`                     | `crm.objects.contacts.read`                                                                                  |
+| `contacts_property_history`    | `crm.objects.contacts.read`                                                                                  |
+| Custom CRM Objects             | `crm.objects.custom.read`                                                                                    |
+| `deal_pipelines`               | `crm.objects.contacts.read`                                                                                  |
+| `deal_splits`                  | `crm.objects.deals.read`                                                                                     |
+| `deals`                        | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
+| `deals_archived`               | `crm.objects.deals.read`, `crm.schemas.deals.read`; the connector's 403 message also lists `contacts`         |
+| `deals_property_history`       | `crm.objects.deals.read`                                                                                     |
+| `email_events`                 | `content`                                                                                                    |
+| `email_subscriptions`          | `content`                                                                                                    |
+| `engagements`                  | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
+| `engagements_calls`            | `crm.objects.contacts.read`                                                                                  |
+| `engagements_emails`           | `crm.objects.contacts.read`, `sales-email-read`                                                              |
+| `engagements_meetings`         | `crm.objects.contacts.read`                                                                                  |
+| `engagements_notes`            | `crm.objects.contacts.read`                                                                                  |
+| `engagements_tasks`            | `crm.objects.contacts.read`                                                                                  |
+| `forms`                        | `forms`                                                                                                      |
+| `form_submissions`             | `forms`                                                                                                      |
+| `goals`                        | `crm.objects.goals.read`                                                                                     |
+| `leads`                        | `crm.objects.leads.read`, `crm.schemas.leads.read`; the connector's 403 message also lists `crm.objects.contacts.read`, `crm.objects.companies.read` |
+| `line_items`                   | `e-commerce`, `crm.objects.line_items.read`                                                                  |
+| `list_memberships`             | `crm.lists.read`                                                                                             |
+| `marketing_emails`             | `content`                                                                                                    |
+| `owners`                       | `crm.objects.owners.read`                                                                                    |
+| `owners_archived`              | `crm.objects.owners.read`                                                                                    |
+| `products`                     | `e-commerce`                                                                                                 |
+| `properties`                   | No additional scopes required                                                                                |
+| `subscription_changes`         | `content`                                                                                                    |
+| `ticket_pipelines`             | The connector's broad 403 hint includes `tickets`, `crm.objects.contacts.read`, `crm.objects.companies.read`, `crm.objects.deals.read`, `crm.schemas.contacts.read`, `crm.schemas.companies.read`, `crm.schemas.deals.read`, `crm.schemas.custom.read`, `crm.schemas.quotes.read`, `crm.schemas.line_items.read`, and `e-commerce`. This isn't an all-required list. |
+| `tickets`                      | `tickets`                                                                                                    |
+| `users`                        | `crm.objects.users.read`, `settings.users.read`                                                              |
+| `workflows`                    | `automation`                                                                                                 |
 | `association_streams`       | Read scopes for the selected source and target objects                                                       |
-| Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `custom_object_association_streams` | `crm.objects.custom.read` and the read scope for any selected standard object                         |
-| `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
-| `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
-| `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
-| `email_events`              | `content`                                                                                                    |
-| `email_subscriptions`       | `content`                                                                                                    |
-| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
-| `engagements_emails`        | `sales-email-read`                                                                                           |
 | `engagements_task_pipelines` | `crm.objects.contacts.read`                                                                                  |
-| `forms`                     | `forms`                                                                                                      |
-| `form_submissions`          | `forms`                                                                                                      |
-| `goals`                     | `crm.objects.goals.read`                                                                                     |
-| `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
-| `list_memberships`          | `crm.lists.read`                                                                                             |
-| `line_items`                | `e-commerce`                                                                                                 |
 | `listings`                  | `crm.objects.listings.read`                                                                                  |
-| `owners`                    | `crm.objects.owners.read`                                                                                    |
-| `products`                  | `e-commerce`                                                                                                 |
-| `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
-| `companies_property_history` | `crm.objects.companies.read`                                                                                |
-| `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
-| `subscription_changes`      | `content`                                                                                                    |
-| `tickets`                   | `tickets`                                                                                                    |
-| `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
-| `account_details`           | `oauth`                                                                                                      |
-| `deal_splits`               | `crm.objects.deals.read`                                                                                     |
-| `properties`                | No additional scopes required                                                                                |
-| `workflows`                 | `automation`                                                                                                 |
 | `flows`                     | `automation` (plus `*.sensitive.read` for flows touching sensitive data)                                     |
 | `contacts_web_analytics`    | `business-intelligence`, `crm.objects.contacts.read`                                                         |
 | `companies_web_analytics`   | `business-intelligence`, `crm.objects.companies.read`                                                        |
@@ -477,9 +485,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
   - Review [HubSpot's OAuth scope documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
   - Additional permissions:
 
-    `feedback_submissions`: Service Hub Professional account
-
-    `marketing_emails`: Market Hub Starter account
+    `marketing_emails`: Check the endpoint-specific access requirements in the [Marketing Emails API guide](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3/guide).
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
