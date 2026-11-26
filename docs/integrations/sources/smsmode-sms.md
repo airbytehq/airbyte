@@ -35,6 +35,7 @@ Both streams request 100 records per page, the API's maximum page size, and incr
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2026-11-17 | [93391](https://github.com/airbytehq/airbyte/pull/93391) | Update dependencies |
 | 0.0.11 | 2026-11-10 | [91750](https://github.com/airbytehq/airbyte/pull/91750) | Update dependencies |
 | 0.0.10 | 2026-11-03 | [90771](https://github.com/airbytehq/airbyte/pull/90771) | Update dependencies |
 | 0.0.9 | 2026-10-27 | [90057](https://github.com/airbytehq/airbyte/pull/90057) | Update dependencies |
