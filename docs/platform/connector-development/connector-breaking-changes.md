@@ -44,6 +44,8 @@ In some cases, breaking changes can be avoided through automated migrations:
 
 When considering spec or state changes, evaluate whether a migration can eliminate the need for a breaking change before proceeding with a major version bump.
 
+A release that runs a config or state migration can't be safely rolled back, so don't add a [`safeDowngrades`](/platform/connector-development/connector-metadata-file#safedowngrades) entry for it.
+
 ### Schema Change Considerations: Data Type Compatibility
 
 When changing data types in schemas, consider type compatibility to determine whether the change is truly breaking:
