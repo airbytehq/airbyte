@@ -17,3 +17,7 @@ None identified yet.
 ## Alerts request window splitting
 
 When an Alerts request window holds more than Twilio's 10,000-result limit, the `alerts` stream splits it in half and re-reads each half (up to 10 times), re-emitting up to 10,000 records per split. See `AGENTS.md` for the filter setup, duplicate handling, smallest window, and failure behavior.
+
+## Accounts and subaccounts
+
+`accounts` returns the main account and all its subaccounts, and every `api.twilio.com/2010-04-01` stream reads each of them. `subaccounts` is the same list without the main account and without `auth_token`, and costs one extra request per sync. See `AGENTS.md` for details.
