@@ -152,6 +152,10 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
   publish:
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
     name: Publish Pre-release
     needs: [init]
     # Reusable-workflow callers must grant every permission the called jobs request.

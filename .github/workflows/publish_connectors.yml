@@ -103,6 +103,9 @@ env:
       || 'gitops-prod'
     }}
 
+permissions:
+  contents: read
+
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -250,6 +253,9 @@ jobs:
       publish-pypi: ${{ steps.resolve-vars.outputs.publish-pypi }}
       publishing-environment: ${{ steps.resolve-vars.outputs.publishing-environment }}
   publish_connectors:
+    permissions:
+      contents: read
+      pull-requests: read
     name: Publish connectors
     needs: [publish_options]
     if: needs.publish_options.outputs.connector-count != '0'
@@ -872,6 +878,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
 
   generate_connector_registry:
+    permissions:
+      contents: read
+      id-token: write
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
     if: needs.publish_options.outputs.dry-run != 'true'

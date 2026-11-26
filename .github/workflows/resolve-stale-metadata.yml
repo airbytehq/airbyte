@@ -18,6 +18,9 @@ permissions:
 
 jobs:
   generate-connector-registries:
+    permissions:
+      contents: read
+      id-token: write
     name: Generate Connector Registries
     permissions:
       contents: read
@@ -26,6 +29,10 @@ jobs:
     secrets: inherit
 
   check-stale-metadata:
+    permissions:
+      contents: read
+      id-token: write
+    environment: connector-registry-read
     name: Check for Stale Metadata
     needs: [generate-connector-registries]
     runs-on: ubuntu-24.04
@@ -41,12 +48,16 @@ jobs:
 
       - name: Install Ops CLI
         continue-on-error: true
-        run: uv tool install airbyte-internal-ops
+        run: uv --no-config tool install airbyte-internal-ops
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_REGISTRY_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_REGISTRY_READER_SERVICE_ACCOUNT }}
 
       - name: Check for unpublished connector versions
         continue-on-error: true
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         run: >
           airbyte-ops local connector list
