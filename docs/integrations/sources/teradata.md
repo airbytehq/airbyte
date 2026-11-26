@@ -70,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.2.8 | 2026-11-20 | [94029](https://github.com/airbytehq/airbyte/pull/94029) | Update base image to java-connector-base 2.0.6 |
 | 0.2.7 | 2026-10-07 | [88282](https://github.com/airbytehq/airbyte/pull/88282) | Fix JDBC URL built when a port is configured (`host/DBS_PORT=<port>`); previously every connection with a port failed with `UnknownHostException` |
 | 0.2.6 | 2025-07-10 | [62926](https://github.com/airbytehq/airbyte/pull/62926) | Convert to new gradle build flow |
 | 0.2.5 | 2025-01-10 | [51485](https://github.com/airbytehq/airbyte/pull/51485) | Use a non root base image |
