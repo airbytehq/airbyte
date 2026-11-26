@@ -23,17 +23,15 @@ definitions:
           request_headers:
             apikey: "{{ config['client_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: Credentails might be expired, please validate
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                  - 403
+                  - 404
+                error_message: Credentails might be expired, please validate
         record_selector:
           type: RecordSelector
           extractor:
@@ -71,19 +69,17 @@ definitions:
           request_parameters:
             orderBy: createdat.desc
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: >-
-                      Business account needs oauth flow, refer documentation for
-                      more details
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                  - 403
+                  - 404
+                error_message: >-
+                  Business account needs oauth flow, refer documentation for
+                  more details
         record_selector:
           type: RecordSelector
           extractor:
@@ -145,17 +141,15 @@ definitions:
           request_headers:
             apikey: "{{ config['client_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: Credentails might be expired, please validate
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                  - 403
+                  - 404
+                error_message: Credentails might be expired, please validate
         record_selector:
           type: RecordSelector
           extractor:
