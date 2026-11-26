@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - agents
+    - tickets
 
 definitions:
   unauthorized_response_filter:
