@@ -38,7 +38,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   bump-progressive-rollout-version:
+    needs: guard-pr
     # Delegate to the bump-version workflow with type=rc.
     uses: ./.github/workflows/bump-version-command.yml
     with:

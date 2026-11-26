@@ -45,7 +45,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   init:
+    needs: guard-pr
     name: Initialize Pre-release Publish
     runs-on: ubuntu-24.04
     outputs:

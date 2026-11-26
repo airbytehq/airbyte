@@ -25,7 +25,15 @@ on:
   push:
 
 jobs:
+  guard-pr:
+    name: Reject fork PRs
+    uses: ./.github/workflows/guard-command-pr.yml
+    with:
+      repo: ${{ inputs.repo || '' }}
+      pr: ${{ inputs.pr && format('{0}', inputs.pr) || '' }}
+
   get-context:
+    needs: guard-pr
     name: "Get Context"
     runs-on: ubuntu-24.04
     steps:

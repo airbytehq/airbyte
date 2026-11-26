@@ -1,0 +1,44 @@
+name: Reject Fork PR Command Execution
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: "Repo. Repository requested by the command."
+        required: false
+        type: string
+      pr:
+        description: "PR. Pull request number to validate."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Require an in-repository PR
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Reject an external repository
+        if: inputs.repo != '' && inputs.repo != github.repository
+        run: |
+          echo "::error::Fork PRs cannot run this command. A maintainer must recreate the PR as a branch in airbytehq/airbyte."
+          exit 1
+
+      - name: Validate PR head repository
+        if: inputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: |
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]] || {
+            echo "::error::PR must be a positive pull request number."
+            exit 1
+          }
+          HEAD_REPO="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name')"
+          [[ "$HEAD_REPO" == "$GITHUB_REPOSITORY" ]] || {
+            echo "::error::Fork PRs cannot run this command. A maintainer must recreate the PR as a branch in airbytehq/airbyte."
+            exit 1
+          }
