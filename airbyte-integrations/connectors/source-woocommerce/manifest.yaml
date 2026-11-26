@@ -632,6 +632,29 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/products"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified_gmt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: modified_before
+          inject_into: request_parameter
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -675,8 +698,24 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_created_gmt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "9999-12-31T00:00:00"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
