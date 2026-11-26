@@ -1,53 +1,54 @@
 # SurveyCTO
 
-This page guides you through the process of setting up the SurveyCTO source connector.
+This page guides you through setting up the [SurveyCTO](https://www.surveycto.com/) source connector. The connector exports form submissions from your SurveyCTO server using the SurveyCTO REST API.
+
+:::note
+This connector is available in Airbyte Open Source only. It isn't available in Airbyte Cloud.
+:::
 
 ## Prerequisites
 
-- Server Name `The name of the ServerCTO server`
-- Your SurveyCTO `Username`
-- Your SurveyCTO `Password`
-- Form ID `Unique Identifier for one of your forms`
-- Start Date `Start Date default`
+- A SurveyCTO server. The server name is the subdomain of your server URL. For example, if you access your server at `https://example.surveycto.com`, the server name is `example`.
+- A SurveyCTO user whose role has API access enabled. SurveyCTO enables or disables API access per role. See [Managing user roles](https://docs.surveycto.com/04-monitoring-and-management/01-the-basics/00b.managing-user-roles.html) and [Accessing server data via an API](https://docs.surveycto.com/05-exporting-and-publishing-data/05-api-access/01.api-access.html). API access also depends on your SurveyCTO subscription plan.
+- The username and password for that user. The connector authenticates with HTTP basic authentication.
+- The form ID of each deployed form you want to sync.
 
-## How to setup a SurveyCTO Account
+## Set up the SurveyCTO source connector
 
-- create the account
-- create your form
-- publish your form
-- give your user an API consumer permission to the existing role or create a user with that role and permission.
+1. In Airbyte, click **Sources**, then click **+ New source**.
+2. Select **SurveyCTO** from the list of sources.
+3. Enter a name for your source.
+4. For **Server Name**, enter the name of your SurveyCTO server, without `.surveycto.com`.
+5. For **Username** and **Password**, enter the credentials of the SurveyCTO user with API access.
+6. For **Form Id's**, enter the ID of each form you want to sync. You can add more than one form ID.
+7. (Optional) For **Start Date**, enter the date from which to export submissions, in the format `Mon DD, YYYY HH:MM:SS AM`, for example `Jan 09, 2022 00:00:00 AM`. If you don't set a value, the connector uses `Jan 09, 2022 00:00:00 AM`.
+8. Click **Set up source**.
 
-## Set up the SurveyCTO source connection
-
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Survey CTO** from the Source type dropdown.
-4. Enter a name for your source.
-5. Enter a Server name for your SurveyCTO account.
-6. Enter a Username for SurveyCTO account.
-7. Enter a Password for SurveyCTO account.
-8. Form ID's (We can multiple forms id here to pull from)
-9. Start Date (This can be pass to pull the data from particular date)
-10. Click **Set up source**.
+When you set up the source, the connector checks the connection by requesting submissions for each form ID. If any form ID is invalid or the user lacks access, the check fails.
 
 ## Supported sync modes
 
-The SurveyCTO source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SurveyCTO source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-The SurveyCTO source connector supports the following streams:
+The connector creates one stream for each form ID you configure. Each stream is named after its form ID and contains that form's submissions, exported in SurveyCTO's wide JSON format.
 
-- Surveycto
+| Primary key | Cursor field     |
+| ----------- | ---------------- |
+| `KEY`       | `SubmissionDate` |
 
-## IP allow list
+During incremental syncs, the connector requests only submissions received since the last synced `SubmissionDate`. The first sync starts from the configured **Start Date**.
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+## Limitations
+
+- The connector infers each stream's schema from the submissions the API returns for that form since the **Start Date**. Fields that don't appear in any of those submissions aren't included in the schema. If a form has no submissions since the **Start Date**, the stream has no fields.
+- The connector requests all matching submissions for a form in a single API request, without pagination.
 
 ## Changelog
 
@@ -56,7 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------- |
-| 0.1.47 | 2026-10-20 | [89524](https://github.com/airbytehq/airbyte/pull/89524) | Upgrade to airbyte-cdk 7 and Python 3.13 base image; fix connection check failing with urllib3 2.x |
+| 0.1.47 | 2026-11-13 | [89524](https://github.com/airbytehq/airbyte/pull/89524) | Upgrade to airbyte-cdk 7 and Python 3.13 base image; fix connection check failing with urllib3 2.x |
 | 0.1.46 | 2025-05-24 | [60563](https://github.com/airbytehq/airbyte/pull/60563) | Update dependencies |
 | 0.1.45 | 2025-05-10 | [60167](https://github.com/airbytehq/airbyte/pull/60167) | Update dependencies |
 | 0.1.44 | 2025-05-04 | [59619](https://github.com/airbytehq/airbyte/pull/59619) | Update dependencies |
