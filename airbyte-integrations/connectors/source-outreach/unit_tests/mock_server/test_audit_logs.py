@@ -1,11 +1,12 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from typing import Any
 from unittest import TestCase
 from urllib.parse import urlencode
 
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import BASE_URL, START_CURSOR
@@ -137,7 +138,7 @@ class TestAuditLogsStream(TestCase):
         assert stream_state(output) == {"timestamp": "2026-11-11T20:07:52.000Z"}
 
     @HttpMocker()
-    def test_403_without_admin_scope_fails_as_config_error(self, http_mocker: HttpMocker) -> None:
+    def test_403_without_audit_logs_scope_fails_as_config_error(self, http_mocker: HttpMocker) -> None:
         given_token(http_mocker)
         http_mocker.get(
             _request(),
@@ -150,3 +151,49 @@ class TestAuditLogsStream(TestCase):
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         assert "Your token lacks the auditLogs.read scope." in output.errors[-1].trace.error.message
         assert len(http_mocker._mocker.request_history) == 2
+
+    @HttpMocker()
+    def test_401_for_a_non_admin_user_fails_as_config_error_without_a_token_refresh(self, http_mocker: HttpMocker) -> None:
+        # Outreach API Support confirmed that a non-admin user with the auditLogs.read scope gets this 401 body.
+        given_token(http_mocker)
+        http_mocker.get(
+            _request(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "error": "No Authorization header.",
+                        "description": "You must provide an Authorization header with a valid access token.",
+                    }
+                ),
+                status_code=401,
+            ),
+        )
+
+        output = read_stream(_STREAM, SyncMode.full_refresh, expecting_exception=True)
+
+        assert output.records == []
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        # The stream's own error carries the user-facing message; the last error is the sync summary.
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert "Only Outreach admin users can read audit logs." in output.errors[0].trace.error.message
+        # One token request and one /auditLogs request: the 401 is not retried after a token refresh.
+        assert len(http_mocker._mocker.request_history) == 2
+
+    @HttpMocker()
+    def test_401_for_an_expired_token_refreshes_the_token_and_retries(self, http_mocker: HttpMocker) -> None:
+        # The body a live /auditLogs request with an expired access token returns.
+        expired = HttpResponse(
+            body=json.dumps(
+                {"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}
+            ),
+            status_code=401,
+        )
+        given_token(http_mocker)
+        http_mocker.get(_request(), [expired, page_response([_audit_log(_LOG_1, "2026-09-17T20:40:11Z")])])
+
+        output = read_stream(_STREAM, SyncMode.full_refresh)
+
+        assert not output.errors
+        assert record_ids(output) == [_LOG_1]
+        token_requests = [r for r in http_mocker._mocker.request_history if r.url.endswith("/oauth/token")]
+        assert len(token_requests) == 2

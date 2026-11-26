@@ -227,4 +227,15 @@ def test_every_stream_uses_the_shared_requester(connector_path):
         requester = stream["retriever"]["requester"]
         assert requester["$ref"] == "#/definitions/base_requester", name
         assert "authenticator" not in requester, name
-        assert "error_handler" not in requester, name
+        if name == "audit_logs":
+            # audit_logs adds one filter for the non-admin 401 in front of the shared ones and must keep
+            # the shared backoff strategies and filters by reference.
+            error_handler = requester["error_handler"]
+            base = "#/definitions/base_requester/error_handler"
+            assert error_handler["backoff_strategies"] == {"$ref": f"{base}/backoff_strategies"}
+            assert error_handler["response_filters"][1:] == [
+                {"$ref": f"{base}/response_filters/{index}"}
+                for index in range(len(manifest["definitions"]["base_requester"]["error_handler"]["response_filters"]))
+            ]
+        else:
+            assert "error_handler" not in requester, name

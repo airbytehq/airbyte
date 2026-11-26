@@ -85,7 +85,11 @@ The OAuth application needs these read scopes for the new streams:
 `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` need the
 `emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes.
 A token issued before these streams existed lacks them, and selecting one of the streams fails with the 403 below
-until the user re-authenticates. `/auditLogs` also needs an Outreach admin user.
+until the user re-authenticates. `/auditLogs` also needs an Outreach admin user. A non-admin user can grant
+`auditLogs.read`, but `/auditLogs` then answers with a 401 whose body is
+`{"error": "No Authorization header.", "description": "You must provide an Authorization header with a valid access token."}`
+(confirmed by Outreach API Support). The `audit_logs` requester fails that response as a configuration error before
+the shared 401 filter can refresh the token.
 
 ### Error handling
 
@@ -94,7 +98,8 @@ Outreach returns errors as `{"errors": [{"id", "title", "detail"}]}`
 
 | Status | Action | Source |
 | :----- | :----- | :----- |
-| 401 | Refresh the access token, then retry | Expired access token. Manifest filter |
+| 401 | `audit_logs` only: fail as a configuration error that asks for an Outreach admin user or for the stream to be deselected | Body `{"error": "No Authorization header."}`, returned to a non-admin user. Stream-level manifest filter, matched on the body |
+| 401 | Refresh the access token, then retry | Expired access token, body `{"id": "expiredAccessToken"}`, seen on a live request. Manifest filter |
 | 403 | Fail as a configuration error. The message quotes `errors[0].detail`, which names the missing OAuth scope | `unauthorizedOauthScope`, seen on a live request with a token that lacks the scope. Manifest filter |
 | 404 | Fail as a system error | `resourceNotFound`. No list endpoint documents a benign 404. CDK default |
 | 422 | Fail as a system error | CDK default for an unmapped status |

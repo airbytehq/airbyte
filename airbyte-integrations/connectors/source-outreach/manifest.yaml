@@ -1721,6 +1721,26 @@ definitions:
             sort: timestamp
             page[size]: "1000"
             newFilterSyntax: "true"
+          # A $ref sibling replaces the whole base error handler, so the base backoff strategies and filters are
+          # repeated here by reference. Outreach answers a non-admin user's /auditLogs request with a 401 whose
+          # body is {"error": "No Authorization header."}, even when the token has the auditLogs.read scope.
+          # An expired token gets a 401 with {"id": "expiredAccessToken"} instead, so it still reaches the
+          # refresh filter. Without the first filter, the non-admin 401 refreshes the token once and then fails
+          # with a "refreshed token is rejected" message that sends the user to re-authenticate for nothing.
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              $ref: "#/definitions/base_requester/error_handler/backoff_strategies"
+            response_filters:
+              - type: HttpResponseFilter
+                predicate: "{{ response.get('error') == 'No Authorization header.' }}"
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Outreach rejected the audit_logs request. Only Outreach admin users can read audit logs.
+                  Authorize the source as an Outreach admin user, or deselect the audit_logs stream.
+              - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
+              - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
         record_selector:
           $ref: "#/definitions/jsonapi_record_selector"
         paginator:
