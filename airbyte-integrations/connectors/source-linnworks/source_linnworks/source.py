@@ -3,14 +3,15 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from datetime import timedelta
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
-import pendulum
 import requests
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 from .streams import ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocationDetails, StockLocations
 
@@ -21,7 +22,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
         application_id: str,
         application_secret: str,
         token: str,
-        token_expiry_date: pendulum.datetime = None,
+        token_expiry_date: Optional[AirbyteDateTime] = None,
         token_refresh_endpoint: str = "https://api.linnworks.net/api/Auth/AuthorizeByApplication",
         access_token_name: str = "Token",
         expires_in_name: str = "TTL",
@@ -50,10 +51,10 @@ class LinnworksAuthenticator(Oauth2Authenticator):
 
     def get_access_token(self):
         if self.token_has_expired():
-            t0 = pendulum.now()
+            t0 = ab_datetime_now()
             token, expires_in, server = self.refresh_access_token()
             self._access_token = token
-            self._token_expiry_date = t0.add(seconds=expires_in)
+            self._token_expiry_date = t0 + timedelta(seconds=expires_in)
             self._server = server
 
         return self._access_token
@@ -73,7 +74,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
 
         return payload
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> Tuple[str, int, str]:
         try:
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
