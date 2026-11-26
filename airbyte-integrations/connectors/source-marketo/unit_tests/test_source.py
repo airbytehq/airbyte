@@ -13,7 +13,13 @@ import pytest
 import requests
 from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
@@ -63,6 +69,39 @@ def test_create_export_job(mocker, send_email_stream, caplog):
         {"endAt": ANY, "id": "232aafb4", "startAt": ANY},
     ]
     assert "Failed to create export job! Status is failed!" in caplog.records[-1].message
+
+
+@pytest.mark.parametrize("error_code", ["601", "602"])
+def test_leads_read_export_create_auth_error(config, requests_mock, error_code: str) -> None:
+    requests_mock.get("/rest/v1/activities/types.json", json={"result": []})
+    requests_mock.get("/rest/v1/leads/describe.json", json={"result": []})
+    export_create = requests_mock.post(
+        "/bulk/v1/leads/export/create.json",
+        status_code=200,
+        json={"success": False, "errors": [{"code": error_code, "message": "Access token invalid"}]},
+    )
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="leads", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.incremental]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+                cursor_field=["updatedAt"],
+            )
+        ]
+    )
+    messages = []
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        for message in SourceMarketo().read(logger, config, catalog):
+            messages.append(message)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    errors = [message.trace.error for message in messages if message.trace and message.trace.error]
+    assert len(errors) == 1
+    assert errors[0].failure_type == FailureType.config_error
+    assert errors[0].message.startswith("Failed to authenticate with the Marketo API")
+    assert export_create.call_count == 1
 
 
 def test_should_retry_quota_exceeded(config, requests_mock):
