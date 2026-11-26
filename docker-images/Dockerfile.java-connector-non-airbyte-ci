@@ -29,7 +29,12 @@ ENV APPLICATION="${CONNECTOR_NAME}"
 RUN --mount=type=bind,source=airbyte-app.tar,target=/tmp/airbyte-app.tar \
     tar xf /tmp/airbyte-app.tar --strip-components=1 -C /airbyte && \
     chown -R airbyte:0 /airbyte && \
-    chmod -R g=u /airbyte
+    chmod -R g=u /airbyte && \
+    rm -rf /home/airbyte/.cache /root/.cache
+
+# The rm above matters for amd64 images built under emulation on Apple Silicon: Rosetta creates
+# $HOME/.cache/rosetta as root in every RUN step, and the base image sets HOME=/home/airbyte, so
+# without it the airbyte user cannot write to ~/.cache.
 
 # Set the non-root user
 USER airbyte
