@@ -27,19 +27,22 @@ The Braze source connector supports the following [ sync modes](https://docs.air
 
 ## Supported Streams
 
-- [campaigns](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#f3b0b3ef-04fb-4a31-8570-e6ad88dacb18)
-- [campaigns_analytics](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#c07b5ebd-0246-471e-b154-416d63ae28a1)
-- [canvases](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#e6c150d7-fceb-4b10-91e2-a9ca4d5806d1)
-- [canvases_analytics](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#0fd61e93-7edf-4d87-a8dc-052420aefb73)
-- [events](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#93ecd8a5-305d-4b72-ae33-2d74983255c1)
-- [events_analytics](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#0bd1ab63-d1a5-4301-8d17-246cf24a178c)
-- [kpi_daily_new_users](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#07756c39-cfa0-40a0-8101-03f8791cec01)
-- [kpi_daily_active_users](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#90a64560-65aa-4f71-a8ef-1edf49321986)
-- [kpi_daily_app_uninstalls](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#59c4d592-3e77-42f8-8ff1-d5d250acbeae)
-- [cards](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#9fa7a3bc-4a02-4de2-bc4c-8f111750665e)
-- [cards_analytics](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#9cdc3b1e-641e-4d62-b9e8-42d04ee9d4d8)
-- [segments](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#1349e6f4-3ce7-4e60-b3e9-951c99c0993f)
-- [segments_analytics](https://documenter.getpostman.com/view/4689407/SVYrsdsG?version=latest#62d9d142-cdec-4aea-a287-c13efea7415e)
+- [campaigns](https://www.braze.com/docs/api/endpoints/export/campaigns/get_campaigns) — supports incremental sync.
+- [campaigns_analytics](https://www.braze.com/docs/api/endpoints/export/campaigns/get_campaign_analytics)
+- [campaigns_details](https://www.braze.com/docs/api/endpoints/export/campaigns/get_campaign_details)
+- [canvases](https://www.braze.com/docs/api/endpoints/export/canvas/get_canvas) — supports incremental sync.
+- [canvases_analytics](https://www.braze.com/docs/api/endpoints/export/canvas/get_canvas_analytics)
+- [canvases_details](https://www.braze.com/docs/api/endpoints/export/canvas/get_canvas_details)
+- [events](https://www.braze.com/docs/api/endpoints/export/custom_events/get_custom_events)
+- [events_analytics](https://www.braze.com/docs/api/endpoints/export/custom_events/get_custom_events_analytics)
+- [kpi_daily_new_users](https://www.braze.com/docs/api/endpoints/export/kpi/get_kpi_daily_new_users)
+- [kpi_daily_active_users](https://www.braze.com/docs/api/endpoints/export/kpi/get_kpi_daily_active_users)
+- [kpi_daily_app_uninstalls](https://www.braze.com/docs/api/endpoints/export/kpi/get_kpi_daily_app_uninstalls)
+- cards — Braze retired News Feed; this stream returns no records.
+- cards_analytics — Braze retired News Feed; this stream returns no records.
+- [segments](https://www.braze.com/docs/api/endpoints/export/segments/get_segment)
+- [segments_analytics](https://www.braze.com/docs/api/endpoints/export/segments/get_segment_analytics)
+- [segments_details](https://www.braze.com/docs/api/endpoints/export/segments/get_segment_details)
 
 ## Performance considerations
 
@@ -58,6 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.5.0 | 2026-11-16 | [93036](https://github.com/airbytehq/airbyte/pull/93036) | Upgrade to source-declarative-manifest 7.47.0, add incremental sync for campaigns and canvases, include archived campaigns and canvases, fix pagination page sizes, and complete retired News Feed streams without failing the sync |
 | 0.4.20 | 2025-08-16 | [65057](https://github.com/airbytehq/airbyte/pull/65057) | Update dependencies |
 | 0.4.19 | 2025-08-02 | [64411](https://github.com/airbytehq/airbyte/pull/64411) | Update dependencies |
 | 0.4.18 | 2025-07-26 | [63796](https://github.com/airbytehq/airbyte/pull/63796) | Update dependencies |

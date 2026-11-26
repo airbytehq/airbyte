@@ -21,6 +21,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
+          - name: cards
+            bypass_reason: "Vendor retired News Feed; /feed/list returns 404"
+          - name: cards_analytics
+            bypass_reason: "Vendor retired News Feed; /feed/list returns 404"
           - name: kpi_daily_new_users
             bypass_reason: "no data"
           - name: events_analytics

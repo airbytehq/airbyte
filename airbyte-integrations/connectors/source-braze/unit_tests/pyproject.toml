@@ -9,9 +9,11 @@ description = "Unit tests for source-braze"
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
-airbyte-cdk = "6.10.0"
+python = ">=3.11,<3.13"
+airbyte-cdk = "7.47.0"
 pytest = "^8"
+freezegun = "^1.5"
+requests-mock = "^1.12"
 
 [tool.pytest.ini_options]
 filterwarnings = [
