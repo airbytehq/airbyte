@@ -10,6 +10,7 @@ import docker
 import weaviate
 from destination_weaviate.destination import DestinationWeaviate
 from pytest_docker.plugin import get_docker_ip
+from weaviate.classes.query import Filter
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
@@ -35,20 +36,21 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             pass
 
         self.docker_client.containers.run(
-            "semitechnologies/weaviate:1.21.2",
+            "cr.weaviate.io/semitechnologies/weaviate:1.40.1",
             detach=True,
             environment=env_vars,
             name=WEAVIATE_CONTAINER_NAME,
-            ports={8080: ("0.0.0.0", 8081)},
+            ports={8080: ("0.0.0.0", 8081), 50051: ("0.0.0.0", 50052)},
         )
         time.sleep(0.5)
         docker_ip = get_docker_ip()
         self.config["indexing"]["host"] = f"http://{docker_ip}:8081"
+        self.config["indexing"]["connection"] = {"grpc_host": f"{docker_ip}:50052", "grpc_secure": "disabled"}
 
         retries = 10
         while retries > 0:
             try:
-                self.client = weaviate.Client(url=self.config["indexing"]["host"])
+                self.client = weaviate.connect_to_local(host=docker_ip, port=8081, grpc_port=50052)
                 break
             except Exception as e:
                 logging.info(f"error connecting to weaviate with indexer. Retrying in 1 second. Exception: {e}")
@@ -61,6 +63,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         self._init_weaviate()
 
     def tearDown(self) -> None:
+        self.client.close()
         self.docker_client.containers.get(WEAVIATE_CONTAINER_NAME).remove(force=True)
 
     def test_check_valid_config(self):
@@ -75,8 +78,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.FAILED
 
     def count_objects(self, class_name: str) -> int:
-        result = self.client.query.aggregate(class_name).with_fields("meta { count }").do()
-        return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
+        return self.client.collections.use(class_name).aggregate.over_all(total_count=True).total_count
 
     def test_write_overwrite(self):
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
@@ -104,13 +106,12 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = (
-            self.client.query.get("Mystream", ["text"])
-            .with_near_vector({"vector": [0] * OPEN_AI_VECTOR_SIZE})
-            .with_where({"path": ["_ab_record_id"], "operator": "Equal", "valueText": "mystream_2"})
-            .do()
+        result = self.client.collections.use("Mystream").query.near_vector(
+            near_vector=[0] * OPEN_AI_VECTOR_SIZE,
+            filters=Filter.by_property("_ab_record_id").equal("mystream_2"),
+            return_properties=["text"],
         )
 
-        assert len(result["data"]["Get"]["Mystream"]) == 1
+        assert len(result.objects) == 1
         assert self.count_objects("Mystream") == 5
-        assert result["data"]["Get"]["Mystream"][0]["text"] == "str_col: Cats are nice"
+        assert result.objects[0].properties["text"] == "str_col: Cats are nice"

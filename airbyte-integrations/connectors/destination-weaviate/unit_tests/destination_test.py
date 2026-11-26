@@ -85,6 +85,18 @@ class TestDestinationWeaviate(unittest.TestCase):
 
         MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
+        mock_indexer.close.assert_called_once()
+
+    @patch("destination_weaviate.destination.Writer")
+    @patch("destination_weaviate.destination.WeaviateIndexer")
+    @patch("destination_weaviate.destination.create_from_config")
+    def test_write_closes_indexer_on_failure(self, MockedEmbedder, MockedWeaviateIndexer, MockedWriter):
+        MockedWriter.return_value.write.side_effect = Exception("boom")
+
+        with self.assertRaises(Exception):
+            list(DestinationWeaviate().write(self.config, MagicMock(), []))
+
+        MockedWeaviateIndexer.return_value.close.assert_called_once()
 
     def test_spec(self):
         destination = DestinationWeaviate()
