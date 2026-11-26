@@ -239,6 +239,316 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/employees"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/users
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    time_off_policies:
+      type: DeclarativeStream
+      name: time_off_policies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/time_off/policies
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_policies"
+    time_off_types:
+      type: DeclarativeStream
+      name: time_off_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/time_off/types
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timeOffTypes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_types"
+    employee_time_off_policies:
+      type: DeclarativeStream
+      name: employee_time_off_policies
+      primary_key:
+        - employeeId
+        - timeOffPolicyId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: employees/{{ stream_partition.employee_id }}/time_off/policies
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/employees_directory_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition.employee_id }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee_time_off_policies"
+    employee_dependents:
+      type: DeclarativeStream
+      name: employee_dependents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: employeedependents
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Employee Dependents
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee_dependents"
+    training_types:
+      type: DeclarativeStream
+      name: training_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: training/type
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/training_types"
+    training_categories:
+      type: DeclarativeStream
+      name: training_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: training/category
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/training_categories"
+    employee_trainings:
+      type: DeclarativeStream
+      name: employee_trainings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: training/record/employee/{{ stream_partition.employee_id }}
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/employees_directory_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition.employee_id }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee_trainings"
+    goals:
+      type: DeclarativeStream
+      name: goals
+      primary_key:
+        - employee_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: performance/employees/{{ stream_partition.employee_id }}/goals
+          http_method: GET
+          request_headers:
+            Accept: application/json
+          request_parameters:
+            filter: status-all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - goals
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/employees_directory_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employee_id
+              value: "{{ stream_partition.employee_id }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/goals"
+    job_openings:
+      type: DeclarativeStream
+      name: job_openings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: applicant_tracking/jobs
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_openings"
+    job_applications:
+      type: DeclarativeStream
+      name: job_applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: applicant_tracking/applications
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - applications
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageUrl }}"
+            stop_condition: "{{ response.paginationComplete or not response.nextPageUrl }}"
+          page_token_option:
+            type: RequestPath
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_applications"
   base_requester:
     type: HttpRequester
     url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
@@ -254,6 +564,17 @@ streams:
   - $ref: "#/definitions/streams/time_off_requests_stream"
   - $ref: "#/definitions/streams/timesheet_entries"
   - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/time_off_policies"
+  - $ref: "#/definitions/streams/time_off_types"
+  - $ref: "#/definitions/streams/employee_time_off_policies"
+  - $ref: "#/definitions/streams/employee_dependents"
+  - $ref: "#/definitions/streams/training_types"
+  - $ref: "#/definitions/streams/training_categories"
+  - $ref: "#/definitions/streams/employee_trainings"
+  - $ref: "#/definitions/streams/goals"
+  - $ref: "#/definitions/streams/job_openings"
+  - $ref: "#/definitions/streams/job_applications"
 
 spec:
   type: Spec
@@ -730,3 +1051,443 @@ schemas:
         type: [string, "null"]
       canUploadPhoto:
         type: [boolean, "null"]
+  users:
+    type: object
+    properties:
+      id:
+        type: integer
+      employeeId:
+        type: integer
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      status:
+        type: string
+      lastLogin:
+        type: string
+        format: date-time
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  time_off_policies:
+    type: object
+    properties:
+      id:
+        type: integer
+      timeOffTypeId:
+        type: integer
+      name:
+        type: string
+      effectiveDate:
+        type:
+          - string
+          - "null"
+      type:
+        type: string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  time_off_types:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      units:
+        type: string
+      color:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      source:
+        type: string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  employee_time_off_policies:
+    type: object
+    properties:
+      timeOffPolicyId:
+        type: integer
+      timeOffTypeId:
+        type: integer
+      accrualStartDate:
+        type: string
+        format: date
+      employeeId:
+        type: string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  employee_dependents:
+    type: object
+    properties:
+      id:
+        type: string
+      employeeId:
+        type: string
+      firstName:
+        type: string
+      middleName:
+        type:
+          - string
+          - "null"
+      lastName:
+        type: string
+      relationship:
+        type: string
+      gender:
+        type: string
+      maskedSSN:
+        type:
+          - string
+          - "null"
+      maskedSIN:
+        type:
+          - string
+          - "null"
+      dateOfBirth:
+        type: string
+        format: date
+      addressLine1:
+        type:
+          - string
+          - "null"
+      addressLine2:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      zipCode:
+        type:
+          - string
+          - "null"
+      homePhone:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      isUsCitizen:
+        type:
+          - string
+          - "null"
+      isStudent:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  training_types:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      renewable:
+        type: boolean
+      frequency:
+        type: integer
+      dueFromHireDate:
+        type: integer
+      required:
+        type:
+          - boolean
+          - "null"
+      category:
+        anyOf:
+          - type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+            additionalProperties: true
+          - type: array
+            items: {}
+      linkUrl:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      allowEmployeesToMarkComplete:
+        type: boolean
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  training_categories:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  employee_trainings:
+    type: object
+    properties:
+      id:
+        type: integer
+      employeeId:
+        type: string
+      completed:
+        type: string
+        format: date
+      notes:
+        type:
+          - string
+          - "null"
+      instructor:
+        type:
+          - string
+          - "null"
+      credits:
+        type:
+          - string
+          - "null"
+      hours:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      type:
+        anyOf:
+          - type: string
+          - type: integer
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  goals:
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      percentComplete:
+        type: integer
+      alignsWithOptionId:
+        type:
+          - string
+          - "null"
+      sharedWithEmployeeIds:
+        type: array
+        items:
+          type: integer
+      dueDate:
+        type: string
+      completionDate:
+        type:
+          - string
+          - "null"
+      lastChangedDateTime:
+        type:
+          - string
+          - "null"
+      status:
+        type: string
+      milestones:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            employeeGoalId:
+              type: integer
+            title:
+              type: string
+            currentValue:
+              type:
+                - number
+                - "null"
+            startValue:
+              type:
+                - number
+                - "null"
+            endValue:
+              type:
+                - number
+                - "null"
+            completedDateTime:
+              type: string
+            lastUpdateDateTime:
+              type: string
+            lastUpdateUserId:
+              type: integer
+          additionalProperties: true
+      actions:
+        type:
+          - object
+          - "null"
+        properties:
+          canEditGoalProgressBar:
+            type: boolean
+          canEditGoalMilestoneProgressBar:
+            type: boolean
+        additionalProperties: true
+      employee_id:
+        type: string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  job_openings:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: object
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          label:
+            type: string
+        additionalProperties: true
+      postedDate:
+        type: string
+        format: date-time
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type: integer
+          label:
+            type: string
+          address:
+            type: object
+            additionalProperties: true
+        additionalProperties: true
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type: integer
+          label:
+            type: string
+        additionalProperties: true
+      status:
+        type: object
+        properties:
+          id:
+            type: integer
+          label:
+            type: string
+        additionalProperties: true
+      hiringLead:
+        type:
+          - object
+          - "null"
+        properties:
+          employeeId:
+            type: integer
+          firstName:
+            type: string
+          lastName:
+            type: string
+          avatar:
+            type:
+              - string
+              - "null"
+          jobTitle:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+        additionalProperties: true
+      newApplicantsCount:
+        type: integer
+      activeApplicantsCount:
+        type: integer
+      totalApplicantsCount:
+        type: integer
+      postingUrl:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  job_applications:
+    type: object
+    properties:
+      id:
+        type: integer
+      appliedDate:
+        type: string
+        format: date-time
+      status:
+        type: object
+        properties:
+          id:
+            type: integer
+          label:
+            type: string
+        additionalProperties: true
+      rating:
+        type:
+          - integer
+          - "null"
+      applicant:
+        type: object
+        properties:
+          id:
+            type: integer
+          firstName:
+            type: string
+          lastName:
+            type: string
+          avatar:
+            type:
+              - string
+              - "null"
+          email:
+            type: string
+          source:
+            type: string
+        additionalProperties: true
+      job:
+        type: object
+        properties:
+          id:
+            type: integer
+          title:
+            type: object
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              label:
+                type: string
+            additionalProperties: true
+        additionalProperties: true
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#

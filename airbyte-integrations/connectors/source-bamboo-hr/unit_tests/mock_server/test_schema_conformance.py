@@ -12,6 +12,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from mock_server.config import ConfigBuilder
+from mock_server.parity_cases import CASES, SUBSTREAMS, payload
 from mock_server.request_builder import BambooHrRequestBuilder
 from mock_server.response_builder import response
 
@@ -19,6 +20,7 @@ from mock_server.response_builder import response
 @pytest.mark.parametrize(
     "stream,path,record",
     [
+        *CASES,
         (
             "employees",
             "employees/1",
@@ -63,24 +65,29 @@ def test_emitted_fields_conform_to_discovered_schema(stream: str, path: str, rec
     config = ConfigBuilder().build()
     discovered = discover(get_source(config), config)
     assert discovered.errors == []
+    assert stream in {item.name for item in discovered.catalog.catalog.streams}
     schema = next(item.json_schema for item in discovered.catalog.catalog.streams if item.name == stream)
     request = BambooHrRequestBuilder(path)
     if stream in ("timesheet_entries", "time_off_requests_stream"):
         request.with_query_param("start", "2026-11-01").with_query_param("end", "2026-11-10")
-    if stream == "employees":
+    if stream == "employees" or stream in SUBSTREAMS:
         http_mocker.get(
             BambooHrRequestBuilder("employees/directory").build(),
             response({"employees": [{"id": "1"}]}),
         )
-        request.with_query_param("fields", config["employee_fields"])
-    http_mocker.get(request.build(), response(record if stream == "employees" else [record]))
+        if stream == "employees":
+            request.with_query_param("fields", config["employee_fields"])
+    if stream == "goals":
+        request.with_query_param("filter", "status-all")
+    body = payload(stream, [record]) if stream in {case[0] for case in CASES} else (record if stream == "employees" else [record])
+    http_mocker.get(request.build(), response(body))
     output = read(get_source(config), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build())
     assert output.errors == []
     assert len(output.records) == 1
     emitted = output.records[0].record.data
     for field, value in record.items():
         assert field in schema["properties"], f"{stream}.{field} is emitted but undeclared"
-        assert emitted[field] == value
+        assert emitted.get(field) == value
         if isinstance(value, dict):
             for nested in value:
                 assert nested in schema["properties"][field]["properties"], f"{stream}.{field}.{nested} is undeclared"
