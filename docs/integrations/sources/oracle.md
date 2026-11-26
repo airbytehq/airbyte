@@ -163,6 +163,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.9   | 2026-11-20 | [94027](https://github.com/airbytehq/airbyte/pull/94027) | Update base image to java-connector-base 2.0.6                                                                                            |
 | 0.5.8   | 2026-03-25 | [75410](https://github.com/airbytehq/airbyte/pull/75410) | Fold strict-encrypt variant into main connector; encryption is now required on Airbyte Cloud                                              |
 | 0.5.7   | 2025-07-15 | [63326](https://github.com/airbytehq/airbyte/pull/63326) | Fix publishing flow.                                                                                                                      |
 | 0.5.6   | 2025-07-10 | [62920](https://github.com/airbytehq/airbyte/pull/62920) | Convert to new gradle build flow                                                                                                          |
