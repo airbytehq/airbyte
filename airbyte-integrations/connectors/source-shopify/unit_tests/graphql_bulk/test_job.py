@@ -755,6 +755,41 @@ def test_bulk_stream_parse_response(
         assert test_records == expected_result
 
 
+@pytest.mark.parametrize("include_presentment_prices", [True, False])
+def test_product_variants_parse_bundle_components(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    product_variants_with_bundle_jsonl_content_example,
+    product_variants_response_expected_result,
+    include_presentment_prices: bool,
+) -> None:
+    auth_config["job_product_variants_include_pres_prices"] = include_presentment_prices
+    stream = ProductVariants(auth_config)
+    jsonl_content = product_variants_with_bundle_jsonl_content_example
+    if not include_presentment_prices:
+        jsonl_content = (
+            "\n".join(line for line in jsonl_content.splitlines() if orjson.loads(line)["__typename"] != "ProductVariantPricePair") + "\n"
+        )
+    test_result_url = bulk_job_completed_response["data"]["node"]["url"]
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    requests_mock.get(test_result_url, text=jsonl_content)
+
+    records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
+
+    expected = product_variants_response_expected_result
+    expected[0]["requires_components"] = False
+    expected[1]["requires_components"] = True
+    expected[1]["product_variant_components"] = [
+        {"id": 101, "quantity": 2, "variant_id": 201, "product_id": 301},
+        {"id": 102, "quantity": 3, "variant_id": 202, "product_id": 302},
+    ]
+    if not include_presentment_prices:
+        for record in expected:
+            record["presentment_prices"] = []
+    assert records == expected
+
+
 def test_discount_codes_parse_more_than_100_grouped_redeem_codes(requests_mock, bulk_job_completed_response, auth_config) -> None:
     stream = DiscountCodes(auth_config)
     parent_id = "gid://shopify/DiscountCodeNode/945205379261"
