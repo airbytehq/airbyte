@@ -60,6 +60,7 @@ response filters in `definitions.base_requester.error_handler` match on `extensi
 | `AUTHENTICATION_ERROR` | 401 | FAIL | config_error |
 | `FORBIDDEN`, `FEATURE_NOT_ACCESSIBLE` (or `extensions.type` `forbidden`, `feature not accessible`) | 400/403 | FAIL | config_error |
 | `GRAPHQL_VALIDATION_FAILED` | 400 or 500 | FAIL | system_error |
+| (no `errors` and no `data` — unparsable or truncated body) | 200 | RETRY | system_error if retries are exhausted (the CDK ignores the declared `failure_type` for RETRY) |
 | anything else with an `errors` array | any | FAIL | system_error |
 
 The explicit HTTP 429 and 408/500/502/503/504 status filters preserve rate limiting and
