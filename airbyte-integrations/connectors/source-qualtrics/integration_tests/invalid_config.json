@@ -1,0 +1,7 @@
+{
+  "datacenter": "iad1",
+  "credentials": {
+    "auth_type": "api_token",
+    "api_token": "invalid-token"
+  }
+}

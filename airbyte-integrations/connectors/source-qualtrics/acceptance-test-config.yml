@@ -1,0 +1,19 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-qualtrics:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    bypass_reason: "No Qualtrics credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
+  basic_read:
+    bypass_reason: "No Qualtrics credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
+  incremental:
+    bypass_reason: "No stream is incremental."
+  full_refresh:
+    bypass_reason: "No Qualtrics credentials are available in Airbyte's secret store for this connector yet. Behavior is covered by unit_tests/."
