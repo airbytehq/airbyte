@@ -1,0 +1,41 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
+  connectorSubtype: database
+  connectorType: source
+  definitionId: c9a244db-3055-4f6a-a778-8d3b12ae06d8
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-redis-adbc
+  documentationUrl: https://docs.airbyte.com/integrations/sources/redis-adbc
+  githubIssueLabel: source-redis-adbc
+  icon: icon.svg
+  license: MIT
+  name: Redis (ADBC)
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-redis-adbc
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Redis ADBC driver
+      url: https://github.com/redis/redis-adbc-driver
+      type: other
+metadataSpecVersion: "1.0"
