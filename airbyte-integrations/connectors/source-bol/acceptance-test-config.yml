@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-bol:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request (contact New North Digital)."
+  discovery:
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
+  basic_read:
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
+  incremental:
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
+  full_refresh:
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
