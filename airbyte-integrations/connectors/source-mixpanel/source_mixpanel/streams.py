@@ -449,9 +449,13 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             item = {"event": record["event"]}
             properties = record["properties"]
             for result in transform_property_names(properties.keys()):
+                # The dynamic schema may resolve case-insensitive collisions using
+                # properties that are not present on this particular event. Reuse
+                # that mapping so record field names always match catalog fields.
+                transformed_name = getattr(self, "_schema_property_name_mapping", {}).get(result.source_name, result.transformed_name)
                 # Convert all values to string (this is default property type)
                 # because API does not provide properties type information
-                item[result.transformed_name] = str(properties[result.source_name])
+                item[transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
             item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
@@ -476,7 +480,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
         # read existing Export schema from API
         schema_properties = ExportSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
-        for result in transform_property_names(schema_properties):
+        transformed_schema_properties = tuple(transform_property_names(schema_properties))
+        self._schema_property_name_mapping = {result.source_name: result.transformed_name for result in transformed_schema_properties}
+        for result in transformed_schema_properties:
             # Schema does not provide exact property type
             # string ONLY for event properties (no other datatypes)
             # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
