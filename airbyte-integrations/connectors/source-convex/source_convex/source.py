@@ -140,9 +140,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         state = cast(ConvexState, value)
-        self._snapshot_cursor_value = state["snapshot_cursor"]
-        self._snapshot_has_more = state["snapshot_has_more"]
-        self._delta_cursor_value = state["delta_cursor"]
+        # The CDK may set an empty state (e.g. on the first sync), so fall back to the initial values.
+        self._snapshot_cursor_value = state.get("snapshot_cursor")
+        self._snapshot_has_more = state.get("snapshot_has_more", True)
+        self._delta_cursor_value = state.get("delta_cursor")
 
     def next_page_token(self, response: requests.Response) -> Optional[ConvexState]:
         if response.status_code != 200:
@@ -211,12 +212,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
         return {
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
-
-    def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
-        """
-        This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
-        """
-        return cast(ConvexState, self.state)
 
     def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:
         self._delta_has_more = sync_mode == SyncMode.incremental
