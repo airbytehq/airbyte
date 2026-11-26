@@ -51,6 +51,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-11-16 | [93038](https://github.com/airbytehq/airbyte/pull/93038) | Declare JSON schemas for `ad_accounts`, `campaigns` and `campaign_performance` |
 | 0.0.49 | 2026-11-10 | [91740](https://github.com/airbytehq/airbyte/pull/91740) | Update dependencies |
 | 0.0.48 | 2026-11-03 | [90767](https://github.com/airbytehq/airbyte/pull/90767) | Update dependencies |
 | 0.0.47 | 2026-10-20 | [89436](https://github.com/airbytehq/airbyte/pull/89436) | Update dependencies |
