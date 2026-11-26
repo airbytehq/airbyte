@@ -148,34 +148,38 @@ class S3DataLakeStreamLoader(
             return
         }
 
-        // Doing it first to make sure that data coming in the current batch is written to
-        // the main branch
-        logger.info {
-            "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
-        }
         // We've modified the table over the sync (i.e. adding new snapshots)
         // so we need to refresh here to get the latest table metadata.
         // In principle, this doesn't matter, but the iceberg SDK throws an error about
         // stale table metadata without this.
         table.refresh()
         // Commit all pending schema updates in order (important for two-phase commits)
-        computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
-        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+        val pendingSchemaUpdates = computeOrExecuteSchemaUpdate().pendingUpdates
+        pendingSchemaUpdates.forEach { it.commit() }
 
         if (stream.isSingleGenerationTruncate()) {
+            if (pendingSchemaUpdates.isNotEmpty()) {
+                // Preserve the legacy schema-change path: after replacing columns, old files may
+                // read null. Publish the new rows before cleanup so they remain queryable if it
+                // fails.
+                logger.info {
+                    "Schema changed. Publishing staging branch '$stagingBranchName' to '$mainBranchName' before generation cleanup."
+                }
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+            }
             logger.info {
                 "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
             }
             val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
             icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
-            //  Doing it again to push the deletes from the staging to main branch
-            logger.info {
-                "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
-                    "Pushing these updates to the '$mainBranchName' branch."
-            }
-            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
         }
 
+        // Without schema updates, publish only after cleanup so readers never see both generations.
+        // Schema-changing refreshes also publish here to expose the completed cleanup.
+        logger.info {
+            "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
+        }
+        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
         removeStagingBranch()
     }
 
