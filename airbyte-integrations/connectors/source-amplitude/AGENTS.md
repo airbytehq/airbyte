@@ -27,4 +27,6 @@ The mechanism comes from airbytehq/airbyte-python-cdk#1171.
 
 ## Incremental Stream Considerations
 
+Date-restricted responses for the three date-windowed streams fail with a retention-specific config error before the generic HTTP 403 permission handler.
+
 The connector is manifest-only: every stream is declared in `manifest.yaml`. `components.py` holds only custom record extractors (`AverageSessionLengthRecordExtractor`, `ActiveUsersRecordExtractor`) and the `TransformDatetimesToRFC3339` transformation, referenced by `class_name`. Incremental streams (`events`, `average_session_length`, `active_users`) use `DatetimeBasedCursor`.
