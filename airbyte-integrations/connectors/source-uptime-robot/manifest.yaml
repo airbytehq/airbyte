@@ -1,0 +1,399 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  Syncs your UptimeRobot monitors (with recent response times and up/down
+  event logs), alert contacts, maintenance windows and status pages using the
+  UptimeRobot API v2.
+
+check:
+  type: CheckStream
+  stream_names:
+    - monitors
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.uptimerobot.com/v2
+    http_method: POST
+    request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    request_body:
+      type: RequestBodyUrlEncodedForm
+      value:
+        api_key: "{{ config['api_key'] }}"
+        format: json
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        # UptimeRobot returns HTTP 200 with {"stat": "fail"} for errors
+        # such as an invalid API key, so treat that body as a failure.
+        - type: HttpResponseFilter
+          action: FAIL
+          predicate: "{{ response.get('stat') == 'fail' }}"
+          # Only the message: the full error object echoes the API key back in "passed_value".
+          error_message: "UptimeRobot API error: {{ response.get('error', {}).get('message') }}"
+
+  # Every list endpoint returns at most 50 items and pages with offset/limit in the form body.
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 50
+    page_size_option:
+      type: RequestOption
+      inject_into: body_data
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: body_data
+      field_name: offset
+
+  streams:
+    monitors:
+      type: DeclarativeStream
+      name: monitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getMonitors
+          request_body:
+            type: RequestBodyUrlEncodedForm
+            value:
+              api_key: "{{ config['api_key'] }}"
+              format: json
+              logs: "1"
+              response_times: "1"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - monitors
+        paginator:
+          $ref: "#/definitions/paginator"
+      transformations:
+        # Monitor-level HTTP basic-auth credentials: never sync them to a destination.
+        - type: RemoveFields
+          field_pointers:
+            - - http_username
+            - - http_password
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/monitors"
+
+    alert_contacts:
+      type: DeclarativeStream
+      name: alert_contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getAlertContacts
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alert_contacts
+        paginator:
+          $ref: "#/definitions/paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alert_contacts"
+
+    maintenance_windows:
+      type: DeclarativeStream
+      name: maintenance_windows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getMWindows
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - mwindows
+        paginator:
+          $ref: "#/definitions/paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/maintenance_windows"
+
+    status_pages:
+      type: DeclarativeStream
+      name: status_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getPSPs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - psps
+        paginator:
+          $ref: "#/definitions/paginator"
+      transformations:
+        # Password-protected status pages: never sync the page password.
+        - type: RemoveFields
+          field_pointers:
+            - - password
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/status_pages"
+
+streams:
+  - $ref: "#/definitions/streams/monitors"
+  - $ref: "#/definitions/streams/alert_contacts"
+  - $ref: "#/definitions/streams/maintenance_windows"
+  - $ref: "#/definitions/streams/status_pages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        description: >-
+          Your UptimeRobot Main API Key or Read-Only API Key. Find it in the
+          UptimeRobot dashboard under Integrations & API -> API.
+        airbyte_secret: true
+    additionalProperties: true
+
+schemas:
+  monitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      friendly_name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - number
+          - "null"
+      sub_type:
+        type:
+          - string
+          - "null"
+      keyword_type:
+        type:
+          - number
+          - "null"
+      keyword_case_type:
+        type:
+          - number
+          - "null"
+      keyword_value:
+        type:
+          - string
+          - "null"
+      port:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - number
+          - "null"
+      timeout:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      create_datetime:
+        type:
+          - number
+          - "null"
+      average_response_time:
+        type:
+          - string
+          - "null"
+      response_times:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            datetime:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      logs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            type:
+              type:
+                - number
+                - "null"
+            datetime:
+              type:
+                - number
+                - "null"
+            duration:
+              type:
+                - number
+                - "null"
+            reason:
+              type:
+                - object
+                - "null"
+              properties:
+                code:
+                  type:
+                    - string
+                    - "null"
+                detail:
+                  type:
+                    - string
+                    - "null"
+
+  alert_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      friendly_name:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      value:
+        description: The contact's address, such as an email, phone number or webhook URL.
+        type:
+          - string
+          - "null"
+
+  maintenance_windows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      friendly_name:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - number
+          - "null"
+      start_time:
+        type:
+          - number
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      value:
+        description: Days the window repeats on (weekly/monthly windows only).
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+
+  status_pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      friendly_name:
+        type:
+          - string
+          - "null"
+      monitors:
+        description: IDs of the monitors shown on the page (0 means all monitors).
+        type:
+          - array
+          - number
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      sort:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      standard_url:
+        type:
+          - string
+          - "null"
+      custom_url:
+        type:
+          - string
+          - "null"
