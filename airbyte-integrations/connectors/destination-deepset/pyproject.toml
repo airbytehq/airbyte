@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.9"
+version = "0.1.10"
 name = "destination-deepset"
 description = "Destination implementation for deepset."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -15,7 +15,7 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{ include = "destination_deepset" }]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.11,<3.12"
 airbyte-cdk = "^6"
 httpx = "^0.28.1"
 tenacity = "^8"
