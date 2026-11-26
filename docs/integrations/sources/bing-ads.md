@@ -319,8 +319,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
-|:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.0.26 | 2026-11-17 | [93079](https://github.com/airbytehq/airbyte/pull/93079) | Update dependencies |
+| 3.0.25 | 2026-11-16 | [79187](https://github.com/airbytehq/airbyte/pull/79187) | Fail report streams with a clear config error when the authenticated user lacks access to an account (Bing Ads error 2003), instead of a generic async job failure |
+| 3.0.24 | 2026-11-12 | [92762](https://github.com/airbytehq/airbyte/pull/92762) | Prevent bulk sync failures when saved timestamps approach the 30-day limit. |
+| 3.0.23 | 2026-11-10 | [91310](https://github.com/airbytehq/airbyte/pull/91310) | Declare the refreshed `access_token` and `token_expiry_date` as hidden spec fields so the access token is masked |
 | 3.0.22 | 2026-11-10 | [91361](https://github.com/airbytehq/airbyte/pull/91361) | Update dependencies |
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
 | 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |

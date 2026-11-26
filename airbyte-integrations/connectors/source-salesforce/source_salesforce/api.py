@@ -9,12 +9,12 @@ import time
 from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
-from requests import adapters as request_adapters
 from requests.exceptions import RequestException  # type: ignore[import]
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, StreamDescriptor
 from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.tcp_keepalive import TcpKeepaliveHTTPAdapter
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .exceptions import (
@@ -246,9 +246,11 @@ AUTH_TYPE_CLIENT = "Client"
 AUTH_TYPE_CLIENT_CREDENTIALS = "ClientCredentials"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
-# (connect, read) timeout for requests made through the shared Salesforce client (OAuth token, describe).
-# Without it, a stalled response blocks forever while _login_lock is held, freezing every stream thread.
-_REQUEST_TIMEOUT_SECONDS = (30, 120)
+# (connect, read) timeout for every request: OAuth token, describe, REST queries and Bulk API job calls. The read
+# value is the longest silence allowed between bytes, so it stays above the 2 minutes Salesforce gives a SOQL query
+# to execute. Without it, a stalled response blocks forever, and a stalled token request holds _login_lock and
+# freezes every stream thread.
+_REQUEST_TIMEOUT_SECONDS = (30, 180)
 # After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
 # request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
 # would leave the staleness check permanently satisfied and turn every subsequent request into a full
@@ -352,8 +354,9 @@ class Salesforce:
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()
-        # Change the connection pool size. Default value is not enough for parallel tasks
-        adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
+        # Change the connection pool size (the default is not enough for parallel tasks), and use TCP keepalive so a
+        # dropped connection fails in about two minutes instead of blocking a token or describe request.
+        adapter = TcpKeepaliveHTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
         self.session.mount("https://", adapter)
         self._http_client = HttpClient(
             "sf_api",

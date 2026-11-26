@@ -58,8 +58,9 @@ jobs:
         id: pr-details
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          IN_PR: ${{ inputs.pr }}
         run: |
-          PR_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ inputs.pr }}"
+          PR_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${IN_PR}"
           PR_INFO=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$PR_URL")
           HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
           HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')

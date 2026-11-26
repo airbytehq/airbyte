@@ -1,0 +1,202 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ad_account_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_account_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_account_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["campaign_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_group_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_group_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "ad_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_id"], ["readable_time"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["ad_id"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_country",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["country_name"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["country_name"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_device",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["device_type"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["device_type"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_platform",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["platform"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["campaign_id"], ["platform"], ["readable_time"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_insights_by_product",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["product_feed_id"],
+          ["item_id"],
+          ["readable_time"]
+        ],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [
+        ["campaign_id"],
+        ["product_feed_id"],
+        ["item_id"],
+        ["readable_time"]
+      ],
+      "sync_mode": "incremental",
+      "cursor_field": ["readable_time"]
+    },
+    {
+      "stream": {
+        "name": "campaign_conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "ad_group_conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "ad_conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["entity_id"], ["date"]],
+      "sync_mode": "incremental",
+      "cursor_field": ["date"]
+    }
+  ]
+}

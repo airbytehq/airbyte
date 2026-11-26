@@ -55,9 +55,14 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          EVENT_INPUTS_PR: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          if [[ ! "${EVENT_INPUTS_PR}" =~ ^[0-9]+$ ]]; then
+            echo "::error::The pr input must be a number."
+            exit 1
+          fi
+          PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${EVENT_INPUTS_PR}")
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
@@ -86,11 +91,12 @@ jobs:
         id: merge
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          EVENT_INPUTS_PR: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
           # Merge the PR using squash merge
-          gh pr merge ${{ github.event.inputs.pr }} \
-            --repo ${{ github.repository }} \
+          gh pr merge "${EVENT_INPUTS_PR}" \
+            --repo "${GITHUB_REPOSITORY}" \
             --squash \
             --admin
 

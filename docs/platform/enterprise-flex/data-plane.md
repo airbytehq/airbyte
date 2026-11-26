@@ -281,7 +281,9 @@ airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyt
 dataPlane:
   # Used to render the data plane creds secret into the Helm chart.
   secretName: airbyte-config-secrets
-  id: "preview-data-plane"
+  # Optional: the dataplaneId from step 2. If the client ID is wrong, Airbyte uses it
+  # to report the failed login against this data plane. Values that aren't UUIDs are ignored.
+  id: ""
 
   # Describe secret name and key where each of the client ID and secret are stored
   clientIdSecretName: airbyte-config-secrets
@@ -318,7 +320,9 @@ airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyt
 dataPlane:
   # Used to render the data plane creds secret into the Helm chart.
   secretName: airbyte-config-secrets
-  id: "preview-data-plane"
+  # Optional: the dataplaneId from step 2. If the client ID is wrong, Airbyte uses it
+  # to report the failed login against this data plane. Values that aren't UUIDs are ignored.
+  id: ""
 
   # Describe secret name and key where each of the client ID and secret are stored
   clientIdSecretName: airbyte-config-secrets
@@ -349,7 +353,6 @@ secretsManager:
   type: AWS_SECRET_MANAGER
   awsSecretManager:
     region: us-west-2 
-    authenticationType: credentials
     accessKeyIdSecretKey: AWS_SECRET_MANAGER_ACCESS_KEY_ID 
     secretAccessKeySecretKey: AWS_SECRET_MANAGER_SECRET_ACCESS_KEY
 ```
@@ -488,6 +491,10 @@ For additional request examples, see [the API reference](https://reference.airby
 </details>
   </TabItem>
 </Tabs>
+
+## Upgrade your data plane {#upgrade}
+
+Airbyte releases new versions of the `airbyte-data-plane` chart regularly, and you're responsible for upgrading your self-managed data planes. To learn which versions Airbyte supports, how often to upgrade, and how to upgrade, see the [support and upgrade policy](support-and-upgrade-policy).
 
 ## Check which region your workspaces use
 

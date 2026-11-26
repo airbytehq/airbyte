@@ -1,68 +1,117 @@
 # PostHog
 
-This page contains the setup guide and reference information for the PostHog source connector.
+This page contains the setup guide and reference information for the [PostHog](https://posthog.com/) source connector.
 
 ## Prerequisites
 
-- api_key - obtain Private API Key for your account following these [steps](https://posthog.com/docs/api/overview#how-to-obtain-a-personal-api-key)
-- base_url - 'https://app.posthog.com' by default, but it can be different if self-hosted posthog instances is used
+- A PostHog account on PostHog Cloud (US or EU) or a self-hosted PostHog instance.
+- A [personal API key](https://posthog.com/docs/api/personal-api-keys) with the following read scopes:
+
+  | Scope | Used by stream |
+  | :---- | :------------- |
+  | `project:read` | `projects`, and to list the projects that every other stream reads from |
+  | `annotation:read` | `annotations` |
+  | `cohort:read` | `cohorts` |
+  | `feature_flag:read` | `feature_flags` |
+  | `insight:read` | `insights` |
+  | `person:read` | `persons` |
+  | `query:read` | `events` |
+
+  If you only plan to sync some streams, you can omit the scopes for the streams you don't use, but `project:read` is always required. The connector uses the `projects` stream to check the connection.
 
 ## Setup guide
 
-### Step 1: Set up PostHog
+### Step 1: Create a PostHog personal API key
 
-- PostHog Account
+1. In PostHog, go to the **Personal API keys** section of your account settings.
+2. Click **+ Create a personal API key** and give the key a label.
+3. Select the read scopes listed in [Prerequisites](#prerequisites).
+4. Copy the key value immediately. PostHog doesn't show it again after you refresh the page.
 
-## Step 2: Set up the PostHog connector in Airbyte
+For more details, see PostHog's [personal API keys documentation](https://posthog.com/docs/api/personal-api-keys).
 
-### For Airbyte Cloud:
+### Step 2: Set up the PostHog connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the PostHog connector and select **PostHog** from the Source type dropdown.
-4. Enter your `apikey`.
-5. Enter your `start_date`.
-6. Change default `base_url` if self-hosted posthog instances is used
-7. Click **Set up source**.
+1. In Airbyte, go to **Sources** and click **+ New source**.
+2. Select **PostHog** from the list of sources.
+3. Enter a name for the source.
+4. For **API Key**, enter the personal API key you created in Step 1.
+5. For **Start Date**, enter the UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2021-01-01T00:00:00Z`. The connector uses this value for `events` when no saved cursor is available. Saved per-project or legacy shared cursors take precedence, even if they are earlier than this date. Other streams use full refresh.
+6. (Optional) For **Base URL**, enter the URL of your PostHog instance. The default is `https://app.posthog.com`. If your project is on PostHog EU Cloud, enter `https://eu.posthog.com`. If you self-host PostHog, enter your instance's domain, for example `https://posthog.example.com`. Don't include the `/api` path, because the connector adds it.
+7. (Optional) For **Events stream slice step size (in days)**, enter the number of days of events the connector requests in each time window. The default is `30`, and the allowed range is `1` to `91`. Lower this value if syncs of the `events` stream fail or run for a long time. See [Limitations](#limitations).
+8. Click **Set up source**.
 
-### For Airbyte OSS:
+## Supported sync modes
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `api_key`.
-4. Enter your `start_date`.
-5. Change default `base_url` if self-hosted posthog instances is used
-6. Click **Set up source**.
+| Feature | Supported |
+| :------ | :-------- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes, `events` stream only |
 
-## Supported streams and sync modes
+## Supported streams
 
-- [Projects](https://posthog.com/docs/api/projects)
-- [Annotations](https://posthog.com/docs/api/annotations)
-- [Cohorts](https://posthog.com/docs/api/cohorts)
-- [Events](https://posthog.com/docs/api/events) \(Incremental\)
-- [FeatureFlags](https://posthog.com/docs/api/feature-flags)
-- [Insights](https://posthog.com/docs/api/insights)
-- [Persons](https://posthog.com/docs/api/people)
+The `projects` stream lists your PostHog projects. Every other stream reads its data separately for each of those projects.
+
+| Stream | PostHog API endpoint | Sync modes |
+| :----- | :------------------- | :--------- |
+| `projects` | [Projects](https://posthog.com/docs/api/projects) | Full Refresh |
+| `annotations` | [Annotations](https://posthog.com/docs/api/annotations) | Full Refresh |
+| `cohorts` | [Cohorts](https://posthog.com/docs/api/cohorts) | Full Refresh |
+| `events` | [Events](https://posthog.com/docs/api/events) | Full Refresh, Incremental |
+| `feature_flags` | [Feature flags](https://posthog.com/docs/api/feature-flags) | Full Refresh |
+| `insights` | [Insights](https://posthog.com/docs/api/insights) | Full Refresh |
+| `persons` | [Persons](https://posthog.com/docs/api/persons) | Full Refresh |
+
+### Incremental sync for the events stream
+
+The `events` stream uses the event `timestamp` field as its cursor. The connector stores a separate cursor value for each project. A project with no saved cursor normally starts from the configured start date; if a legacy shared timestamp remains in the state, that timestamp is used as the fallback for the project instead. Existing projects resume from their saved cursors. Within each project, the connector requests events in time windows sized by the **Events stream slice step size** setting.
+
+## Limitations
+
+### The PostHog events API is deprecated
+
+PostHog has [deprecated the events API](https://posthog.com/docs/api/events) that the `events` stream uses and plans to remove it at a future date. PostHog currently applies these restrictions to that API:
+
+- Pagination offsets larger than 50,000 are disabled. There is also a lower, connector-specific limit: the connector requests 10,000 events per page, but PostHog returns at most 1,000. Its current paginator stops when a page contains fewer than the requested 10,000 records, so it can silently omit events after the first 1,000 in each project's time window. Lowering **Events stream slice step size** reduces this risk, but cannot prevent truncation if even a one-day window contains more than 1,000 events.
+- The range between the `after` and `before` parameters must be less than one year. Normal windows are at most 91 days, but if a saved cursor is earlier than a newly configured **Start Date**, the first request can span from that cursor to the end of the new window and exceed this limit. Changing Start Date alone doesn't reset saved state. Keep it at or before saved cursors unless you deliberately restart the stream with cleared state.
+
+For large or recurring event exports, PostHog recommends [batch exports](https://posthog.com/docs/data-pipelines/batch-exports) instead of the events API.
+
+### PostHog event storage changes
+
+PostHog is changing how it stores events. The change starts on November 30, 2026. PostHog moves each organization separately and sends an email before it moves your organization. For details, see PostHog's [event storage changes](https://posthog.com/blog/changing-event-storage).
+
+After PostHog moves your organization, the `events` stream changes as follows:
+
+- **Feature flag calls:** PostHog moves `$feature_flag_called` events to separate storage and keeps them for 90 days. The connector requests all events and does not filter by event name. PostHog does not guarantee that this type of request includes flag calls, so do not expect `$feature_flag_called` records in the `events` stream.
+- **Temporary properties:** PostHog keeps `$set`, `$set_once`, `$unset`, `$group_set`, most `$sdk_debug_*` properties and some other diagnostic properties for 60 days. The 60 days start when PostHog receives the event, not at the event `timestamp`. Events that PostHog received more than 60 days ago do not contain these properties. The person properties in the `persons` stream do not change.
+- **Removed properties:** PostHog stops storing the feature flag payload properties, such as `$feature_flag_payloads`, and some other deprecated properties. Use the `$feature/<flag>` properties instead of `$active_feature_flags`.
+- **Changed values:** PostHog leaves out top-level `null` values and empty objects. Numbers in some built-in text properties, such as `$browser_version`, become text.
+
+These changes do not change the records that the connector already wrote to your destination. A refresh or a backfill after the move returns the data that PostHog still keeps. If you need this data, sync the `events` stream before PostHog moves your organization, and do not refresh the stream after the move. To export feature flag calls, use a PostHog [batch export](https://posthog.com/docs/data-pipelines/batch-exports) of `posthog.flag_evaluations`. This export uses the SQL query model, which is in closed beta. Ask PostHog support to turn it on for your organization.
+
+### PostHog event retention
+
+PostHog Cloud deletes events that are older than the retention period of your plan. The connector cannot read deleted events, so a backfill or a refresh returns only the events that PostHog keeps. From November 5, 2026, PostHog uses these retention periods:
+
+| Plan | Default retention | Maximum retention |
+| :--- | :---------------- | :---------------- |
+| Free | 1 year | 1 year |
+| Pay-as-you-go | 2 years | 2 years |
+| Boost | 2 years | 3 years |
+| Scale | 2 years | 5 years |
+| Enterprise | 2 years | 7 years |
+
+Organizations that had a paid plan before November 5, 2026 keep 7 years of events. They keep this retention when they move to a higher platform package. They lose it when they move to the Free plan or to a lower platform package. PostHog deletes expired events in batches, so an expired event can stay available for some time. Self-hosted instances do not have this retention. For details, see PostHog's [events retention](https://posthog.com/docs/data/events-retention) documentation.
 
 ### Rate limiting
 
-Private `GET`, `POST`, `PATCH`, `DELETE` endpoints are rate limited. Public POST-only endpoints are **not** rate limited. A rule of thumb for whether rate limits apply is if the personal API key is used for authentication.
+PostHog rate limits its private API endpoints, which are the endpoints this connector reads from. At the time of writing, PostHog documents these limits:
 
-There are separate limits for different kinds of resources.
+- Analytics endpoints, such as retrieving persons: 240 requests per minute and 1,200 requests per hour.
+- Other read endpoints: 480 requests per minute and 4,800 requests per hour.
 
-- For all analytics endpoints (such as calculating insights, retrieving persons, or retrieving session recordings), the rate limits are `240/minute` and `1200/hour`.
-
-- The [HogQL query](https://posthog.com/docs/hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
-
-- For the rest of the create, read, update, and delete endpoints, the rate limits are `480/minute` and `4800/hour`.
-
-- For Public POST-only endpoints like event capture (`/capture`) and feature flag evaluation (`/decide`), there are no rate limits.
-
-These limits apply to **the entire team** (i.e. all users within your PostHog organization). For example, if a script requesting feature flag metadata hits the rate limit, and another user, using a different personal API key, makes a single request to the persons API, this gets rate limited as well.
-
-For large or regular exports of events, use [batch exports](https://posthog.com/docs/cdp).
-
-Want to use the PostHog API beyond these limits? Email Posthog at `customers@posthog.com`.
+For current limits and details on how PostHog counts requests, see PostHog's [rate limiting documentation](https://posthog.com/docs/api#rate-limiting).
 
 ## IP allow list
 
@@ -73,8 +122,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                 |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 1.1.32 | 2026-11-17 | [93287](https://github.com/airbytehq/airbyte/pull/93287) | Update dependencies |
 | 1.1.31 | 2026-11-10 | [91639](https://github.com/airbytehq/airbyte/pull/91639) | Update dependencies |
 | 1.1.30 | 2026-11-03 | [90903](https://github.com/airbytehq/airbyte/pull/90903) | Require Python 3.11 or newer, retaining support through Python 3.13. |
 | 1.1.29 | 2026-11-03 | [90691](https://github.com/airbytehq/airbyte/pull/90691) | Update dependencies |

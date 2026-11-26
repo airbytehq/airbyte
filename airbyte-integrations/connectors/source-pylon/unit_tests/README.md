@@ -16,6 +16,13 @@ records to construct pages, time boundaries, parent relationships, and failures.
 The snapshot is not checked in; the hash identifies the exact source bytes, not
 the current live OpenAPI document.
 
+The four additional fixtures (`audit_logs`, `macro_groups`, `surveys`, and
+`training_data`) use the live OpenAPI fetched on `2026-11-10`, SHA256
+`08a3dcc5c912757fccf6fc3a37e8fbd452255aaad93167f53b42dac52821b885`.
+Their snapshot is recorded separately in `_provenance.json` so the provenance of
+the original 15 fixtures remains accurate. All four GET endpoints return arrays
+under `data`.
+
 ## Running the tests
 
 Install the dependencies in `pyproject.toml` in a Python 3.10–3.12 environment.
@@ -55,17 +62,17 @@ PYTHONPATH=. python -m pytest mock_server/test_all_streams.py --no-cov -s --juni
 
 | Area | Tests | Cases |
 | --- | --- | --- |
-| List endpoints | `mock_server/test_list_streams.py` | All 11 list streams, empty responses, pagination, deactivated users, check, discover |
+| List endpoints | `mock_server/test_list_streams.py` | All 12 paginated and 3 unpaginated list streams, empty responses, pagination, missing final pagination envelope, exact empty query parameters, deactivated users, check, discover |
 | Issues | `mock_server/test_issues.py` | Inclusive filters, incremental state, two-pass reads, empty reads, overlapping 30-day seams, subsecond records, replay multiplicities and capped final windows |
 | Interruption/resume | `mock_server/test_issues.py` | Non-retryable failure in the second window after a checkpoint; resume from emitted state and verify record multiplicities and final state |
 | Child streams | `mock_server/test_child_streams.py` | Parent-key projection for all three children, missing parent keys in responses, empty parent sets |
 | Errors | `test_error_handler.py`, `mock_server/test_error_handling.py` | Actionable authentication, region, permission and organization errors; generic and non-JSON failures; no silent 404 skips |
 | Retry headers | `test_error_handler.py`, `mock_server/test_rate_limit_budget.py` | Retry-After alone, X-Retry-After alone, both, neither, excessive waits, retry exhaustion and recovery |
-| API budget | `mock_server/test_rate_limit_budget.py` | All 15 endpoint allowances, rolling windows, response-driven exhaustion, method/path isolation, US/EU matching, concurrency cap |
+| API budget | `mock_server/test_rate_limit_budget.py` | All 19 endpoint allowances, rolling windows, response-driven exhaustion, method/path isolation including POST /training-data non-match, US/EU matching, concurrency cap |
 | Regions | `mock_server/test_regions.py` | US/EU list, issues, child and check requests; missing-region default, host selection and wrong-region errors |
-| Schema conformance | `test_schema_conformance.py` | All 15 synthetic fixtures against connector schemas, nullable fields, required fields and timestamp formats |
+| Schema conformance | `test_schema_conformance.py` | All 19 synthetic fixtures against connector schemas, nullable fields, required fields and timestamp formats |
 | Spec and acceptance config | `test_spec.py`, `test_acceptance_config.py` | Config validation, region/order/defaults, bypass reasons, spec and discover with HTTP and socket access blocked |
-| All-streams smoke | `mock_server/test_all_streams.py` | One read selecting all 15 streams; at least one record each; printed table and JUnit properties |
+| All-streams smoke | `mock_server/test_all_streams.py` | One read selecting all 19 streams; at least one record each; printed table and JUnit properties |
 | Components | `test_components.py` | Migration from the legacy created_at state to updated_at |
 
 ### Acceptance tooling

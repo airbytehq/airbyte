@@ -5,15 +5,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, MutableMapping
-
-import pendulum
 
 
 START_DATE = "2023-01-01T00:00:00Z"
 ACCESS_TOKEN = "test_access_token"
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
-NOW = pendulum.now(tz="utc")
+NOW = datetime.now(timezone.utc)
 
 
 class ConfigBuilder:
@@ -25,7 +24,7 @@ class ConfigBuilder:
 
     def with_start_date(self, start_date: str) -> ConfigBuilder:
         # Stored verbatim, not reformatted through DATE_TIME_FORMAT (%z): the
-        # connector's spec requires start_date as literal ...Z (see spec.json's
+        # connector's spec requires start_date as literal ...Z (see manifest.yaml's
         # pattern and START_DATE above), not a %z offset like +0000. Every
         # stream's start_datetime.datetime_format expects that same ...Z shape.
         self._config["start_date"] = start_date
