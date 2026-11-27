@@ -24,7 +24,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = "testkey123",
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
 
         assertDoesNotThrow { config }
@@ -40,7 +40,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
 
         assertDoesNotThrow { config }
@@ -56,7 +56,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = "12345678-1234-1234-1234-123456789012",
                 clientId = "87654321-4321-4321-4321-210987654321",
-                clientSecret = "testsecret"
+                clientSecret = "testsecret",
             )
 
         assertDoesNotThrow { config }
@@ -72,7 +72,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
         }
     }
@@ -87,7 +87,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = "testkey123",
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
         }
     }
@@ -102,7 +102,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = "12345678-1234-1234-1234-123456789012",
                 clientId = "87654321-4321-4321-4321-210987654321",
-                clientSecret = null
+                clientSecret = null,
             )
         }
     }
@@ -117,7 +117,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = "testkey123",
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
 
         val provider =
@@ -140,7 +140,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
 
         val provider =
@@ -163,7 +163,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = "12345678-1234-1234-1234-123456789012",
                 clientId = "87654321-4321-4321-4321-210987654321",
-                clientSecret = "testsecret"
+                clientSecret = "testsecret",
             )
 
         val provider =
@@ -186,7 +186,7 @@ class AzureBlobStorageAuthenticationTest {
                 accountKey = null,
                 tenantId = null,
                 clientId = null,
-                clientSecret = null
+                clientSecret = null,
             )
         }
     }

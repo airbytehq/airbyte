@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -44,7 +45,7 @@ abstract class DatabricksBaseAcceptanceTest(
                 when (cdcDeletionMode) {
                     CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
                     CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
-                }
+                },
             ),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
@@ -63,6 +64,7 @@ abstract class DatabricksBaseAcceptanceTest(
             ),
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = true,
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
     ) {

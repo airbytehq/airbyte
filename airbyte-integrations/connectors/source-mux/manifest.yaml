@@ -151,7 +151,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: video/v1/playback-ids/{{ config['playback_id'] }}
+          path: video/v1/playback-ids/{{ stream_partition['playback_id'] }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -173,21 +173,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
-            start_from_page: 1
-            inject_on_first_request: true
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ [config['playback_id']] if config.get('playback_id') else [] }}"
+          cursor_field: playback_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -363,7 +352,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 10
             start_from_page: 1
             inject_on_first_request: true
       incremental_sync:
@@ -443,7 +432,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: video/v1/signing-keys
+          path: system/v1/signing-keys
           http_method: GET
           error_handler:
             type: CompositeErrorHandler

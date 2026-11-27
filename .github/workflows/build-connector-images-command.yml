@@ -36,10 +36,14 @@ jobs:
         # Create the job run variables.
         # We intentionally ignore `inputs.repo` because the check run will be run on the
         # current repository, not the one with the commit being tested.
+        env:
+          EXPR_1: ${{ inputs.repo || github.repository }}
+          EXPR_2: ${{ inputs.gitref || github.ref_name }}
+          EXPR_3: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}
         run: |
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
-          echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
-          echo "pr-number=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}" >> $GITHUB_OUTPUT
+          echo "image-name=ghcr.io/airbytehq/${EXPR_1}:${EXPR_2}" >> $GITHUB_OUTPUT
+          echo "pr-number=${EXPR_3}" >> $GITHUB_OUTPUT
 
       - name: Append start comment
         id: append-start-comment

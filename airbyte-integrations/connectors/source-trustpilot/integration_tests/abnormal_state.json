@@ -1,22 +1,29 @@
 [
   {
-    "streamDescriptor": {
-      "name": "private_reviews"
-    },
-    "streamState": {
-      "states": [
-        {
-          "cursor": {
-            "createdAt": "2099-12-18T15:48:56Z"
-          },
-          "partition": {
-            "parent_slice": {
-              "business_unit": "example.com"
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "private_reviews"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "cursor": {
+              "createdAt": "2099-12-18T15:48:56Z"
             },
-            "business_unit_id": "657e1a3ca4677d24861a2fd9"
+            "partition": {
+              "parent_slice": {
+                "business_unit": "example.com"
+              },
+              "business_unit_id": "657e1a3ca4677d24861a2fd9"
+            }
           }
+        ],
+        "state": {
+          "createdAt": "2099-12-18T15:48:56Z"
         }
-      ]
+      }
     }
   }
 ]

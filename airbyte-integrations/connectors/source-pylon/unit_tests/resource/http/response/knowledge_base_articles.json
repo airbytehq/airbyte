@@ -1,0 +1,38 @@
+{
+  "approval_info": {
+    "requested_at": "2026-01-10T12:00:00Z",
+    "reviewed_at": "2026-01-10T12:00:00Z",
+    "reviewed_by_user_id": "synthetic-reviewed_by_user_id",
+    "status": "synthetic-status"
+  },
+  "author_user_id": "synthetic-author_user_id",
+  "collection_id": "synthetic-collection_id",
+  "created_at": "2026-01-10T12:00:00Z",
+  "current_draft_content_html": "synthetic-current_draft_content_html",
+  "current_draft_content_markdown": "synthetic-current_draft_content_markdown",
+  "current_published_content_html": "synthetic-current_published_content_html",
+  "current_published_content_markdown": "synthetic-current_published_content_markdown",
+  "id": "synthetic-id",
+  "identifier": "synthetic-identifier",
+  "is_published": false,
+  "is_unlisted": false,
+  "last_edited_at": "2026-01-10T12:00:00Z",
+  "last_published_at": "2026-01-10T12:00:00Z",
+  "slug": "synthetic-slug",
+  "tags": [],
+  "title": "synthetic-title",
+  "url": "https://example.test/synthetic",
+  "visibility_config": {
+    "ai_agent_access": "inherit",
+    "allowed_agent_ids": [],
+    "customer_visibility_condition": {
+      "field": "synthetic-field",
+      "operator": "equals",
+      "subfilters": [],
+      "value": "synthetic-value",
+      "values": []
+    },
+    "customer_visibility_condition_unsupported": false,
+    "visibility": "public"
+  }
+}

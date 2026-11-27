@@ -14,6 +14,18 @@
     },
     {
       "stream": {
+        "name": "attachables",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "bill_payments",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
@@ -51,6 +63,27 @@
     {
       "stream": {
         "name": "classes",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "company_info",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "credit_card_payments",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
@@ -134,6 +167,18 @@
     },
     {
       "stream": {
+        "name": "exchange_rates",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "invoices",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
@@ -194,6 +239,15 @@
     },
     {
       "stream": {
+        "name": "preferences",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "purchase_orders",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
@@ -219,6 +273,18 @@
     {
       "stream": {
         "name": "refund_receipts",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "reimburse_charges",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,

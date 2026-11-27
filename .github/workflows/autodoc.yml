@@ -40,6 +40,8 @@ jobs:
       # Step 2: Analyze what files were changed in this push
       - name: Get files changed in this push
         id: push-files
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
         run: |
           # Verify jq is available (pre-installed on GitHub runners, but check defensively)
           if ! command -v jq &> /dev/null; then
@@ -47,7 +49,7 @@ jobs:
             exit 1
           fi
 
-          BEFORE="${{ github.event.before }}"
+          BEFORE="${EVENT_BEFORE}"
           SHA="${{ github.sha }}"
 
           # Handle edge cases where github.event.before may be invalid
@@ -78,11 +80,13 @@ jobs:
       - name: Check for connector changes
         if: steps.push-files.outputs.has_changes == 'true'
         id: check-connector
+        env:
+          STEP_PUSH_FILES_FILES: ${{ steps.push-files.outputs.files }}
         run: |
           echo "🔍 Checking if push contains connector changes..."
 
           # Parse the changed files from Step 2
-          CHANGED_FILES='${{ steps.push-files.outputs.files }}'
+          CHANGED_FILES="${STEP_PUSH_FILES_FILES}"
 
           # Filter for connector metadata.yaml files in the changed files using jq
           METADATA_FILE=$(echo "$CHANGED_FILES" | jq -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
@@ -116,7 +120,7 @@ jobs:
             The connector is ${{ steps.check-connector.outputs.connector_name }}.
             This commit was pushed to master and may contain connector changes
             that need documentation updates.
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

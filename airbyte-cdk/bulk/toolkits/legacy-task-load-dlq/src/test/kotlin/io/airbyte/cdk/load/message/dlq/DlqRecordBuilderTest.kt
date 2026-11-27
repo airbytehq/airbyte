@@ -122,7 +122,7 @@ class DlqRecordBuilderTest {
             .withRecord(
                 AirbyteRecordMessage()
                     .withData(Jsons.deserialize("""{"test":"data"}""""))
-                    .withEmittedAt(System.currentTimeMillis())
+                    .withEmittedAt(System.currentTimeMillis()),
             )
             .withType(AirbyteMessage.Type.RECORD)
 }

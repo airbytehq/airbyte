@@ -49,10 +49,14 @@ jobs:
 
       - name: Determine context and build messages
         id: context
+        env:
+          IN_PR: ${{ inputs.pr }}
+          IN_GITREF: ${{ inputs.gitref }}
+          IN_REPO: ${{ inputs.repo }}
         run: |
-          PR_NUMBER="${{ inputs.pr }}"
-          GITREF="${{ inputs.gitref }}"
-          REPO="${{ inputs.repo }}"
+          PR_NUMBER="${IN_PR}"
+          GITREF="${IN_GITREF}"
+          REPO="${IN_REPO}"
 
           if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
             echo "context=pr" >> $GITHUB_OUTPUT
@@ -136,7 +140,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Create Docs PR
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}

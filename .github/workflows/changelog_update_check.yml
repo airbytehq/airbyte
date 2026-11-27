@@ -29,24 +29,30 @@ jobs:
 
       - name: Ensure Base Changelog Updated
         if: steps.cdk-changes.outputs.base_version == 'true'
+        env:
+          STEP_CDK_CHANGES_BASE_CHANGELOG: ${{ steps.cdk-changes.outputs.base_changelog }}
         run: |
-          if [ "${{ steps.cdk-changes.outputs.base_changelog }}" != "true" ]; then
+          if [ "${STEP_CDK_CHANGES_BASE_CHANGELOG}" != "true" ]; then
             echo "ERROR: airbyte-cdk/bulk/core/base/changelog.md must be updated when airbyte-cdk/bulk/core/base/version.properties is changed."
             exit 1
           fi
 
       - name: Ensure Extract Changelog Updated
         if: steps.cdk-changes.outputs.extract_version == 'true'
+        env:
+          STEP_CDK_CHANGES_EXTRACT_CHANGELOG: ${{ steps.cdk-changes.outputs.extract_changelog }}
         run: |
-          if [ "${{ steps.cdk-changes.outputs.extract_changelog }}" != "true" ]; then
+          if [ "${STEP_CDK_CHANGES_EXTRACT_CHANGELOG}" != "true" ]; then
             echo "ERROR: airbyte-cdk/bulk/core/extract/changelog.md must be updated when airbyte-cdk/bulk/core/extract/version.properties is changed."
             exit 1
           fi
 
       - name: Ensure Load Changelog Updated
         if: steps.cdk-changes.outputs.load_version == 'true'
+        env:
+          STEP_CDK_CHANGES_LOAD_CHANGELOG: ${{ steps.cdk-changes.outputs.load_changelog }}
         run: |
-          if [ "${{ steps.cdk-changes.outputs.load_changelog }}" != "true" ]; then
+          if [ "${STEP_CDK_CHANGES_LOAD_CHANGELOG}" != "true" ]; then
             echo "ERROR: airbyte-cdk/bulk/core/load/changelog.md must be updated when airbyte-cdk/bulk/core/load/version.properties is changed."
             exit 1
           fi

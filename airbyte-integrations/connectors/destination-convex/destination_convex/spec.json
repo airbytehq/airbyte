@@ -22,7 +22,7 @@
       "access_key": {
         "type": "string",
         "description": "API access key used to send data to a Convex deployment.",
-        "airbyte_secret": "true"
+        "airbyte_secret": true
       }
     }
   }

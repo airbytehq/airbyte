@@ -23,11 +23,18 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.mockk.*
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PipelineEventBookkeepingRouterTest {
 
     private val catalog = mockk<DestinationCatalog>(relaxed = true)
@@ -52,7 +59,7 @@ class PipelineEventBookkeepingRouterTest {
             1,
             1,
             1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
     private val stream2 =
         DestinationStream(
@@ -63,10 +70,14 @@ class PipelineEventBookkeepingRouterTest {
             1,
             1,
             1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
-    private fun router(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
+    private fun router(
+        numDataChannels: Int,
+        markEndOfStreamAtEnd: Boolean = false,
+        syncManager: SyncManager = this.syncManager,
+    ) =
         PipelineEventBookkeepingRouter(
             catalog = catalog,
             syncManager = syncManager,
@@ -78,6 +89,19 @@ class PipelineEventBookkeepingRouterTest {
             markEndOfStreamAtEndOfSync = markEndOfStreamAtEnd,
             namespaceMapper = namespaceMapper,
         )
+
+    private fun record(stream: DestinationStream) =
+        DestinationRecord(
+            stream = stream,
+            message = mockk(relaxed = true),
+            serializedSizeBytes = 0L,
+            checkpointId = null,
+            airbyteRawId = UUID.randomUUID(),
+        )
+
+    /** A real [SyncManager], so that callers really wait on the stream loader. */
+    private suspend fun syncManagerWithSetupComplete() =
+        SyncManager(catalog).also { it.markSetupComplete() }
 
     @BeforeEach
     fun setup() {
@@ -109,7 +133,7 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 10L,
                 checkpointId = null,
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
@@ -127,7 +151,7 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 5L,
                 checkpointId = CheckpointId("abc"),
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
@@ -148,13 +172,125 @@ class PipelineEventBookkeepingRouterTest {
                 message = mockk(relaxed = true),
                 serializedSizeBytes = 0L,
                 checkpointId = null,
-                airbyteRawId = UUID.randomUUID()
+                airbyteRawId = UUID.randomUUID(),
             ),
         )
 
         coVerify { syncManager.awaitSetupComplete() }
         coVerify { openStreamQueue.publish(stream1) }
         coVerify { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) }
+    }
+
+    @Test
+    fun `second channel waits until the stream loader has started`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val first = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        val second = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+
+        assertFalse(first.isCompleted)
+        assertFalse(second.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(first.isCompleted)
+        assertTrue(second.isCompleted)
+
+        // The second channel must wait even though the first removed the stream from
+        // unopenedStreams.
+        coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
+    }
+
+    @Test
+    fun `failed stream start reaches every waiting channel`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+        val failure = IllegalStateException("start failed")
+
+        val first = async { runCatching { r.handleStreamMessage(record(stream1)) } }
+        runCurrent()
+        val second = async { runCatching { r.handleStreamMessage(record(stream1)) } }
+        runCurrent()
+
+        assertFalse(first.isCompleted)
+        assertFalse(second.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.failure(failure))
+        runCurrent()
+
+        assertSame(failure, first.await().exceptionOrNull())
+        assertSame(failure, second.await().exceptionOrNull())
+    }
+
+    @Test
+    fun `channel arriving after the stream has started does not wait`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val first = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+        assertTrue(first.isCompleted)
+        assertTrue(sync.getStreamManager(stream1.mappedDescriptor).isLoaderStarted())
+
+        val late = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+
+        // After initialization completes, later records pass the router without waiting
+        assertTrue(late.isCompleted)
+        coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
+    }
+
+    @Test
+    fun `started stream skips the suspending loader lookup entirely`() = runTest {
+        val r = router(1)
+        every { streamManager1.isLoaderStarted() } returns true
+
+        r.handleStreamMessage(record(stream1))
+
+        // The flag on the already-fetched StreamManager is the only check on the hot path
+        coVerify(exactly = 0) { syncManager.getOrAwaitStreamLoader(any()) }
+    }
+
+    @Test
+    fun `unstarted stream falls through to the suspending loader lookup`() = runTest {
+        val r = router(1)
+        every { streamManager1.isLoaderStarted() } returns false
+        coEvery { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) } returns mockk()
+
+        r.handleStreamMessage(record(stream1))
+
+        coVerify(exactly = 1) { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) }
+    }
+
+    @Test
+    fun `waiting on one stream does not block another stream`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val onStream1 = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        val onStream2 = async { r.handleStreamMessage(record(stream2)) }
+        runCurrent()
+
+        assertFalse(onStream1.isCompleted)
+        assertFalse(onStream2.isCompleted)
+
+        sync.registerStartedStreamLoader(stream2.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(onStream2.isCompleted)
+        assertFalse(onStream1.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(onStream1.isCompleted)
     }
 
     @Test
@@ -173,7 +309,7 @@ class PipelineEventBookkeepingRouterTest {
             DestinationFile(
                 stream = stream1,
                 emittedAtMs = 0L,
-                fileMessage = DestinationFile.AirbyteRecordMessageFile(fileUrl = "s3://x")
+                fileMessage = DestinationFile.AirbyteRecordMessageFile(fileUrl = "s3://x"),
             ),
         )
 
@@ -181,7 +317,7 @@ class PipelineEventBookkeepingRouterTest {
             fileTransferQueue.publish(
                 match<FileTransferQueueRecord> {
                     it.checkpointId == CheckpointId("1") && it.index == 1L
-                }
+                },
             )
         }
     }
@@ -210,8 +346,8 @@ class PipelineEventBookkeepingRouterTest {
                     unmappedName = stream1.unmappedName,
                     blob = """{"a":1}""",
                     sourceRecordCount = 0L,
-                    checkpointKey = null
-                )
+                    checkpointKey = null,
+                ),
             )
 
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
@@ -241,10 +377,10 @@ class PipelineEventBookkeepingRouterTest {
                     checkpointKey =
                         CheckpointKey(
                             checkpointIndex = CheckpointIndex(1),
-                            checkpointId = CheckpointId("k")
+                            checkpointId = CheckpointId("k"),
                         ),
                     destinationRecordCount = null,
-                )
+                ),
             )
 
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
@@ -273,7 +409,7 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("x")
+                        checkpointId = CheckpointId("x"),
                     ),
             )
         val rm = ReservationManager(1)
@@ -297,7 +433,7 @@ class PipelineEventBookkeepingRouterTest {
                     additionalProperties = emptyMap(),
                     serializedSizeBytes = 0L,
                     checkpointKey = null,
-                )
+                ),
             )
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
         coEvery { checkpointQueue.publish(capture(slot)) } just Runs
@@ -327,9 +463,9 @@ class PipelineEventBookkeepingRouterTest {
                     checkpointKey =
                         CheckpointKey(
                             checkpointIndex = CheckpointIndex(1),
-                            checkpointId = CheckpointId("g")
+                            checkpointId = CheckpointId("g"),
                         ),
-                )
+                ),
             )
         val slot = slot<Reserved<CheckpointMessageWrapped>>()
         coEvery { checkpointQueue.publish(capture(slot)) } just Runs
@@ -353,7 +489,7 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("g")
+                        checkpointId = CheckpointId("g"),
                     ),
             )
         val rm = ReservationManager(1)
@@ -379,21 +515,21 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointKey =
                     CheckpointKey(
                         checkpointIndex = CheckpointIndex(1),
-                        checkpointId = CheckpointId("snap")
+                        checkpointId = CheckpointId("snap"),
                     ),
                 streamCheckpoints =
                     mapOf(
                         stream1.mappedDescriptor to
                             CheckpointKey(
                                 checkpointIndex = CheckpointIndex(1),
-                                checkpointId = CheckpointId("i1")
+                                checkpointId = CheckpointId("i1"),
                             ),
                         stream2.mappedDescriptor to
                             CheckpointKey(
                                 checkpointIndex = CheckpointIndex(1),
-                                checkpointId = CheckpointId("i2")
-                            )
-                    )
+                                checkpointId = CheckpointId("i2"),
+                            ),
+                    ),
             )
         val rm = ReservationManager(1)
         val reserved: Reserved<CheckpointMessage> = rm.reserve(1, snapshot)
@@ -418,7 +554,7 @@ class PipelineEventBookkeepingRouterTest {
                 additionalProperties = emptyMap(),
                 serializedSizeBytes = 0L,
                 checkpointKey = null,
-                streamCheckpoints = emptyMap()
+                streamCheckpoints = emptyMap(),
             )
         val rm = ReservationManager(1)
         val reserved: Reserved<CheckpointMessage> = rm.reserve(1, snapshot)
@@ -442,12 +578,12 @@ class PipelineEventBookkeepingRouterTest {
 
         coVerify {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor },
             )
         }
         coVerify {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor },
             )
         }
         coVerify { syncManager.markInputConsumed() }
@@ -464,7 +600,7 @@ class PipelineEventBookkeepingRouterTest {
         r.close()
         coVerify(exactly = 0) {
             batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
+                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor },
             )
         }
     }

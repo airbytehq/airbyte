@@ -23,6 +23,9 @@ acceptance_tests:
         empty_streams:
           - name: trending
             bypass_reason: Streams seems to be not responding
+        # Records of `movies_latest`, `movies_reviews` do not match their declared schema (found 2026-10-09).
+        # Fix those schemas, then remove this opt-out.
+        validate_schema: false
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

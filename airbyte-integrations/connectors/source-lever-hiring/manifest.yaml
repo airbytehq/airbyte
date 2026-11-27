@@ -301,7 +301,7 @@ definitions:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P30D
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT0.001S
 check:
   type: CheckStream
   stream_names:
@@ -535,7 +535,7 @@ streams:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         name: "opportunities"
       step: P30D
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT0.001S
       name: "opportunities"
     name: opportunities
   - type: DeclarativeStream
@@ -965,7 +965,7 @@ streams:
                     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
                     name: "opportunities"
                   step: P30D
-                  cursor_granularity: PT0.000001S
+                  cursor_granularity: PT0.001S
                   name: "opportunities"
                 name: opportunities
               name: "applications"
@@ -1355,7 +1355,7 @@ streams:
                     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
                     name: "opportunities"
                   step: P30D
-                  cursor_granularity: PT0.000001S
+                  cursor_granularity: PT0.001S
                   name: "opportunities"
                 name: opportunities
               name: "interviews"
@@ -1747,7 +1747,7 @@ streams:
                     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
                     name: "opportunities"
                   step: P30D
-                  cursor_granularity: PT0.000001S
+                  cursor_granularity: PT0.001S
                   name: "opportunities"
                 name: opportunities
               name: "notes"
@@ -2095,7 +2095,7 @@ streams:
                     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
                     name: "opportunities"
                   step: P30D
-                  cursor_granularity: PT0.000001S
+                  cursor_granularity: PT0.001S
                   name: "opportunities"
                 name: opportunities
               name: "offers"
@@ -2459,7 +2459,7 @@ streams:
                     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
                     name: "opportunities"
                   step: P30D
-                  cursor_granularity: PT0.000001S
+                  cursor_granularity: PT0.001S
                   name: "opportunities"
                 name: opportunities
               name: "referrals"

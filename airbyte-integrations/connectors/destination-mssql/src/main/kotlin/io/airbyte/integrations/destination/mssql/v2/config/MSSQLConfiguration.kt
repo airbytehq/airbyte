@@ -59,7 +59,7 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
 
     fun makeWithOverrides(
         spec: MSSQLSpecification,
-        overrides: Map<String, String> = emptyMap()
+        overrides: Map<String, String> = emptyMap(),
     ): MSSQLConfiguration {
         return MSSQLConfiguration(
             host = overrides.getOrDefault("host", spec.host),
@@ -71,7 +71,7 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
             mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
-            ssh = spec.tunnelMethodJson
+            ssh = spec.tunnelMethodJson,
         )
     }
 }

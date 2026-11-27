@@ -17,6 +17,7 @@ object PostgresDateFieldType :
 // TODO: Improve performance by not stringifying and parsing
 object PgDateCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
+
     override fun decode(encoded: JsonNode): String {
         val decoded = encoded.asText()
         if (
@@ -27,6 +28,7 @@ object PgDateCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
         }
         return decoded
     }
+
     override fun valueForProtobufEncoding(v: String): Any? {
         val isBce = v.endsWith(" BC")
         val str = if (isBce) v.removeSuffix(" BC") else v

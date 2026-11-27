@@ -43,10 +43,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: count
-            page_size: 1
+            page_size: 100
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -237,10 +237,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: count
-            page_size: 1
+            page_size: 100
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -505,10 +505,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: count
-            page_size: 1
+            page_size: 100
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -607,10 +607,10 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: count
-          page_size: 1
+          page_size: 100
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 1
+          page_size: 100
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -799,10 +799,10 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: count
-          page_size: 1
+          page_size: 100
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 1
+          page_size: 100
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1064,10 +1064,10 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: count
-          page_size: 1
+          page_size: 100
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 1
+          page_size: 100
     schema_loader:
       type: InlineSchemaLoader
       schema:

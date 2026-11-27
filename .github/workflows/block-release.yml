@@ -39,6 +39,9 @@ on:
 
 run-name: "${{ github.event.inputs.action }} release of ${{ github.event.inputs.connector-name }}"
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: write
   pull-requests: write
@@ -152,7 +155,8 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr ready "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
 
       # ── Force-merge using admin bot ────────────────────────────────
       - name: Authenticate as GitHub App (Admin)
@@ -169,8 +173,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: >
-          gh pr review "${{ steps.create-pr.outputs.pull-request-number }}"
+          gh pr review "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
           --repo "${{ github.repository }}"
           --approve
           --body "Auto-approved by block-release workflow."
@@ -179,8 +184,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: |
-          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+          gh pr merge "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" \
             --repo "${{ github.repository }}" \
             --squash \
             --admin
@@ -188,11 +194,13 @@ jobs:
       # ── Summary ────────────────────────────────────────────────────
       - name: Job summary
         if: always()
+        env:
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: |
-          echo "### Release ${{ env.ACTION }} — \`${{ env.CONNECTOR_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "### Release ${ACTION} — \`${CONNECTOR_NAME}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ -n "${{ steps.create-pr.outputs.pull-request-number }}" ]]; then
-            echo "PR: ${{ github.server_url }}/${{ github.repository }}/pull/${{ steps.create-pr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" ]]; then
+            echo "PR: ${{ github.server_url }}/${{ github.repository }}/pull/${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" >> $GITHUB_STEP_SUMMARY
           else
             echo "No PR was created (connector may already be in the desired state)." >> $GITHUB_STEP_SUMMARY
           fi

@@ -55,14 +55,14 @@ data object TypesFlavor : Flavor {
                     EmittedField(FieldNames.TIME_WITHOUT_TIME_ZONE, TimeWithoutTimeZoneFieldType),
                     EmittedField(
                         FieldNames.TIMESTAMP_WITH_TIME_ZONE,
-                        TimestampWithTimeZoneFieldType
+                        TimestampWithTimeZoneFieldType,
                     ),
                     EmittedField(
                         FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE,
-                        TimestampWithoutTimeZoneFieldType
+                        TimestampWithoutTimeZoneFieldType,
                     ),
                     EmittedField(FieldNames.JSON, JsonFieldType),
-                )
+                ),
         )
     override val primaryKeys = mapOf(typesTableName to listOf(listOf((FieldNames.ID))))
 

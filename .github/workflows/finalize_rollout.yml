@@ -24,6 +24,9 @@ on:
         description: "Explicit version to finalize (optional; auto-resolved if omitted)"
         required: false
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: write
   pull-requests: write
@@ -172,33 +175,38 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
-          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
           --store "coral:prod"
           --outcome promoted
-          --version "${{ steps.resolve-vars.outputs.version }}"
+          --version "${STEP_RESOLVE_VARS_VERSION}"
 
       - name: Mark progressive rollout aborted
         if: steps.resolve-vars.outputs.action == 'rollback'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_RESOLVE_VARS_VERSION: ${{ steps.resolve-vars.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
-          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
           --store "coral:prod"
           --outcome aborted
-          --version "${{ steps.resolve-vars.outputs.version }}"
+          --version "${STEP_RESOLVE_VARS_VERSION}"
 
       - name: "Recompile registry for ${{ steps.resolve-vars.outputs.connector_name }} v${{ steps.resolve-vars.outputs.version }}"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          STEP_RESOLVE_VARS_CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: >
           airbyte-ops registry store compile
           --store "coral:prod"
-          --connector-name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --connector-name "${STEP_RESOLVE_VARS_CONNECTOR_NAME}"
 
       # --- PR Creation (promote + repo version contains -rc only) ---
 
@@ -262,12 +270,13 @@ jobs:
         shell: bash
         env:
           CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: >
           airbyte-ops local connector changelog add
           --connector-name "${CONNECTOR_NAME}"
           --repo-path "${{ github.workspace }}"
           --message "Promoted release candidate to GA"
-          --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
+          --pr-number "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
 
       - name: "Push changelog to PR"
         if: steps.create-pr.outputs.pull-request-number
@@ -282,7 +291,8 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr ready "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
 
       - name: Authenticate as GitHub App (Admin)
         if: steps.create-pr.outputs.pull-request-number
@@ -298,8 +308,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: >
-          gh pr review "${{ steps.create-pr.outputs.pull-request-number }}"
+          gh pr review "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}"
           --repo "${{ github.repository }}"
           --approve
           --body "Auto-approved by finalize_rollout workflow."
@@ -308,8 +319,9 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          STEP_CREATE_PR_PULL_REQUEST_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: |
-          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+          gh pr merge "${STEP_CREATE_PR_PULL_REQUEST_NUMBER}" \
             --repo "${{ github.repository }}" \
             --squash \
             --admin
@@ -320,12 +332,10 @@ jobs:
         if: success() && steps.resolve-vars.outputs.action == 'rollback'
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_FAILURES }} # #connector-publish-failures
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
               "text": "↩️ Successfully rolled back RC for `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -333,12 +343,10 @@ jobs:
         if: success() && steps.resolve-vars.outputs.action == 'promote' && steps.resolve-vars.outputs.needs_pr == 'false'
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled (no PR needed):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -346,12 +354,10 @@ jobs:
         if: success() && steps.create-pr.outputs.pull-request-number
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_UPDATES }} # #connector-publish-updates
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
               "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
@@ -359,11 +365,9 @@ jobs:
         if: failure()
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
-          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_PUBLISH_FAILURES }} # #connector-publish-failures
           webhook-type: incoming-webhook
           payload: |
             {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
               "text": "🚨 Finalize rollout failed for `${{ steps.resolve-vars.outputs.connector_name }}` (${{ steps.resolve-vars.outputs.action }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }

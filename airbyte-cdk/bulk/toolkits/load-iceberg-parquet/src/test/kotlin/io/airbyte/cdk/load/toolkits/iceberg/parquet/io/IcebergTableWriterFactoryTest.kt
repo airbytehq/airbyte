@@ -78,7 +78,7 @@ internal class IcebergTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )
@@ -135,7 +135,7 @@ internal class IcebergTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )

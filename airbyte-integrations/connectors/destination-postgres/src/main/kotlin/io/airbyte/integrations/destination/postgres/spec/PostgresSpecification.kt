@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
@@ -41,12 +40,12 @@ sealed class PostgresSpecification : ConfigurationSpecification() {
     abstract val legacyRawTablesOnly: Boolean?
     abstract val dropCascade: Boolean?
     abstract val unconstrainedNumber: Boolean?
+
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
 }
 
 @Singleton
 @JsonSchemaTitle("Postgres Destination Specification")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 @Requires(notEnv = [AIRBYTE_CLOUD_ENV])
 class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaTitle("Host")
@@ -60,7 +59,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}"""
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""",
     )
     override val port: Int = 5432
 
@@ -72,12 +71,12 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Default Schema")
     @get:JsonPropertyDescription(
-        "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used."
+        "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
     )
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}"""
+            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}""",
     )
     override val schema: String = "public"
 
@@ -95,7 +94,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
     @get:JsonSchemaTitle("SSL Connection")
     @get:JsonPropertyDescription(
-        "Encrypt data using SSL. When activating SSL, please select one of the connection modes."
+        "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
     )
     @get:JsonProperty("ssl")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 6}""")
@@ -111,7 +110,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
   <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.
   <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.
   <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.
- See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>."""
+ See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>.""",
     )
     @get:JsonProperty("ssl_mode")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
@@ -129,7 +128,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
-        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."""
+        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).""",
     )
     @get:JsonProperty("jdbc_url_params")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
@@ -144,7 +143,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     override val internalTableSchema: String? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
     )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
@@ -156,7 +155,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
     @get:JsonPropertyDescription(
-        """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects."""
+        """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.""",
     )
     @get:JsonProperty("drop_cascade")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 12}""")
@@ -165,7 +164,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Unconstrained numeric columns")
     @get:JsonPropertyDescription(
-        """Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)"""
+        """Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)""",
     )
     @get:JsonProperty("unconstrained_number")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 13}""")
@@ -196,7 +195,6 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
 @Singleton
 @JsonSchemaTitle("Postgres Destination Specification")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 @Requires(env = [AIRBYTE_CLOUD_ENV])
 class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaTitle("Host")
@@ -210,7 +208,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}"""
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""",
     )
     override val port: Int = 5432
 
@@ -222,12 +220,12 @@ class PostgresSpecificationCloud : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Default Schema")
     @get:JsonPropertyDescription(
-        "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used."
+        "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
     )
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}"""
+            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}""",
     )
     override val schema: String = "public"
 
@@ -245,7 +243,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
 
     @get:JsonSchemaTitle("SSL Connection")
     @get:JsonPropertyDescription(
-        "Encrypt data using SSL. When activating SSL, please select one of the connection modes."
+        "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
     )
     @get:JsonProperty("ssl")
     @get:JsonSchemaInject(json = """{"default": true, "airbyte_hidden": true, "order": 6}""")
@@ -261,7 +259,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
   <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.
   <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.
   <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.
- See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>."""
+ See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>.""",
     )
     @get:JsonProperty("ssl_mode")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
@@ -279,7 +277,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
 
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
-        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."""
+        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).""",
     )
     @get:JsonProperty("jdbc_url_params")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
@@ -294,7 +292,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     override val internalTableSchema: String? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
     )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
@@ -306,7 +304,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
     @get:JsonPropertyDescription(
-        """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects."""
+        """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.""",
     )
     @get:JsonProperty("drop_cascade")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 12}""")
@@ -315,7 +313,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
 
     @get:JsonSchemaTitle("Unconstrained numeric columns")
     @get:JsonPropertyDescription(
-        """Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)"""
+        """Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)""",
     )
     @get:JsonProperty("unconstrained_number")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 13}""")
@@ -363,6 +361,7 @@ class SslModeDisable : SslMode {
     companion object {
         const val MODE = "disable"
     }
+
     override val mode: String = MODE
 }
 
@@ -372,6 +371,7 @@ class SslModeAllow : SslMode {
     companion object {
         const val MODE = "allow"
     }
+
     override val mode: String = MODE
 }
 
@@ -381,6 +381,7 @@ class SslModePrefer : SslMode {
     companion object {
         const val MODE = "prefer"
     }
+
     override val mode: String = MODE
 }
 
@@ -390,6 +391,7 @@ class SslModeRequire : SslMode {
     companion object {
         const val MODE = "require"
     }
+
     override val mode: String = MODE
 }
 
@@ -403,15 +405,16 @@ data class SslModeVerifyCa(
     val caCertificate: String = "",
     @get:JsonSchemaTitle("Client Key Password")
     @get:JsonPropertyDescription(
-        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
     )
     @get:JsonProperty("client_key_password")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 2}""")
-    val clientKeyPassword: String? = null
+    val clientKeyPassword: String? = null,
 ) : SslMode {
     companion object {
         const val MODE = "verify-ca"
     }
+
     override val mode: String = MODE
 }
 
@@ -435,15 +438,16 @@ data class SslModeVerifyFull(
     val clientKey: String = "",
     @get:JsonSchemaTitle("Client Key Password")
     @get:JsonPropertyDescription(
-        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
     )
     @get:JsonProperty("client_key_password")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 4}""")
-    val clientKeyPassword: String? = null
+    val clientKeyPassword: String? = null,
 ) : SslMode {
     companion object {
         const val MODE = "verify-full"
     }
+
     override val mode: String = MODE
 }
 

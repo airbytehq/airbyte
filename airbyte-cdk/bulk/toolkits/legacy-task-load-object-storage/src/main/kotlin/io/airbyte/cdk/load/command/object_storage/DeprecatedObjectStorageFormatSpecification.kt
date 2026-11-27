@@ -42,20 +42,20 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
                 JsonFormatConfiguration(
                     rootLevelFlattening =
                         (format as DeprecatedJsonFormatSpecification).flattening ==
-                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
+                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING,
                 )
             is DeprecatedCSVFormatSpecification ->
                 CSVFormatConfiguration(
                     rootLevelFlattening =
                         (format as DeprecatedCSVFormatSpecification).flattening ==
-                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
+                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING,
                 )
             is DeprecatedAvroFormatSpecification ->
                 AvroFormatConfiguration(
                     avroCompressionConfiguration =
                         (format as DeprecatedAvroFormatSpecification)
                             .compressionCodec
-                            .toCompressionConfiguration()
+                            .toCompressionConfiguration(),
                 )
             is DeprecatedParquetFormatSpecification -> {
                 (format as DeprecatedParquetFormatSpecification).let {
@@ -67,8 +67,8 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
                                 maxPaddingSizeMb = it.maxPaddingSizeMb!!,
                                 pageSizeKb = it.pageSizeKb!!,
                                 dictionaryPageSizeKb = it.dictionaryPageSizeKb!!,
-                                dictionaryEncoding = it.dictionaryEncoding!!
-                            )
+                                dictionaryEncoding = it.dictionaryEncoding!!,
+                            ),
                     )
                 }
             }
@@ -88,22 +88,22 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "format_type"
+    property = "format_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = DeprecatedCSVFormatSpecification::class, name = "CSV"),
     JsonSubTypes.Type(value = DeprecatedJsonFormatSpecification::class, name = "JSONL"),
     JsonSubTypes.Type(value = DeprecatedAvroFormatSpecification::class, name = "Avro"),
-    JsonSubTypes.Type(value = DeprecatedParquetFormatSpecification::class, name = "Parquet")
+    JsonSubTypes.Type(value = DeprecatedParquetFormatSpecification::class, name = "Parquet"),
 )
 sealed class DeprecatedObjectStorageFormatSpecification(
-    @JsonSchemaTitle("Format Type") open val formatType: Type
+    @JsonSchemaTitle("Format Type") open val formatType: Type,
 ) {
     enum class Type(@get:JsonValue val typeName: String) {
         CSV("CSV"),
         JSONL("JSONL"),
         AVRO("Avro"),
-        PARQUET("Parquet")
+        PARQUET("Parquet"),
     }
 }
 
@@ -112,7 +112,7 @@ sealed class DeprecatedObjectStorageFormatSpecification(
 class DeprecatedCSVFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
-    override val formatType: Type = Type.CSV
+    override val formatType: Type = Type.CSV,
 ) :
     DeprecatedObjectStorageFormatSpecification(formatType),
     FlatteningSpecificationProvider,
@@ -128,7 +128,7 @@ class DeprecatedCSVFormatSpecification(
 class DeprecatedJsonFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
-    override val formatType: Type = Type.JSONL
+    override val formatType: Type = Type.JSONL,
 ) :
     DeprecatedObjectStorageFormatSpecification(formatType),
     FlatteningSpecificationProvider,
@@ -145,12 +145,12 @@ class DeprecatedAvroFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     @JsonSchemaInject(json = """{"order":0}""")
-    override val formatType: Type = Type.AVRO
+    override val formatType: Type = Type.AVRO,
 ) : DeprecatedObjectStorageFormatSpecification(formatType) {
 
     @JsonSchemaTitle("Compression Codec")
     @JsonPropertyDescription(
-        "The compression algorithm used to compress data. Default to no compression."
+        "The compression algorithm used to compress data. Default to no compression.",
     )
     @JsonProperty("compression_codec")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -163,7 +163,7 @@ class DeprecatedAvroFormatSpecification(
 class DeprecatedParquetFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
-    override val formatType: Type = Type.PARQUET
+    override val formatType: Type = Type.PARQUET,
 ) : DeprecatedObjectStorageFormatSpecification(formatType) {
     enum class ParquetFormatCompressionCodec {
         UNCOMPRESSED,
@@ -172,7 +172,7 @@ class DeprecatedParquetFormatSpecification(
         LZO,
         BROTLI, // TODO: Broken locally in both this and s3 v1; Validate whether it works in prod
         LZ4,
-        ZSTD
+        ZSTD,
     }
 
     @JsonSchemaTitle("Compression Codec")
@@ -183,28 +183,28 @@ class DeprecatedParquetFormatSpecification(
 
     @JsonSchemaTitle("Block Size (Row Group Size) (MB)")
     @JsonPropertyDescription(
-        "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB."
+        "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
     )
     @JsonProperty("block_size_mb", defaultValue = "128")
     val blockSizeMb: Int? = 128
 
     @JsonSchemaTitle("Max Padding Size (MB)")
     @JsonPropertyDescription(
-        "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB."
+        "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
     )
     @JsonProperty("max_padding_size_mb", defaultValue = "8")
     val maxPaddingSizeMb: Int? = 8
 
     @JsonSchemaTitle("Page Size (KB)")
     @JsonPropertyDescription(
-        "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB."
+        "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
     )
     @JsonProperty("page_size_kb", defaultValue = "1024")
     val pageSizeKb: Int? = 1024
 
     @JsonSchemaTitle("Dictionary Page Size (KB)")
     @JsonPropertyDescription(
-        "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB."
+        "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
     )
     @JsonProperty("dictionary_page_size_kb", defaultValue = "1024")
     val dictionaryPageSizeKb: Int? = 1024

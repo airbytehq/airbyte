@@ -378,6 +378,17 @@ definitions:
             order: asc
             orderby: id
             dates_are_gmt: "true"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              # `GET /products/attributes` can list an attribute whose WordPress taxonomy is no
+              # longer registered. The terms sub-resource then answers 404
+              # `woocommerce_rest_taxonomy_invalid`, which must skip the partition instead of
+              # failing the whole sync.
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: "{{ response.get('code') == 'woocommerce_rest_taxonomy_invalid' }}"
+                error_message: "Skipping a product attribute whose WooCommerce taxonomy does not exist (woocommerce_rest_taxonomy_invalid); no terms can be synced for it."
         record_selector:
           type: RecordSelector
           extractor:

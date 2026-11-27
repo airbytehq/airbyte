@@ -243,12 +243,12 @@ class CommittedStatsStoreTest {
         val result1 =
             CommitStatsResult(
                 committedStats = EmissionStats(10L, 100L),
-                cumulativeStats = EmissionStats(50L, 500L)
+                cumulativeStats = EmissionStats(50L, 500L),
             )
         val result2 =
             CommitStatsResult(
                 committedStats = EmissionStats(20L, 200L),
-                cumulativeStats = EmissionStats(60L, 600L)
+                cumulativeStats = EmissionStats(60L, 600L),
             )
 
         // When
@@ -267,7 +267,7 @@ class CommittedStatsStoreTest {
         val stats1 =
             PartitionStats(
                 counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10.0) },
-                bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) }
+                bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) },
             )
         val stats2 =
             PartitionStats(
@@ -280,7 +280,7 @@ class CommittedStatsStoreTest {
                     PartitionHistogram().apply {
                         increment(Fixtures.partition1, 50.0)
                         increment(Fixtures.partition2, 200.0)
-                    }
+                    },
             )
 
         // When
@@ -306,7 +306,7 @@ class CommittedStatsStoreTest {
                     val counts = PartitionHistogram().apply { increment(partition, i.toDouble()) }
                     val bytes = PartitionHistogram().apply { increment(partition, i * 10.0) }
                     store.acceptStats(Fixtures.descriptor, counts, bytes)
-                }
+                },
             )
         }
 

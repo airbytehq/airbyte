@@ -15,5 +15,6 @@ package io.airbyte.cdk.load.check
  */
 interface DestinationChecker {
     fun check()
+
     fun cleanup() {}
 }

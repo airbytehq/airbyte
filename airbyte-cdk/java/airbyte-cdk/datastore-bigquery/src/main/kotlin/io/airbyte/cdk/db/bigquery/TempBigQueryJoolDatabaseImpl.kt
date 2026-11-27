@@ -17,7 +17,7 @@ import org.jooq.impl.DefaultDSLContext
 class TempBigQueryJoolDatabaseImpl(
     projectId: String?,
     jsonCreds: String?,
-    realDatabase: BigQueryDatabase = createBigQueryDatabase(projectId, jsonCreds)
+    realDatabase: BigQueryDatabase = createBigQueryDatabase(projectId, jsonCreds),
 ) : Database(FakeDefaultDSLContext(realDatabase)) {
 
     @Throws(SQLException::class)

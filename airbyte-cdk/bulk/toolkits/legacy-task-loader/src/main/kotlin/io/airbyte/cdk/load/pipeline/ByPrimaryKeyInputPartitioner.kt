@@ -23,10 +23,9 @@ class ByPrimaryKeyInputPartitioner : InputPartitioner {
         val primaryKey = (record.stream.importType).primaryKey
         val jsonData = record.asJsonRecord()
 
-        val primaryKeyValues =
-            primaryKey.map { keys ->
-                keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
-            }
+        val primaryKeyValues = primaryKey.map { keys ->
+            keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
+        }
         return Math.floorMod(primaryKeyValues.hashCode(), numParts)
     }
 }

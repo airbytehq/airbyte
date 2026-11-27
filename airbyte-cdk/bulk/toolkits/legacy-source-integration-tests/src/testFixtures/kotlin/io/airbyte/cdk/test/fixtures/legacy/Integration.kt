@@ -23,7 +23,8 @@ interface Integration {
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @return Whether or not the connection was successful. Optional message if it was not.
      * @throws Exception
      * - any exception.

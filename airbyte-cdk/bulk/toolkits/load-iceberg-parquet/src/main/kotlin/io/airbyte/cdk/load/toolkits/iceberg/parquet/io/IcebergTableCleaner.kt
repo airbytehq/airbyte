@@ -25,27 +25,30 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
      *
      * @param catalog The [Catalog] that is used to drop the [org.apache.iceberg.Table].
      * @param identifier The [TableIdentifier] that identifies the [org.apache.iceberg.Table] to be
-     * cleared.
+     *   cleared.
      * @param io The [FileIO] that may be used to delete the underlying data and metadata files.
      * @param tableLocation The storage location of files associated with the
-     * [org.apache.iceberg.Table].
+     *   [org.apache.iceberg.Table].
      */
     fun clearTable(
         catalog: Catalog,
         identifier: TableIdentifier,
         io: FileIO,
-        tableLocation: String
+        tableLocation: String,
     ) {
         catalog.dropTable(identifier, true)
         if (io is SupportsPrefixOperations) {
-            io.deletePrefix(tableLocation)
+            io.deletePrefix(tableDirectory(tableLocation))
         }
     }
+
+    private fun tableDirectory(tableLocation: String): String =
+        if (tableLocation.endsWith("/")) tableLocation else "$tableLocation/"
 
     fun deleteOldGenerationData(
         table: Table,
         stagingBranchName: String,
-        stream: DestinationStream
+        stream: DestinationStream,
     ) {
         val currentGenerationIdSuffix = icebergUtil.constructGenerationIdSuffix(stream)
 

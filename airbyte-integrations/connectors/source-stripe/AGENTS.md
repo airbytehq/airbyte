@@ -8,11 +8,19 @@ Most entity streams (customers, subscriptions, invoices, charges, refunds, trans
 
 Stripe's Events API only retains events for 30 days. If the connector's state falls behind by more than 30 days (e.g., after a long pause in syncing), it automatically reverts to a full refresh from the entity endpoint rather than trying to read events that no longer exist.
 
+`customer_balance_transactions` does not use a StateDelegatingStream parent: it reads a created-date walk of `customers` (P7D slices) plus a `cbt_customer_events` events parent for `customer.updated` and `customer.deleted`. On cold state, a custom migration seeds the events cursor at sync time, so the customer walk starts from `start_date` without replaying historical events. For 7.0.3/7.0.4 state, the migration seeds from `parent_state.customers.updated`, capped to Stripe's 30-day event retention; when that value is the walk placeholder at `start_date`, the events cursor starts at sync time while the walk backfills. Rolling back to ≤ 7.0.3 while that walk mark is more than 30 days old makes 7.0.3 take the events path and silently end the backfill; reset the stream after such a rollback.
+
 **Why this matters:** What looks like a simple entity read is actually two completely different data paths depending on whether state exists and how old it is. Adding a new entity stream requires defining both the direct-read retriever AND the events-based retriever with the correct event type filter strings. If the event type strings are wrong, incremental syncs will silently miss updates.
+
+`accounts` is the one exception. For a Connect platform, Stripe files a connected account's `account.updated` and `account.external_account.*` events in that connected account's own event feed, so the platform's `/v1/events` never contains them and an events-based `incremental_stream` returned nothing. Since 7.1.0 `accounts` is a plain stream rather than a `StateDelegatingStream`: it reads `/v1/accounts` with `created[gte]`/`created[lte]` windows (`accounts_cursor`: 30-day steps from `accounts_start_date`, default 2010-01-01, which also bounds `persons`, read in parallel by `num_workers` through a single static partition so no state is emitted mid-walk, as `bank_accounts` does), which picks up new connected accounts but not changes to existing ones, and it has no `api_retention_period` because it doesn't depend on the 30-day events window. Standard accounts return no `created`, so their `updated` is the sync time (`now_utc()`), as in 7.0.x.
+
+Creation events use a cursor one second earlier than their event timestamp so update events win same-second ties and the newer payload is retained.
 
 ## 2. Silent 403/400/404 Error Ignoring
 
-The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing.
+The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing. The `bank_accounts` full-refresh `customers` requester is the exception: it ignores only 403 and 404, and fails the sync on 400 so a malformed request can't silently drop a created-date slice. Both handlers share the `ignore_403_filter` and `ignore_404_filter` definitions.
+
+`customer_balance_transactions` is the exception: its two parents and its child IGNORE only 404, so a 400 or 403 fails the sync instead of letting the parent state skip customers.
 
 **Why this matters:** If an API key loses access to a specific Stripe resource (e.g., Issuing endpoints require special permissions), those records will silently disappear from incremental syncs without any error or warning in the sync logs. A user may not notice they are missing data until they check record counts against the Stripe dashboard.
 
@@ -36,60 +44,60 @@ The data returned in event payloads depends on the Stripe API version the object
 
 ## Incremental Stream Considerations
 
-The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on most list endpoints. However, Stripe does NOT support `updated_at` filtering. Since most Stripe resources are mutable (customers, subscriptions, invoices, etc.), `created`-only filtering is insufficient for true incremental sync. The `events` stream is an exception — events are immutable point-in-time records where `created[gte]` is semantically correct. The connector currently has all streams as full-refresh.
+The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on most list endpoints. However, Stripe does NOT support `updated_at` filtering. Since most Stripe resources are mutable (customers, subscriptions, invoices, etc.), `created`-only filtering is insufficient for true incremental sync. The `events` stream is an exception — events are immutable point-in-time records where `created[gte]` is semantically correct. Most streams therefore use the Events API for incremental syncs; `accounts` is the exception and syncs incrementally on `created` (see above).
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
-| accounts | small | top-level parent | none | none | deferred_no_api_support | Connected accounts list; no date filter |
-| application_fees | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| accounts | small | top-level parent | updated (set from created; sync time for standard accounts) | created_at_only | incremental | Connected accounts list; reads /v1/accounts by created window, not events (account.updated is scoped to the connected account); full refresh reads parallel 30-day windows from 2010 |
+| application_fees | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | balance_transactions | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable; `created[gte]` filter available |
-| bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| cardholders | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| cards | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| cardholders | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| cards | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | charges | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (refunds, disputes modify); `created` only |
-| checkout_sessions | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| checkout_sessions | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | coupons | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
-| credit_notes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| credit_notes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | customers | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable; `created` only. No `updated` filter. |
-| disputes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| early_fraud_warnings | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| disputes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| early_fraud_warnings | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | events | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Immutable point-in-time records; `created[gte]` is sufficient. Candidate for incremental in a future PR. |
-| external_account_bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| external_account_cards | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| external_account_bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| external_account_cards | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | file_links | small | top-level parent | none | created_at_only | deferred_no_api_support | `created` only |
 | files | small | top-level parent | none | created_at_only | deferred_no_api_support | `created` only |
-| invoice_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| invoice_line_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| invoice_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| invoice_line_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | invoices | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (payments, voids); `created` only |
 | payment_intents | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (confirmations); `created` only |
-| payment_methods | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| payment_methods | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | payouts | medium | top-level parent | none | created_at_only | deferred_no_api_support | Mostly immutable; `created[gte]` filter available |
-| persons | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| persons | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | plans | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
 | prices | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
 | products | small | top-level parent | none | created_at_only | deferred_no_api_support | Mutable; `created` only |
-| promotion_codes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| promotion_codes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable once created; `created` filter available |
-| reviews | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| setup_intents | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| reviews | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| setup_intents | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | shipping_rates | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
-| subscription_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| subscription_schedule | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| subscription_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| subscription_schedule | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | subscriptions | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (status changes); `created` only |
-| top_ups | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| transactions | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| top_ups | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| transactions | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | transfers | medium | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable; `created[gte]` filter available |
-| checkout_sessions_line_items | medium | child | checkout_session_updated | checkout_session_updated | incremental |  |
-| customer_balance_transactions | medium | child | created | created | incremental |  |
-| payout_balance_transactions | medium | child | updated | updated | incremental |  |
-| setup_attempts | medium | child | created | created | incremental |  |
-| transfer_reversals | medium | child | created | created | incremental |  |
-| usage_records | medium | child | none | created_at_only | deferred_child |  |
+| checkout_sessions_line_items | medium | child | checkout_session_updated | checkout_session_updated | incremental | |
+| customer_balance_transactions | medium | child | created | created | incremental | |
+| payout_balance_transactions | medium | child | updated | updated | incremental | |
+| setup_attempts | medium | child | created | created | incremental | |
+| transfer_reversals | medium | child | created | created | incremental | |
+| usage_records | medium | child | none | created_at_only | deferred_child | |
 
 ### Future incremental stream candidates
 
-- **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (0 streams):** none. `accounts` was listed here by mistake: `GET /v1/accounts` accepts a `created` filter, and since 7.1.0 the stream syncs incrementally on it and reads full refreshes in 30-day windows.
 - **Created-at only (40 streams):** `application_fees`, `application_fees_refunds`, `authorizations`, `balance_transactions`, `bank_accounts`, `cardholders`, `cards`, `charges`, `checkout_sessions`, `coupons`, `credit_notes`, `customers`, `disputes`, `early_fraud_warnings`, `events`, `external_account_bank_accounts`, `external_account_cards`, `file_links`, `files`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, `payment_methods`, `payouts`, `persons`, `plans`, `prices`, `products`, `promotion_codes`, `refunds`, `reviews`, `setup_intents`, `shipping_rates`, `subscription_items`, `subscription_schedule`, `subscriptions`, `top_ups`, `transactions`, `transfers` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync.
 - **Child streams (1 streams):** `usage_records` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

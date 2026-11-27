@@ -64,12 +64,12 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
             if ("42501" == exception.sqlState) { // insufficient_privilege
                 throw ConfigErrorException(
                     "User '${replicationProps[USER]}' does not have sufficient privileges for " +
-                        "CDC replication. Please read the docs and add required privileges."
+                        "CDC replication. Please read the docs and add required privileges.",
                 )
             }
             throw ConfigErrorException(
                 "Unexpected failure while creating replication connection.",
-                exception
+                exception,
             )
         }
 
@@ -84,7 +84,7 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
             statement.executeQuery("IDENTIFY_SYSTEM").use { resultSet ->
                 if (!resultSet!!.next()) {
                     throw ConfigErrorException(
-                        "The DB connection is not a valid replication connection"
+                        "The DB connection is not a valid replication connection",
                     )
                 }
             }

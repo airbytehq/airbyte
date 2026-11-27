@@ -21,19 +21,7 @@ definitions:
           path: /positions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-RateLimit-Reset
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 401
-                      - 500
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -138,15 +126,7 @@ definitions:
                     http_codes:
                       - 429
                     error_message: Failed with Error 429 status code, retrying again
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 401
-                      - 500
-                    error_message: Failed with Error 400, 401 or 500 status codes
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -193,6 +173,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /pipelines
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -226,6 +208,31 @@ definitions:
         type: RequestOption
         field_name: AUTHORIZATION
         inject_into: header
+  base_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitUntilTimeFromHeader
+        header: X-RateLimit-Reset
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+          - 401
+        error_message: >-
+          Breezy HR rejected the request: {{ response.get('error', {}).get('message', 'invalid or missing access token') }}.
+          Enter a valid Personal Access Token (Breezy HR app > My Settings > API Keys) as the API Key,
+          and your company's `_id` (returned by GET https://api.breezy.hr/v3/companies) as the Company ID.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          Breezy HR denied access to company "{{ config['company_id'] }}": {{ response.get('error', {}).get('message', 'forbidden') }}.
+          The user who created the API Key must be a member of this company. Verify the Company ID is the
+          company `_id` returned by GET https://api.breezy.hr/v3/companies (not the company name or URL slug).
 
 streams:
   - $ref: "#/definitions/streams/positions"
@@ -243,11 +250,17 @@ spec:
     properties:
       api_key:
         type: string
+        description: >-
+          Breezy HR Personal Access Token (starts with `breezy_pat_`). Create one in the Breezy HR app under
+          My Settings > API Keys. A session access token from POST /v3/signin also works but expires.
         order: 0
         title: API Key
         airbyte_secret: true
       company_id:
         type: string
+        description: >-
+          The `_id` of your Breezy HR company (a 12-14 character hex string), not its name or URL slug.
+          Find it by calling `GET https://api.breezy.hr/v3/companies` with your API Key in the `Authorization` header.
         order: 1
         title: Company ID
         airbyte_secret: true

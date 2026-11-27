@@ -2,6 +2,8 @@
 products: oss-community
 ---
 
+import MinioImagePre23Helm from '@site/static/_minio_image_pre_2_3_helm.md';
+
 # Deploying Airbyte
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
@@ -15,7 +17,7 @@ You can use a Cloud Provider, such as, AWS, GCP, Azure, or onto a single node, s
 
 We highly recommend deploying Airbyte using Helm and the documented Helm chart values.
 
-Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
+Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes. Use the chart repository at `https://airbytehq.github.io/charts`, as shown in the installation steps below.
 
 The [Infrastructure](./infrastructure/aws.md) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
@@ -125,6 +127,8 @@ Then you can run:
     airbyte/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
     airbyte/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
     ```
+
+    <MinioImagePre23Helm />
 
 2. Install Airbyte into your namespace. In this example, you install Airbyte version 2.0.
 

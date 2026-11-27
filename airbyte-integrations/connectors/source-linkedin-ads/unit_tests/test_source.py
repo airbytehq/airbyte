@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List
@@ -9,10 +10,18 @@ import requests
 import yaml
 from airbyte_protocol_dataclasses.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
+from components import LinkedInAdsErrorHandler
+from requests.exceptions import InvalidURL
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
+    ExponentialBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import ResponseAction
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -111,31 +120,109 @@ class TestAllStreams:
         with pytest.raises(AirbyteTracedException):
             list(run_read(stream))
 
-    def test_manifest_maps_429_to_rate_limited(self):
-        """
-        Verify the manifest configures HTTP 429 responses with RATE_LIMITED action
-        (not RETRY) so rate-limited requests use the rate-limit backoff path.
+    def test_manifest_instantiates_error_handlers_for_all_streams(self):
+        """Verify accounts uses the stock handler and other streams retain the custom handler."""
+        config = {
+            **TEST_CONFIG,
+            "ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}],
+        }
+        streams = get_source(config).streams(config=config)
 
-        HTTP 500/503 should remain mapped to RETRY.
-        """
-        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
-        manifest = yaml.safe_load(manifest_path.read_text())
+        assert {stream.name for stream in streams} >= {"ad_campaign_analytics", "creatives"}
+        for stream in streams:
+            requester = stream._stream_partition_generator._partition_factory._retriever.requester
+            error_handler = requester.error_handler
+            http_error_handler = requester._http_client._error_handler
 
-        # The CompositeErrorHandler with the 429 filter is on the creatives stream
-        creatives = manifest["definitions"]["streams"]["creatives"]
-        error_handlers = creatives["retriever"]["requester"]["error_handlers"]
+            assert http_error_handler is not None
+            if stream.name == "accounts":
+                assert type(error_handler) is DefaultErrorHandler
+                assert type(http_error_handler) is DefaultErrorHandler
+            else:
+                assert type(http_error_handler) not in (HttpStatusErrorHandler, DefaultErrorHandler)
+                assert isinstance(error_handler, LinkedInAdsErrorHandler)
 
-        assert error_handlers["type"] == "CompositeErrorHandler"
+            assert any(
+                isinstance(strategy, ExponentialBackoffStrategy) and float(strategy.factor) == 5
+                for strategy in error_handler.backoff_strategies
+            )
 
-        inner_handlers = error_handlers["error_handlers"]
-        default_handler = next(h for h in inner_handlers if h.get("type") == "DefaultErrorHandler")
-        response_filters = default_handler["response_filters"]
+    @pytest.mark.parametrize(
+        "status_code, action, failure_type",
+        [
+            (200, ResponseAction.SUCCESS, None),
+            (400, ResponseAction.FAIL, FailureType.system_error),
+            (401, ResponseAction.FAIL, FailureType.config_error),
+            (403, ResponseAction.FAIL, FailureType.config_error),
+            (404, ResponseAction.FAIL, FailureType.system_error),
+            (410, ResponseAction.RETRY, FailureType.system_error),
+            (429, ResponseAction.RATE_LIMITED, FailureType.transient_error),
+            (500, ResponseAction.RETRY, FailureType.transient_error),
+            (502, ResponseAction.RETRY, FailureType.transient_error),
+            (503, ResponseAction.RETRY, FailureType.transient_error),
+        ],
+    )
+    def test_creatives_error_handler_maps_http_responses(
+        self, status_code: int, action: ResponseAction, failure_type: FailureType | None
+    ) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = b"{}"
 
-        filter_429 = next(f for f in response_filters if 429 in f.get("http_codes", []))
-        filter_5xx = next(f for f in response_filters if 500 in f.get("http_codes", []))
+        resolution = requester.error_handler.interpret_response(response)
 
-        assert filter_429["action"] == "RATE_LIMITED", f"HTTP 429 must use RATE_LIMITED action, got {filter_429['action']}"
-        assert filter_5xx["action"] == "RETRY", f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
+        assert resolution.response_action == action
+        assert resolution.failure_type == failure_type
+
+    @pytest.mark.parametrize(
+        "message, expected_message",
+        [
+            ("Rate limit exceeded for LinkedIn API.", "HTTP Status Code: 429. Error: Too many requests."),
+            (
+                "The data request limit has been exceeded. More than 45 million metric values were requested in a 5-minute window.",
+                "LinkedIn Ads metric-value rate limit is exceeded.",
+            ),
+        ],
+        ids=["generic", "data-volume"],
+    )
+    def test_creatives_error_handler_rate_limit_messages(self, message: str, expected_message: str) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+        response = requests.Response()
+        response.status_code = 429
+        response._content = json.dumps({"message": message}).encode()
+
+        resolution = requester.error_handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RATE_LIMITED
+        assert resolution.failure_type == FailureType.transient_error
+        assert resolution.error_message == expected_message
+
+    def test_creatives_error_handler_invalid_url(self) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+
+        resolution = requester.error_handler.interpret_response(InvalidURL("Invalid URL"))
+
+        assert resolution.response_action == ResponseAction.RETRY
+        assert resolution.failure_type == FailureType.transient_error
+        assert resolution.error_message == "source-linkedin-ads has faced a temporary DNS resolution issue. Retrying..."
+
+    def test_creatives_error_handler_retry_configuration(self) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+        error_handler = requester.error_handler
+
+        assert isinstance(error_handler, LinkedInAdsErrorHandler)
+        assert error_handler.max_retries == 5
+        assert error_handler.max_time == 600
+        assert len(error_handler.backoff_strategies) == 1
+        strategy = error_handler.backoff_strategies[0]
+        assert isinstance(strategy, ExponentialBackoffStrategy)
+        assert float(strategy.factor) == 5
+        assert strategy.backoff_time(None, attempt_count=1) == 10
 
     def test_ad_analytics_error_handler_configuration(self):
         manifest_path = Path(__file__).parent.parent / "manifest.yaml"
@@ -156,7 +243,7 @@ class TestAllStreams:
         }
 
         assert analytics_error_handler == expected_error_handler
-        assert manifest["definitions"]["custom_report_error_handlers"] == expected_error_handler
+        assert manifest["definitions"]["custom_report_error_handler"] == expected_error_handler
 
         analytics_requesters = [
             stream["retriever"]["requester"]
@@ -166,7 +253,7 @@ class TestAllStreams:
         assert analytics_requesters
         assert all(
             requester.get("error_handler") == {"$ref": "#/definitions/ad_analytics_error_handler"}
-            or requester.get("error_handlers") == {"$ref": "#/definitions/custom_report_error_handlers"}
+            or requester.get("error_handler") == {"$ref": "#/definitions/custom_report_error_handler"}
             for requester in analytics_requesters
         )
 
@@ -298,7 +385,7 @@ class TestAllStreams:
             (
                 403,
                 ConnectionStatus.FAILED,
-                "Stream accounts is not available: HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource.",
+                "LinkedIn ad account access is denied. Re-authenticate with the r_ads scope and ensure the authorized member has access to the ad account.",
             ),
             (200, ConnectionStatus.SUCCEEDED, None),
         ),

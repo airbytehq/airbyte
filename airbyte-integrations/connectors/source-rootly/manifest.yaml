@@ -23,17 +23,15 @@ definitions:
           path: dashboards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -99,17 +97,15 @@ definitions:
           path: incidents
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -175,17 +171,15 @@ definitions:
           path: authorizations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,17 +245,15 @@ definitions:
           path: dashboards/{{ stream_partition.d_id }}/panels
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -327,17 +319,15 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -403,17 +393,15 @@ definitions:
           path: incident_types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -479,17 +467,15 @@ definitions:
           path: ip_ranges
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -527,17 +513,15 @@ definitions:
           path: users/{{ stream_partition.user_id }}/notification_rules
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -611,17 +595,15 @@ definitions:
           path: teams
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -687,17 +669,15 @@ definitions:
           path: sub_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -763,17 +743,15 @@ definitions:
           path: incidents/{{ stream_partition.incident_id }}/sub_statuses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -847,17 +825,15 @@ definitions:
           path: incident_roles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -923,17 +899,15 @@ definitions:
           path: post_mortems
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -999,17 +973,15 @@ definitions:
           path: status-pages
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1075,17 +1047,15 @@ definitions:
           path: severities
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1151,17 +1121,15 @@ definitions:
           path: services
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1227,17 +1195,15 @@ definitions:
           path: incident_permission_sets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1305,17 +1271,15 @@ definitions:
             stream_partition.incident_permission_set_id }}/resources
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1391,17 +1355,15 @@ definitions:
             stream_partition.incident_permission_set_id }}/booleans
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1475,17 +1437,15 @@ definitions:
           path: roles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1551,17 +1511,15 @@ definitions:
           path: incidents/{{ stream_partition.incident_id }}/events
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1635,17 +1593,15 @@ definitions:
           path: workflows
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1711,17 +1667,15 @@ definitions:
           path: workflow_groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1787,17 +1741,15 @@ definitions:
           path: workflows/{{stream_partition.workflow_id }}/workflow_tasks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1871,17 +1823,15 @@ definitions:
           path: form_sets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1947,17 +1897,15 @@ definitions:
           path: form_fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2023,17 +1971,15 @@ definitions:
           path: playbooks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2099,17 +2045,15 @@ definitions:
           path: incidents/{{ stream_partition.incident_id }}/action_items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2183,17 +2127,15 @@ definitions:
           path: retrospective_configurations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2259,17 +2201,15 @@ definitions:
           path: retrospective_processes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: "429"
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                error_message: "429"
         record_selector:
           type: RecordSelector
           extractor:

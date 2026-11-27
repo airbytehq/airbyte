@@ -23,29 +23,29 @@ import io.airbyte.cdk.load.data.Transformations
 interface S3PathSpecification {
     @get:JsonSchemaTitle("S3 Path Format")
     @get:JsonPropertyDescription(
-        "Format string on how data will be organized inside the bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\">here</a>"
+        "Format string on how data will be organized inside the bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\">here</a>",
     )
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"]}"
+            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"]}",
     )
     @get:JsonProperty("s3_path_format")
     val s3PathFormat: String?
 
     @get:JsonSchemaTitle("File Name Pattern")
     @get:JsonPropertyDescription(
-        "Pattern to match file names in the bucket directory. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/ListingKeysUsingAPIs.html\">here</a>"
+        "Pattern to match file names in the bucket directory. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/ListingKeysUsingAPIs.html\">here</a>",
     )
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"]}"
+            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"]}",
     )
     @get:JsonProperty("file_name_pattern")
     val fileNamePattern: String?
 
     @get:JsonSchemaTitle("S3 Bucket Path")
     @get:JsonPropertyDescription(
-        "Directory under the S3 bucket where data will be written. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A\">here</a>"
+        "Directory under the S3 bucket where data will be written. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A\">here</a>",
     )
     @get:JsonProperty("s3_bucket_path")
     @get:JsonSchemaInject(json = """{"examples":["data_sync/test"]}""")

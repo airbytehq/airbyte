@@ -1,5 +1,104 @@
 # Klaviyo Migration Guide
 
+## Upgrading to 4.0.0
+
+Klaviyo retires API revision `2024-10-15` on 2026-10-15, so this release moves every stream to revision `2026-01-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema.
+
+This upgrade does not break syncs or destinations. The same campaigns and campaign messages keep syncing, with the same record counts and, except for SMS message labels (see below), the same values; the `attributes` and `campaign_messages` columns keep their names and types. For that reason the connector upgrades automatically at the deadline instead of disabling connections. The breaking-change notice is for awareness: some values move to different nested paths inside those two columns, so anything downstream of the destination that reads the old paths (SQL models, dashboards, dbt tests) returns `null` for them after the upgrade until it is pointed at the new paths.
+
+### Who is affected
+
+Only connections that sync `campaigns` or `campaigns_detailed`, and only if a downstream query, model or dashboard reads one of the nested paths listed below.
+
+### What changed in `campaigns` and `campaigns_detailed`
+
+Klaviyo flattened `send_strategy`. The method-specific option objects are gone and their fields now sit directly under `send_strategy`:
+
+| Before                                                | After                                             |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `send_strategy.options_static.datetime`               | `send_strategy.datetime`                          |
+| `send_strategy.options_static.is_local`               | `send_strategy.options.is_local`                  |
+| `send_strategy.options_static.send_past_recipients_immediately` | `send_strategy.options.send_past_recipients_immediately` |
+| `send_strategy.options_sto.date`                      | `send_strategy.date`                              |
+| `send_strategy.options_throttled.datetime`            | `send_strategy.datetime`                          |
+| `send_strategy.options_throttled.throttle_percentage` | `send_strategy.throttle_percentage`               |
+
+`send_strategy.method` is unchanged. Fields that do not apply to the campaign's method are omitted, where the previous revision returned them as `null`.
+
+### What changed in `campaigns_detailed` only
+
+Each entry of `campaign_messages` now carries its channel-specific configuration under `attributes.definition`:
+
+| Before                                        | After                                                    |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `campaign_messages[].attributes.channel`        | `campaign_messages[].attributes.definition.channel`        |
+| `campaign_messages[].attributes.label`          | `campaign_messages[].attributes.definition.label`          |
+| `campaign_messages[].attributes.content.*`      | `campaign_messages[].attributes.definition.content.*`      |
+| `campaign_messages[].attributes.render_options.*` | `campaign_messages[].attributes.definition.render_options.*` |
+
+`definition` also exposes mobile push message fields that the previous revision did not return (`content.title`, `content.dynamic_image`, `content.action_buttons`, `options.badge`, `options.on_open`, `options.play_sound`, `kv_pairs`, `notification_type`), and each message gains a `relationships.image` link. `created_at`, `updated_at`, `send_times` and the campaign and template relationships are unchanged.
+
+Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is absent for them at this revision (`null` in typed destinations).
+
+### Migration steps
+
+1. Upgrade the connector to version 4.0.0, or wait for the automatic upgrade on the deadline. Syncs continue either way.
+2. Update any downstream queries, models or dashboards that read `send_strategy.options_static`, `send_strategy.options_sto`, `send_strategy.options_throttled`, or the campaign message `channel`, `label`, `content` and `render_options` fields to the new paths above.
+3. In your connection, open the **Schema** tab and click **Refresh source schema**, then accept the changes for `campaigns` and `campaigns_detailed` so the new fields show up in typed destination columns.
+4. Optionally, clear `campaigns` and `campaigns_detailed` so that rows written before the upgrade are rewritten in the new shape; without a clear they keep the old paths in destinations that append rather than overwrite. Before clearing, note that the connector only re-reads campaigns updated on or after your **Start Date** (the last year if Start Date is blank) and cannot re-read campaigns deleted in Klaviyo, so back up the tables or set Start Date earlier than your oldest campaign first.
+
+## Upgrading to 3.0.0
+
+This release changes the record shape of `flow_series_reports`, changes what `campaign_values_reports` writes in `date`, and changes the reporting periods both report streams request. Both streams need a schema refresh and a clear.
+
+### What changed in `flow_series_reports`
+
+The flow-series endpoint reports many days per response: it returns one `date_times` array plus, for each grouping, a statistics array whose values line up with that array by index. The connector used to emit one record per response, so each record carried whole arrays of daily values and a `date` copied from the end of the request window.
+
+Now each response is split into one record per calendar day:
+
+|                        | Before                                                                | After                                                       |
+| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Records per grouping   | One per request window                                                | One per calendar day                                        |
+| `statistics.opens`     | `[123, 156, 144]`                                                     | `144`                                                       |
+| `date`                 | End of the request window, for example `2024-01-31T23:59:59+00:00`     | The day the row reports on, for example `2024-01-07T00:00:00+00:00` |
+
+`groupings`, `flow_id`, `flow_message_id`, `send_channel` and `conversion_metric_id` are unchanged.
+
+This is what makes the **Reporting Lookback Window (Days)** setting safe to use. The stream is keyed on `date` plus the grouping fields, so a day read again on a later sync arrives under the primary key it already had. On a destination that deduplicates on the primary key it replaces that row; in append mode each re-synced day adds an extra row per sync. Previously a re-read produced a new `date`, so the same days accumulated as extra rows and were counted twice however the destination was configured. Set the lookback to at least your Klaviyo attribution window - 5 days by default, up to 90 days if you have raised it - to pick up conversion revisions.
+
+### What changed in `campaign_values_reports`
+
+The fields are the same, but `date` now means something different. This endpoint has no per-day breakdown: one request answers with a single aggregate over the whole period, so `date` is what identifies the period a row covers. It used to be a timestamp inside the period - the moment the sync ran, for the period ending at that moment - and it is now the midnight that closes the period. A row dated `2024-06-15T00:00:00+00:00` covers everything up to the end of 2024-06-14.
+
+That was not a cosmetic problem. The old value was a wall clock instant, and the next sync resumed from it, so it began requesting in the middle of a day the previous sync had already reported in full. The day on that boundary ended up inside two aggregates filed under two different `date` values, counted twice, with nothing for a destination to deduplicate. Periods now begin and end on day boundaries, so consecutive syncs tile the calendar: a sync that leaves the cursor at `2024-06-15T00:00:00+00:00` makes the next one ask for `2024-06-15` onwards and nothing earlier.
+
+There is still deliberately no lookback window for this stream. Re-reading a period returns a fresh aggregate under a new `date`, which cannot replace an existing row and would only add a second one covering the same days.
+
+### What changed in both streams
+
+Report periods now cover whole calendar days and stop at the end of the last complete day.
+
+- Klaviyo report timeframes are inclusive of both the first and the last day, and Klaviyo rounds the end up to `:59:59` of the hour it falls in. A period that stopped in the middle of a day therefore reported that whole day, and so did the following period. With a start date carrying a time of day - for example `2017-01-25T09:30:00Z` - every 30-day period boundary counted one day twice. Periods now start at midnight and end at `23:59:59`, so each day belongs to exactly one of them.
+- These are whole days in your Klaviyo account's (company) timezone, not in UTC. Klaviyo documents that the timezone offset sent in a custom report timeframe is ignored and the company timezone configured for your account is used instead, even though the timestamps it returns carry a `+00:00` offset.
+- The last period of a sync now ends at `23:59:59` on the previous day rather than at the moment the sync runs, so no period ever covers a partial day. The trade-off is freshness: the current day's numbers arrive with the next sync. For `campaign_values_reports` a second sync on the same day requests nothing at all, because no further day has completed.
+
+Because period boundaries move, the periods `campaign_values_reports` has already written no longer line up with the periods it writes from now on.
+
+### Migration steps
+
+1. Back up the existing `flow_series_reports` and `campaign_values_reports` tables, or snapshot them into a copy. Step 4 deletes them, and refilling them means a full historical re-sync that can take days (see the warning below), so keep something to fall back on and to compare the new rows against.
+2. Upgrade the connector to version 3.0.0.
+3. In your connection, open the **Schema** tab and click **Refresh source schema**. Accept the changes for `flow_series_reports` and `campaign_values_reports`.
+4. Clear both `flow_series_reports` and `campaign_values_reports` so they are re-read under the new record shape and the new period boundaries. Without this, old array-shaped rows and old reporting periods stay in your destination alongside the new ones.
+5. Update any downstream models reading `flow_series_reports.statistics`. A field that was an array is now a single number, and there is one row per day instead of one row per sync window. Logic that used to unnest these arrays should now group by `date`.
+
+:::warning
+The re-sync after clearing reads your whole history again, one request per conversion metric per reporting period. Klaviyo's reporting endpoints are rate limited to 1 request per second in burst, 2 per minute sustained, and 225 per day ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)), so a full historical backfill can take several days and will spread across multiple syncs. Before clearing, restrict **Report Stream Conversion Metric IDs** to the metrics you actually need.
+:::
+
+Other streams are unaffected and do not need to be cleared.
+
 ## Upgrading to 2.0.0
 
 Streams `campaigns`, `email_templates`, `events`, `flows`, `global_exclusions`, `lists`, and `metrics` are now pulling

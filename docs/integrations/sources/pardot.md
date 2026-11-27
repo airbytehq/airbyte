@@ -16,13 +16,21 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 ### Required configuration options
 
-- **Pardot Business Unit ID** (`pardot_business_unit_id`): This value uniquely identifies your account, and can be found at Setup > Pardot > Pardot Account Setup
+- **Pardot Business Unit ID** (`pardot_business_unit_id`): The 18-character ID, starting with `0Uv`, of the Account Engagement business unit to sync. In Salesforce Setup, enter `Business Unit Setup` in the **Quick Find** box and select **Business Unit Setup**. See [Find the Account Engagement business unit ID](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html).
 
 - **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
 
 - **Client Secret** (`client_secret`): The Consumer Secret that can be found when viewing your app in Salesforce
 
-- **Refresh Token** (`refresh_token`): Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
+- **Refresh Token** (`refresh_token`): Salesforce refresh token that Airbyte uses to access your Account Engagement data. To get one:
+  1. In Salesforce Setup, create an [External Client App](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5) with OAuth enabled. Since Spring '26, Salesforce no longer lets you create new connected apps by default. Existing connected apps keep working.
+  2. Select the **Manage Pardot services (`pardot_api`)** and **Perform requests at any time (`refresh_token`, `offline_access`)** OAuth scopes. Account Engagement rejects tokens that don't have the `pardot_api` scope. See [Account Engagement API authentication](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html).
+  3. Use the OAuth web server (authorization code) flow to get a refresh token for a user who has access to Account Engagement.
+  4. Don't turn on **Refresh Token Rotation** or **Immediately expire refresh token** for this app. The connector stores one refresh token and can't save a new one that Salesforce issues on every refresh.
+
+:::caution Refresh tokens expire after 30 days without use
+Starting November 4, 2026, Salesforce expires production refresh tokens that haven't been used for 30 days. Every sync uses the refresh token and restarts that 30-day window. A connection that syncs at least once every 30 days keeps working. If a connection is paused, or scheduled to sync less often than every 30 days, its refresh token expires and syncs fail to authenticate. To recover, generate a new refresh token and update the source.
+:::
 
 ### Optional configuration options
 
@@ -37,17 +45,13 @@ The Pardot source connector supports the following [sync modes](https://docs.air
 - Full Refresh
 - Incremental
 
-Incremental streams are based on the Pardot API's `UpdatedAt` field when the object is updateable and the API supports it; otherwise `CreatedAt` or `Id` are used in that order of preference.
+Most incremental streams use the `updatedAt` field as the cursor. The exceptions are **Emails**, which uses `sentAt`, **Lifecycle Histories** and **Visitor Page Views**, which use `createdAt`, and **Email Clicks**, which uses `created_at`.
 
-### Performance Considerations
+### Rate limits
 
-The Pardot connector should not run into Pardot API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Account Engagement limits the number of API requests your account can make each day, based on your edition.
 
-:::tip
-
-Pardot has daily API limits based on plan level. If one of these limits is hit, the connector will retry every two hours until quota is replenished.
-
-:::
+When Account Engagement returns a rate limit error (HTTP 429, or an error containing `Daily API rate limit met`), a server error (5xx), or a request timeout (408), the connector waits two hours and retries the request once. If the retry also fails, the sync fails. When the daily limit is the cause, the sync fails with the message `Reached the Pardot daily API request limit. The limit resets at the start of the next day in the Pardot account's time zone.`
 
 ## Supported Streams
 
@@ -58,7 +62,7 @@ Several output streams are available from this source. Unless noted otherwise, s
 - [Custom Fields](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-field-v5.html) (incremental)
 - [Custom Redirects](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-redirect-v5.html) (full refresh)
 - [Dynamic Content](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-v5.html) (incremental)
-- [Dynamic Content Variations](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-variation.html) (incremental parent)
+- [Dynamic Content Variations](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-variation.html) (full refresh)
 - [Emails](https://developer.salesforce.com/docs/marketing/pardot/guide/email-v5.html) (incremental)
 - [Email Clicks (v4 API)](https://developer.salesforce.com/docs/marketing/pardot/guide/batch-email-clicks-v4.html) (incremental)
 - [Engagement Studio Programs](https://developer.salesforce.com/docs/marketing/pardot/guide/engagement-studio-program-v5.html) (incremental)
@@ -97,6 +101,21 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.65 | 2026-11-17 | [93309](https://github.com/airbytehq/airbyte/pull/93309) | Update dependencies |
+| 1.0.64 | 2026-11-16 | [90951](https://github.com/airbytehq/airbyte/pull/90951) | Show a specific message when the Pardot daily API request limit is reached |
+| 1.0.63 | 2026-11-10 | [91648](https://github.com/airbytehq/airbyte/pull/91648) | Update dependencies |
+| 1.0.62 | 2026-11-03 | [90699](https://github.com/airbytehq/airbyte/pull/90699) | Update dependencies |
+| 1.0.61 | 2026-10-27 | [89997](https://github.com/airbytehq/airbyte/pull/89997) | Update dependencies |
+| 1.0.60 | 2026-10-20 | [89350](https://github.com/airbytehq/airbyte/pull/89350) | Update dependencies |
+| 1.0.59 | 2026-10-13 | [88747](https://github.com/airbytehq/airbyte/pull/88747) | Update dependencies |
+| 1.0.58 | 2026-10-06 | [87980](https://github.com/airbytehq/airbyte/pull/87980) | Update dependencies |
+| 1.0.57 | 2026-09-29 | [87294](https://github.com/airbytehq/airbyte/pull/87294) | Update dependencies |
+| 1.0.56 | 2026-09-22 | [86757](https://github.com/airbytehq/airbyte/pull/86757) | Update dependencies |
+| 1.0.55 | 2026-09-15 | [86177](https://github.com/airbytehq/airbyte/pull/86177) | Update dependencies |
+| 1.0.54 | 2026-09-08 | [85565](https://github.com/airbytehq/airbyte/pull/85565) | Update dependencies |
+| 1.0.53 | 2026-08-18 | [84703](https://github.com/airbytehq/airbyte/pull/84703) | Update dependencies |
+| 1.0.52 | 2026-08-11 | [84070](https://github.com/airbytehq/airbyte/pull/84070) | Update dependencies |
+| 1.0.51 | 2026-08-04 | [83553](https://github.com/airbytehq/airbyte/pull/83553) | Update dependencies |
 | 1.0.50 | 2026-07-28 | [83046](https://github.com/airbytehq/airbyte/pull/83046) | Update dependencies |
 | 1.0.49 | 2026-07-21 | [82532](https://github.com/airbytehq/airbyte/pull/82532) | Update dependencies |
 | 1.0.48 | 2026-07-14 | [81946](https://github.com/airbytehq/airbyte/pull/81946) | Update dependencies |

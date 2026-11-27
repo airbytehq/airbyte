@@ -47,7 +47,7 @@ For automated production workloads, you can use a [MotherDuck service account](h
 
    <FieldAnchor field="schema">
 
-   - **Schema Name**: Enter the schema where Airbyte creates destination tables. The default is `main`.
+   - **Schema Name**: Enter the schema where Airbyte creates destination tables. The default is `main`. Use only letters, numbers, and underscores. The connection test doesn't check this value, so a schema name that contains other characters, such as `raw-data`, fails at sync time with `Invalid SQL name`.
 
    </FieldAnchor>
 
@@ -75,7 +75,7 @@ Each table contains at least the following columns:
 
 - `_airbyte_raw_id`: A UUID assigned by Airbyte to each record.
 - `_airbyte_extracted_at`: The time Airbyte extracted the record from the source.
-- `_airbyte_meta`: A JSON object containing record metadata.
+- `_airbyte_meta`: A JSON object for record metadata. This destination always writes an empty object.
 
 The destination also creates typed columns for fields in each stream's [JSON schema](/platform/connector-development/schema-reference). Object and array fields are stored as DuckDB `JSON` columns.
 
@@ -85,6 +85,12 @@ Table and column names are normalized before Airbyte creates them:
 - Whitespace and most special characters are replaced with underscores.
 - Unicode letters and numbers are preserved.
 - Names that start with a digit receive an underscore prefix.
+
+## Deduplication
+
+In sync modes that remove duplicate records, the connector loads each batch into a temporary table, keeps the record with the most recent `_airbyte_extracted_at` value for each primary key, then merges the result into the destination table.
+
+Primary keys aren't declared as table constraints, so records with null primary key values still load. If the source doesn't define a primary key and you don't select one, the connector appends every record without removing duplicates.
 
 ## Working with local DuckDB files
 
@@ -105,6 +111,20 @@ If you only need local DuckDB files, consider using the [DuckDB destination](/in
 - Field names in a record must be unique after normalization. If fields collide, such as `userId` and `userid`, the connector skips the record.
 - [Data generations](/platform/operator-guides/refreshes#data-generations) aren't supported.
 
+## Troubleshooting
+
+### Invalid SQL name
+
+The **Schema Name** contains characters other than letters, numbers, and underscores. Edit the destination and enter a schema name that uses only those characters.
+
+### Records missing from the destination
+
+Check the sync logs for `Data contained duplicate keys after normalization`. The connector skips any record whose field names collide after normalization, and the log lists the field names it dropped. Rename the conflicting source fields, or exclude one of them from the connection, then run the sync again.
+
+### Slow syncs after a fallback warning
+
+If a batch can't be prepared as an Arrow table, the connector logs `Writing with PyArrow table failed, falling back to writing with executemany` and loads the batch with individual `INSERT` statements instead. The sync still completes, but more slowly. The stack trace that accompanies the warning identifies the underlying failure.
+
 ## Changelog
 
 <details>
@@ -112,6 +132,7 @@ If you only need local DuckDB files, consider using the [DuckDB destination](/in
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.6 | 2026-08-04 | [83694](https://github.com/airbytehq/airbyte/pull/83694) | Fix JSON column serialization being skipped for non-lowercase source property names, causing empty STRUCT failures |
 | 0.2.5 | 2026-07-22 | [82244](https://github.com/airbytehq/airbyte/pull/82244) | Fix sync failures on array fields containing empty objects by serializing JSON array columns before load |
 | 0.2.4 | 2026-07-14 | [81511](https://github.com/airbytehq/airbyte/pull/81511) | Fix silent data loss on multi-stream syncs by no longer discarding other streams' buffered records when one stream is flushed |
 | 0.2.3 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for `supportLevel` change to certified |

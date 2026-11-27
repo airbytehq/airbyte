@@ -36,11 +36,11 @@ enum class ObjectStorageType(@get:JsonValue val type: String) {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "storage_type"
+    property = "storage_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = DisabledObjectStorageSpec::class, name = "None"),
-    JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3")
+    JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3"),
 )
 sealed interface ObjectStorageSpec {
     @get:JsonSchemaTitle("Object Storage Type")
@@ -66,19 +66,19 @@ class S3ObjectStorageSpec :
     override val storageType = ObjectStorageType.S3
 
     @get:JsonSchemaInject(
-        json = """{"examples":["A012345678910EXAMPLE"],$SECRET,$ALWAYS_SHOW,"order":1}"""
+        json = """{"examples":["A012345678910EXAMPLE"],$SECRET,$ALWAYS_SHOW,"order":1}""",
     )
     override val accessKeyId: String? = null
 
     @get:JsonSchemaInject(
         json =
-            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],$SECRET,$ALWAYS_SHOW,"order":2}"""
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],$SECRET,$ALWAYS_SHOW,"order":2}""",
     )
     override val secretAccessKey: String? = null
 
     @get:JsonSchemaInject(
         json =
-            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":3}"""
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":3}""",
     )
     override val roleArn: String? = null
 
@@ -108,7 +108,7 @@ class S3ObjectStorageSpec :
         "default":"CSV",
         $HIDDEN,
         "order":8
-        }"""
+        }""",
     )
     @get:JsonProperty("format")
     override val format: ObjectStorageFormatSpecification = CSVFormatSpecification()
@@ -123,7 +123,7 @@ class S3ObjectStorageSpec :
                 "default":"{sync_id}/{namespace}/{stream_name}/",
                 $HIDDEN,
                 "order":10
-                }"""
+                }""",
     )
     @get:JsonProperty("path_format")
     val pathFormat: String? = null
@@ -135,7 +135,7 @@ class S3ObjectStorageSpec :
                 "default":"{date}_{timestamp}_{part_number}{format_extension}",
                 $HIDDEN,
                 "order":11
-                }"""
+                }""",
     )
     @get:JsonProperty("file_name_format")
     val fileNameFormat: String? = null

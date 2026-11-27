@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.s3
 
 import com.google.common.annotations.VisibleForTesting
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.OutputStream
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
@@ -29,9 +28,9 @@ import javax.crypto.spec.SecretKeySpec
  * * A content-encrypting-key (CEK) is used to encrypt the actual data (i.e. the CSV file)
  * * A key-encrypting-key (KEK) is used to encrypt the CEK
  * * The encrypted CEK is stored in the S3 object metadata, along with the plaintext initialization
- * vector
+ *   vector
  * * The COPY command includes the KEK (in plaintext). Redshift/Snowflake will use it to decrypt the
- * CEK, which it then uses to decrypt the CSV file.
+ *   CEK, which it then uses to decrypt the CSV file.
  *
  * A new CEK is generated for each S3 object, but each sync uses a single KEK. The KEK may be either
  * user-provided (if the user wants to keep the data for further use), or generated per-sync (if
@@ -52,10 +51,10 @@ internal constructor( // The real "secret key". Should be handled with great car
     private val contentEncryptingKey:
         SecretKey, // Arbitrary bytes required by the CBC algorithm. Not a sensitive value.
     // The only requirement is that we never reuse an (IV, CEK) pair.
-    private val initializationVector: ByteArray
+    private val initializationVector: ByteArray,
 ) : BlobDecorator {
     constructor(
-        keyEncryptingKey: SecretKey?
+        keyEncryptingKey: SecretKey?,
     ) : this(
         keyEncryptingKey,
         randomContentEncryptingKey(),
@@ -63,7 +62,7 @@ internal constructor( // The real "secret key". Should be handled with great car
     )
 
     constructor(
-        keyEncryptingKey: ByteArray?
+        keyEncryptingKey: ByteArray?,
     ) : this(
         SecretKeySpec(
             keyEncryptingKey,
@@ -71,10 +70,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         ),
     )
 
-    @SuppressFBWarnings(
-        value = ["PADORA", "CIPINT"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun wrap(stream: OutputStream): OutputStream {
         try {
             val dataCipher = Cipher.getInstance(CONTENT_ENCRYPTING_CIPHER_ALGO)
@@ -97,13 +92,9 @@ internal constructor( // The real "secret key". Should be handled with great car
         }
     }
 
-    @SuppressFBWarnings(
-        value = ["CIPINT", "SECECB"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun updateMetadata(
         metadata: MutableMap<String, String>,
-        metadataKeyMapping: Map<String, String>
+        metadataKeyMapping: Map<String, String>,
     ) {
         try {
             val keyCipher = Cipher.getInstance(KEY_ENCRYPTING_ALGO)

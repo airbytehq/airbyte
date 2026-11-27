@@ -29,7 +29,7 @@ object DateTimeConverter {
 
     val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
-            "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]"
+            "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]",
         )
     private var loggedUnknownTimeWithTimeZoneClass = false
     private var loggedUnknownTimeClass = false
@@ -114,13 +114,13 @@ object DateTimeConverter {
                 timestamp,
                 if (hasZeroSecondsAndNanos(localDateTime.toLocalTime()))
                     localDateTime.format(TIMESTAMP_FORMATTER)
-                else localDateTime.toString()
+                else localDateTime.toString(),
             )
         } else if (timestamp is Instant) {
             // Incremental mode
             return resolveEra(
                 timestamp.atZone(ZoneOffset.UTC).toLocalDate(),
-                timestamp.atOffset(ZoneOffset.UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER)
+                timestamp.atOffset(ZoneOffset.UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER),
             )
         } else if (timestamp is LocalDateTime) {
             val date: LocalDate = timestamp.toLocalDate()
@@ -128,7 +128,7 @@ object DateTimeConverter {
                 date,
                 if (hasZeroSecondsAndNanos(timestamp.toLocalTime()))
                     timestamp.format(TIMESTAMP_FORMATTER)
-                else timestamp.toString()
+                else timestamp.toString(),
             )
         } else {
             if (!loggedUnknownTimestampClass) {
@@ -141,7 +141,7 @@ object DateTimeConverter {
                 date,
                 if (hasZeroSecondsAndNanos(localDateTime.toLocalTime()))
                     localDateTime.format(TIMESTAMP_FORMATTER)
-                else localDateTime.toString()
+                else localDateTime.toString(),
             )
         }
     }

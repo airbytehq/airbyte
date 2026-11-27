@@ -46,7 +46,7 @@ class DlqNoopAccumulator :
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: DlqNoopState
+        state: DlqNoopState,
     ): BatchAccumulatorResult<DlqNoopState, WithBatchState> = FinalOutput(DlqNoopState())
 
     override suspend fun finish(state: DlqNoopState): FinalOutput<DlqNoopState, WithBatchState> =
@@ -56,5 +56,6 @@ class DlqNoopAccumulator :
 /** See documentation of [DlqNoopPipelineStep]. */
 class DlqNoopState : WithBatchState, AutoCloseable {
     override val state: BatchState = BatchState.COMPLETE
+
     override fun close() {}
 }

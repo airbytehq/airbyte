@@ -45,7 +45,7 @@ class S3ConsumerFactory {
         storageOperations: BlobStorageOperations,
         onCreateBuffer: BufferCreateFunction,
         s3Config: S3DestinationConfig,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): AirbyteMessageConsumer {
         val writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog)
         return BufferedStreamConsumer(
@@ -54,7 +54,7 @@ class S3ConsumerFactory {
             SerializedBufferingStrategy(
                 onCreateBuffer,
                 catalog,
-                flushBufferFunction(storageOperations, writeConfigs, catalog)
+                flushBufferFunction(storageOperations, writeConfigs, catalog),
             ),
             onCloseFunction(storageOperations, writeConfigs),
             catalog,
@@ -65,7 +65,7 @@ class S3ConsumerFactory {
 
     private fun onStartFunction(
         storageOperations: BlobStorageOperations,
-        writeConfigs: List<WriteConfig>
+        writeConfigs: List<WriteConfig>,
     ): OnStartFunction {
         return OnStartFunction {
             LOGGER.info {
@@ -105,7 +105,7 @@ class S3ConsumerFactory {
     private fun flushBufferFunction(
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): FlushBufferFunction {
         val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
 
@@ -120,7 +120,7 @@ class S3ConsumerFactory {
                     "Message contained record from a stream [namespace=\"%s\", name=\"%s\"] that was not in the catalog. \ncatalog: %s",
                     pair.namespace,
                     pair.name,
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
 
@@ -133,8 +133,8 @@ class S3ConsumerFactory {
                             writer,
                             writeConfig.namespace,
                             writeConfig.fullOutputPath,
-                            writeConfig.generationId
-                        )!!
+                            writeConfig.generationId,
+                        )!!,
                     )
                 }
             } catch (e: Exception) {
@@ -146,13 +146,12 @@ class S3ConsumerFactory {
 
     private fun onCloseFunction(
         storageOperations: BlobStorageOperations,
-        writeConfigs: List<WriteConfig>
+        writeConfigs: List<WriteConfig>,
     ): OnCloseFunction {
 
-        val streamDescriptorToWriteConfig =
-            writeConfigs.associateBy {
-                StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
-            }
+        val streamDescriptorToWriteConfig = writeConfigs.associateBy {
+            StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
+        }
         return OnCloseFunction {
             _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
@@ -196,7 +195,7 @@ class S3ConsumerFactory {
         catalog: ConfiguredAirbyteCatalog,
         memoryRatio: Double,
         nThreads: Int,
-        featureFlags: FeatureFlags
+        featureFlags: FeatureFlags,
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
         // Buffer creation function: yields a file buffer that converts
@@ -224,16 +223,15 @@ class S3ConsumerFactory {
         // writeConfigs!
         val onStartFunction = onStartFunction(storageOps, writeConfigs)
 
-        val streamDescriptorToWriteConfig =
-            writeConfigs.associateBy {
-                StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
-            }
+        val streamDescriptorToWriteConfig = writeConfigs.associateBy {
+            StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
+        }
         val flushFunction =
             if (featureFlags.useFileTransfer()) {
                 FileTransferDestinationFlushFunction(
                     streamDescriptorToWriteConfig,
                     storageOps,
-                    featureFlags
+                    featureFlags,
                 )
             } else {
                 val createFunction =
@@ -242,7 +240,7 @@ class S3ConsumerFactory {
                         Function<String, BufferStorage> { fileExtension: String ->
                             FileBuffer(fileExtension)
                         },
-                        useV2FieldNames = true
+                        useV2FieldNames = true,
                     )
                 S3DestinationFlushFunction(
                     // Ensure the file buffer is always larger than the memory buffer,
@@ -254,10 +252,10 @@ class S3ConsumerFactory {
                         SerializedBufferingStrategy(
                             createFunction,
                             catalog,
-                            flushBufferFunction(storageOps, writeConfigs, catalog)
+                            flushBufferFunction(storageOps, writeConfigs, catalog),
                         )
                     },
-                    generationAndSyncIds
+                    generationAndSyncIds,
                 )
             }
 
@@ -272,21 +270,21 @@ class S3ConsumerFactory {
             // is simply omitted from the path.
             BufferManager(
                 defaultNamespace = null,
-                maxMemory = (Runtime.getRuntime().maxMemory() * adjustedMemoryRatio).toLong()
+                maxMemory = (Runtime.getRuntime().maxMemory() * adjustedMemoryRatio).toLong(),
             ),
             workerPool = Executors.newFixedThreadPool(nThreads),
-            flushOnEveryMessage = featureFlags.useFileTransfer()
+            flushOnEveryMessage = featureFlags.useFileTransfer(),
         )
     }
 
     private class FileTransferDestinationFlushFunction(
         val streamDescriptorToWriteConfig: Map<StreamDescriptor, WriteConfig>,
         val storageOps: S3StorageOperations,
-        val featureFlags: FeatureFlags
+        val featureFlags: FeatureFlags,
     ) : DestinationFlushFunction {
         override fun flush(
             streamDescriptor: StreamDescriptor,
-            stream: Stream<PartialAirbyteMessage>
+            stream: Stream<PartialAirbyteMessage>,
         ) {
             val records = stream.toList()
             val writeConfig = streamDescriptorToWriteConfig.getValue(streamDescriptor)
@@ -295,7 +293,7 @@ class S3ConsumerFactory {
             }
             if (records.size > 1) {
                 throw RuntimeException(
-                    "the destinationFlushFunction for RAW_FILES should be called with only 1 record"
+                    "the destinationFlushFunction for RAW_FILES should be called with only 1 record",
                 )
             }
             val file = records[0].record!!.file
@@ -312,7 +310,7 @@ class S3ConsumerFactory {
                 fullObjectKey = fullObjectKey,
                 fileName = dataFile.name,
                 fileContent = dataFile.inputStream(),
-                generationId = writeConfig.generationId
+                generationId = writeConfig.generationId,
             )
             val elapsedTimeSeconds = (System.currentTimeMillis() - startTimeMs) / 1_000.0
             val speedMBps = (fileSize / (1_024 * 1_024)) / elapsedTimeSeconds
@@ -335,12 +333,12 @@ class S3ConsumerFactory {
 
     private fun keysForOverwriteDeletion(
         writeConfig: WriteConfig,
-        storageOperations: BlobStorageOperations
+        storageOperations: BlobStorageOperations,
     ): List<String> {
         // Guards to fail fast
         if (writeConfig.minimumGenerationId == 0L) {
             throw IllegalArgumentException(
-                "Keys should not be marked for deletion when not in OVERWRITE mode"
+                "Keys should not be marked for deletion when not in OVERWRITE mode",
             )
         }
         if (writeConfig.minimumGenerationId != writeConfig.generationId) {
@@ -404,23 +402,23 @@ class S3ConsumerFactory {
         private fun createWriteConfigs(
             storageOperations: BlobStorageOperations,
             config: S3DestinationConfig,
-            catalog: ConfiguredAirbyteCatalog?
+            catalog: ConfiguredAirbyteCatalog?,
         ): List<WriteConfig> {
             return catalog!!.streams.map { toWriteConfig(storageOperations, config).apply(it) }
         }
 
         private fun toWriteConfig(
             storageOperations: BlobStorageOperations,
-            s3Config: S3DestinationConfig
+            s3Config: S3DestinationConfig,
         ): Function<ConfiguredAirbyteStream, WriteConfig> {
             return Function { stream: ConfiguredAirbyteStream ->
                 Preconditions.checkNotNull(
                     stream.destinationSyncMode,
-                    "Undefined destination sync mode"
+                    "Undefined destination sync mode",
                 )
                 if (stream.generationId == null || stream.minimumGenerationId == null) {
                     throw ConfigErrorException(
-                        "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
+                        "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7",
                     )
                 }
                 val abStream = stream.stream
@@ -433,7 +431,7 @@ class S3ConsumerFactory {
                         namespace,
                         streamName,
                         SYNC_DATETIME,
-                        customOutputFormat
+                        customOutputFormat,
                     )
                 val syncMode = stream.destinationSyncMode
                 val writeConfig =
@@ -445,7 +443,7 @@ class S3ConsumerFactory {
                         fullOutputPath!!,
                         syncMode,
                         stream.generationId,
-                        stream.minimumGenerationId
+                        stream.minimumGenerationId,
                     )
                 LOGGER.info { "Write config: $writeConfig" }
                 writeConfig

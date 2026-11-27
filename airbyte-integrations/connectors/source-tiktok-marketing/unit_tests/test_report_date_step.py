@@ -7,9 +7,10 @@ import pytest
 import requests_mock as rm
 import yaml
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import _YAML_FILE_PATH
 
@@ -112,25 +113,81 @@ def test_ads_reports_daily_respects_configured_step(report_granularity, max_days
                 ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} with report_granularity={report_granularity}"
 
 
-def test_error_40067_handler_is_config_error_on_daily_report_handler():
+def test_error_40067_handler_splits_request_window_on_daily_report_handler():
     manifest = _load_manifest()
     handler_def = manifest["definitions"]["report_daily_error_handler"]
     filters = handler_def["response_filters"]
     error_40067_filters = [f for f in filters if "40067" in f.get("predicate", "")]
     assert len(error_40067_filters) == 1, "Expected exactly one error handler for code 40067"
     handler = error_40067_filters[0]
-    assert handler["action"] == "FAIL"
-    assert handler.get("failure_type") == "config_error", "Error 40067 should be a config_error"
-    assert (
-        "daily reports date step" in handler["error_message"].lower()
-    ), "Error message should guide user to reduce the Daily Reports Date Step setting"
+    assert handler["action"] == "SPLIT_REQUEST_WINDOW"
+    assert "http_codes" not in handler, "HttpResponseFilter ORs its conditions; a status code here would split on every 200"
+
+
+@pytest.mark.parametrize(
+    "retriever_name",
+    [
+        pytest.param("base_report_retriever", id="basic_daily_retriever"),
+        pytest.param("audience_base_report_retriever", id="audience_daily_retriever"),
+    ],
+)
+def test_daily_retrievers_define_request_window_splitting(retriever_name):
+    """The factory rejects a SPLIT_REQUEST_WINDOW filter whose retriever has no request_window_splitting block."""
+    manifest = _load_manifest()
+    retriever = manifest["definitions"][retriever_name]
+    assert retriever["request_window_splitting"]["$ref"] == "#/definitions/report_daily_request_window_splitting"
+    block = manifest["definitions"]["report_daily_request_window_splitting"]
+    assert block["type"] == "RequestWindowSplitting"
+    assert "date step" not in block["failure_message"].lower(), "The failure message must not promise a config remedy"
+    assert "min_split_window" not in block, "cursor_granularity P1D already floors the split at one day"
 
 
 def test_error_40067_not_on_global_requester():
     manifest = _load_manifest()
     global_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
     error_40067 = [f for f in global_filters if "40067" in f.get("predicate", "")]
-    assert len(error_40067) == 0, "Error 40067 config_error should NOT be on the global requester"
+    assert len(error_40067) == 0, "Error 40067 SPLIT_REQUEST_WINDOW belongs on report_daily_error_handler only, not on the global requester"
+
+
+RETRY_ERROR_MESSAGES = {
+    60001: "TikTok Marketing API is under service maintenance (error 60001).",
+    50000: "TikTok Marketing API returned a server-side error (code 50000).",
+    51041: "TikTok Marketing API returned a server-side error (code 51041).",
+    51004: "TikTok Marketing API returned a server-side error (code 51004).",
+    51002: "TikTok Marketing API returned a server-side error (code 51002).",
+    51001: "TikTok Marketing API returned a server-side error (code 51001, internal service timeout).",
+    51043: "TikTok Marketing API returned a server-side error (code 51043, internal service timeout).",
+}
+
+
+@pytest.mark.parametrize("code,expected_message", RETRY_ERROR_MESSAGES.items())
+def test_daily_report_read_exhausts_transient_error_retries(requests_mock: rm.Mocker, code: int, expected_message: str) -> None:
+    config = {
+        "access_token": "TOKEN",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-02",
+        "environment": {"advertiser_id": "12345"},
+    }
+    catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.incremental).build()
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=[])
+    report_mock = requests_mock.get(
+        "https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+        status_code=200,
+        json={"code": code, "message": "Vendor error detail that must not appear in the emitted message.", "data": {}},
+    )
+
+    output = read(source, config, catalog, expecting_exception=True)
+
+    assert report_mock.call_count == 10
+    assert not output.records
+    stream_errors = [message.trace.error for message in output.errors if message.trace.error.stream_descriptor]
+    assert len(stream_errors) == 1
+    # TODO: Drop the CDK prefix and expect transient_error once the base image includes
+    # https://github.com/airbytehq/airbyte-python-cdk/pull/1115.
+    cdk_prefix = "Exhausted available request attempts. Please see logs for more details. Exception: "
+    assert stream_errors[0].message == f"{cdk_prefix}{expected_message}"
+    assert stream_errors[0].message.removeprefix(cdk_prefix) == expected_message
+    assert stream_errors[0].failure_type == FailureType.system_error
 
 
 @pytest.mark.parametrize(

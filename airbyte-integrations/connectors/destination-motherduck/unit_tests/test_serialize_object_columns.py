@@ -6,6 +6,8 @@ import pyarrow as pa
 import pytest
 from destination_motherduck.processors.duckdb import _serialize_object_columns
 
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
+
 
 JSON_SCHEMA = {
     "type": "object",
@@ -15,6 +17,7 @@ JSON_SCHEMA = {
         "obj": {"type": ["null", "object"]},
         "array_of_objects": {"type": ["null", "array"], "items": {"type": "object"}},
         "array_of_scalars": {"type": ["null", "array"], "items": {"type": "string"}},
+        "Line": {"type": ["null", "array"], "items": {"type": "object"}},
     },
 }
 
@@ -38,10 +41,11 @@ JSON_SCHEMA = {
             id="array_of_scalars_serialized",
         ),
         pytest.param("not_in_schema", [{"x": 1}], [{"x": 1}], id="airbyte_column_untouched"),
+        pytest.param("line", [[{}], None], ["[{}]", None], id="pascal_case_property_matched_via_normalization"),
     ],
 )
 def test_serialize_object_columns(col_name, values, expected) -> None:
-    result = _serialize_object_columns({col_name: values}, JSON_SCHEMA)
+    result = _serialize_object_columns({col_name: values}, JSON_SCHEMA, LowerCaseNormalizer)
     assert result[col_name] == expected
 
 
@@ -55,7 +59,7 @@ def test_serialize_object_columns_prevents_empty_struct_error() -> None:
     """
     buffer_data = {"id": ["1"], "array_of_objects": [[{}]]}
 
-    serialized = _serialize_object_columns(buffer_data, JSON_SCHEMA)
+    serialized = _serialize_object_columns(buffer_data, JSON_SCHEMA, LowerCaseNormalizer)
     pa_table = pa.Table.from_pydict(serialized)
 
     # The column must be a string, not a list-of-struct type.
@@ -65,3 +69,23 @@ def test_serialize_object_columns_prevents_empty_struct_error() -> None:
     con = duckdb.connect()
     con.register("buf", pa_table)
     assert con.execute("SELECT array_of_objects FROM buf").fetchall() == [("[{}]",)]
+
+
+def test_serialize_object_columns_normalized_column_names() -> None:
+    """Regression test for the empty STRUCT failure.
+
+    Buffer keys are normalized column names ("line"), but the schema property is the source's
+    original name ("Line"). Matching on the raw property names skips serialization entirely, so
+    `[{"SubTotalLineDetail": {}}]` reached PyArrow as `list<struct<SubTotalLineDetail: struct<>>>`,
+    which DuckDB rejects with "Attempted to convert a STRUCT with no fields to DuckDB".
+    """
+    buffer_data = {"id": ["1"], "line": [[{"Amount": 100.0, "SubTotalLineDetail": {}}]]}
+
+    serialized = _serialize_object_columns(buffer_data, JSON_SCHEMA, LowerCaseNormalizer)
+    pa_table = pa.Table.from_pydict(serialized)
+
+    assert pa.types.is_string(pa_table.schema.field("line").type)
+
+    con = duckdb.connect()
+    con.register("buf", pa_table)
+    assert con.execute("SELECT line FROM buf").fetchall() == [('[{"Amount":100.0,"SubTotalLineDetail":{}}]',)]
