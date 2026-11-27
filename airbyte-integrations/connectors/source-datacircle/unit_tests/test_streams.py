@@ -174,7 +174,9 @@ def test_plans_fails_with_the_api_message_on_a_bad_filter(requests_mock: Mocker)
 @pytest.mark.parametrize("api", [None, "email-finder", "employee EMAIL"])
 def test_best_plans_reads_each_api_or_the_one_set(requests_mock: Mocker, api: str | None) -> None:
     requests_mock.get(f"{_URL}/apis", json=_APIS)
-    requests_mock.get(f"{_URL}/apis/linkedin-profile/best", json={"slug": "linkedin-profile", "plans": [_plan("Bridgly", 1), _plan("Other", 2)]})
+    requests_mock.get(
+        f"{_URL}/apis/linkedin-profile/best", json={"slug": "linkedin-profile", "plans": [_plan("Bridgly", 1), _plan("Other", 2)]}
+    )
     requests_mock.get(f"{_URL}/apis/email-finder/best", json={"slug": "email-finder", "plans": [_plan("Finder", 1, "Employee email")]})
 
     records = _records(_read("best_plans", {"api": api, "best_plans_limit": 3} if api else {}))
@@ -200,7 +202,21 @@ def test_providers_reads_each_configured_slug(requests_mock: Mocker) -> None:
     for slug, name in (("bridgly", "Bridgly"), ("bright-data", "Bright Data")):
         requests_mock.get(
             f"{_URL}/providers/{slug}",
-            json={"provider": name, "slug": slug, "website": "https://example.com", "apis": [{"api": "Employee profile", "slug": "linkedin-profile", "rank": 1, "sheetPage": None, "bestPage": None, "plans": [_plan(name, 1)]}]},
+            json={
+                "provider": name,
+                "slug": slug,
+                "website": "https://example.com",
+                "apis": [
+                    {
+                        "api": "Employee profile",
+                        "slug": "linkedin-profile",
+                        "rank": 1,
+                        "sheetPage": None,
+                        "bestPage": None,
+                        "plans": [_plan(name, 1)],
+                    }
+                ],
+            },
         )
 
     records = _records(_read("providers", {"providers": ["bridgly", "bright-data"]}))
