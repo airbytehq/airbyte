@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.19.2@sha256:3b8dbfc30cc53120bd1f24a9f8ccee4bd79bf5e69170ad99974516d0580ba0bf
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 05f52523-f11d-4571-9f19-48b9025e12ef
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-api
+  githubIssueLabel: source-api
+  icon: icon.svg
+  license: ELv2
+  name: coin
+  releaseDate: 2026-05-24
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/api
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
